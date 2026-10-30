@@ -1,34 +1,48 @@
 # CRIMENEXUS — AI Criminal Network Intelligence Platform
 
+[![CI/CD Pipeline](https://github.com/Shaik-Abdul-Sammed/CRIMENEXUS/actions/workflows/ci.yml/badge.svg)](https://github.com/Shaik-Abdul-Sammed/CRIMENEXUS/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python Version](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-20%2B-green.svg)](https://nodejs.org/)
+[![Docker](https://img.shields.io/badge/Docker-Compose%20Ready-2496ED.svg)](docker-compose.prod.yml)
+[![Compliance](https://img.shields.io/badge/Compliance-Sec%2063%20BSA%20%2F%2065B%20IEA-red.svg)](docs/03_SECURITY_AND_COMPLIANCE.md)
+
 > **Multi-Source Criminal Relationship Discovery & Investigation Assistant**  
 > *AI-Powered Crime Network Analysis, Dual-Database Engine (PostgreSQL + Neo4j) & Cytoscape Topology Visualization*
 
 ---
 
-## ⚡ Quick Start (Run Everything with One Command)
+## ⚡ 1-Click Production Deployment (Zero-Cost Hosting)
 
-To boot up the entire platform — **PostgreSQL (port 5435), Neo4j (ports 7474/7687), FastAPI Backend (port 8000), and React Frontend (port 5173)** — run:
+Deploy the entire hardened stack — Nginx Frontend (Port 80), FastAPI Backend (Port 8000), Isolated PostgreSQL 15, and Isolated Neo4j 5.24 Graph Engine:
 
 ```bash
-npm start
-```
-*or directly:*
-```bash
-./start.sh
+# 1. Compile production frontend bundle
+npm run build
+
+# 2. Launch production container stack (Free & Open Source)
+docker compose -f docker-compose.prod.yml up -d
 ```
 
-### Alternatively, Run Everything via Full Docker Compose:
-```bash
-docker compose up --build
-```
-
-### Access URLs:
-| Service | URL | Credentials / Notes |
+### Access Points:
+| Service | URL | Notes |
 | :--- | :--- | :--- |
-| **Frontend Web App** | [`http://localhost:5173`](http://localhost:5173) | Interactive Investigation Dashboard |
-| **FastAPI Swagger Docs** | [`http://localhost:8000/docs`](http://localhost:8000/docs) | REST API & Ingestion Endpoints |
-| **Neo4j Graph Browser** | [`http://localhost:7474`](http://localhost:7474) | User: `neo4j` / Pass: `crimenexus123` |
-| **PostgreSQL Database** | `localhost:5435` | User: `postgres` / DB: `crimenexus` |
+| **Frontend Web App** | [`http://localhost`](http://localhost) | Reverse-proxied via Nginx on port 80 |
+| **Backend REST API** | [`http://localhost:8000`](http://localhost:8000) | FastAPI Engine & CCTNS Gateway |
+| **Relational DB** | `Internal Docker Net` | Port 5432 (Isolated from external access) |
+| **Graph DB Engine** | `Internal Docker Net` | Port 7687 (Isolated from external access) |
+
+---
+
+## 📖 Police Department Documentation Suite
+
+Complete operational documentation for law enforcement agencies and IT units:
+- **[01. Investigating Officer (IO) User Manual](docs/01_IO_USER_MANUAL.md)**: Non-technical manual for FIR ingestion, graph analysis, and smurfing tripwire alerts.
+- **[02. Police Headquarters IT Admin Guide](docs/02_HQ_ADMIN_GUIDE.md)**: Server setup, air-gapped installation, disaster recovery, and JWT secret key management.
+- **[03. Security & Legal Compliance](docs/03_SECURITY_AND_COMPLIANCE.md)**: Section 63 BSA / 65B IEA evidence validation, HMAC-SHA256 WORM audit ledger.
+- **[04. Formal Police Submission Proposal](docs/04_POLICE_SUBMISSION_PROPOSAL.md)**: Executive proposal for Director General of Police (DGP) / Commissioner pilot approval.
+
+---
 
 ---
 

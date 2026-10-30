@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copy requirements and install Python packages
 COPY requirements.txt .
-RUN pip install --no-cache-dir --default-timeout=100 --retries 5 -r requirements.txt
+RUN pip install --no-cache-dir --default-timeout=1000 --retries 10 -r requirements.txt
 
 # Copy application source code
 COPY . .
