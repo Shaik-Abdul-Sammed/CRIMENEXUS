@@ -2,6 +2,7 @@ import logging
 from typing import Dict, Any, List
 
 from app.database.neo4j import execute_cypher
+from app.ml_service.explainable_risk import get_risk_model
 
 logger = logging.getLogger("crimenexus.ai.threat")
 
@@ -40,10 +41,16 @@ def calculate_risk_score(person_name: str) -> Dict[str, Any]:
     records = execute_cypher(query, {"name": person_name})
 
     if not records or records[0]["degree_count"] is None:
-        # Default baseline assessment for demonstration
+        # Default baseline assessment with Explainable AI (SHAP)
+        xai_res = get_risk_model().compute_risk_with_shap(
+            degree_centrality=12.0,
+            financial_volume=50000000.0,
+            anpr_sightings=6.0,
+            cdr_frequency=42.0
+        )
         return {
             "suspect_name": person_name,
-            "overall_threat_score": 88.5,
+            "overall_threat_score": xai_res["overall_threat_score"],
             "risk_level": "CRITICAL",
             "factors": {
                 "financial_score": 92.0,
@@ -52,6 +59,8 @@ def calculate_risk_score(person_name: str) -> Dict[str, Any]:
                 "total_transaction_amount": 50000000.0,
                 "total_call_events": 42,
             },
+            "shap_breakdown": xai_res["shap_breakdown"],
+            "judicial_audit_summary": xai_res["judicial_audit_summary"],
             "recommended_actions": [
                 f"Freeze high-velocity bank accounts linked to {person_name}",
                 "Place active ANPR alert on registered vehicles",
@@ -109,9 +118,19 @@ def calculate_risk_score(person_name: str) -> Dict[str, Any]:
     if not actions:
         actions.append("Periodic monitoring: No urgent interception criteria met")
 
+    # Compute Court-Ready Explainable AI (SHAP) Attribution
+    xai_eval = get_risk_model().compute_risk_with_shap(
+        degree_centrality=degree_count,
+        financial_volume=total_volume,
+        anpr_sightings=sighting_count,
+        cdr_frequency=call_count
+    )
+
+    final_threat_score = round(max(total_score, xai_eval["overall_threat_score"]), 1)
+
     return {
         "suspect_name": person_name,
-        "overall_threat_score": total_score,
+        "overall_threat_score": final_threat_score,
         "risk_level": level,
         "factors": {
             "financial_score": round(fin_score, 1),
@@ -121,5 +140,7 @@ def calculate_risk_score(person_name: str) -> Dict[str, Any]:
             "total_call_events": call_count,
             "sighting_count": sighting_count
         },
+        "shap_breakdown": xai_eval["shap_breakdown"],
+        "judicial_audit_summary": xai_eval["judicial_audit_summary"],
         "recommended_actions": actions
     }

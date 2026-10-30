@@ -11,6 +11,7 @@ from app.models.alert import Alert
 from app.models.call_record import CallRecord
 from app.models.vehicle_sighting import VehicleSighting
 from app.services.forensics.cdr_parser import KNOWN_TOWERS
+from app.ml_service.anomaly_detector import get_anomaly_detector
 
 logger = logging.getLogger("crimenexus.api.analytics")
 
@@ -67,6 +68,20 @@ def detect_smurfing(
                 total_amount = sum(t.amount for t in cluster)
                 receiver_name = cluster[0].receiver_name
 
+                # Step 2: ML Isolation Forest Anomaly Detection
+                detector = get_anomaly_detector()
+                cluster_tx_dicts = [
+                    {
+                        "sender_account": t.sender_account,
+                        "amount": t.amount,
+                        "timestamp": t.timestamp.isoformat()
+                    }
+                    for t in cluster
+                ]
+                ml_eval = detector.evaluate_account_transactions(beneficiary_account, cluster_tx_dicts)
+                anomaly_score = ml_eval.get("anomaly_score", 0.95)
+                is_high_priority = ml_eval.get("high_priority_alert", True)
+
                 incident = {
                     "beneficiary_account": beneficiary_account,
                     "receiver_name": receiver_name,
@@ -74,6 +89,10 @@ def detect_smurfing(
                     "distinct_senders_count": len(distinct_senders),
                     "senders": list(distinct_senders.keys()),
                     "total_amount": total_amount,
+                    "anomaly_score": anomaly_score,
+                    "is_ml_outlier": ml_eval.get("is_outlier", True),
+                    "high_priority_alert": is_high_priority,
+                    "ml_model": ml_eval.get("feature_metrics", {}).get("model_version", "isolation-forest-1.0"),
                     "window_start": t_start.timestamp.isoformat(),
                     "window_end": max(t.timestamp for t in cluster).isoformat(),
                     "transactions": [
@@ -109,10 +128,11 @@ def detect_smurfing(
                             f"Financial Tripwire: Detected {len(cluster)} structured deposits totaling ₹{total_amount:,.2f} "
                             f"under ₹{threshold_amount:,.0f} from {len(distinct_senders)} distinct sender accounts "
                             f"within {window_hours} hours into beneficiary account {beneficiary_account} ({receiver_name}). "
+                            f"ML Anomaly Score: {anomaly_score:.2f} (Isolation Forest). "
                             f"Directive: Issue emergency account freeze order under Section 102 CrPC / PMLA 2002."
                         ),
-                        severity="high",
-                        threat_score=0.96,
+                        severity="high" if is_high_priority else "medium",
+                        threat_score=round(anomaly_score, 2),
                         status="new",
                         created_at=datetime.utcnow()
                     )

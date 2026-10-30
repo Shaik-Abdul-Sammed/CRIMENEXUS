@@ -9,6 +9,7 @@ from app.database.postgres import get_db
 from app.services.forensics.cdr_parser import parse_telecom_cdr_csv
 from app.services.forensics.bank_parser import parse_bank_statement_csv
 from app.services.forensics.nlp_extractor import ingest_and_parse_fir, extract_entities_from_police_narrative
+from app.ml_service.semantic_search import get_mo_semantic_search_engine
 
 logger = logging.getLogger("crimenexus.api.forensics")
 
@@ -38,8 +39,8 @@ async def validate_and_read_upload(file: UploadFile) -> str:
 
 def extract_text_from_file_bytes(content_bytes: bytes, filename: str = "") -> str:
     """
-    Extracts text from uploaded PDF or plain text files.
-    Uses PyMuPDF (fitz) for PDF documents, falling back to UTF-8 decoding.
+    Extracts text from uploaded PDF, scanned image, or plain text files.
+    Uses Tesseract OCR engine for scanned images and image-based PDFs.
     """
     if len(content_bytes) > MAX_UPLOAD_SIZE_BYTES:
         raise HTTPException(
@@ -47,14 +48,24 @@ def extract_text_from_file_bytes(content_bytes: bytes, filename: str = "") -> st
             detail=f"File exceeds strict maximum allowable limit of 10MB (size: {len(content_bytes):,} bytes)."
         )
 
-    if filename.lower().endswith(".pdf") or content_bytes.startswith(b"%PDF"):
+    fname_lower = filename.lower()
+
+    # 1. Scanned Image Files (PNG, JPG, JPEG, TIFF)
+    if any(fname_lower.endswith(ext) for ext in [".png", ".jpg", ".jpeg", ".tiff", ".bmp"]):
+        from app.ml_service.ocr_engine import extract_text_from_image_bytes
+        ocr_text = extract_text_from_image_bytes(content_bytes)
+        if ocr_text:
+            return ocr_text
+
+    # 2. PDF Documents (Native or Scanned)
+    if fname_lower.endswith(".pdf") or content_bytes.startswith(b"%PDF"):
         try:
-            import fitz
-            doc = fitz.open(stream=content_bytes, filetype="pdf")
-            text_pages = [page.get_text() for page in doc]
-            return "\n".join(text_pages)
+            from app.ml_service.ocr_engine import extract_text_from_scanned_pdf
+            pdf_text = extract_text_from_scanned_pdf(content_bytes)
+            if pdf_text:
+                return pdf_text
         except Exception as exc:
-            logger.warning("PDF extraction failed, falling back to text decode: %s", exc)
+            logger.warning("Scanned PDF OCR failed, attempting basic text decode: %s", exc)
 
     return content_bytes.decode("utf-8", errors="replace")
 
@@ -298,3 +309,28 @@ def summarize_witness_interview(payload: WitnessSummarizeRequest):
         "timeline_alibi": timeline_desc,
         "extracted_entities": extracted
     }
+
+
+class MOSemanticSearchRequest(BaseModel):
+    narrative: str
+    top_k: Optional[int] = 3
+    threshold: Optional[float] = 0.85
+
+
+@router.post("/forensics/mo/semantic-search", summary="Offline Vector Semantic Search for matching Modus Operandi (MO)")
+def search_similar_mo(payload: MOSemanticSearchRequest):
+    """
+    Computes dense vector representations of the input FIR narrative and matches against
+    historical unsolved and adjudicated syndicates using cosine similarity.
+    """
+    clean_narrative = sanitize_input_text(payload.narrative)
+    if not clean_narrative:
+        raise HTTPException(status_code=400, detail="Narrative text is required.")
+
+    engine = get_mo_semantic_search_engine()
+    results = engine.find_similar_mo(
+        query_narrative=clean_narrative,
+        top_k=payload.top_k or 3,
+        threshold=payload.threshold or 0.85
+    )
+    return results

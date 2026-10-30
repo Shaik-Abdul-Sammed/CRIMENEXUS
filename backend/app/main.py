@@ -23,6 +23,7 @@ from app.models.call_record import CallRecord
 from app.models.vehicle_sighting import VehicleSighting
 from app.models.report import PoliceReport
 from app.models.audit_ledger import AuditLedgerEntry, DualWarrantAuthorization
+from app.ml_service.model_registry import get_ml_registry
 
 # Import API Routers
 from app.api.auth import router as auth_router
@@ -56,6 +57,13 @@ async def lifespan(app: FastAPI):
         logger.info("Neo4j graph schema constraints initialized.")
     except Exception as exc:
         logger.warning("Could not initialize Neo4j constraints on startup: %s", exc)
+
+    try:
+        # Pre-warm all Production ML & NLP models in-memory for zero cold-start latency
+        get_ml_registry().warm_up_all_models()
+        logger.info("CRIMENEXUS Production ML Pipeline cached in memory.")
+    except Exception as exc:
+        logger.warning("Could not warm up ML models on startup: %s", exc)
 
     yield
 
@@ -128,3 +136,9 @@ def health():
         "graph_db": "neo4j",
         "ai_engine": "active"
     }
+
+
+@app.get("/api/v1/ml/status", tags=["MLOps"])
+def ml_status():
+    """Returns in-memory model registry and warming status for all 5 ML models."""
+    return get_ml_registry().get_status()
