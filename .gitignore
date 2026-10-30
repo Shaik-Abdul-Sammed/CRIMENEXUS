@@ -155,3 +155,5 @@ __pycache__/
 *$py.class
 *.egg-info/
 .pytest_cache/
+playwright-report/
+test-results/

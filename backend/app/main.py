@@ -1,3 +1,4 @@
+import os
 import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
@@ -65,13 +66,19 @@ async def lifespan(app: FastAPI):
 # Initialize SlowAPI rate limiter
 limiter = Limiter(key_func=get_remote_address, default_limits=["120/minute"])
 
+is_production = (
+    os.getenv("ENVIRONMENT", "").lower() == "production" or
+    os.getenv("ENV", "").lower() == "production"
+)
+
 app = FastAPI(
     title="CRIMENEXUS API",
     description="AI-Powered Crime Network Analysis & Multi-Source Intelligence Platform",
     version="2.0.0",
     lifespan=lifespan,
-    docs_url="/docs",
-    redoc_url="/redoc"
+    docs_url=None if is_production else "/docs",
+    redoc_url=None if is_production else "/redoc",
+    openapi_url=None if is_production else "/openapi.json"
 )
 
 # Register rate limiter on app state and bind 429 exception handler
