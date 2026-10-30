@@ -30,13 +30,13 @@ export interface ActionItem {
 const DEFAULT_RECOMMENDED_ACTIONS: ActionItem[] = [
   {
     id: 'act-101',
-    title: 'Emergency Account Freeze Directive',
+    title: 'Action Required: Freeze Account ACC-HDFC-908122 due to Smurfing',
     category: 'FREEZE_ACCOUNT',
-    targetIdentifier: 'HDFC-908122',
-    targetName: 'Apex Trading Co. (Shell Entity)',
-    reason: 'Multi-hop laundering detected: Rapid dissipation of ₹ 50,000,000 to crypto escrow within 4 hours of deposit.',
+    targetIdentifier: 'ACC-HDFC-908122',
+    targetName: 'Apex Trading Co. (Rajan Hawala Syndicate)',
+    reason: 'Financial Tripwire Alert: 4+ structured deposits under ₹50,000 threshold within 48-hour window from multiple mule accounts.',
     priority: 'CRITICAL',
-    confidenceScore: 0.94,
+    confidenceScore: 0.98,
     status: 'PENDING',
     legalAuthority: 'Section 102 CrPC / PMLA 2002',
   },

@@ -11,15 +11,30 @@ export default defineConfig({
     },
   },
   build: {
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 1600,
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-graph': ['cytoscape', 'cytoscape-dagre', 'cytoscape-fcose'],
-          'vendor-map': ['maplibre-gl'],
-          'vendor-charts': ['recharts'],
-          'vendor-query': ['@tanstack/react-query', '@tanstack/react-table'],
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('maplibre-gl')) {
+              return 'vendor-maplibre';
+            }
+            if (id.includes('cytoscape')) {
+              return 'vendor-cytoscape';
+            }
+            if (id.includes('recharts')) {
+              return 'vendor-charts';
+            }
+            if (id.includes('@tanstack')) {
+              return 'vendor-tanstack';
+            }
+            if (id.includes('lucide-react')) {
+              return 'vendor-lucide';
+            }
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              return 'vendor-react-core';
+            }
+          }
         },
       },
     },

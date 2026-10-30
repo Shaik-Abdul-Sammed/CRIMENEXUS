@@ -137,6 +137,9 @@ def parse_telecom_cdr_csv(file_content: str, db: Session) -> Dict[str, Any]:
                 "alert": f"CRITICAL: Handset IMEI {imei} used with {len(sims)} distinct SIM numbers (Burner Swapping)."
             })
 
+    # Construct GeoJSON LineString and Point coordinates from cell tower pings
+    geojson_trajectory = format_cdr_movement_geojson(processed_records)
+
     return {
         "status": "success",
         "total_records_ingested": len(processed_records),
@@ -144,5 +147,60 @@ def parse_telecom_cdr_csv(file_content: str, db: Session) -> Dict[str, Any]:
         "tower_distribution": tower_hits,
         "highest_frequency_pairs": sorted(pair_counts.items(), key=lambda x: x[1], reverse=True)[:5],
         "sim_swap_anomalies": sim_swap_alerts,
+        "geojson_trajectory": geojson_trajectory,
         "first_5_records": processed_records[:5]
+    }
+
+
+def format_cdr_movement_geojson(records: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Formats cell tower pings (lat/lon) into a GeoJSON FeatureCollection containing
+    a transit LineString path and chronological Point waypoints for MapLibre/Leaflet rendering.
+    """
+    points = []
+    coordinates = []
+
+    for idx, r in enumerate(records):
+        tower_id = r.get("tower", "TOWER-NOIDA-62")
+        tower_info = KNOWN_TOWERS.get(tower_id, {"lat": 28.6280, "lon": 77.3649, "sector": r.get("sector", "Cell Site")})
+        lon = float(tower_info["lon"])
+        lat = float(tower_info["lat"])
+        coordinates.append([lon, lat])
+
+        points.append({
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [lon, lat]
+            },
+            "properties": {
+                "sequence": idx + 1,
+                "tower_id": tower_id,
+                "sector": tower_info.get("sector", "Cell Site"),
+                "caller": r.get("caller"),
+                "receiver": r.get("receiver"),
+                "duration_seconds": r.get("duration"),
+                "timestamp": r.get("timestamp"),
+                "locationType": "PHONE_CELL_TOWER"
+            }
+        })
+
+    features = []
+    if len(coordinates) >= 2:
+        features.append({
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": coordinates
+            },
+            "properties": {
+                "name": "CDR Cell Tower Movement Track",
+                "point_count": len(coordinates)
+            }
+        })
+    features.extend(points)
+
+    return {
+        "type": "FeatureCollection",
+        "features": features
     }

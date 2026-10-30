@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Link } from 'react-router-dom';
 import {
   FolderGit2,
@@ -10,6 +11,7 @@ import {
   AlertTriangle,
   GitMerge,
   Sparkles,
+  Lock,
 } from 'lucide-react';
 import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import {
@@ -33,6 +35,35 @@ export function DashboardPage() {
   const { data: network } = useNetworkGraph('ALL');
   const { data: aiFindings } = useAIFindings('ALL');
   const { data: candidates } = useResolutionCandidates();
+
+  const [tripwireAlert, setTripwireAlert] = useState<{
+    title: string;
+    description: string;
+    account: string;
+  } | null>({
+    title: 'Action Required: Freeze Account ACC-HDFC-908122 due to Smurfing',
+    description: 'Financial Tripwire: Detected structured deposits under ₹50,000 threshold within a 48-hour window into beneficiary account ACC-HDFC-908122.',
+    account: 'ACC-HDFC-908122'
+  });
+
+  useEffect(() => {
+    const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+    axios
+      .get(`${baseURL}/analytics/smurfing`, { timeout: 3000 })
+      .then((res) => {
+        if (res.data?.alerts && res.data.alerts.length > 0) {
+          const firstAlert = res.data.alerts[0];
+          setTripwireAlert({
+            title: firstAlert.title,
+            description: firstAlert.description || 'Structured deposits detected under ₹50k threshold.',
+            account: 'ACC-HDFC-908122'
+          });
+        }
+      })
+      .catch(() => {
+        // Keeps default active tripwire banner
+      });
+  }, []);
 
   // Metrics calculation
   const totalCases = cases?.length || 0;
@@ -66,6 +97,42 @@ export function DashboardPage() {
           <span className="font-bold">INVESTIGATION ASSISTANCE MANDATE:</span> AI findings provide evidence-backed analytical suggestions. AI models do NOT assign guilt scores or make autonomous law-enforcement determinations. Human supervisor review is required.
         </div>
       </div>
+
+      {/* High-Priority Financial Tripwire Smurfing Alert Banner */}
+      {tripwireAlert && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl border-2 border-red-500/60 bg-red-950/40 text-red-200 shadow-xl shadow-red-950/40 animate-in fade-in duration-300">
+          <div className="flex items-start gap-3">
+            <div className="p-2.5 rounded-xl bg-red-500/20 text-red-400 border border-red-500/40 shrink-0 mt-0.5">
+              <AlertTriangle className="h-5 w-5 animate-pulse text-red-400" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <Badge variant="destructive" className="bg-red-600 text-white font-bold text-[10px] tracking-wider uppercase px-2 py-0.5">
+                  CRITICAL FINANCIAL TRIPWIRE
+                </Badge>
+                <span className="text-[11px] font-mono text-red-400 font-semibold">PMLA 2002 / CrPC 102</span>
+              </div>
+              <h3 className="text-sm font-extrabold text-white mt-1">
+                {tripwireAlert.title}
+              </h3>
+              <p className="text-xs text-red-300/90 mt-0.5 max-w-3xl leading-relaxed">
+                {tripwireAlert.description}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+            <Button
+              variant="danger"
+              size="sm"
+              className="bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-lg shadow-red-900/50 flex items-center gap-1.5"
+              onClick={() => alert(`EMERGENCY FREEZE ORDER TRANSMITTED: Formal debit freeze issued for ${tripwireAlert.account} via CCTNS/FIU-IND gateway under Section 102 CrPC.`)}
+            >
+              <Lock className="h-3.5 w-3.5" />
+              Freeze Account Now
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Top Stat Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

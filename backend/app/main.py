@@ -32,6 +32,7 @@ from app.api.cases import router as cases_router
 from app.api.forensics import router as forensics_router
 from app.api.legal import router as legal_router
 from app.api.external import router as external_router
+from app.api.analytics import router as analytics_router
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("crimenexus.main")
@@ -95,6 +96,7 @@ app.include_router(cases_router, prefix="/api/v1")
 app.include_router(forensics_router, prefix="/api/v1")
 app.include_router(legal_router, prefix="/api/v1")
 app.include_router(external_router, prefix="/api/v1")
+app.include_router(analytics_router, prefix="/api/v1")
 
 
 @app.get("/")
