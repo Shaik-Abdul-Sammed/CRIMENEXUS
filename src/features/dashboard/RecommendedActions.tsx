@@ -87,26 +87,28 @@ export function RecommendedActions() {
     const isMock = import.meta.env.VITE_API_MOCK_MODE === 'true';
     if (!isMock) {
       const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+      // Query Rajan (the primary seeded suspect) to generate dynamic actionable directives
       axios
-        .get(`${baseURL}/threats/risk-score/Vikram%20Malhotra`, { timeout: 2500 })
+        .get(`${baseURL}/threats/risk-score/Rajan`, { timeout: 2500 })
         .then((res) => {
-          if (res.data?.recommendations && Array.isArray(res.data.recommendations)) {
-            const dynamicActions: ActionItem[] = res.data.recommendations.map(
+          const recs = res.data?.recommended_actions || res.data?.recommendations;
+          if (recs && Array.isArray(recs)) {
+            const dynamicActions: ActionItem[] = recs.map(
               (rec: string, idx: number) => ({
-                id: `ai-rec-${idx + 1}`,
+                id: `ai-rajan-rec-${idx + 1}`,
                 title: rec,
                 category: rec.toLowerCase().includes('freeze')
                   ? 'FREEZE_ACCOUNT'
-                  : rec.toLowerCase().includes('intercept') || rec.toLowerCase().includes('track')
+                  : rec.toLowerCase().includes('intercept') || rec.toLowerCase().includes('track') || rec.toLowerCase().includes('vehicle')
                   ? 'TRACK_VEHICLE'
-                  : rec.toLowerCase().includes('call') || rec.toLowerCase().includes('cdr')
+                  : rec.toLowerCase().includes('call') || rec.toLowerCase().includes('intercept') || rec.toLowerCase().includes('comms')
                   ? 'TELECOM_INTERCEPT'
                   : 'CHECK_CCTV',
-                targetIdentifier: res.data.suspect_name || 'Primary Suspect',
-                targetName: `${res.data.suspect_name} (Risk: ${res.data.risk_percentage}%)`,
-                reason: `AI Risk Factor: ${res.data.primary_risk_factor || 'Suspicious network connectivity'}`,
-                priority: res.data.threat_level === 'CRITICAL' ? 'CRITICAL' : 'HIGH',
-                confidenceScore: (res.data.risk_score || 85) / 100,
+                targetIdentifier: res.data.suspect_name || 'Rajan',
+                targetName: `${res.data.suspect_name || 'Rajan'} (Threat: ${res.data.overall_threat_score || 95}%)`,
+                reason: `Neo4j Graph Pattern: ${rec}`,
+                priority: (res.data.risk_level === 'CRITICAL' ? 'CRITICAL' : 'HIGH') as ActionItem['priority'],
+                confidenceScore: ((res.data.overall_threat_score || 95) / 100),
                 status: 'PENDING',
                 legalAuthority: 'Section 102 CrPC / Sec 106 BNSS',
               })
