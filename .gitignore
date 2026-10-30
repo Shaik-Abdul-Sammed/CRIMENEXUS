@@ -142,6 +142,16 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
 .env
+
+# Python Virtual Environments & Cache
 venv/
+.venv/
+backend/venv/
+backend/.venv/
+**/venv/
+**/.venv/
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/

@@ -10,11 +10,13 @@ import {
   ChevronRight,
   LogOut,
   AlertTriangle,
+  Sparkles,
 } from 'lucide-react';
 import { useAppStore } from '../../stores/appStore';
 import { useAuthStore } from '../../stores/authStore';
 import { UserRole } from '../../types';
 import { Button } from '../ui/Button';
+import { PoliceDemoModal } from './PoliceDemoModal';
 
 export function TopNav() {
   const location = useLocation();
@@ -23,6 +25,7 @@ export function TopNav() {
   const { activeRole, loginAsRole, logout } = useAuthStore();
   const [notifMenuOpen, setNotifMenuOpen] = useState(false);
   const [roleMenuOpen, setRoleMenuOpen] = useState(false);
+  const [demoModalOpen, setDemoModalOpen] = useState(false);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -77,6 +80,16 @@ export function TopNav() {
 
       {/* Right Tools */}
       <div className="flex items-center gap-3">
+        {/* Police Command Demo Showcase Launcher */}
+        <button
+          onClick={() => setDemoModalOpen(true)}
+          className="flex items-center gap-1.5 h-8 px-3 rounded-md border border-amber-500/40 bg-amber-500/10 text-xs font-bold text-amber-300 hover:bg-amber-500/20 transition-all shadow-sm shadow-amber-500/10 hover:border-amber-400"
+          title="Interactive live scenarios for police department presentations"
+        >
+          <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+          <span>Demo Showcase</span>
+        </button>
+
         {/* Role Simulator Dropdown */}
         <div className="relative">
           <button
@@ -177,6 +190,9 @@ export function TopNav() {
           Logout
         </Button>
       </div>
+
+      {/* Police Command Demo Showcase Modal */}
+      <PoliceDemoModal isOpen={demoModalOpen} onClose={() => setDemoModalOpen(false)} />
     </header>
   );
 }

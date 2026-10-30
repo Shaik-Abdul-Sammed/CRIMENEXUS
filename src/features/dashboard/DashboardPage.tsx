@@ -24,6 +24,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Ca
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { getStatusBadgeClass } from '../../utils/formatters';
+import { RecommendedActions } from './RecommendedActions';
 
 export function DashboardPage() {
   const { data: cases } = useInvestigations();
@@ -134,6 +135,9 @@ export function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Actionable Directives & Priority Orders */}
+      <RecommendedActions />
 
       {/* Main Grid: AI Assistant & Graph Preview */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

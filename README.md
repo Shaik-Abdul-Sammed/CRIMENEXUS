@@ -1,7 +1,34 @@
 # CRIMENEXUS — AI Criminal Network Intelligence Platform
 
 > **Multi-Source Criminal Relationship Discovery & Investigation Assistant**  
-> *Production-Quality Frontend Architecture with Synthetic Mock Data & Service Abstractions*
+> *AI-Powered Crime Network Analysis, Dual-Database Engine (PostgreSQL + Neo4j) & Cytoscape Topology Visualization*
+
+---
+
+## ⚡ Quick Start (Run Everything with One Command)
+
+To boot up the entire platform — **PostgreSQL (port 5435), Neo4j (ports 7474/7687), FastAPI Backend (port 8000), and React Frontend (port 5173)** — run:
+
+```bash
+npm start
+```
+*or directly:*
+```bash
+./start.sh
+```
+
+### Alternatively, Run Everything via Full Docker Compose:
+```bash
+docker compose up --build
+```
+
+### Access URLs:
+| Service | URL | Credentials / Notes |
+| :--- | :--- | :--- |
+| **Frontend Web App** | [`http://localhost:5173`](http://localhost:5173) | Interactive Investigation Dashboard |
+| **FastAPI Swagger Docs** | [`http://localhost:8000/docs`](http://localhost:8000/docs) | REST API & Ingestion Endpoints |
+| **Neo4j Graph Browser** | [`http://localhost:7474`](http://localhost:7474) | User: `neo4j` / Pass: `crimenexus123` |
+| **PostgreSQL Database** | `localhost:5435` | User: `postgres` / DB: `crimenexus` |
 
 ---
 

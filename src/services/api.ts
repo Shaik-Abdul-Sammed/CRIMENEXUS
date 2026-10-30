@@ -1,3 +1,4 @@
+import axios from 'axios';
 import {
   InvestigationCase,
   Evidence,
@@ -359,6 +360,53 @@ export const api = {
 
   // Network Graph (Cytoscape)
   async getNetworkGraph(caseId = 'case-101'): Promise<{ nodes: Entity[]; edges: Relationship[] }> {
+    const isMock = import.meta.env.VITE_API_MOCK_MODE === 'true';
+    if (!isMock) {
+      try {
+        const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+        const response = await axios.get(`${baseURL}/network/graph`, { timeout: 3500 });
+        if (response.data && Array.isArray(response.data.nodes) && response.data.nodes.length > 0) {
+          interface RawGraphNode {
+            data: { id: string; name?: string; label?: string; type?: Entity['type']; riskScore?: number; properties?: Record<string, unknown> };
+          }
+          interface RawGraphEdge {
+            data: { id: string; source: string; target: string; type?: Relationship['type']; confidence?: number; properties?: Record<string, unknown> };
+          }
+          const liveNodes: Entity[] = (response.data.nodes as RawGraphNode[]).map((n) => {
+            const risk = n.data.riskScore ?? 0.75;
+            const rLevel: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' =
+              risk >= 0.8 ? 'CRITICAL' : risk >= 0.6 ? 'HIGH' : risk >= 0.4 ? 'MEDIUM' : 'LOW';
+            return {
+              id: n.data.id,
+              name: n.data.name || n.data.label || 'Entity',
+              type: (n.data.type || 'PERSON') as Entity['type'],
+              confidence: 0.95,
+              caseIds: [caseId],
+              attributes: (n.data.properties || {}) as Record<string, string | number | boolean>,
+              riskLevel: rLevel,
+              reviewStatus: 'VERIFIED',
+              createdDate: new Date().toISOString(),
+            };
+          });
+          const liveEdges: Relationship[] = (response.data.edges as RawGraphEdge[]).map((e) => ({
+            id: e.data.id,
+            sourceEntityId: e.data.source,
+            targetEntityId: e.data.target,
+            type: (e.data.type || 'CONNECTED_TO') as Relationship['type'],
+            confidenceScore: e.data.confidence ?? 0.95,
+            caseId: caseId,
+            evidenceIds: [],
+            timestamp: new Date().toISOString(),
+            reviewStatus: 'VERIFIED',
+            metadata: {},
+          }));
+          return { nodes: liveNodes, edges: liveEdges };
+        }
+      } catch (err) {
+        console.warn('CRIMENEXUS live backend /network/graph unreachable, using resilient offline graph store:', err);
+      }
+    }
+
     await delay();
     const caseEntities = store.entities.filter((e) => e.caseIds.includes(caseId) || caseId === 'ALL');
     const entityIds = new Set(caseEntities.map((e) => e.id));
