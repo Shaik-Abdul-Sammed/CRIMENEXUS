@@ -642,4 +642,64 @@ export const api = {
 
     return results;
   },
+
+  // District Most Wanted Watchlist
+  async getMostWanted(): Promise<any[]> {
+    try {
+      const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+      const res = await axios.get(`${baseURL}/threats/most-wanted`, { timeout: 5000 });
+      return res.data;
+    } catch {
+      return [
+        {
+          id: 'WANTED-RAJA-01',
+          name: 'Rajan',
+          aliases: ['Rajan Bhai', 'The Ghost Operator', 'Hawala Kingpin'],
+          role: 'Syndicate Ringleader & Hawala Mastermind',
+          risk_score: 95,
+          status: 'WANTED - RED NOTICE PENDING',
+          bounty: '₹ 5,00,000',
+          danger_level: 'EXTREME FLIGHT & ARMED RISK',
+          last_known_location: 'NH-48 Kherki Daula Toll Plaza, Gurugram',
+          last_seen: '12 mins ago (ANPR Camera Cam-04)',
+          linked_vehicle: 'TS 09 AB 1234 (Toyota Fortuner)',
+          linked_phone: '+91 99999 88888',
+          warrants: ['Sec 111 BNS (Organized Crime)', 'Sec 120B IPC', 'PMLA Sec 3 & 4 (Hawala)'],
+          jurisdiction: 'Special Cell / Cyber Crime Cell, Sector 20'
+        },
+        {
+          id: 'WANTED-VIKR-01',
+          name: 'Vikram',
+          aliases: ['Vikram Malhotra', 'Vicky Shell'],
+          role: 'Shell Entity Account Holder & Mule Coordinator',
+          risk_score: 84,
+          status: 'WANTED - NON-BAILABLE WARRANT',
+          bounty: '₹ 2,00,000',
+          danger_level: 'HIGH MONEY LAUNDERING RISK',
+          last_known_location: 'BKC Financial District, Mumbai',
+          last_seen: 'Yesterday 18:30 IST',
+          linked_vehicle: 'MH 02 CZ 4400 (Honda City)',
+          linked_phone: '+91 91234 56789',
+          warrants: ['Sec 467/471 IPC (Forgery & Counterfeiting)', 'PMLA Sec 3'],
+          jurisdiction: 'Economic Offences Wing (EOW)'
+        },
+        {
+          id: 'WANTED-SURE-01',
+          name: 'Suresh',
+          aliases: ['Suresh Angadia', 'Cash Mule-01'],
+          role: 'Primary Hawala Cash Courier & Dispatcher',
+          risk_score: 79,
+          status: 'WANTED - LOOKOUT CIRCULAR ACTIVE',
+          bounty: '₹ 1,50,000',
+          danger_level: 'FINANCIAL FLIGHT RISK',
+          last_known_location: 'Karol Bagh Cash Exchange Hub, Central Delhi',
+          last_seen: '2 hours ago (Tower Cell #9082)',
+          linked_vehicle: 'DL 01 XY 9981 (Hyundai Creta)',
+          linked_phone: '+91 98765 43210',
+          warrants: ['Sec 420 IPC (Cheating)', 'Sec 406 IPC (Criminal Breach of Trust)'],
+          jurisdiction: 'Crime Branch Central'
+        }
+      ];
+    }
+  },
 };

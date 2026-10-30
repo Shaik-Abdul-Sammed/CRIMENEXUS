@@ -11,12 +11,14 @@ import {
   LogOut,
   AlertTriangle,
   Sparkles,
+  Compass,
 } from 'lucide-react';
 import { useAppStore } from '../../stores/appStore';
 import { useAuthStore } from '../../stores/authStore';
 import { UserRole } from '../../types';
 import { Button } from '../ui/Button';
 import { PoliceDemoModal } from './PoliceDemoModal';
+import { OnboardingTour } from '../tour/OnboardingTour';
 
 export function TopNav() {
   const location = useLocation();
@@ -26,6 +28,17 @@ export function TopNav() {
   const [notifMenuOpen, setNotifMenuOpen] = useState(false);
   const [roleMenuOpen, setRoleMenuOpen] = useState(false);
   const [demoModalOpen, setDemoModalOpen] = useState(false);
+  const [tourOpen, setTourOpen] = useState(false);
+
+  React.useEffect(() => {
+    const hasSeenTour = localStorage.getItem('crimenexus_tour_seen');
+    if (!hasSeenTour) {
+      const timer = setTimeout(() => {
+        setTourOpen(true);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -80,6 +93,16 @@ export function TopNav() {
 
       {/* Right Tools */}
       <div className="flex items-center gap-3">
+        {/* Interactive IO Tour Guide */}
+        <button
+          onClick={() => setTourOpen(true)}
+          className="flex items-center gap-1.5 h-8 px-2.5 rounded-md border border-primary/40 bg-primary/10 text-xs font-bold text-primary hover:bg-primary/20 transition-all shadow-sm shadow-primary/10"
+          title="Start interactive tour guide for Investigating Officers"
+        >
+          <Compass className="h-3.5 w-3.5 text-primary animate-pulse" />
+          <span>IO Tour</span>
+        </button>
+
         {/* Police Command Demo Showcase Launcher */}
         <button
           onClick={() => setDemoModalOpen(true)}
@@ -193,6 +216,9 @@ export function TopNav() {
 
       {/* Police Command Demo Showcase Modal */}
       <PoliceDemoModal isOpen={demoModalOpen} onClose={() => setDemoModalOpen(false)} />
+
+      {/* Investigating Officer Interactive Onboarding Tour */}
+      <OnboardingTour isOpen={tourOpen} onClose={() => setTourOpen(false)} />
     </header>
   );
 }

@@ -12,6 +12,8 @@ import {
   GitMerge,
   Sparkles,
   Lock,
+  Download,
+  FileCheck,
 } from 'lucide-react';
 import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import {
@@ -65,6 +67,38 @@ export function DashboardPage() {
       });
   }, []);
 
+  const [downloadingDossier, setDownloadingDossier] = useState(false);
+
+  const handleDownloadDossier = async () => {
+    setDownloadingDossier(true);
+    try {
+      const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+      const response = await axios.get(`${baseURL}/cases/export/dossier-pdf`, {
+        params: {
+          case_number: 'FIR-2026-CRIME-890',
+          title: 'Illicit Hawala Financial Network & Extortion Syndicate',
+          io_name: 'Inspector V. K. Sharma (Special Cell)',
+          police_station: 'Cyber Crime Police Station, Sector 20',
+        },
+        responseType: 'blob',
+      });
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'Court_Ready_Dossier_FIR-2026-CRIME-890.pdf');
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to download dossier', err);
+      alert('Failed to connect to backend server. Ensure backend is running.');
+    } finally {
+      setDownloadingDossier(false);
+    }
+  };
+
   // Metrics calculation
   const totalCases = cases?.length || 0;
   const activeCases = cases?.filter((c) => c.status === 'UNDER_INVESTIGATION' || c.status === 'OPEN').length || 0;
@@ -98,9 +132,41 @@ export function DashboardPage() {
         </div>
       </div>
 
+      {/* Rapid Operational Action Bar with Court-Ready Dossier Download */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-xl border border-primary/30 bg-card/80 backdrop-blur-sm shadow-md">
+        <div>
+          <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
+            Operational Command Center & Case Synthesis
+          </h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Active Syndicate Investigation: Operation Shadow Vault (FIR-2026-CRIME-890)
+          </p>
+        </div>
+        <div className="flex items-center gap-2.5">
+          <Button
+            id="tour-dossier-btn"
+            variant="primary"
+            size="sm"
+            onClick={handleDownloadDossier}
+            disabled={downloadingDossier}
+            className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs shadow-md shadow-primary/20 flex items-center gap-2"
+          >
+            <Download className="h-4 w-4" />
+            <span>{downloadingDossier ? 'Compiling Dossier...' : 'Download Court-Ready Dossier (PDF)'}</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/20 text-white font-mono">
+              Sec 63 BSA
+            </span>
+          </Button>
+        </div>
+      </div>
+
       {/* High-Priority Financial Tripwire Smurfing Alert Banner */}
       {tripwireAlert && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl border-2 border-red-500/60 bg-red-950/40 text-red-200 shadow-xl shadow-red-950/40 animate-in fade-in duration-300">
+        <div
+          id="tour-alerts"
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl border-2 border-red-500/60 bg-red-950/40 text-red-200 shadow-xl shadow-red-950/40 animate-in fade-in duration-300"
+        >
           <div className="flex items-start gap-3">
             <div className="p-2.5 rounded-xl bg-red-500/20 text-red-400 border border-red-500/40 shrink-0 mt-0.5">
               <AlertTriangle className="h-5 w-5 animate-pulse text-red-400" />
@@ -336,7 +402,7 @@ export function DashboardPage() {
           </Card>
 
           {/* Hero Feature Quick Launcher */}
-          <Card className="border-primary/40 bg-primary/10">
+          <Card id="tour-network-graph" className="border-primary/40 bg-primary/10">
             <CardContent className="p-5 text-center space-y-3">
               <div className="inline-flex p-3 rounded-full bg-primary/20 text-primary border border-primary/40">
                 <Network className="h-8 w-8" />

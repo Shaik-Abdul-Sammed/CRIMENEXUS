@@ -177,3 +177,10 @@ export function useGenerateReportMutation() {
     },
   });
 }
+
+export function useMostWanted() {
+  return useQuery({
+    queryKey: ['most-wanted'],
+    queryFn: () => api.getMostWanted(),
+  });
+}

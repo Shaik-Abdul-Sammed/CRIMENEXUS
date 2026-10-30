@@ -16,6 +16,7 @@ import { NetworkGraphPage } from './features/graph/NetworkGraphPage';
 import { TimelinePage } from './features/timeline/TimelinePage';
 import { MapIntelligencePage } from './features/map/MapIntelligencePage';
 import { AIAssistantPage } from './features/assistant/AIAssistantPage';
+import { MostWantedPage } from './features/watchlist/MostWantedPage';
 import { ReportsPage } from './features/reports/ReportsPage';
 import { AuditLogsPage } from './features/audit/AuditLogsPage';
 import { SettingsPage } from './features/settings/SettingsPage';
@@ -57,6 +58,7 @@ export function App() {
             <Route path="/network-graph" element={<NetworkGraphPage />} />
             <Route path="/timeline" element={<TimelinePage />} />
             <Route path="/map" element={<MapIntelligencePage />} />
+            <Route path="/most-wanted" element={<MostWantedPage />} />
             <Route path="/ai-assistant" element={<AIAssistantPage />} />
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/audit-logs" element={<AuditLogsPage />} />

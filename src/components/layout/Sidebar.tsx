@@ -17,6 +17,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ShieldCheck,
+  Flame,
 } from 'lucide-react';
 import { useAppStore } from '../../stores/appStore';
 import { useAuthStore } from '../../stores/authStore';
@@ -30,11 +31,12 @@ export function Sidebar() {
 
   const navItems = [
     { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-    { label: 'Investigations', path: '/cases', icon: FolderGit2 },
+    { label: 'Investigations', path: '/cases', icon: FolderGit2, id: 'tour-cases' },
     { label: 'Evidence Vault', path: '/evidence', icon: FileCheck2 },
+    { label: 'District Most Wanted', path: '/most-wanted', icon: Flame, badge: 'HOT', id: 'tour-most-wanted' },
     { label: 'Entity Directory', path: '/entities', icon: Users2 },
     { label: 'Entity Resolution', path: '/entity-resolution', icon: GitMerge, badge: 'AI' },
-    { label: 'Network Graph', path: '/network-graph', icon: Network, hero: true },
+    { label: 'Network Graph', path: '/network-graph', icon: Network, hero: true, id: 'tour-nav-graph' },
     { label: 'Timeline Stream', path: '/timeline', icon: Clock },
     { label: 'Map Intelligence', path: '/map', icon: MapPin },
     { label: 'AI Assistant', path: '/ai-assistant', icon: Bot, badge: 'RAG' },
@@ -108,6 +110,7 @@ export function Sidebar() {
             <NavLink
               key={item.path}
               to={item.path}
+              id={item.id}
               className={({ isActive }) =>
                 cn(
                   'group flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors relative',
