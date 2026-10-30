@@ -12,9 +12,11 @@ import {
   AlertTriangle,
   Sparkles,
   Compass,
+  Languages,
 } from 'lucide-react';
 import { useAppStore } from '../../stores/appStore';
 import { useAuthStore } from '../../stores/authStore';
+import { useTranslation } from '../../hooks/useTranslation';
 import { UserRole } from '../../types';
 import { Button } from '../ui/Button';
 import { PoliceDemoModal } from './PoliceDemoModal';
@@ -25,6 +27,7 @@ export function TopNav() {
   const { setGlobalSearchOpen, theme, toggleTheme, notifications, markNotificationAsRead } =
     useAppStore();
   const { activeRole, loginAsRole, logout } = useAuthStore();
+  const { t, language, toggleLanguage } = useTranslation();
   const [notifMenuOpen, setNotifMenuOpen] = useState(false);
   const [roleMenuOpen, setRoleMenuOpen] = useState(false);
   const [demoModalOpen, setDemoModalOpen] = useState(false);
@@ -84,7 +87,7 @@ export function TopNav() {
       >
         <div className="flex items-center gap-2">
           <Search className="h-3.5 w-3.5 text-primary" />
-          <span>Search cases, entities, evidence...</span>
+          <span>{t('actions.search')}</span>
         </div>
         <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
           /
@@ -93,6 +96,16 @@ export function TopNav() {
 
       {/* Right Tools */}
       <div className="flex items-center gap-3">
+        {/* Bilingual English / Hindi Toggle */}
+        <button
+          onClick={toggleLanguage}
+          className="flex items-center gap-1.5 h-8 px-2.5 rounded-md border border-cyan-500/40 bg-cyan-500/10 text-xs font-bold text-cyan-300 hover:bg-cyan-500/20 transition-all shadow-sm"
+          title="Toggle Language / भाषा बदलें (English / हिन्दी)"
+        >
+          <Languages className="h-3.5 w-3.5 text-cyan-400" />
+          <span>{language === 'en' ? 'हिन्दी (HI)' : 'English (EN)'}</span>
+        </button>
+
         {/* Interactive IO Tour Guide */}
         <button
           onClick={() => setTourOpen(true)}

@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import maplibregl from 'maplibre-gl';
-import { MapPin, ShieldAlert, X, Navigation, Clock } from 'lucide-react';
+import { MapPin, ShieldAlert, X, Navigation, Clock, Bell, BellRing, AlertTriangle } from 'lucide-react';
 import { useMapLocations } from '../../hooks/useIntelligenceApi';
 import { MapLocation } from '../../types';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
+import { Button } from '../../components/ui/Button';
 
 interface TimelineWaypoint {
   type: 'ANPR_SIGHTING' | 'CDR_CELL_PING';
@@ -26,6 +27,7 @@ export function MapIntelligencePage() {
   const [selectedLocation, setSelectedLocation] = useState<MapLocation | null>(null);
   const [timelineWaypoints, setTimelineWaypoints] = useState<TimelineWaypoint[]>([]);
   const [activeWaypointIdx, setActiveWaypointIdx] = useState<number | null>(null);
+  const [anprAlertOpen, setAnprAlertOpen] = useState(true);
 
   // 1. Fetch Correlated Movement Timeline from Backend Analytics
   useEffect(() => {
@@ -196,15 +198,23 @@ export function MapIntelligencePage() {
 
     // Plot Correlated Timeline Waypoint Markers with Special Icons
     timelineWaypoints.forEach((wp, idx) => {
+      const isWantedVehicle = wp.entity.includes('TS 09 AB 1234') || wp.location_name.includes('Yamuna');
       const el = document.createElement('div');
-      el.className = 'timeline-marker flex items-center justify-center h-8 w-8 rounded-full border-2 border-cyan-400 font-extrabold text-[11px] text-white cursor-pointer shadow-xl transition-transform hover:scale-125';
 
-      if (wp.type === 'ANPR_SIGHTING') {
-        el.style.backgroundColor = '#9333ea'; // Purple
+      if (isWantedVehicle) {
+        // Feature 10: "Wanted Vehicle" ANPR Pulsing Red Radar Marker
+        el.className = 'wanted-vehicle-pulsing-marker relative flex items-center justify-center h-10 w-10 rounded-full border-2 border-red-400 bg-red-600 font-black text-xs text-white cursor-pointer shadow-[0_0_25px_#dc2626] transition-transform hover:scale-125';
+        el.title = 'WANTED VEHICLE HIT: TS 09 AB 1234 @ Yamuna Expressway Toll KM 48';
+        el.innerHTML = '<span class="relative flex h-full w-full items-center justify-center"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-80"></span><span class="relative text-[11px]">🚨</span></span>';
       } else {
-        el.style.backgroundColor = '#d97706'; // Amber
+        el.className = 'timeline-marker flex items-center justify-center h-8 w-8 rounded-full border-2 border-cyan-400 font-extrabold text-[11px] text-white cursor-pointer shadow-xl transition-transform hover:scale-125';
+        if (wp.type === 'ANPR_SIGHTING') {
+          el.style.backgroundColor = '#9333ea'; // Purple
+        } else {
+          el.style.backgroundColor = '#d97706'; // Amber
+        }
+        el.innerText = `${idx + 1}`;
       }
-      el.innerText = `${idx + 1}`;
 
       el.addEventListener('click', () => {
         setActiveWaypointIdx(idx);
@@ -288,6 +298,51 @@ export function MapIntelligencePage() {
         <ShieldAlert className="h-5 w-5 text-cyan-400 shrink-0" />
         <span>AUTOMATION 3 ACTIVE: Real-time spatiotemporal fusion engine correlating CDR tower triangulation and VAHAN ANPR checkpoint logs into an interactive GeoJSON LineString trajectory.</span>
       </div>
+
+      {/* Feature 10: "Wanted Vehicle" ANPR Real-Time Intercept Alert Toast */}
+      {anprAlertOpen && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border-2 border-red-500/80 bg-red-950/50 text-red-100 shadow-xl shadow-red-950/50 animate-in fade-in duration-300">
+          <div className="flex items-start gap-3">
+            <div className="p-2.5 rounded-xl bg-red-600 text-white shadow-lg shadow-red-600/50 animate-bounce mt-0.5">
+              <BellRing className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono font-bold tracking-widest text-white uppercase px-2 py-0.5 rounded bg-red-600">
+                  REAL-TIME ANPR INTERCEPT ALERT
+                </span>
+                <span className="text-xs text-red-300 font-mono">Camera: YAMUNA-EXPR-CAM-04</span>
+              </div>
+              <h4 className="text-sm font-extrabold text-white mt-1">
+                Wanted Syndicate Vehicle Sighted: TS 09 AB 1234 (Toyota Fortuner)
+              </h4>
+              <p className="text-xs text-red-300/90 mt-0.5">
+                Flagged at Yamuna Expressway Toll KM 48 camera • Speed: 118 km/h heading Southbound towards Mathura
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+            <Button
+              size="sm"
+              variant="danger"
+              className="bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-md shadow-red-900/50"
+              onClick={() => {
+                if (mapRef.current) {
+                  mapRef.current.flyTo({ center: [77.5510, 28.1402], zoom: 14, duration: 800 });
+                }
+              }}
+            >
+              Zoom to Toll Camera
+            </Button>
+            <button
+              onClick={() => setAnprAlertOpen(false)}
+              className="text-red-400 hover:text-white text-xs px-2 py-1 font-bold"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-3 space-y-4">

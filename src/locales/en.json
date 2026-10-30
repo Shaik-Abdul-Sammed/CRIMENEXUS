@@ -1,0 +1,44 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "investigations": "Investigations",
+    "evidence": "Evidence Vault",
+    "mostWanted": "District Most Wanted",
+    "entities": "Entity Directory",
+    "resolution": "Entity Resolution",
+    "graph": "Network Graph",
+    "timeline": "Timeline Stream",
+    "map": "Map Intelligence",
+    "aiAssistant": "AI Assistant",
+    "reports": "Reports",
+    "auditLogs": "Audit Logs",
+    "settings": "Settings"
+  },
+  "dashboard": {
+    "title": "Operational Command Center & Case Synthesis",
+    "activeCases": "Active Investigations",
+    "evidenceVault": "Evidence Vault Count",
+    "entitiesExtracted": "Extracted Entities",
+    "networkLinks": "Network Links",
+    "downloadDossier": "Download Court-Ready Dossier (PDF)",
+    "tripwireAlertTitle": "Critical Financial Tripwire",
+    "freezeAccount": "Freeze Account Now"
+  },
+  "actions": {
+    "search": "Search cases, entities, evidence...",
+    "tour": "IO Tour",
+    "demo": "Demo Showcase",
+    "logout": "Logout",
+    "summarizeWitness": "Summarize Witness Interview",
+    "downloadBundle": "Download Evidence Bundle (.zip)",
+    "dictate": "Voice Dictation",
+    "listening": "Listening..."
+  },
+  "caseDetail": {
+    "timelineTab": "Case History Timeline",
+    "overviewTab": "Overview",
+    "evidenceTab": "Evidence Vault",
+    "entitiesTab": "Entities",
+    "graphTab": "Network Graph"
+  }
+}

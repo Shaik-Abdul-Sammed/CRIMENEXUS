@@ -105,6 +105,10 @@ app.include_router(legal_router, prefix="/api/v1")
 app.include_router(external_router, prefix="/api/v1")
 app.include_router(analytics_router, prefix="/api/v1")
 
+# Feature 4: Case History Timeline direct alias
+from app.api.legal import get_audit_ledger
+app.add_api_route("/api/v1/audit/ledger", get_audit_ledger, methods=["GET"], tags=["Case Audit & Timeline"])
+
 
 @app.get("/")
 def root():

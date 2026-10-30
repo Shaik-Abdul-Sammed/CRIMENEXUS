@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Search, FolderGit2, Calendar, MapPin, Tag, UserCheck, Filter } from 'lucide-react';
+import { Plus, Search, FolderGit2, Calendar, MapPin, Tag, UserCheck, Filter, Mic, MicOff } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useInvestigations, useCreateCaseMutation } from '../../hooks/useIntelligenceApi';
+import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -34,11 +35,20 @@ export function CasesPage() {
     register,
     handleSubmit,
     reset,
+    setValue,
+    getValues,
     formState: { errors },
   } = useForm<CaseFormData>({
     resolver: zodResolver(caseSchema),
     defaultValues: {
       priority: 'HIGH',
+    },
+  });
+
+  const { isListening, toggleListening } = useSpeechRecognition({
+    onTranscript: (spoken) => {
+      const current = getValues('description') || '';
+      setValue('description', current ? `${current} ${spoken}` : spoken, { shouldValidate: true });
     },
   });
 
@@ -186,13 +196,28 @@ export function CasesPage() {
           <Input label="Case Title" placeholder="Operation name / target description" {...register('title')} error={errors.title?.message} />
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Detailed Case Description
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Detailed Case / FIR Narrative
+              </label>
+              <button
+                type="button"
+                onClick={toggleListening}
+                className={`flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold border transition-all ${
+                  isListening
+                    ? 'bg-red-600 text-white border-red-500 animate-pulse'
+                    : 'bg-muted/70 text-muted-foreground hover:text-primary hover:border-primary/40'
+                }`}
+                title="Voice-to-Text FIR Dictation (Web Speech API)"
+              >
+                {isListening ? <Mic className="h-3 w-3" /> : <MicOff className="h-3 w-3" />}
+                <span>{isListening ? 'Listening...' : 'Voice Dictate'}</span>
+              </button>
+            </div>
             <textarea
               rows={3}
               {...register('description')}
-              placeholder="Background context, scope of crime, suspected syndicate..."
+              placeholder="Background context, scope of crime, or click Voice Dictate to speak..."
               className="w-full rounded-md border border-input bg-background p-2.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
             />
             {errors.description && <p className="text-xs text-destructive">{errors.description.message}</p>}

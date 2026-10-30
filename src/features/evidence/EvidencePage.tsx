@@ -14,7 +14,9 @@ import {
   MessageSquare,
   Hash,
   ShieldCheck,
+  Archive,
 } from 'lucide-react';
+import axios from 'axios';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -50,6 +52,32 @@ export function EvidencePage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('ALL');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [downloadingBundle, setDownloadingBundle] = useState(false);
+
+  const handleDownloadEvidenceBundle = async () => {
+    setDownloadingBundle(true);
+    try {
+      const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+      const response = await axios.get(`${baseURL}/cases/FIR-2026-CRIME-890/evidence-bundle`, {
+        params: { officer_badge: 'BADGE-9081' },
+        responseType: 'blob',
+      });
+      const blob = new Blob([response.data], { type: 'application/zip' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'Evidence_Bundle_FIR-2026-CRIME-890.zip');
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to download bundle:', err);
+      alert('Could not download evidence bundle. Verify backend connection.');
+    } finally {
+      setDownloadingBundle(false);
+    }
+  };
 
   const { data: evidenceList, isLoading } = useCaseEvidence('ALL', typeFilter);
   const uploadMutation = useUploadEvidenceMutation();
@@ -113,9 +141,21 @@ export function EvidencePage() {
             Cryptographically hashed multi-source intelligence artifacts, extract logs, and source references.
           </p>
         </div>
-        <Button onClick={() => setIsModalOpen(true)} icon={<Upload className="h-4 w-4" />}>
-          Upload Evidence Artifact
-        </Button>
+        <div className="flex items-center gap-2.5">
+          <Button
+            variant="outline"
+            onClick={handleDownloadEvidenceBundle}
+            disabled={downloadingBundle}
+            className="border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 flex items-center gap-1.5"
+            title="Download password-protected court evidence zip (Password: case_number + badge)"
+          >
+            <Archive className="h-4 w-4 text-emerald-400" />
+            <span>{downloadingBundle ? 'Bundling...' : 'Download Evidence Bundle (.zip)'}</span>
+          </Button>
+          <Button onClick={() => setIsModalOpen(true)} icon={<Upload className="h-4 w-4" />}>
+            Upload Evidence Artifact
+          </Button>
+        </div>
       </div>
 
       {/* Filter Bar */}

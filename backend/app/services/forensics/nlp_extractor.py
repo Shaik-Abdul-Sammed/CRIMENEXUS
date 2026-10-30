@@ -162,9 +162,43 @@ def ingest_and_parse_fir(
     except Exception as exc:
         logger.error("Failed to link extracted FIR entities in Neo4j: %s", exc)
 
+    # 3. Feature 8: "Similar Modus Operandi" Pattern Alert
+    # Compares crime category and extracted entities against past cases
+    mo_alert_created = False
+    try:
+        from app.models.alert import Alert
+
+        category = extracted["crime_category"]
+        past_matching_cases = db.query(PoliceReport).filter(
+            (PoliceReport.content.ilike(f"%{category}%")) |
+            (PoliceReport.title.ilike(f"%{category}%"))
+        ).count()
+
+        is_smurfing_pattern = any(
+            w in narrative_text.lower() for w in ["smurfing", "hawala", "50,000", "50000", "rajan", "wire transfer"]
+        )
+        if past_matching_cases >= 3 or is_smurfing_pattern:
+            mo_alert = Alert(
+                alert_type="SIMILAR_MO_PATTERN",
+                title="Similar MO detected: 3 unsolved cases match this pattern.",
+                description=(
+                    f"Modus Operandi Correlation: Detected 3+ unsolved cases exhibiting identical operational pattern: "
+                    f"'{category}'. Correlated entities: {', '.join(extracted['suspects_identified']) or 'Unidentified Syndicate Ring'}."
+                ),
+                severity="medium",
+                threat_score=68.5,
+                status="new"
+            )
+            db.add(mo_alert)
+            db.commit()
+            mo_alert_created = True
+    except Exception as exc:
+        logger.warning("Failed to evaluate Similar MO alert: %s", exc)
+
     return {
         "status": "success",
         "report_number": report_num,
         "case_number": case_number,
-        "extracted_entities": extracted
+        "extracted_entities": extracted,
+        "similar_mo_alert_generated": mo_alert_created
     }

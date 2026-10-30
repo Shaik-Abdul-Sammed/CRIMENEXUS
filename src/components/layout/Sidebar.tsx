@@ -22,27 +22,29 @@ import {
 import { useAppStore } from '../../stores/appStore';
 import { useAuthStore } from '../../stores/authStore';
 import { useInvestigations } from '../../hooks/useIntelligenceApi';
+import { useTranslation } from '../../hooks/useTranslation';
 import { cn } from '../../utils/cn';
 
 export function Sidebar() {
   const { sidebarOpen, toggleSidebar, activeCaseId, setActiveCaseId } = useAppStore();
   const { currentUser, activeRole } = useAuthStore();
   const { data: cases } = useInvestigations();
+  const { t } = useTranslation();
 
   const navItems = [
-    { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-    { label: 'Investigations', path: '/cases', icon: FolderGit2, id: 'tour-cases' },
-    { label: 'Evidence Vault', path: '/evidence', icon: FileCheck2 },
-    { label: 'District Most Wanted', path: '/most-wanted', icon: Flame, badge: 'HOT', id: 'tour-most-wanted' },
-    { label: 'Entity Directory', path: '/entities', icon: Users2 },
-    { label: 'Entity Resolution', path: '/entity-resolution', icon: GitMerge, badge: 'AI' },
-    { label: 'Network Graph', path: '/network-graph', icon: Network, hero: true, id: 'tour-nav-graph' },
-    { label: 'Timeline Stream', path: '/timeline', icon: Clock },
-    { label: 'Map Intelligence', path: '/map', icon: MapPin },
-    { label: 'AI Assistant', path: '/ai-assistant', icon: Bot, badge: 'RAG' },
-    { label: 'Reports', path: '/reports', icon: FileText },
-    { label: 'Audit Logs', path: '/audit-logs', icon: History, minRole: 'ANALYST' },
-    { label: 'Settings', path: '/settings', icon: Settings },
+    { label: t('nav.dashboard'), path: '/dashboard', icon: LayoutDashboard },
+    { label: t('nav.investigations'), path: '/cases', icon: FolderGit2, id: 'tour-cases' },
+    { label: t('nav.evidence'), path: '/evidence', icon: FileCheck2 },
+    { label: t('nav.mostWanted'), path: '/most-wanted', icon: Flame, badge: 'HOT', id: 'tour-most-wanted' },
+    { label: t('nav.entities'), path: '/entities', icon: Users2 },
+    { label: t('nav.resolution'), path: '/entity-resolution', icon: GitMerge, badge: 'AI' },
+    { label: t('nav.graph'), path: '/network-graph', icon: Network, hero: true, id: 'tour-nav-graph' },
+    { label: t('nav.timeline'), path: '/timeline', icon: Clock },
+    { label: t('nav.map'), path: '/map', icon: MapPin },
+    { label: t('nav.aiAssistant'), path: '/ai-assistant', icon: Bot, badge: 'RAG' },
+    { label: t('nav.reports'), path: '/reports', icon: FileText },
+    { label: t('nav.auditLogs'), path: '/audit-logs', icon: History, minRole: 'ANALYST' },
+    { label: t('nav.settings'), path: '/settings', icon: Settings },
   ];
 
   return (

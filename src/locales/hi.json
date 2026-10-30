@@ -1,0 +1,44 @@
+{
+  "nav": {
+    "dashboard": "डैशबोर्ड (Dashboard)",
+    "investigations": "जांच मामले (Investigations)",
+    "evidence": "साक्ष्य वॉल्ट (Evidence Vault)",
+    "mostWanted": "जिला मोस्ट वांटेड (Most Wanted)",
+    "entities": "संदीग्ध सूची (Entities)",
+    "resolution": "पहचान समाधान (Resolution)",
+    "graph": "नेटवर्क ग्राफ (Network Graph)",
+    "timeline": "घटनाक्रम प्रवाह (Timeline)",
+    "map": "मानचित्र आसूचना (Map Intel)",
+    "aiAssistant": "एआई सहायक (AI Assistant)",
+    "reports": "जांच रिपोर्ट (Reports)",
+    "auditLogs": "ऑडिट लेजर (Audit Logs)",
+    "settings": "सेटिंग्स (Settings)"
+  },
+  "dashboard": {
+    "title": "संचालन कमान केंद्र और मामला संश्लेषण",
+    "activeCases": "सक्रिय जांच मामले",
+    "evidenceVault": "कुल साक्ष्य रिकॉर्ड",
+    "entitiesExtracted": "निकाली गई संस्थाएं",
+    "networkLinks": "संबद्ध आपराधिक कड़ियां",
+    "downloadDossier": "अदालत-तैयार डॉसियर डाउनलोड करें (PDF)",
+    "tripwireAlertTitle": "गंभीर वित्तीय अलर्ट (Hawala Smurfing)",
+    "freezeAccount": "खाता तुरंत फ्रीज करें"
+  },
+  "actions": {
+    "search": "मामले, संदिग्ध, वाहन या साक्ष्य खोजें...",
+    "tour": "मार्गदर्शक टूर",
+    "demo": "प्रदर्शन डेमो",
+    "logout": "लॉग आउट",
+    "summarizeWitness": "गवाह बयान सारांश",
+    "downloadBundle": "साक्ष्य बंडल डाउनलोड करें (.zip)",
+    "dictate": "आवाज द्वारा डिक्टेशन",
+    "listening": "सुन रहा है..."
+  },
+  "caseDetail": {
+    "timelineTab": "मामला इतिहास समयरेखा",
+    "overviewTab": "विवरण",
+    "evidenceTab": "साक्ष्य",
+    "entitiesTab": "संदिग्ध व्यक्ति",
+    "graphTab": "आपराधिक जाल"
+  }
+}

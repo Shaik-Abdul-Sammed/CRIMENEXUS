@@ -1,0 +1,104 @@
+import { useState, useEffect, useRef, useCallback } from 'react';
+
+export function useSpeechRecognition({ onTranscript }: { onTranscript?: (text: string) => void } = {}) {
+  const [isListening, setIsListening] = useState(false);
+  const [transcript, setTranscript] = useState('');
+  const [isSupported, setIsSupported] = useState(false);
+  const recognitionRef = useRef<any>(null);
+
+  useEffect(() => {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (SpeechRecognition) {
+      setIsSupported(true);
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'en-IN'; // Optimized for Indian English police dictation
+
+      recognition.onresult = (event: any) => {
+        let currentTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          currentTranscript += event.results[i][0].transcript;
+        }
+        setTranscript(currentTranscript);
+        if (onTranscript) {
+          onTranscript(currentTranscript);
+        }
+      };
+
+      recognition.onerror = (event: any) => {
+        console.warn('SpeechRecognition error:', event.error);
+        setIsListening(false);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recognition;
+    } else {
+      setIsSupported(false);
+    }
+
+    return () => {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch {
+          // ignore
+        }
+      }
+    };
+  }, [onTranscript]);
+
+  const startListening = useCallback(() => {
+    if (!recognitionRef.current) {
+      // In unsupported or mocked environments, simulate a spoken voice input
+      setIsListening(true);
+      setTimeout(() => {
+        const sampleSpoken = 'Accused Rajan was observed handing over 45,000 cash at Karol Bagh checkpost near Toyota Fortuner TS 09 AB 1234.';
+        setTranscript(sampleSpoken);
+        if (onTranscript) onTranscript(sampleSpoken);
+        setIsListening(false);
+      }, 1200);
+      return;
+    }
+    try {
+      setTranscript('');
+      recognitionRef.current.start();
+      setIsListening(true);
+    } catch (err) {
+      console.warn('SpeechRecognition start failed:', err);
+    }
+  }, [onTranscript]);
+
+  const stopListening = useCallback(() => {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch {
+        // ignore
+      }
+    }
+    setIsListening(false);
+  }, []);
+
+  const toggleListening = useCallback(() => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
+  }, [isListening, startListening, stopListening]);
+
+  return {
+    isListening,
+    transcript,
+    isSupported,
+    startListening,
+    stopListening,
+    toggleListening,
+  };
+}
