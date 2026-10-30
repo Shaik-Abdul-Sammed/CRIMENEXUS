@@ -36,6 +36,29 @@ async def validate_and_read_upload(file: UploadFile) -> str:
     return content_bytes.decode("utf-8", errors="replace")
 
 
+def extract_text_from_file_bytes(content_bytes: bytes, filename: str = "") -> str:
+    """
+    Extracts text from uploaded PDF or plain text files.
+    Uses PyMuPDF (fitz) for PDF documents, falling back to UTF-8 decoding.
+    """
+    if len(content_bytes) > MAX_UPLOAD_SIZE_BYTES:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail=f"File exceeds strict maximum allowable limit of 10MB (size: {len(content_bytes):,} bytes)."
+        )
+
+    if filename.lower().endswith(".pdf") or content_bytes.startswith(b"%PDF"):
+        try:
+            import fitz
+            doc = fitz.open(stream=content_bytes, filetype="pdf")
+            text_pages = [page.get_text() for page in doc]
+            return "\n".join(text_pages)
+        except Exception as exc:
+            logger.warning("PDF extraction failed, falling back to text decode: %s", exc)
+
+    return content_bytes.decode("utf-8", errors="replace")
+
+
 class FIRExtractRequest(BaseModel):
     case_number: str
     title: str
@@ -122,7 +145,7 @@ async def upload_bank_statement(
         )
 
 
-@router.post("/forensics/fir/extract", summary="Extract entities and IPC/BNS sections from police FIR / statements")
+@router.post("/forensics/fir/extract", summary="Extract entities and IPC/BNS sections from police FIR / statements (JSON)")
 def extract_fir_entities(payload: FIRExtractRequest, db: Session = Depends(get_db)):
     """
     Extracts legal sections (IPC/BNS), suspects, vehicle numbers, phone numbers,
@@ -147,6 +170,54 @@ def extract_fir_entities(payload: FIRExtractRequest, db: Session = Depends(get_d
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to process FIR report: {str(exc)}"
+        )
+
+
+@router.post("/forensics/fir/upload", summary="Upload text/PDF FIR document with automated zero-click entity linkage")
+async def upload_fir_document(
+    file: Optional[UploadFile] = File(None),
+    case_number: str = Form("CASE-2026-FIR-01"),
+    title: str = Form("First Information Report"),
+    narrative_text: Optional[str] = Form(None),
+    filed_by: str = Form("Inspector In-Charge"),
+    db: Session = Depends(get_db)
+):
+    """
+    Zero-Click FIR Ingestion: Accepts text or PDF FIR files, extracts forensic entities
+    (IPC sections, suspects, phones, vehicle registration numbers), writes to PostgreSQL,
+    and automatically merges/links them into Neo4j graph networks.
+    """
+    raw_content = ""
+    if file:
+        file_bytes = await file.read()
+        raw_content = extract_text_from_file_bytes(file_bytes, file.filename or "")
+    elif narrative_text:
+        raw_content = narrative_text
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Either a 'file' (PDF or text) or 'narrative_text' must be provided."
+        )
+
+    clean_case_number = sanitize_input_text(case_number)
+    clean_title = sanitize_input_text(title)
+    clean_narrative = sanitize_input_text(raw_content)
+    clean_filed_by = sanitize_input_text(filed_by)
+
+    try:
+        result = ingest_and_parse_fir(
+            case_number=clean_case_number,
+            title=clean_title,
+            narrative_text=clean_narrative,
+            filed_by=clean_filed_by,
+            db=db
+        )
+        return result
+    except Exception as exc:
+        logger.error("FIR upload processing error: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to process uploaded FIR: {str(exc)}"
         )
 
 
