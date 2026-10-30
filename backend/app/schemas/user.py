@@ -17,10 +17,16 @@ class UserLogin(BaseModel):
 
 class TokenResponse(BaseModel):
     access_token: str
+    refresh_token: Optional[str] = None
     token_type: str = "bearer"
     user_id: int
     username: str
     role: str
+    expires_in_seconds: int = 900  # 15 minutes
+
+
+class TokenRefreshRequest(BaseModel):
+    refresh_token: str
 
 
 class UserResponse(BaseModel):

@@ -1,3 +1,4 @@
+import bleach
 import logging
 from typing import Optional
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, status
@@ -12,6 +13,27 @@ from app.services.forensics.nlp_extractor import ingest_and_parse_fir, extract_e
 logger = logging.getLogger("crimenexus.api.forensics")
 
 router = APIRouter(tags=["Forensics & Evidence Extraction"])
+
+MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024  # Strict 10MB limit to prevent Graph/Memory DoS
+
+
+def sanitize_input_text(text: Optional[str]) -> str:
+    """Sanitizes user/police input text using bleach to eliminate stored XSS risks."""
+    if not text:
+        return ""
+    # Strip HTML tags and dangerous attributes
+    return bleach.clean(text.strip(), tags=[], strip=True)
+
+
+async def validate_and_read_upload(file: UploadFile) -> str:
+    """Enforces 10MB file limit and reads UTF-8 content securely."""
+    content_bytes = await file.read()
+    if len(content_bytes) > MAX_UPLOAD_SIZE_BYTES:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail=f"File exceeds strict maximum allowable limit of 10MB (size: {len(content_bytes):,} bytes)."
+        )
+    return content_bytes.decode("utf-8", errors="replace")
 
 
 class FIRExtractRequest(BaseModel):
@@ -39,9 +61,10 @@ async def upload_cdr_records(
     """
     content = ""
     if file:
-        content_bytes = await file.read()
-        content = content_bytes.decode("utf-8", errors="replace")
+        content = await validate_and_read_upload(file)
     elif raw_csv:
+        if len(raw_csv.encode("utf-8")) > MAX_UPLOAD_SIZE_BYTES:
+            raise HTTPException(status_code=413, detail="Payload exceeds maximum 10MB limit.")
         content = raw_csv
     else:
         raise HTTPException(
@@ -74,9 +97,10 @@ async def upload_bank_statement(
     """
     content = ""
     if file:
-        content_bytes = await file.read()
-        content = content_bytes.decode("utf-8", errors="replace")
+        content = await validate_and_read_upload(file)
     elif raw_csv:
+        if len(raw_csv.encode("utf-8")) > MAX_UPLOAD_SIZE_BYTES:
+            raise HTTPException(status_code=413, detail="Payload exceeds maximum 10MB limit.")
         content = raw_csv
     else:
         raise HTTPException(
@@ -84,8 +108,11 @@ async def upload_bank_statement(
             detail="Either 'file' or 'raw_csv' must be provided."
         )
 
+    safe_acc_holder = sanitize_input_text(account_holder_name)
+    safe_acc_number = sanitize_input_text(account_number)
+
     try:
-        result = parse_bank_statement_csv(content, account_number, account_holder_name, db)
+        result = parse_bank_statement_csv(content, safe_acc_holder, safe_acc_number, db)
         return result
     except Exception as exc:
         logger.error("Bank statement parsing error: %s", exc)
@@ -101,12 +128,17 @@ def extract_fir_entities(payload: FIRExtractRequest, db: Session = Depends(get_d
     Extracts legal sections (IPC/BNS), suspects, vehicle numbers, phone numbers,
     and crime classification from an FIR narrative, creating corresponding graph nodes and relationships.
     """
+    clean_case_number = sanitize_input_text(payload.case_number)
+    clean_title = sanitize_input_text(payload.title)
+    clean_narrative = sanitize_input_text(payload.narrative_text)
+    clean_filed_by = sanitize_input_text(payload.filed_by)
+
     try:
         result = ingest_and_parse_fir(
-            case_number=payload.case_number,
-            title=payload.title,
-            narrative_text=payload.narrative_text,
-            filed_by=payload.filed_by,
+            case_number=clean_case_number,
+            title=clean_title,
+            narrative_text=clean_narrative,
+            filed_by=clean_filed_by,
             db=db
         )
         return result

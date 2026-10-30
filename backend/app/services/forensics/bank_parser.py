@@ -56,6 +56,19 @@ def parse_narration_string(narration: str) -> Dict[str, Any]:
     return result
 
 
+def sanitize_csv_cell(value: Any) -> str:
+    """
+    Prevents CSV / Formula Injection attacks (DDE execution in spreadsheet viewers).
+    If a cell begins with '=', '+', '-', or '@', prepends a single quote (').
+    """
+    if value is None:
+        return ""
+    text = str(value).strip()
+    if text and text[0] in ['=', '+', '-', '@']:
+        return "'" + text
+    return text
+
+
 def parse_bank_statement_csv(file_content: str, account_holder_name: str, account_number: str, db: Session) -> Dict[str, Any]:
     """
     Forensically parses bank statement rows, detects structuring (smurfing below ₹50,000 threshold),
@@ -68,8 +81,8 @@ def parse_bank_statement_csv(file_content: str, account_holder_name: str, accoun
     total_credits = 0.0
 
     for row in reader:
-        date_str = row.get("date") or row.get("txn_date") or row.get("value_date") or datetime.utcnow().strftime("%Y-%m-%d")
-        narration = row.get("narration") or row.get("description") or row.get("remarks") or ""
+        date_str = sanitize_csv_cell(row.get("date") or row.get("txn_date") or row.get("value_date") or datetime.utcnow().strftime("%Y-%m-%d"))
+        narration = sanitize_csv_cell(row.get("narration") or row.get("description") or row.get("remarks") or "")
         withdrawal_val = row.get("withdrawal") or row.get("debit") or row.get("amount_debited")
         deposit_val = row.get("deposit") or row.get("credit") or row.get("amount_credited")
         raw_amount = row.get("amount") or row.get("txn_amount")

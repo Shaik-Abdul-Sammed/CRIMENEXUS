@@ -7,8 +7,10 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-crimenexus}
-    ports:
-      - "${POSTGRES_PORT:-5435}:5432"
+    # SECURITY HARDENING: Removed public port exposure.
+    # Database is strictly accessible only via the internal Docker bridge network.
+    expose:
+      - "5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -24,9 +26,11 @@ services:
     environment:
       NEO4J_AUTH: ${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-crimenexus123}
       NEO4J_PLUGINS: '["apoc"]'
-    ports:
-      - "7474:7474" # Web Browser UI
-      - "7687:7687" # Bolt Protocol
+    # SECURITY HARDENING: Removed public port exposure.
+    # Bolt & browser ports are isolated to the internal Docker network.
+    expose:
+      - "7474"
+      - "7687"
     volumes:
       - neo4j_data:/data
       - neo4j_logs:/logs

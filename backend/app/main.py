@@ -1,7 +1,10 @@
 import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 from app.database.postgres import engine, Base
 from app.database.neo4j import init_neo4j_constraints, close_neo4j_driver
@@ -58,6 +61,9 @@ async def lifespan(app: FastAPI):
     close_neo4j_driver()
 
 
+# Initialize SlowAPI rate limiter
+limiter = Limiter(key_func=get_remote_address, default_limits=["120/minute"])
+
 app = FastAPI(
     title="CRIMENEXUS API",
     description="AI-Powered Crime Network Analysis & Multi-Source Intelligence Platform",
@@ -66,6 +72,10 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc"
 )
+
+# Register rate limiter on app state and bind 429 exception handler
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Enable CORS for frontend applications
 app.add_middleware(

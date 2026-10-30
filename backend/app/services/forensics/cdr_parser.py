@@ -21,6 +21,16 @@ KNOWN_TOWERS: Dict[str, Dict[str, Any]] = {
 }
 
 
+def sanitize_csv_cell(value: Any) -> str:
+    """Neutralizes CSV formula injection attempts (=, +, -, @)."""
+    if value is None:
+        return ""
+    text = str(value).strip()
+    if text and text[0] in ['=', '+', '-', '@']:
+        return "'" + text
+    return text
+
+
 def parse_telecom_cdr_csv(file_content: str, db: Session) -> Dict[str, Any]:
     """
     Parses telecom CDR data (supporting Airtel, Jio, Vi, BSNL multi-carrier formats),
@@ -35,12 +45,12 @@ def parse_telecom_cdr_csv(file_content: str, db: Session) -> Dict[str, Any]:
 
     for row in reader:
         # Standardize heterogeneous carrier column names
-        caller = row.get("calling_number") or row.get("caller") or row.get("a_party") or row.get("source_number", "")
-        receiver = row.get("called_number") or row.get("receiver") or row.get("b_party") or row.get("destination_number", "")
+        caller = sanitize_csv_cell(row.get("calling_number") or row.get("caller") or row.get("a_party") or row.get("source_number", ""))
+        receiver = sanitize_csv_cell(row.get("called_number") or row.get("receiver") or row.get("b_party") or row.get("destination_number", ""))
         duration = int(row.get("duration") or row.get("duration_sec") or row.get("call_duration", 60))
-        timestamp = row.get("timestamp") or row.get("date_time") or datetime.utcnow().isoformat()
-        tower = row.get("cell_tower") or row.get("tower_id") or row.get("first_cgi") or "TOWER-NOIDA-62"
-        imei = row.get("imei") or row.get("handset_imei") or "358912093847291"
+        timestamp = sanitize_csv_cell(row.get("timestamp") or row.get("date_time") or datetime.utcnow().isoformat())
+        tower = sanitize_csv_cell(row.get("cell_tower") or row.get("tower_id") or row.get("first_cgi") or "TOWER-NOIDA-62")
+        imei = sanitize_csv_cell(row.get("imei") or row.get("handset_imei") or "358912093847291")
         call_type = row.get("call_type") or "VOICE"
 
         if not caller or not receiver:

@@ -1,6 +1,8 @@
 import hashlib
+import hmac
 import json
 import logging
+import os
 import uuid
 from datetime import datetime
 from typing import Dict, Any, List, Optional
@@ -8,10 +10,12 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc
 
 from app.models.audit_ledger import AuditLedgerEntry, DualWarrantAuthorization
+from app.config.settings import JWT_SECRET_KEY
 
 logger = logging.getLogger("crimenexus.legal.audit")
 
 GENESIS_HASH = "0000000000000000000000000000000000000000000000000000000000000000"
+AUDIT_HMAC_SALT = os.getenv("AUDIT_HMAC_SALT", f"{JWT_SECRET_KEY}_audit_worm_ledger_salt_2026").encode("utf-8")
 
 
 def compute_entry_hash(
@@ -25,10 +29,11 @@ def compute_entry_hash(
     details: str
 ) -> str:
     """
-    Computes a cryptographic SHA-256 digest linking the current record to the previous record in the ledger.
+    Computes a cryptographic HMAC-SHA-256 digest linking the current record to the previous record.
+    Uses a secret server-side key so database compromise cannot allow an attacker to recalculate the chain.
     """
     payload = f"{previous_hash}|{timestamp_iso}|{officer_badge}|{station_id}|{action}|{resource_type}|{resource_id}|{details}"
-    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+    return hmac.new(AUDIT_HMAC_SALT, payload.encode("utf-8"), hashlib.sha256).hexdigest()
 
 
 def record_audit_event(

@@ -19,9 +19,20 @@ NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
 NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "crimenexus123")
 
 # JWT & Security Configuration
-JWT_SECRET_KEY = os.getenv(
-    "JWT_SECRET_KEY",
-    "crimenexus_super_secure_jwt_secret_key_change_in_prod_2026"
-)
+DEFAULT_INSECURE_SECRET = "crimenexus_super_secure_jwt_secret_key_change_in_prod_2026"
+raw_jwt_secret = os.getenv("JWT_SECRET_KEY")
+
+if not raw_jwt_secret or raw_jwt_secret.strip() == DEFAULT_INSECURE_SECRET:
+    # Fail-safe zero-trust check in production
+    app_env = os.getenv("APP_ENV", "development").lower()
+    if app_env in ["production", "prod", "staging"]:
+        raise ValueError(
+            "FATAL: JWT_SECRET_KEY is unset or using default insecure development key! "
+            "Set a cryptographically strong 256-bit secret key in .env for production deployment."
+        )
+
+JWT_SECRET_KEY = raw_jwt_secret if raw_jwt_secret else DEFAULT_INSECURE_SECRET
+JWT_REFRESH_SECRET_KEY = os.getenv("JWT_REFRESH_SECRET_KEY", f"{JWT_SECRET_KEY}_refresh_salt_2026")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "15"))  # Hardened to 15m
+REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7"))
