@@ -344,3 +344,69 @@ def get_crime_forecast():
     """
     engine = get_forecasting_engine()
     return engine.forecast_7_days()
+
+
+# STEP 2: Police Proximity & Emergency Routing
+from pydantic import BaseModel, Field
+from app.services.geo.police_proximity import (
+    find_nearest_police_stations,
+    calculate_osrm_route,
+)
+
+
+class RouteToIncidentRequest(BaseModel):
+    incident_lat: float = Field(..., description="Latitude of incident or suspect location")
+    incident_lon: float = Field(..., description="Longitude of incident or suspect location")
+    station_lat: Optional[float] = Field(None, description="Optional override latitude of police station")
+    station_lon: Optional[float] = Field(None, description="Optional override longitude of police station")
+    station_name: Optional[str] = Field(None, description="Optional name of police station")
+
+
+@router.get("/geo/nearest-station", summary="Find Nearest Police Station(s) via Haversine Geodesic")
+def get_nearest_police_station(
+    lat: float = Query(..., description="Latitude of target incident or suspect sighting"),
+    lon: float = Query(..., description="Longitude of target incident or suspect sighting"),
+    top_k: int = Query(3, description="Number of closest stations to return")
+):
+    """
+    Computes great-circle Haversine distances to official jurisdictional police stations
+    and returns ranked proximity list with meter-level accuracy.
+    """
+    stations = find_nearest_police_stations(latitude=lat, longitude=lon, top_k=top_k)
+    return {
+        "status": "success",
+        "target_coordinates": {"latitude": lat, "longitude": lon},
+        "nearest_station": stations[0] if stations else None,
+        "stations": stations,
+    }
+
+
+@router.post("/geo/route-to-incident", summary="Calculate Road Network Intercept Route via OSRM")
+def route_to_incident(payload: RouteToIncidentRequest):
+    """
+    Calculates shortest driving path and estimated transit time from the nearest police station
+    to the target incident / ANPR sighting using Open Source Routing Machine (OSRM)
+    with resilient air-gapped geodesic fallback.
+    """
+    if payload.station_lat is None or payload.station_lon is None:
+        nearest = find_nearest_police_stations(payload.incident_lat, payload.incident_lon, top_k=1)
+        if not nearest:
+            raise HTTPException(status_code=404, detail="No jurisdictional police station found in area.")
+        station_lat = nearest[0]["station_latitude"]
+        station_lon = nearest[0]["station_longitude"]
+        station_name = nearest[0]["police_station"]
+    else:
+        station_lat = payload.station_lat
+        station_lon = payload.station_lon
+        station_name = payload.station_name or "Assigned Police Station"
+
+    route_res = calculate_osrm_route(
+        start_lat=station_lat,
+        start_lon=station_lon,
+        end_lat=payload.incident_lat,
+        end_lon=payload.incident_lon
+    )
+    route_res["police_station"] = station_name
+    route_res["station_coordinates"] = {"latitude": station_lat, "longitude": station_lon}
+    route_res["incident_coordinates"] = {"latitude": payload.incident_lat, "longitude": payload.incident_lon}
+    return route_res
