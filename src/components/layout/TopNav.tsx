@@ -13,6 +13,7 @@ import {
   Sparkles,
   Compass,
   Languages,
+  Zap,
 } from 'lucide-react';
 import { useAppStore } from '../../stores/appStore';
 import { useAuthStore } from '../../stores/authStore';
@@ -27,7 +28,7 @@ export function TopNav() {
   const { setGlobalSearchOpen, theme, toggleTheme, notifications, markNotificationAsRead } =
     useAppStore();
   const { activeRole, loginAsRole, logout } = useAuthStore();
-  const { t, language, toggleLanguage } = useTranslation();
+  const { t, language, setLanguage, toggleLanguage } = useTranslation();
   const [notifMenuOpen, setNotifMenuOpen] = useState(false);
   const [roleMenuOpen, setRoleMenuOpen] = useState(false);
   const [demoModalOpen, setDemoModalOpen] = useState(false);
@@ -96,15 +97,32 @@ export function TopNav() {
 
       {/* Right Tools */}
       <div className="flex items-center gap-3">
-        {/* Bilingual English / Hindi Toggle */}
-        <button
-          onClick={toggleLanguage}
-          className="flex items-center gap-1.5 h-8 px-2.5 rounded-md border border-cyan-500/40 bg-cyan-500/10 text-xs font-bold text-cyan-300 hover:bg-cyan-500/20 transition-all shadow-sm"
-          title="Toggle Language / भाषा बदलें (English / हिन्दी)"
+        {/* Lite Mode Toggle for 2 Mbps Police Stations */}
+        <Link
+          to="/lite"
+          className="flex items-center gap-1.5 h-8 px-2.5 rounded-md border border-amber-500/40 bg-amber-500/10 text-xs font-bold text-amber-300 hover:bg-amber-500/20 transition-all shadow-sm"
+          title="Switch to Lite Mode (Optimized for 2 Mbps rural Thana links)"
         >
+          <Zap className="h-3.5 w-3.5 text-amber-400" />
+          <span>Lite Mode (Slow Connection)</span>
+        </Link>
+
+        {/* Vernacular Language Selector (English / Hindi / Marathi / Kannada / Telugu) */}
+        <div className="flex items-center gap-1 h-8 px-2 rounded-md border border-cyan-500/40 bg-cyan-500/10 text-xs font-bold text-cyan-300">
           <Languages className="h-3.5 w-3.5 text-cyan-400" />
-          <span>{language === 'en' ? 'हिन्दी (HI)' : 'English (EN)'}</span>
-        </button>
+          <select
+            value={language}
+            onChange={(e) => setLanguage(e.target.value as any)}
+            className="bg-transparent text-cyan-300 font-bold text-xs focus:outline-none cursor-pointer"
+            aria-label="Select Language"
+          >
+            <option value="en" className="bg-slate-900 text-slate-100">English (EN)</option>
+            <option value="hi" className="bg-slate-900 text-slate-100">हिन्दी (HI)</option>
+            <option value="mr" className="bg-slate-900 text-slate-100">मराठी (MR)</option>
+            <option value="kn" className="bg-slate-900 text-slate-100">ಕನ್ನಡ (KN)</option>
+            <option value="te" className="bg-slate-900 text-slate-100">తెలుగు (TE)</option>
+          </select>
+        </div>
 
         {/* Interactive IO Tour Guide */}
         <button

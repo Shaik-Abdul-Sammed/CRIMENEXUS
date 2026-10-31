@@ -13,7 +13,6 @@ import {
   Sparkles,
   Lock,
   Download,
-  FileCheck,
 } from 'lucide-react';
 import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import {
@@ -30,6 +29,7 @@ import { Button } from '../../components/ui/Button';
 import { getStatusBadgeClass } from '../../utils/formatters';
 import { RecommendedActions } from './RecommendedActions';
 import { LiveIngestionWidget } from './LiveIngestionWidget';
+import { RemandDeadlinesWidget } from './RemandDeadlinesWidget';
 
 export function DashboardPage() {
   const { data: cases } = useInvestigations();
@@ -203,6 +203,9 @@ export function DashboardPage() {
 
       {/* Live Real-Time Ingestion Streaming Pipeline Widget */}
       <LiveIngestionWidget />
+
+      {/* Statutory Custody Remand & Default Bail Deadline Clock */}
+      <RemandDeadlinesWidget />
 
       {/* Top Stat Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

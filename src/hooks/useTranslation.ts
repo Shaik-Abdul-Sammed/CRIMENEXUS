@@ -1,8 +1,11 @@
 import { create } from 'zustand';
 import enTranslations from '../locales/en.json';
 import hiTranslations from '../locales/hi.json';
+import mrTranslations from '../locales/mr.json';
+import knTranslations from '../locales/kn.json';
+import teTranslations from '../locales/te.json';
 
-export type SupportedLanguage = 'en' | 'hi';
+export type SupportedLanguage = 'en' | 'hi' | 'mr' | 'kn' | 'te';
 
 interface TranslationStore {
   language: SupportedLanguage;
@@ -11,9 +14,12 @@ interface TranslationStore {
   t: (path: string) => string;
 }
 
-const resources = {
+const resources: Record<SupportedLanguage, any> = {
   en: enTranslations,
   hi: hiTranslations,
+  mr: mrTranslations,
+  kn: knTranslations,
+  te: teTranslations,
 };
 
 export const useTranslation = create<TranslationStore>((set, get) => ({
@@ -25,7 +31,9 @@ export const useTranslation = create<TranslationStore>((set, get) => ({
   },
 
   toggleLanguage: () => {
-    const nextLang: SupportedLanguage = get().language === 'en' ? 'hi' : 'en';
+    const langs: SupportedLanguage[] = ['en', 'hi', 'mr', 'kn', 'te'];
+    const currentIdx = langs.indexOf(get().language);
+    const nextLang = langs[(currentIdx + 1) % langs.length];
     localStorage.setItem('crimenexus_lang', nextLang);
     set({ language: nextLang });
   },

@@ -5,10 +5,6 @@ from typing import Dict, Any, List, Optional
 import numpy as np
 from sklearn.ensemble import GradientBoostingRegressor
 
-# Prevent cv2 from interfering with shap in numpy 2.x environments
-if "cv2" not in sys.modules:
-    sys.modules["cv2"] = None
-
 try:
     import shap
 except Exception:

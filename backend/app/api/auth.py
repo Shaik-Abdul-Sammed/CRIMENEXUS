@@ -13,7 +13,10 @@ from app.security.authentication import (
     create_access_token,
     create_refresh_token,
     decode_refresh_token,
-    get_current_user
+    get_current_user,
+    create_shift_token,
+    get_current_user_station_bound,
+    SHIFT_TOKEN_EXPIRE_MINUTES
 )
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -118,4 +121,67 @@ def refresh_access_token(request: Request, payload: TokenRefreshRequest, db: Ses
 @router.get("/me", response_model=UserResponse)
 def get_me(current_user: User = Depends(get_current_user)):
     """Returns the authenticated officer's profile."""
+    return current_user
+
+
+@router.post("/shift-login", response_model=TokenResponse)
+@limiter.limit("10/minute")
+def shift_login(request: Request, login_data: UserLogin, db: Session = Depends(get_db)):
+    """
+    Police Station Shared Desktop Login.
+    Issues a 12-hour session access token cryptographically bound to the terminal's hardware device_id.
+    """
+    device_id = (
+        request.headers.get("x-device-id") or
+        request.headers.get("X-Device-ID") or
+        request.headers.get("device-id") or
+        request.headers.get("device_id")
+    )
+    if not device_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Missing X-Device-ID header. Shift token requires terminal device identification."
+        )
+
+    identifier = login_data.email or login_data.username
+    if not identifier:
+        raise HTTPException(status_code=400, detail="Username or email is required")
+
+    user = db.query(User).filter(
+        (User.email == identifier) | (User.username == identifier)
+    ).first()
+
+    if not user or not verify_password(login_data.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid credentials. Check username/password.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    if not user.is_active:
+        raise HTTPException(status_code=400, detail="Account is deactivated.")
+
+    shift_token = create_shift_token(
+        data={"sub": str(user.id), "username": user.username, "role": user.role},
+        device_id=device_id
+    )
+
+    refresh_token = create_refresh_token(
+        data={"sub": str(user.id), "username": user.username, "role": user.role}
+    )
+
+    return TokenResponse(
+        access_token=shift_token,
+        refresh_token=refresh_token,
+        token_type="bearer",
+        user_id=user.id,
+        username=user.username,
+        role=user.role,
+        expires_in_seconds=SHIFT_TOKEN_EXPIRE_MINUTES * 60
+    )
+
+
+@router.get("/station-me", response_model=UserResponse)
+def get_station_me(current_user: User = Depends(get_current_user_station_bound)):
+    """Validates the authenticated officer's station terminal session with device binding."""
     return current_user

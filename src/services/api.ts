@@ -29,6 +29,47 @@ import {
 
 const STORAGE_KEY = 'crimenexus_mock_store_v1';
 
+export function getOrCreateDeviceId(): string {
+  try {
+    let deviceId = localStorage.getItem('crimenexus_device_id');
+    if (!deviceId) {
+      deviceId = 'term-' + (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15));
+      localStorage.setItem('crimenexus_device_id', deviceId);
+    }
+    return deviceId;
+  } catch {
+    return 'term-default-station-01';
+  }
+}
+
+export function setShiftToken(token: string): void {
+  try {
+    localStorage.setItem('crimenexus_shift_token', token);
+  } catch {
+    // Ignore storage issues
+  }
+}
+
+export function getShiftToken(): string | null {
+  try {
+    return localStorage.getItem('crimenexus_shift_token');
+  } catch {
+    return null;
+  }
+}
+
+// Attach hardware terminal device binding and shift authorization to outgoing Axios requests
+axios.interceptors.request.use((config) => {
+  const deviceId = getOrCreateDeviceId();
+  config.headers = config.headers || {};
+  config.headers['X-Device-ID'] = deviceId;
+  const shiftToken = getShiftToken();
+  if (shiftToken && !config.headers['Authorization']) {
+    config.headers['Authorization'] = `Bearer ${shiftToken}`;
+  }
+  return config;
+});
+
 // In-memory data store with LocalStorage persistence fallback
 class MockDataStore {
   cases: InvestigationCase[] = [];

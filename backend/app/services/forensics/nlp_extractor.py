@@ -19,8 +19,16 @@ def extract_entities_from_police_narrative(text: str) -> Dict[str, Any]:
     powered by Production Named Entity Recognition (NER).
     Extracts: IPC/BNS legal sections, Suspect names, Victims, Locations, Phone numbers,
     Vehicle registration plates, and Modus Operandi classifications.
+    Automatically detects vernacular Indian languages (Hindi, Marathi, Kannada, etc.)
+    and translates to English before entity resolution.
     """
-    ner = get_ner_pipeline().extract_entities(text)
+    from app.services.language.translator import translate_to_english
+
+    # Detect language and translate vernacular to English legal text
+    translated_text, detected_lang = translate_to_english(text)
+    effective_text = translated_text if detected_lang != "en" else text
+
+    ner = get_ner_pipeline().extract_entities(effective_text)
 
     # Cross-reference suspects with known Persons in Neo4j graph if mentioned in narrative
     suspect_candidates = list(ner.get("SUSPECT", []))
@@ -29,7 +37,7 @@ def extract_entities_from_police_narrative(text: str) -> Dict[str, Any]:
         for row in existing_persons:
             pname = row.get("name")
             if pname and len(pname) >= 3 and pname not in ["ACC-SUSPECT-01", "Cash Token hawala settlement"]:
-                if re.search(r'\b' + re.escape(pname) + r'\b', text, re.IGNORECASE):
+                if re.search(r'\b' + re.escape(pname) + r'\b', effective_text, re.IGNORECASE):
                     if pname not in suspect_candidates:
                         suspect_candidates.append(pname)
     except Exception as exc:
@@ -37,14 +45,14 @@ def extract_entities_from_police_narrative(text: str) -> Dict[str, Any]:
 
     # Modus Operandi & Category Classification
     crime_category = "General Offense"
-    text_lower = text.lower()
+    text_lower = effective_text.lower()
     if any(w in text_lower for w in ["hawala", "smurfing", "money laundering", "wire transfer", "crypto", "shell account"]):
         crime_category = "Financial Crime / Hawala"
     elif any(w in text_lower for w in ["narcotics", "smuggling", "contraband", "ganja", "heroin", "cocaine"]):
         crime_category = "Narcotics Trafficking"
     elif any(w in text_lower for w in ["vehicle theft", "chassis", "carjack", "anpr"]):
         crime_category = "Organized Vehicle Theft"
-    elif any(w in text_lower for w in ["extortion", "ransom", "threat call", "gang"]):
+    elif any(w in text_lower for w in ["extortion", "ransom", "threat call", "gang", "robbery", "armed"]):
         crime_category = "Extortion & Gang Syndicate"
 
     return {
@@ -54,7 +62,9 @@ def extract_entities_from_police_narrative(text: str) -> Dict[str, Any]:
         "locations_identified": ner.get("LOCATION", []),
         "vehicles_identified": ner.get("VEHICLE", []),
         "phones_identified": ner.get("PHONE", []),
-        "crime_category": crime_category
+        "crime_category": crime_category,
+        "detected_language": detected_lang,
+        "translated_text": effective_text
     }
 
 

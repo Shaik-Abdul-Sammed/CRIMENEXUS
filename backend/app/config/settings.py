@@ -35,4 +35,5 @@ JWT_SECRET_KEY = raw_jwt_secret if raw_jwt_secret else DEFAULT_INSECURE_SECRET
 JWT_REFRESH_SECRET_KEY = os.getenv("JWT_REFRESH_SECRET_KEY", f"{JWT_SECRET_KEY}_refresh_salt_2026")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "15"))  # Hardened to 15m
+SHIFT_TOKEN_EXPIRE_MINUTES = int(os.getenv("SHIFT_TOKEN_EXPIRE_MINUTES", "720"))  # 12-hour shift terminal token
 REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7"))

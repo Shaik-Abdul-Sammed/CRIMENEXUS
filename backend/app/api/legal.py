@@ -9,8 +9,14 @@ from sqlalchemy import desc
 
 from app.database.postgres import get_db
 from app.models.audit_ledger import AuditLedgerEntry, DualWarrantAuthorization
+from app.models.custody_tracker import CustodyTracker
 from app.services.legal.audit_service import record_audit_event, verify_audit_chain_integrity
 from app.services.legal.certificate_65b import generate_65b_certificate
+from app.services.legal.custody_monitor import (
+    start_custody_tracking,
+    close_custody_tracking,
+    check_upcoming_deadlines,
+)
 
 logger = logging.getLogger("crimenexus.api.legal")
 
@@ -357,3 +363,125 @@ def get_pending_warrants(db: Session = Depends(get_db)):
         }
         for w in pending
     ]
+
+
+# --- Custody & Remand Deadline Endpoints (BNSS 2023 / CrPC) ---
+
+class CustodyStartRequest(BaseModel):
+    case_id: str
+    suspect_id: str
+    suspect_name: str
+    arrest_timestamp: Optional[datetime] = None
+    days_charge_sheet: Optional[int] = 60
+    investigating_officer: Optional[str] = "Station IO"
+    police_station: Optional[str] = "Central Police Station"
+    offenses: Optional[str] = "Section 310 BNS / Section 392 IPC"
+    notes: Optional[str] = None
+
+
+class CustodyCloseRequest(BaseModel):
+    notes: Optional[str] = "Produced before court / Bail granted"
+
+
+@router.post("/custody/start", summary="Start statutory remand & charge sheet tracking for arrested suspect")
+def api_start_custody(payload: CustodyStartRequest, db: Session = Depends(get_db)):
+    """
+    Registers suspect arrest, generating exact 24h remand production deadline
+    and 60/90d default bail clock under Sec 57/167 CrPC and Sec 58/187 BNSS.
+    """
+    tracker = start_custody_tracking(
+        case_id=payload.case_id,
+        suspect_id=payload.suspect_id,
+        suspect_name=payload.suspect_name,
+        arrest_timestamp=payload.arrest_timestamp,
+        days_charge_sheet=payload.days_charge_sheet or 60,
+        investigating_officer=payload.investigating_officer,
+        police_station=payload.police_station,
+        offenses=payload.offenses,
+        notes=payload.notes,
+        db=db,
+    )
+    return {
+        "status": "TRACKING_STARTED",
+        "custody_id": tracker.id,
+        "case_id": tracker.case_id,
+        "suspect_name": tracker.suspect_name,
+        "arrest_timestamp": tracker.arrest_timestamp.isoformat(),
+        "remand_expiry_timestamp": tracker.remand_expiry_timestamp.isoformat(),
+        "charge_sheet_deadline": tracker.charge_sheet_deadline.isoformat(),
+    }
+
+
+@router.patch("/custody/{custody_id}/close", summary="Close custody tracking upon judicial production or bail")
+def api_close_custody(custody_id: int, payload: CustodyCloseRequest, db: Session = Depends(get_db)):
+    record = close_custody_tracking(custody_id=custody_id, notes=payload.notes, db=db)
+    if not record:
+        raise HTTPException(status_code=404, detail="Custody record not found")
+    return {
+        "status": "CLOSED",
+        "custody_id": record.id,
+        "closed_at": record.closed_at.isoformat() if record.closed_at else None,
+        "notes": record.notes,
+    }
+
+
+@router.get("/custody/active", summary="List active custody records with real-time countdowns")
+def api_list_active_custody(db: Session = Depends(get_db)):
+    now = datetime.utcnow()
+    records = db.query(CustodyTracker).filter(CustodyTracker.status == "ACTIVE").order_by(CustodyTracker.remand_expiry_timestamp.asc()).all()
+    results = []
+    for r in records:
+        remand_remaining_hours = (r.remand_expiry_timestamp - now).total_seconds() / 3600.0
+        cs_remaining_days = (r.charge_sheet_deadline - now).total_seconds() / 86400.0
+        results.append({
+            "id": r.id,
+            "case_id": r.case_id,
+            "suspect_id": r.suspect_id,
+            "suspect_name": r.suspect_name,
+            "investigating_officer": r.investigating_officer,
+            "police_station": r.police_station,
+            "offenses": r.offenses,
+            "arrest_timestamp": r.arrest_timestamp.isoformat(),
+            "remand_expiry_timestamp": r.remand_expiry_timestamp.isoformat(),
+            "remand_hours_remaining": round(remand_remaining_hours, 1),
+            "charge_sheet_deadline": r.charge_sheet_deadline.isoformat(),
+            "charge_sheet_days_remaining": round(cs_remaining_days, 1),
+            "status": r.status,
+            "urgency": "RED" if remand_remaining_hours <= 4.0 or cs_remaining_days <= 1.0 else ("YELLOW" if remand_remaining_hours <= 12.0 or cs_remaining_days <= 7.0 else "GREEN")
+        })
+    return results
+
+
+@router.get("/custody/summary", summary="Get custody summary metrics for police dashboard")
+def api_custody_summary(db: Session = Depends(get_db)):
+    now = datetime.utcnow()
+    records = db.query(CustodyTracker).filter(CustodyTracker.status == "ACTIVE").all()
+
+    due_today_magistrate = 0
+    due_within_7d_chargesheet = 0
+    safe_count = 0
+
+    for r in records:
+        remand_rem = (r.remand_expiry_timestamp - now).total_seconds() / 3600.0
+        cs_rem = (r.charge_sheet_deadline - now).total_seconds() / 86400.0
+        if remand_rem <= 24.0 or cs_rem <= 1.0:
+            due_today_magistrate += 1
+        elif cs_rem <= 7.0:
+            due_within_7d_chargesheet += 1
+        else:
+            safe_count += 1
+
+    return {
+        "active_custody_total": len(records),
+        "magistrate_production_due_today": due_today_magistrate,
+        "chargesheet_due_7_days": due_within_7d_chargesheet,
+        "compliant_count": safe_count,
+        "as_of": now.isoformat()
+    }
+
+
+@router.post("/custody/check-deadlines", summary="Trigger custody deadline alert evaluation")
+def api_check_deadlines(db: Session = Depends(get_db)):
+    alerts = check_upcoming_deadlines(db=db)
+    return {"status": "SUCCESS", "alerts_generated": len(alerts), "details": alerts}
+

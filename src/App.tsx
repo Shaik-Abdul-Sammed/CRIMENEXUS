@@ -21,6 +21,7 @@ import { DraftingPage } from './features/drafting/DraftingPage';
 import { ReportsPage } from './features/reports/ReportsPage';
 import { AuditLogsPage } from './features/audit/AuditLogsPage';
 import { SettingsPage } from './features/settings/SettingsPage';
+import { LightweightDashboard } from './features/lightweight/LightweightDashboard';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -36,8 +37,9 @@ export function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
-          {/* Public Auth */}
+          {/* Public Auth & Ultra-Low Bandwidth Thana Lite Mode */}
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/lite" element={<LightweightDashboard />} />
 
           {/* Protected Application Workspace */}
           <Route

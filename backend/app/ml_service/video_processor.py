@@ -299,6 +299,126 @@ class VideoANPRProcessor:
         worker_thread.start()
         return worker_thread
 
+    def ingest_dvr_file(
+        self,
+        file_path: str,
+        fps: float = 1.0,
+        camera_id: str = "CAM-DVR-THANA",
+        location_name: str = "Station DVR Evidence Ingest",
+        latitude: float = 28.6139,
+        longitude: float = 77.2090,
+        job_id: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Ingests real-world CCTV DVR footage (.dav, .h264, .264, .mp4, .avi).
+        Transcodes if needed using ffmpeg, samples frames at specified FPS (default 1 fps),
+        performs ANPR license plate extraction, and streams detections to Redis.
+        """
+        import cv2
+        import subprocess
+        from app.ml_service.dvr_jobs import update_dvr_job
+
+        if job_id:
+            update_dvr_job(job_id, status="PROCESSING", progress=0.0)
+
+        if not os.path.exists(file_path):
+            if job_id:
+                update_dvr_job(job_id, status="FAILED", error="File not found")
+            return {"status": "FAILED", "error": "File not found"}
+
+        transcoded_path = file_path
+        cleanup_transcoded = False
+        ext = os.path.splitext(file_path)[1].lower()
+
+        # If proprietary DVR extension or raw stream, transcode via ffmpeg
+        if ext in [".dav", ".264", ".h264"]:
+            out_tmp = f"{file_path}_transcoded.mp4"
+            try:
+                cmd = ["ffmpeg", "-y", "-i", file_path, "-c:v", "libx264", "-pix_fmt", "yuv420p", "-an", out_tmp]
+                res = subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=120)
+                if res.returncode == 0 and os.path.exists(out_tmp) and os.path.getsize(out_tmp) > 0:
+                    transcoded_path = out_tmp
+                    cleanup_transcoded = True
+            except Exception as e:
+                logger.warning("ffmpeg transcode attempted for %s: %s", ext, e)
+
+        cap = cv2.VideoCapture(transcoded_path)
+        all_detections = []
+        frames_processed = 0
+
+        try:
+            video_fps = cap.get(cv2.CAP_PROP_FPS) or 25.0
+            if video_fps <= 0 or video_fps > 120:
+                video_fps = 25.0
+            frame_interval = max(1, int(video_fps / fps))
+            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) or 100
+            current_frame_idx = 0
+
+            while cap.isOpened():
+                ret, frame = cap.read()
+                if not ret or frame is None:
+                    break
+
+                if current_frame_idx % frame_interval == 0:
+                    frames_processed += 1
+                    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                    pil_img = Image.fromarray(rgb_frame)
+
+                    plates = self.detect_plates_from_image(pil_img)
+                    timestamp_offset = round(current_frame_idx / video_fps, 2)
+
+                    for p in plates:
+                        sighting = {
+                            "plate_number": p["plate_number"],
+                            "camera_id": camera_id,
+                            "location_name": location_name,
+                            "latitude": latitude,
+                            "longitude": longitude,
+                            "confidence": p["confidence"],
+                            "frame_index": current_frame_idx,
+                            "timestamp_offset": timestamp_offset,
+                            "source_file": os.path.basename(file_path),
+                            "timestamp": datetime.now(timezone.utc).isoformat(),
+                        }
+                        self.publish_sighting(sighting)
+                        all_detections.append(sighting)
+
+                    if job_id and frames_processed % 5 == 0:
+                        prog = min(99.0, round((current_frame_idx / max(1, total_frames)) * 100, 1))
+                        update_dvr_job(
+                            job_id,
+                            frames_processed=frames_processed,
+                            detections_count=len(all_detections),
+                            progress=prog
+                        )
+
+                current_frame_idx += 1
+
+            if job_id:
+                update_dvr_job(
+                    job_id,
+                    status="COMPLETED",
+                    progress=100.0,
+                    frames_processed=frames_processed,
+                    detections_count=len(all_detections),
+                    detections=all_detections
+                )
+
+            return {
+                "status": "COMPLETED",
+                "file": os.path.basename(file_path),
+                "frames_processed": frames_processed,
+                "detections_count": len(all_detections),
+                "detections": all_detections
+            }
+        finally:
+            cap.release()
+            if cleanup_transcoded and os.path.exists(transcoded_path):
+                try:
+                    os.remove(transcoded_path)
+                except Exception:
+                    pass
+
 
 # Singleton accessor
 _video_processor_instance: Optional[VideoANPRProcessor] = None

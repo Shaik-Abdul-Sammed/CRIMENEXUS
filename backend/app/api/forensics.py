@@ -371,3 +371,110 @@ async def process_video_anpr_feed(
     )
 
     return feed_summary
+
+
+MAX_DVR_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024 * 1024  # 5 GB allowable limit for police DVR dumps
+ALLOWED_DVR_EXTENSIONS = {".dav", ".h264", ".264", ".mp4", ".avi", ".mkv"}
+
+
+@router.post("/forensics/dvr/upload", summary="Ingest Dahua/Hikvision CCTV DVR exports (.dav, .h264, .mp4, .avi) up to 5GB")
+async def upload_dvr_footage(
+    file: UploadFile = File(...),
+    camera_id: str = Form("CAM-DVR-THANA"),
+    location_name: str = Form("Station Market CCTV Evidence"),
+    latitude: float = Form(28.6139),
+    longitude: float = Form(77.2090),
+):
+    """
+    Accepts real-world CCTV DVR footage files (up to 5GB) exported from shopkeeper/traffic DVRs.
+    Streams upload to temporary disk chunk-by-chunk to prevent memory exhaustion,
+    spawns a background transcoding & ANPR extraction thread, and returns a tracking job ID.
+    """
+    import os
+    import tempfile
+    import uuid
+    import threading
+    from app.ml_service.dvr_jobs import register_dvr_job, get_dvr_job, update_dvr_job
+    from app.ml_service.video_processor import get_video_processor
+
+    filename = file.filename or "cctv_export.mp4"
+    ext = os.path.splitext(filename)[1].lower()
+    if ext not in ALLOWED_DVR_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported DVR video format '{ext}'. Allowed extensions: {', '.join(sorted(ALLOWED_DVR_EXTENSIONS))}"
+        )
+
+    job_id = f"dvr-{uuid.uuid4().hex[:10]}"
+    temp_dir = tempfile.gettempdir()
+    saved_path = os.path.join(temp_dir, f"{job_id}_{filename}")
+
+    # Stream write chunk by chunk (64KB chunks) to support up to 5GB without memory spike
+    total_bytes = 0
+    chunk_size = 64 * 1024
+    with open(saved_path, "wb") as f_out:
+        while True:
+            chunk = await file.read(chunk_size)
+            if not chunk:
+                break
+            total_bytes += len(chunk)
+            if total_bytes > MAX_DVR_UPLOAD_SIZE_BYTES:
+                f_out.close()
+                if os.path.exists(saved_path):
+                    os.remove(saved_path)
+                raise HTTPException(
+                    status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                    detail=f"DVR upload exceeds maximum allowable 5GB limit (size: {total_bytes:,} bytes)."
+                )
+            f_out.write(chunk)
+
+    register_dvr_job(job_id=job_id, filename=filename, file_size=total_bytes)
+
+    # Launch background extraction thread
+    def _dvr_thread_runner(target_path: str, jid: str, cam: str, loc: str, lat: float, lon: float):
+        try:
+            processor = get_video_processor()
+            processor.ingest_dvr_file(
+                file_path=target_path,
+                fps=1.0,
+                camera_id=cam,
+                location_name=loc,
+                latitude=lat,
+                longitude=lon,
+                job_id=jid
+            )
+        except Exception as exc:
+            logger.error("DVR ingestion job %s failed: %s", jid, exc)
+            update_dvr_job(jid, status="FAILED", error=str(exc))
+        finally:
+            if os.path.exists(target_path):
+                try:
+                    os.remove(target_path)
+                except Exception:
+                    pass
+
+    t = threading.Thread(
+        target=_dvr_thread_runner,
+        args=(saved_path, job_id, camera_id, location_name, latitude, longitude),
+        daemon=True
+    )
+    t.start()
+
+    return {
+        "job_id": job_id,
+        "status": "QUEUED",
+        "filename": filename,
+        "file_size_bytes": total_bytes,
+        "message": "DVR footage received successfully. Transcoding and ANPR extraction initiated in background."
+    }
+
+
+@router.get("/forensics/dvr/status/{job_id}", summary="Check status and ANPR detections of DVR processing job")
+def get_dvr_status(job_id: str):
+    """Retrieves progress, frame count, and ANPR plate detections for a background DVR job."""
+    from app.ml_service.dvr_jobs import get_dvr_job
+
+    job = get_dvr_job(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail=f"DVR job '{job_id}' not found.")
+    return job
