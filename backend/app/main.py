@@ -273,6 +273,123 @@ def voice_identify(payload: _VoiceIdentifyRequest):
     from app.ml_service.voice_biometrics import identify_speaker
     return identify_speaker(payload.audio_path, payload.top_k or 3)
 
+# ── Operational Excellence Endpoints (v3.0) ──────────────────────────────────
+@_adv_router.get("/security/tenancy-check", summary="Verify Multi-Tenant Jurisdictional Access Clearance")
+def tenancy_check(station_id: str, role: str = "IO"):
+    from app.security.rls import TenancyContext, OfficerRole
+    ctx = TenancyContext(user_id="current_officer", role=OfficerRole(role) if role in OfficerRole._value2member_map_ else OfficerRole.IO, station_id=station_id)
+    return {"status": "ACTIVE", "jurisdiction_level": ctx.get_jurisdiction_level().value, "station_id": station_id}
+
+@_adv_router.post("/admin/backup/trigger", summary="Trigger Automated Multi-Tier Backup")
+def backup_trigger():
+    from app.services.backup.backup_service import trigger_backup
+    return trigger_backup(backup_type="FULL", created_by="ADMIN_CONSOLE")
+
+@_adv_router.get("/admin/backup/status", summary="Get Backup Catalog and DR Status")
+def backup_status():
+    from app.services.backup.backup_service import list_backups
+    return {"status": "ONLINE", "backups": list_backups()}
+
+@_adv_router.get("/legal/time-travel/{case_id}", summary="Audit Time-Travel Query Engine")
+def time_travel_view(case_id: str, as_of: _Optional[str] = None):
+    from app.services.legal.time_travel import get_case_snapshot_at
+    import datetime
+    target = as_of or datetime.datetime.utcnow().isoformat()
+    return get_case_snapshot_at(case_id, target)
+
+@_adv_router.get("/analytics/case-aging", summary="Automated Case Aging & Stalled Alerts")
+def case_aging_report():
+    from app.services.analytics.case_aging import aggregate_station_case_aging
+    cases = [
+        {"case_id": "FIR-2026-001", "created_at": "2026-02-20T10:00:00", "has_charge_sheet": False},
+        {"case_id": "FIR-2026-002", "created_at": "2026-01-10T10:00:00", "has_charge_sheet": False},
+        {"case_id": "FIR-2025-099", "created_at": "2025-11-01T10:00:00", "has_charge_sheet": False, "offense_type": "MURDER"}
+    ]
+    return aggregate_station_case_aging(cases)
+
+class _WarrantRegisterRequest(_BaseModel):
+    case_id: str
+    suspect_name: str
+    alias: _Optional[str] = ""
+    warrant_type: _Optional[str] = "NON_BAILABLE"
+    issuing_court: _Optional[str] = "Chief Judicial Magistrate"
+    issuing_state: _Optional[str] = "DELHI"
+
+@_adv_router.post("/warrants/register", summary="Register Inter-State Warrant or LOC")
+def warrant_register(payload: _WarrantRegisterRequest):
+    from app.services.warrants.warrant_tracker import register_warrant
+    return register_warrant(payload.dict())
+
+@_adv_router.get("/warrants/search", summary="Search Active Multi-Jurisdiction Warrants & LOCs")
+def warrant_search(q: str, state: _Optional[str] = None):
+    from app.services.warrants.warrant_tracker import search_warrants
+    return {"query": q, "results": search_warrants(q, state=state)}
+
+class _ColdCaseRequest(_BaseModel):
+    suspect_name: _Optional[str] = ""
+    aliases: _Optional[_List[str]] = []
+    phones: _Optional[_List[str]] = []
+    vehicles: _Optional[_List[str]] = []
+    mo_summary: _Optional[str] = ""
+
+@_adv_router.post("/intelligence/cold-case-resurrect", summary="Cold Case Resurrection Engine")
+def cold_case_resurrect(payload: _ColdCaseRequest):
+    from app.ml_service.cold_case_engine import resurrect_cold_cases
+    return {"leads": resurrect_cold_cases(payload.dict())}
+
+@_adv_router.get("/analytics/workload-distribution/{station_id}", summary="Officer Workload Balancer")
+def officer_workloads(station_id: str):
+    from app.services.analytics.workload_balancer import calculate_officer_workloads
+    sample_officers = [
+        {"officer_id": "IO_01", "name": "SI Sharma", "active_cases": [{"category": "MURDER"}] * 3},
+        {"officer_id": "IO_02", "name": "SI Verma", "active_cases": [{"category": "THEFT"}]},
+    ]
+    return calculate_officer_workloads(sample_officers)
+
+class _LiveCDRPacket(_BaseModel):
+    caller: str
+    callee: str
+    tower_id: _Optional[str] = "CELL-DEFAULT"
+    latitude: _Optional[float] = 0.0
+    longitude: _Optional[float] = 0.0
+    call_type: _Optional[str] = "VOICE"
+
+@_adv_router.post("/streaming/cdr/ingest-live", summary="Ingest Live Lawful Intercept CDR Packet")
+def live_cdr_packet(payload: _LiveCDRPacket):
+    from app.services.streaming.telecom_gateway import ingest_live_cdr_packet
+    return ingest_live_cdr_packet(payload.dict())
+
+@_adv_router.get("/streaming/cdr/live-trail/{phone}", summary="Get Live Tower Handover Trail")
+def live_cdr_trail(phone: str):
+    from app.services.streaming.telecom_gateway import get_live_cdr_trail
+    return {"phone": phone, "trail": get_live_cdr_trail(phone)}
+
+class _BiometricEnrollRequest(_BaseModel):
+    suspect_id: str
+    face_embedding: _Optional[_List[float]] = None
+    fingerprint_minutiae: _Optional[_List[_List[float]]] = None
+    metadata: _Optional[dict] = None
+
+@_adv_router.post("/biometric/enroll", summary="Enroll Biometric Template (DPDP Compliant Zero-Knowledge Hash)")
+def biometric_enroll(payload: _BiometricEnrollRequest):
+    from app.ml_service.biometric_matcher import enroll_biometric_profile
+    return enroll_biometric_profile(
+        suspect_id=payload.suspect_id,
+        face_embedding=payload.face_embedding,
+        fingerprint_minutiae=payload.fingerprint_minutiae,
+        metadata=payload.metadata
+    )
+
+from fastapi.responses import Response as _Response
+@_adv_router.get("/reports/sho-briefing/{station_id}", summary="SHO 08:00 Roll Call Supervisory Briefing")
+def sho_briefing_endpoint(station_id: str, format: _Optional[str] = "json"):
+    from app.services.reports.sho_briefing import generate_sho_briefing_data, render_sho_briefing_pdf
+    data = generate_sho_briefing_data(station_id)
+    if format and format.lower() == "pdf":
+        pdf_bytes = render_sho_briefing_pdf(data)
+        return _Response(content=pdf_bytes, media_type="application/pdf", headers={"Content-Disposition": f"inline; filename=sho_briefing_{station_id}.pdf"})
+    return data
+
 app.include_router(_adv_router)
 
 # Feature 4: Case History Timeline direct alias

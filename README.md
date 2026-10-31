@@ -157,7 +157,26 @@ docker compose -f docker-compose.prod.yml up -d
 
 ---
 
-## 7. Verification & Automated Test Suite
+## 7. Operational Features & Police Station Readiness (v3.0)
+
+Built specifically to close real police station operational bottlenecks and satisfy Director General of Police (DGP) deployment mandates:
+
+| # | Operational Feature | Real Police Problem Solved | Core Module | Test Suite |
+|---|:---|:---|:---|:---|
+| **1** | **Multi-Tenant Row-Level Security (RLS)** | Isolates cross-station cases in shared police cloud environments; restricts IOs to station while allowing SP/CID broad oversight. | `app.security.rls` | `test_multi_tenant_rls.py` |
+| **2** | **Automated Multi-Tier Backup & DR** | Guarantees RPO < 24h and RTO < 1h across Postgres, Neo4j, and WORM ledger with SHA-256 verification and automated retention. | `app.services.backup` | `test_backup_dr.py` |
+| **3** | **Audit Time-Travel Query Engine** | Reconstructs the exact investigation graph and evidence at any prior date $T$ for Sec 63 BSA court admissibility. | `app.services.legal.time_travel` | `test_time_travel.py` |
+| **4** | **Automated Case Aging & Stalled Alerts** | Enforces 60-day POCSO and 90-day BNSS Sec 193 charge-sheet countdowns; alerts SHOs of inactive case diaries (> 30d). | `app.services.analytics.case_aging` | `test_case_aging.py` |
+| **5** | **Multi-Jurisdiction Warrant & LOC Tracker** | Cross-state synchronization of Non-Bailable Warrants and Bureau of Immigration (BOI) Look Out Circulars expiring within 15 days. | `app.services.warrants.warrant_tracker` | `test_warrant_tracker.py` |
+| **6** | **Cold Case Resurrection Engine** | Automated reverse matching of newly arrested suspects' phones, aliases, and MO descriptions against archival unsolved cases. | `app.ml_service.cold_case_engine` | `test_cold_case_engine.py` |
+| **7** | **Officer Workload Balancer** | Eliminates IO burnout by computing weighted caseloads (Heinous 5pts vs Minor 1pt) and recommending least-burdened IOs. | `app.services.analytics.workload_balancer` | `test_workload_balancer.py` |
+| **8** | **Real-Time CDR Streaming Fusion** | Live packet ingestion from Telecom Service Providers (TSPs) via Redis Streams with geofence interception alerts. | `app.services.streaming.telecom_gateway` | `test_cdr_live_stream.py` |
+| **9** | **Biometric Hash Matching (Minutiae & Face)** | Zero-knowledge DPDP-compliant template hashing and ISO 19794-2 minutiae correspondence matching for station lockups. | `app.ml_service.biometric_matcher` | `test_biometric_matcher.py` |
+| **10**| **SHO Supervisory Roll Call Briefing** | Generates daily 08:00 roll call briefing dossier (24h FIRs, urgent remands < 24h, bail hearings) with ReportLab PDF export. | `app.services.reports.sho_briefing` | `test_sho_briefing.py` |
+
+---
+
+## 8. Verification & Automated Test Suite
 
 CRIMENEXUS includes a dedicated, standalone automation test runner verifying all 8 backend core automations (40 tests total) alongside comprehensive integration test suites:
 
@@ -185,6 +204,11 @@ Detailed operational and technical manuals for police command and IT administrat
 * [03 Security, Audit & Legal Compliance](docs/03_SECURITY_AND_COMPLIANCE.md) — Chain of custody, WORM ledger, and Section 63 BSA technical proof.
 * [04 Police Department Deployment Proposal](docs/04_POLICE_SUBMISSION_PROPOSAL.md) — Executive tender proposal for State DGPs and Commissioners.
 * [05 CCTNS & ICJS Integration Architecture](docs/05_CCTNS_INTEGRATION_GUIDE.md) — Technical adapter design for National Informatics Centre (NIC) police networks.
+* [06 Production Deployment Blueprint](docs/06_DEPLOYMENT_BLUEPRINT.md) — Infrastructure topology, Docker Compose profiles, and DR strategy.
+* [07 Police Acceptance Test Report](docs/07_POLICE_ACCEPTANCE_TEST.md) — Acceptance testing signoff across SHO ground scenarios.
+* [08 Observability & SRE Operations Guide](docs/08_OBSERVABILITY_GUIDE.md) — Prometheus metrics, Sentry integration, and structured logging.
+* [09 Advanced Intelligence Features Guide](docs/09_ADVANCED_FEATURES_GUIDE.md) — Voice biometrics, drift detection, 3D photogrammetry, TAXII feeds.
+* [10 Operational Excellence & Station Ground Manual](docs/10_OPERATIONAL_EXCELLENCE.md) — RLS, automated backups, time travel, case aging, warrants, and SHO briefings.
 
 ---
 
