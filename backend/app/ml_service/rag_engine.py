@@ -151,8 +151,17 @@ class RAGDraftEngine:
             "neutralized_patterns_count": len(neutralized_patterns)
         }
 
+    def is_ollama_reachable(self) -> bool:
+        """Checks whether the local Ollama daemon is reachable and responding."""
+        try:
+            with httpx.Client(timeout=1.5) as client:
+                res = client.get(f"{self.ollama_base_url}/api/tags")
+                return res.status_code == 200
+        except Exception:
+            return False
+
     def _query_local_llm(self, prompt: str, system_prompt: str) -> Optional[str]:
-        """Queries local Ollama LLM if available; returns None on failure/offline."""
+        """Queries local Ollama LLM if available; logs a warning and returns None on failure/offline without crashing."""
         try:
             with httpx.Client(timeout=4.0) as client:
                 res = client.post(
@@ -170,8 +179,10 @@ class RAGDraftEngine:
                     if any(s in resp.lower() for s in ["database password", "jwt_secret", "root password"]):
                         return None
                     return resp
+                else:
+                    logger.warning("Ollama server returned HTTP %s. Falling back to statutory template synthesis.", res.status_code)
         except Exception as exc:
-            logger.debug("Local Ollama endpoint unreachable or offline (%s). Using fine-tuned statutory synthesis.", exc)
+            logger.warning("Local Ollama endpoint unreachable or offline (%s). Using fallback-safe statutory synthesis.", exc)
         return None
 
     def draft_fir(self, narrative: str) -> Dict[str, Any]:
@@ -257,6 +268,7 @@ CRIMENEXUS Automated Justice Platform"""
             "legal_sections": sections,
             "applicable_statutes": relevant_statutes,
             "draft_text": draft_text,
+            "source": "ollama" if llm_output else "template",
             "adversarial_attack_blocked": guardrail["attack_detected"],
             "generated_at": datetime.utcnow().isoformat()
         }

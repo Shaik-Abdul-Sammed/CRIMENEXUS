@@ -243,6 +243,62 @@ class VideoANPRProcessor:
             "status": "COMPLETED",
         }
 
+    def start_rtsp_stream(
+        self,
+        rtsp_url: str,
+        camera_id: str = "CAM-RTSP-01",
+        location_name: str = "Live Highway Checkpoint",
+        latitude: float = 28.1402,
+        longitude: float = 77.5510,
+        max_frames: Optional[int] = None,
+        stop_event: Optional[Any] = None
+    ):
+        """
+        Connects to an RTSP IP-camera video stream using OpenCV cv2.VideoCapture,
+        decodes frames in real time, runs ANPR license plate OCR, and publishes
+        detected sightings to the Redis stream 'anpr.sightings'.
+        Runs in a background daemon thread.
+        """
+        import threading
+        import cv2
+
+        def _rtsp_worker():
+            cap = cv2.VideoCapture(rtsp_url)
+            frame_count = 0
+            try:
+                while cap.isOpened() and not (stop_event and stop_event.is_set()):
+                    ret, frame = cap.read()
+                    if not ret or frame is None:
+                        break
+
+                    # Convert BGR frame from OpenCV to RGB PIL Image
+                    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                    pil_img = Image.fromarray(rgb_frame)
+
+                    plates = self.detect_plates_from_image(pil_img)
+                    for p in plates:
+                        sighting = {
+                            "plate_number": p["plate_number"],
+                            "camera_id": camera_id,
+                            "location_name": location_name,
+                            "latitude": latitude,
+                            "longitude": longitude,
+                            "confidence": p["confidence"],
+                            "frame_index": frame_count,
+                            "timestamp": datetime.now(timezone.utc).isoformat(),
+                        }
+                        self.publish_sighting(sighting)
+
+                    frame_count += 1
+                    if max_frames and frame_count >= max_frames:
+                        break
+            finally:
+                cap.release()
+
+        worker_thread = threading.Thread(target=_rtsp_worker, daemon=True)
+        worker_thread.start()
+        return worker_thread
+
 
 # Singleton accessor
 _video_processor_instance: Optional[VideoANPRProcessor] = None

@@ -128,3 +128,33 @@ def sync_live_cctns_fir_endpoint(case_id: str):
         raise HTTPException(status_code=500, detail=str(exc))
     finally:
         db.close()
+
+
+@router.post("/cctns/poll", summary="Trigger CCTNS real-time background polling daemon")
+def poll_cctns_updates(case_ids: Optional[list] = None):
+    """
+    Background polling daemon for CCTNS updates:
+    Polls the CCTNSAdapter for active case updates and synchronizes them into PostgreSQL and Neo4j.
+    Runs periodically every 15 minutes.
+    """
+    adapter = get_cctns_adapter()
+    if case_ids is None:
+        if hasattr(adapter, "get_active_case_updates"):
+            case_ids = adapter.get_active_case_updates()
+        else:
+            case_ids = ["FIR-2026-CRIME-890", "FIR-2026-DEL-9901"]
+
+    synced_cases = []
+    for cid in case_ids:
+        try:
+            res = sync_live_cctns_fir_endpoint(cid)
+            if res.get("synced_into_databases"):
+                synced_cases.append(cid)
+        except Exception as exc:
+            logger.warning("CCTNS background polling failed for case %s: %s", cid, exc)
+
+    return {
+        "status": "success",
+        "synced_count": len(synced_cases),
+        "synced_cases": synced_cases
+    }

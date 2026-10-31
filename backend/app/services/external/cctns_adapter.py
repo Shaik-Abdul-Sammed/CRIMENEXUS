@@ -191,6 +191,8 @@ class CCTNSAdapter:
             "interstate_cases": 0
         }
 
+    lookup_interstate_suspect = lookup_suspect_history
+
 
 # Singleton instance
 _cctns_adapter_instance = None

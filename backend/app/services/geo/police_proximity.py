@@ -1,3 +1,4 @@
+import os
 import math
 import logging
 import requests
@@ -6,7 +7,8 @@ from app.ml_service.dataset_registry import get_all_osm_police_stations
 
 logger = logging.getLogger("crimenexus.geo.proximity")
 
-OSRM_PUBLIC_API_URL = "http://router.project-osrm.org/route/v1/driving"
+OSRM_BASE_URL = os.getenv("OSRM_BASE_URL", "http://osrm:5000")
+OSRM_PUBLIC_DEMO_URL = "http://router.project-osrm.org/route/v1/driving"
 
 
 def haversine_distance_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -59,6 +61,25 @@ def find_nearest_police_stations(
         })
 
     scored_stations.sort(key=lambda s: s["distance_km"])
+    if not scored_stations and max_radius_km is not None:
+        # Fall back to nationwide spatial index (18,000+ OSM stations)
+        try:
+            from app.services.geo.station_loader import get_station_spatial_index
+            spatial_index = get_station_spatial_index()
+            nationwide_res = spatial_index.find_nearest_station(latitude, longitude, top_k=top_k, max_radius_km=max_radius_km)
+            for stn in nationwide_res:
+                scored_stations.append({
+                    "police_station": stn["name"],
+                    "state": stn["state"],
+                    "district": stn["district"],
+                    "station_latitude": stn["latitude"],
+                    "station_longitude": stn["longitude"],
+                    "distance_km": stn["distance_km"],
+                    "distance_meters": stn["distance_meters"]
+                })
+        except Exception as exc:
+            logger.warning("Nationwide station spatial index fallback error: %s", exc)
+
     return scored_stations[:top_k]
 
 
@@ -69,29 +90,39 @@ def calculate_osrm_route(
     end_lon: float
 ) -> Dict[str, Any]:
     """
-    Calculates the road network shortest path and estimated travel time using OSRM
-    (Open Source Routing Machine). Falls back to geodesic urban road routing if offline.
+    Calculates the road network shortest path and estimated travel time using self-hosted OSRM
+    (Open Source Routing Machine), with fallback to public demo API, and finally to air-gapped geodesic.
     """
-    url = f"{OSRM_PUBLIC_API_URL}/{start_lon},{start_lat};{end_lon},{end_lat}?overview=full&geometries=geojson"
-    try:
-        response = requests.get(url, timeout=2.5)
-        if response.status_code == 200:
-            data = response.json()
-            if data.get("code") == "Ok" and data.get("routes"):
-                route = data["routes"][0]
-                distance_km = round(route["distance"] / 1000.0, 2)
-                duration_min = round(route["duration"] / 60.0, 1)
-                geometry = route["geometry"]
-                return {
-                    "status": "SUCCESS",
-                    "routing_engine": "OSRM-Live-Road-Network",
-                    "distance_km": distance_km,
-                    "duration_minutes": duration_min,
-                    "coordinates": geometry.get("coordinates", []),
-                    "summary": f"Fastest police intercept route via road network: {distance_km} km ({duration_min} mins)",
-                }
-    except Exception as exc:
-        logger.info("OSRM live routing endpoint unavailable (%s); activating air-gapped geodesic route model", exc)
+    candidate_urls = []
+    if OSRM_BASE_URL:
+        # Self-hosted OSRM container endpoint
+        candidate_urls.append(
+            (f"{OSRM_BASE_URL.rstrip('/')}/route/v1/driving/{start_lon},{start_lat};{end_lon},{end_lat}?overview=full&geometries=geojson", "OSRM-Self-Hosted")
+        )
+    candidate_urls.append(
+        (f"{OSRM_PUBLIC_DEMO_URL}/{start_lon},{start_lat};{end_lon},{end_lat}?overview=full&geometries=geojson", "OSRM-Public-Demo")
+    )
+
+    for url, engine_name in candidate_urls:
+        try:
+            response = requests.get(url, timeout=2.0)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("code") == "Ok" and data.get("routes"):
+                    route = data["routes"][0]
+                    distance_km = round(route["distance"] / 1000.0, 2)
+                    duration_min = round(route["duration"] / 60.0, 1)
+                    geometry = route["geometry"]
+                    return {
+                        "status": "SUCCESS",
+                        "routing_engine": engine_name,
+                        "distance_km": distance_km,
+                        "duration_minutes": duration_min,
+                        "coordinates": geometry.get("coordinates", []),
+                        "summary": f"Fastest police intercept route via road network ({engine_name}): {distance_km} km ({duration_min} mins)",
+                    }
+        except Exception as exc:
+            logger.info("OSRM routing attempt via %s unavailable (%s); checking next route engine", engine_name, exc)
 
     # Air-Gapped Resilient Geodesic Fallback:
     # Uses Haversine with standard Indian urban road winding tortuosity factor (1.35x)

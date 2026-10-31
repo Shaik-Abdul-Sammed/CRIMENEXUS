@@ -81,10 +81,26 @@ async def lifespan(app: FastAPI):
     stream_worker_thread.start()
     logger.info("[Streaming] Redis Real-Time Pipeline Consumer thread spawned.")
 
+    # Launch CCTNS Background Polling Daemon (15-minute interval)
+    from app.api.external import poll_cctns_updates
+    stop_cctns_poller = threading.Event()
+    def _cctns_poll_loop():
+        while not stop_cctns_poller.is_set():
+            try:
+                poll_cctns_updates()
+            except Exception as e:
+                logger.warning("CCTNS background poller loop tick error: %s", e)
+            stop_cctns_poller.wait(900)  # 15 minutes
+
+    cctns_thread = threading.Thread(target=_cctns_poll_loop, daemon=True, name="CRIMENEXUS-CCTNSPoller")
+    cctns_thread.start()
+    logger.info("[CCTNS] Real-Time 15-Minute Polling Daemon spawned.")
+
     yield
 
     logger.info("Shutting down CRIMENEXUS backend...")
     stop_stream_worker.set()
+    stop_cctns_poller.set()
     close_neo4j_driver()
 
 

@@ -58,6 +58,28 @@ CCTNS_DATABASE: Dict[str, Dict[str, Any]] = {
         ],
         "investigating_officer": "Sub-Inspector Amit Verma",
         "current_status": "CHARGESHEET_FILED"
+    },
+    "FIR-2026-DEL-8902": {
+        "fir_number": "FIR-2026-DEL-8902",
+        "state": "Delhi",
+        "district": "Central Delhi",
+        "police_station": "Cyber Crime PS, Sector 20",
+        "registration_date": "2026-03-20T10:00:00Z",
+        "sections_of_law": ["Section 111 BNS", "Section 318 BNS", "Section 66D IT Act"],
+        "complainant": "Special Cell / Financial Crimes Wing",
+        "accused_persons": [
+            {
+                "name": "Rajan",
+                "father_name": "K. L. Sharma",
+                "alias": "Rajan Bhai",
+                "history_sheet_status": "HS-DEL-Active-09",
+                "prior_chargesheets": 4,
+                "known_mobiles": ["+919999988888"],
+                "modus_operandi": "Hawala Mastermind & Inter-state syndicate leader"
+            }
+        ],
+        "investigating_officer": "ACP Vikramaditya Singh",
+        "current_status": "UNDER_INVESTIGATION"
     }
 }
 

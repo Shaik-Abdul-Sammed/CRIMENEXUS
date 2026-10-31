@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: crimenexus_ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    environment:
+      - OLLAMA_KEEP_ALIVE=24h
+    networks:
+      - crimenexus_prod_net
+
+  backend:
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - LLM_MODEL_NAME=mistral:7b-instruct
+    depends_on:
+      - ollama
+
+volumes:
+  ollama_models:
+    name: crimenexus_ollama_models
+
+networks:
+  crimenexus_prod_net:
+    name: crimenexus_crimenexus_prod_net
+    external: true
