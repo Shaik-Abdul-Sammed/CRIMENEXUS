@@ -17,6 +17,7 @@ import { TimelinePage } from './features/timeline/TimelinePage';
 import { MapIntelligencePage } from './features/map/MapIntelligencePage';
 import { AIAssistantPage } from './features/assistant/AIAssistantPage';
 import { MostWantedPage } from './features/watchlist/MostWantedPage';
+import { DraftingPage } from './features/drafting/DraftingPage';
 import { ReportsPage } from './features/reports/ReportsPage';
 import { AuditLogsPage } from './features/audit/AuditLogsPage';
 import { SettingsPage } from './features/settings/SettingsPage';
@@ -59,6 +60,7 @@ export function App() {
             <Route path="/timeline" element={<TimelinePage />} />
             <Route path="/map" element={<MapIntelligencePage />} />
             <Route path="/most-wanted" element={<MostWantedPage />} />
+            <Route path="/drafting" element={<DraftingPage />} />
             <Route path="/ai-assistant" element={<AIAssistantPage />} />
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/audit-logs" element={<AuditLogsPage />} />

@@ -1,5 +1,6 @@
 import os
 import logging
+import threading
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -35,6 +36,10 @@ from app.api.forensics import router as forensics_router
 from app.api.legal import router as legal_router
 from app.api.external import router as external_router
 from app.api.analytics import router as analytics_router
+from app.api.drafting import router as drafting_router
+from app.services.streaming.redis_streams import get_streaming_stats
+from app.services.streaming.stream_processor import run_stream_consumer_worker
+from app.services.streaming.stream_producer import simulate_live_event
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("crimenexus.main")
@@ -65,14 +70,27 @@ async def lifespan(app: FastAPI):
     except Exception as exc:
         logger.warning("Could not warm up ML models on startup: %s", exc)
 
+    # Launch Real-Time Redis Stream Consumer in background daemon thread
+    stop_stream_worker = threading.Event()
+    stream_worker_thread = threading.Thread(
+        target=run_stream_consumer_worker,
+        args=(stop_stream_worker,),
+        daemon=True,
+        name="CRIMENEXUS-RedisStreamWorker"
+    )
+    stream_worker_thread.start()
+    logger.info("[Streaming] Redis Real-Time Pipeline Consumer thread spawned.")
+
     yield
 
     logger.info("Shutting down CRIMENEXUS backend...")
+    stop_stream_worker.set()
     close_neo4j_driver()
 
 
-# Initialize SlowAPI rate limiter
-limiter = Limiter(key_func=get_remote_address, default_limits=["120/minute"])
+# Initialize SlowAPI rate limiter tuned for Police Department workloads
+# 300/minute for active Investigating Officers, with burst capability up to 60/second
+limiter = Limiter(key_func=get_remote_address, default_limits=["300/minute", "60/second"])
 
 is_production = (
     os.getenv("ENVIRONMENT", "").lower() == "production" or
@@ -112,10 +130,13 @@ app.include_router(forensics_router, prefix="/api/v1")
 app.include_router(legal_router, prefix="/api/v1")
 app.include_router(external_router, prefix="/api/v1")
 app.include_router(analytics_router, prefix="/api/v1")
+app.include_router(drafting_router, prefix="/api/v1")
 
 # Feature 4: Case History Timeline direct alias
 from app.api.legal import get_audit_ledger
+from app.api.external import sync_live_cctns_fir_endpoint
 app.add_api_route("/api/v1/audit/ledger", get_audit_ledger, methods=["GET"], tags=["Case Audit & Timeline"])
+app.add_api_route("/api/v1/cctns/sync/{case_id}", sync_live_cctns_fir_endpoint, methods=["POST"], tags=["Government Police Grid & Telemetry"])
 
 
 @app.get("/")
@@ -142,3 +163,16 @@ def health():
 def ml_status():
     """Returns in-memory model registry and warming status for all 5 ML models."""
     return get_ml_registry().get_status()
+
+
+@app.get("/api/v1/streaming/stats", tags=["Streaming Ingestion"])
+def streaming_stats():
+    """Returns real-time event counts across Redis Stream topics."""
+    return get_streaming_stats()
+
+
+@app.post("/api/v1/streaming/simulate", tags=["Streaming Ingestion"])
+def streaming_simulate():
+    """Simulates an incoming real-time streaming bank/CDR/ANPR event."""
+    simulate_live_event()
+    return {"status": "success", "message": "Simulated live event published to Redis Stream"}

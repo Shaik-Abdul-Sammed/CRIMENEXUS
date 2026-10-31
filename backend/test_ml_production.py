@@ -122,10 +122,11 @@ def test_mlops_model_registry():
     """
     registry = get_ml_registry()
     status = registry.warm_up_all_models()
-    assert len(status) == 5
+    assert len(status) >= 5
     assert status["ocr_engine"]["status"] in ["READY", "UNAVAILABLE"]
     assert status["ner_model"]["status"] == "READY"
     assert status["financial_anomaly_detector"]["status"] == "READY"
     assert status["explainable_risk_model"]["status"] == "READY"
     assert status["mo_semantic_search"]["status"] == "READY"
-    print("\n[TEST MLOPS REGISTRY PASSED]: All 5 Production Models Warmed In Memory")
+    assert status["rag_draft_engine"]["status"] == "READY"
+    print("\n[TEST MLOPS REGISTRY PASSED]: All Production Models Warmed In Memory")

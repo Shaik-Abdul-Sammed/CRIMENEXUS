@@ -18,6 +18,7 @@ import {
   ChevronRight,
   ShieldCheck,
   Flame,
+  Scale,
 } from 'lucide-react';
 import { useAppStore } from '../../stores/appStore';
 import { useAuthStore } from '../../stores/authStore';
@@ -42,6 +43,7 @@ export function Sidebar() {
     { label: t('nav.timeline'), path: '/timeline', icon: Clock },
     { label: t('nav.map'), path: '/map', icon: MapPin },
     { label: t('nav.aiAssistant'), path: '/ai-assistant', icon: Bot, badge: 'RAG' },
+    { label: 'Legal Drafting', path: '/drafting', icon: Scale, badge: 'AUTO' },
     { label: t('nav.reports'), path: '/reports', icon: FileText },
     { label: t('nav.auditLogs'), path: '/audit-logs', icon: History, minRole: 'ANALYST' },
     { label: t('nav.settings'), path: '/settings', icon: Settings },

@@ -1,6 +1,8 @@
+import json
 from typing import List, Dict, Any
 from fastapi import APIRouter
 from app.database.neo4j import execute_cypher
+from app.services.streaming.redis_streams import get_redis_client
 
 from ai_engine.network_analysis.centrality import compute_main_suspects
 from ai_engine.network_analysis.community_detection import detect_criminal_cells
@@ -17,7 +19,18 @@ def get_most_wanted_watchlist() -> List[Dict[str, Any]]:
     Returns District Most Wanted Watchlist for Investigating Officers.
     Filters suspects with status='WANTED' or risk_score >= 0.70 / 70%,
     ranked by risk score in descending order with full operational intelligence.
+    Cached for 5 minutes (300s TTL) in Redis.
     """
+    cache_key = "cache:threats:most_wanted"
+    r = get_redis_client()
+    if r:
+        try:
+            cached_val = r.get(cache_key)
+            if cached_val:
+                return json.loads(cached_val)
+        except Exception:
+            pass
+
     query = """
     MATCH (p:Person)
     WHERE p.status = 'WANTED' OR p.risk_score >= 0.70 OR p.risk_score >= 70
@@ -144,6 +157,11 @@ def get_most_wanted_watchlist() -> List[Dict[str, Any]]:
             })
 
     watchlist.sort(key=lambda x: x["risk_score"], reverse=True)
+    if r:
+        try:
+            r.setex(cache_key, 300, json.dumps(watchlist))
+        except Exception:
+            pass
     return watchlist
 
 

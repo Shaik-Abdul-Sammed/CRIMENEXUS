@@ -1,3 +1,4 @@
+import json
 import logging
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
@@ -12,6 +13,7 @@ from app.models.call_record import CallRecord
 from app.models.vehicle_sighting import VehicleSighting
 from app.services.forensics.cdr_parser import KNOWN_TOWERS
 from app.ml_service.anomaly_detector import get_anomaly_detector
+from app.services.streaming.redis_streams import get_redis_client
 
 logger = logging.getLogger("crimenexus.api.analytics")
 
@@ -30,7 +32,18 @@ def detect_smurfing(
     Detects if 3 or more transactions under ₹50,000 were sent to the same beneficiary account
     from different sender accounts within a 48-hour window.
     If detected, automatically generates a High/Critical Priority Alert in the PostgreSQL alerts table.
+    Cached for 5 minutes (300s TTL) in Redis.
     """
+    cache_key = f"cache:analytics:smurfing:{threshold_amount}:{min_senders}:{window_hours}"
+    r = get_redis_client()
+    if r:
+        try:
+            cached_val = r.get(cache_key)
+            if cached_val:
+                return json.loads(cached_val)
+        except Exception:
+            pass
+
     # 1. Fetch candidate transactions under threshold
     sub_threshold_txs = (
         db.query(BankTransaction)
@@ -157,13 +170,19 @@ def detect_smurfing(
                         "created_at": existing_alert.created_at.isoformat()
                     })
 
-    return {
+    result_payload = {
         "status": "success",
         "tripwire": "SMURFING_STRUCTURING_DETECTION",
         "incidents_detected": len(detected_incidents),
         "incidents": detected_incidents,
         "alerts": generated_alerts
     }
+    if r:
+        try:
+            r.setex(cache_key, 300, json.dumps(result_payload))
+        except Exception:
+            pass
+    return result_payload
 
 
 @router.get("/alerts", summary="Get active system and tripwire alerts")

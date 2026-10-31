@@ -29,6 +29,7 @@ import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { getStatusBadgeClass } from '../../utils/formatters';
 import { RecommendedActions } from './RecommendedActions';
+import { LiveIngestionWidget } from './LiveIngestionWidget';
 
 export function DashboardPage() {
   const { data: cases } = useInvestigations();
@@ -199,6 +200,9 @@ export function DashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Live Real-Time Ingestion Streaming Pipeline Widget */}
+      <LiveIngestionWidget />
 
       {/* Top Stat Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
