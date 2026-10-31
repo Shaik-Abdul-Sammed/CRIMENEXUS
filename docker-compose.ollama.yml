@@ -15,6 +15,7 @@ services:
       - crimenexus_prod_net
 
   backend:
+    image: crimenexus-backend:latest
     environment:
       - OLLAMA_BASE_URL=http://ollama:11434
       - LLM_MODEL_NAME=mistral:7b-instruct

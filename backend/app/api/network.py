@@ -8,6 +8,23 @@ logger = logging.getLogger("crimenexus.api.network")
 router = APIRouter(prefix="/network", tags=["Network Graph Engine"])
 
 
+def _sanitize_props(props: Dict[str, Any]) -> Dict[str, Any]:
+    """Sanitize Neo4j property dictionary to ensure JSON-serializable types."""
+    if not isinstance(props, dict):
+        return {}
+    sanitized = {}
+    for k, v in props.items():
+        if hasattr(v, "iso_format"):
+            sanitized[k] = v.iso_format()
+        elif hasattr(v, "isoformat"):
+            sanitized[k] = v.isoformat()
+        elif isinstance(v, (int, float, str, bool)) or v is None:
+            sanitized[k] = v
+        else:
+            sanitized[k] = str(v)
+    return sanitized
+
+
 @router.get("/graph")
 def get_network_graph(limit: int = 150) -> Dict[str, Any]:
     """
@@ -42,6 +59,10 @@ def get_network_graph(limit: int = 150) -> Dict[str, Any]:
         tgt_id = f"node-{rec['tgt_id']}"
         rel_id = f"edge-{rec['rel_id']}"
 
+        src_props = _sanitize_props(rec["src_props"])
+        tgt_props = _sanitize_props(rec["tgt_props"])
+        rel_props = _sanitize_props(rec["rel_props"])
+
         # Register Source Node
         if src_id not in nodes_dict:
             nodes_dict[src_id] = {
@@ -50,8 +71,8 @@ def get_network_graph(limit: int = 150) -> Dict[str, Any]:
                     "label": rec["src_name"],
                     "name": rec["src_name"],
                     "type": (rec["src_type"] or "PERSON").upper(),
-                    "riskScore": rec["src_props"].get("risk_score", 0.75),
-                    "properties": rec["src_props"]
+                    "riskScore": src_props.get("risk_score", 0.75),
+                    "properties": src_props
                 }
             }
 
@@ -63,8 +84,8 @@ def get_network_graph(limit: int = 150) -> Dict[str, Any]:
                     "label": rec["tgt_name"],
                     "name": rec["tgt_name"],
                     "type": (rec["tgt_type"] or "ORGANIZATION").upper(),
-                    "riskScore": rec["tgt_props"].get("risk_score", 0.60),
-                    "properties": rec["tgt_props"]
+                    "riskScore": tgt_props.get("risk_score", 0.60),
+                    "properties": tgt_props
                 }
             }
 
@@ -77,7 +98,7 @@ def get_network_graph(limit: int = 150) -> Dict[str, Any]:
                 "label": rec["rel_type"].replace("_", " "),
                 "type": rec["rel_type"],
                 "confidence": float(rec.get("confidence", 0.95)),
-                "properties": rec["rel_props"]
+                "properties": rel_props
             }
         })
 

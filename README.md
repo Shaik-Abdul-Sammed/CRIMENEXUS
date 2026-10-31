@@ -143,6 +143,18 @@ docker compose -f docker-compose.prod.yml up -d
 * `Streaming Ingestion`: Redis Streams dual-write to PostgreSQL and Neo4j.
 * `Threat Risk Scorer`: Gradient Boosting Regressor with exact SHAP feature attributions.
 
+### 10 Advanced Production & Differentiating Features
+1. **Production Observability Stack:** OpenMetrics/Prometheus (`/metrics`), Sentry exception tracing, and `structlog` JSON telemetry for state police control centers.
+2. **AI Model Drift Detection & Auto-Retraining:** Kolmogorov-Smirnov (`scipy.stats.ks_2samp`) continuous distribution monitoring with automated alerts.
+3. **Federated Learning Framework:** Privacy-preserving `FedAvg` collaborative weight training across police stations without transmitting raw citizen banking data (DPDP Act 2023 compliant).
+4. **Blockchain-Based Evidence Notarization:** Deterministic binary Merkle tree over the WORM audit ledger for trial court non-repudiation and public ledger anchoring.
+5. **Beat Constable SMS/WhatsApp Dispatcher:** Immediate field alerts for financial smurfing, fugitive ANPR sightings, and statutory remand expiry deadlines with rate limiting.
+6. **Voice Biometrics & Speaker Identification:** MFCC 256-dimensional voiceprint extraction and ChromaDB cosine similarity matching for wiretap and CDR recordings.
+7. **Automated Bail Opposition Generator:** Statutory Section 480 BNSS / 437 CrPC counter-argument engine integrating SHAP threat scores, flight risk, and Supreme Court case law.
+8. **Threat Intelligence TAXII/STIX Integration:** Continuous ingestion of CERT-In / I4C Indicators of Compromise (malicious UPIs, numbers, IPs) into Neo4j with auto-linking to open cases.
+9. **Load Testing Suite & Police SLA Enforcement:** High-concurrency Locust & smoke testing suite guaranteeing P99 < 500ms latency and < 0.1% error rates under 500 concurrent users.
+10. **Crime Scene 3D Reconstruction (Photogrammetry):** SIFT feature matching and multi-view triangulation creating standard `.ply` 3D point clouds from scene photos.
+
 ---
 
 ## 7. Verification & Automated Test Suite
