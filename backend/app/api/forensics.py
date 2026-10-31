@@ -334,3 +334,40 @@ def search_similar_mo(payload: MOSemanticSearchRequest):
         threshold=payload.threshold or 0.85
     )
     return results
+
+
+@router.post("/forensics/video/anpr-feed", summary="Multi-Modal Video ANPR Processor & Live Redis Ingestion")
+async def process_video_anpr_feed(
+    file: UploadFile = File(...),
+    camera_id: str = Form("CAM-YAMUNA-EXPR-04"),
+    location_name: str = Form("Yamuna Expressway Toll KM 48"),
+    latitude: float = Form(28.1402),
+    longitude: float = Form(77.5510),
+):
+    """
+    Decodes uploaded video stream frames, performs Optical Character Recognition (OCR)
+    to detect vehicle registration plates, and publishes sightings directly into
+    the Redis stream 'anpr.sightings'.
+    """
+    from app.ml_service.video_processor import get_video_processor
+
+    content_bytes = await file.read()
+    if len(content_bytes) > MAX_UPLOAD_SIZE_BYTES:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail=f"Video payload exceeds maximum limit of 10MB (size: {len(content_bytes):,} bytes)."
+        )
+
+    clean_cam = sanitize_input_text(camera_id) or "CAM-ANPR-01"
+    clean_loc = sanitize_input_text(location_name) or "Highway Toll Checkpoint"
+
+    processor = get_video_processor()
+    feed_summary = processor.process_video_feed(
+        video_bytes=content_bytes,
+        camera_id=clean_cam,
+        location_name=clean_loc,
+        latitude=latitude,
+        longitude=longitude,
+    )
+
+    return feed_summary

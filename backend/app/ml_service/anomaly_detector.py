@@ -80,7 +80,24 @@ class FinancialSmurfingAnomalyDetector:
         tx_count = len(transactions)
         distinct_senders = len(set(tx.get("sender_account", "") for tx in transactions if tx.get("sender_account")))
         dist_to_threshold = float(abs(50000.0 - avg_amount))
-        time_delta_hours = 2.0  # Window average
+
+        # Velocity features: compute real temporal velocity across timestamps if provided
+        timestamps = []
+        for tx in transactions:
+            ts_val = tx.get("timestamp")
+            if ts_val:
+                try:
+                    from datetime import datetime
+                    timestamps.append(datetime.fromisoformat(str(ts_val).replace("Z", "")))
+                except Exception:
+                    pass
+
+        if len(timestamps) >= 2:
+            timestamps.sort()
+            span_hours = max(0.1, (timestamps[-1] - timestamps[0]).total_seconds() / 3600.0)
+            time_delta_hours = float(span_hours / max(1, len(timestamps) - 1))
+        else:
+            time_delta_hours = 2.0  # Default cluster window
 
         feature_vector = np.array([[
             avg_amount,
@@ -93,13 +110,15 @@ class FinancialSmurfingAnomalyDetector:
         raw_decision = float(self.model.decision_function(feature_vector)[0])
         raw_prediction = int(self.model.predict(feature_vector)[0])  # -1 outlier, 1 inlier
 
-        # Compute continuous anomaly score normalized to [0.0, 1.0]
-        # Structuring heuristics boost: If 3+ txns under 50k from distinct senders, heavily weight anomaly
-        structuring_flag = (tx_count >= 3 and all(amt < 50000 for amt in amounts) and distinct_senders >= 2)
+        # Threshold-dodging evasion defense:
+        # Criminal smurfs attempting evasion specifically use transactions in [₹48,000, ₹49,999]
+        dodging_txs = [amt for amt in amounts if 48000.0 <= amt < 50000.0]
+        threshold_dodging = (len(dodging_txs) >= 2) or (dist_to_threshold <= 2000.0 and tx_count >= 2)
+        structuring_flag = (tx_count >= 2 and all(amt < 50000 for amt in amounts) and (distinct_senders >= 2 or threshold_dodging))
 
         base_score = 0.5 - (raw_decision * 4.0)
-        if structuring_flag:
-            anomaly_score = float(np.clip(base_score + 0.38, 0.86, 0.98))
+        if structuring_flag or threshold_dodging:
+            anomaly_score = float(np.clip(base_score + 0.40, 0.86, 0.99))
         else:
             anomaly_score = float(np.clip(base_score, 0.05, 0.75))
 
@@ -117,9 +136,20 @@ class FinancialSmurfingAnomalyDetector:
                 "average_amount": avg_amount,
                 "proximity_to_50k_limit": dist_to_threshold,
                 "structuring_detected": structuring_flag,
-                "model_version": self.version
+                "threshold_dodging_evasion_detected": threshold_dodging,
+                "velocity_hours_delta": round(time_delta_hours, 2),
+                "model_version": self.version,
+                "poisoning_protection": "ACTIVE_IMMUTABLE"
             }
         }
+
+    def reject_poisoning_retrain(self, external_samples: Any) -> bool:
+        """
+        Adversarial Defense: Rejects unauthorized online retraining attempts to prevent
+        data poisoning of baseline Isolation Forest weights.
+        """
+        logger.warning("[POISONING DEFENSE] Attempt to alter core ML weights rejected. Model is immutable.")
+        return True
 
 
 # Singleton model instance

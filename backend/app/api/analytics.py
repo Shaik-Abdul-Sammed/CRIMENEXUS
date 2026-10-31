@@ -13,6 +13,7 @@ from app.models.call_record import CallRecord
 from app.models.vehicle_sighting import VehicleSighting
 from app.services.forensics.cdr_parser import KNOWN_TOWERS
 from app.ml_service.anomaly_detector import get_anomaly_detector
+from app.ml_service.forecasting_engine import get_forecasting_engine
 from app.services.streaming.redis_streams import get_redis_client
 
 logger = logging.getLogger("crimenexus.api.analytics")
@@ -333,3 +334,13 @@ def get_movement_timeline(
         "geojson": geojson,
         "timeline_events": events
     }
+
+
+@router.get("/forecast", summary="Predictive 7-Day Spatio-Temporal Crime Forecasting")
+def get_crime_forecast():
+    """
+    Returns time-series forecasted crime incident counts, spike probabilities,
+    and patrol zone hotspot recommendations for the next 7 days by district.
+    """
+    engine = get_forecasting_engine()
+    return engine.forecast_7_days()

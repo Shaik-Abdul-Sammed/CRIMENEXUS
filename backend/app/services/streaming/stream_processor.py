@@ -1,9 +1,10 @@
 import json
 import logging
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 import threading
+from pydantic import BaseModel, Field, field_validator, ValidationError
 
 from app.database.postgres import SessionLocal
 from app.database.neo4j import execute_cypher
@@ -15,32 +16,77 @@ from app.services.streaming.redis_streams import get_redis_client, STREAM_TOPICS
 logger = logging.getLogger("crimenexus.streaming.processor")
 
 
+class StreamBankTxSchema(BaseModel):
+    transaction_id: str
+    sender_name: str = "Unknown Sender"
+    sender_account: str
+    receiver_name: str = "Unknown Receiver"
+    receiver_account: str
+    amount: float = Field(gt=0, description="Amount must be strictly positive")
+    transaction_type: str = "NEFT_STREAM"
+    timestamp: datetime
+
+    @field_validator("timestamp", mode="before")
+    @classmethod
+    def parse_and_validate_time(cls, v):
+        if isinstance(v, str):
+            try:
+                dt = datetime.fromisoformat(v.replace("Z", "+00:00"))
+            except Exception:
+                dt = datetime.utcnow()
+        elif isinstance(v, datetime):
+            dt = v
+        else:
+            dt = datetime.utcnow()
+
+        # Reject adversarial future timestamps > 5 minutes into the future
+        now = datetime.utcnow()
+        # strip tz for comparison
+        dt_naive = dt.replace(tzinfo=None)
+        if dt_naive > now + timedelta(minutes=5):
+            raise ValueError(f"Adversarial future timestamp rejected: {dt_naive} > {now}")
+        return dt_naive
+
+
 def process_single_event(topic: str, data: Dict[str, Any]) -> bool:
     """
     Pipes ingested streaming events into PostgreSQL relational storage
     and dual-writes corresponding nodes & relationships into Neo4j.
+    Applies strict zero-trust Pydantic schema validation.
     """
     db = SessionLocal()
     try:
         if topic == "bank.transactions":
-            tx_id = data.get("transaction_id") or f"TX-STREAM-{int(time.time()*1000)}"
-            amount = float(data.get("amount", 0.0))
-            ts_str = data.get("timestamp")
+            # Zero-Trust Schema Validation
             try:
-                tx_time = datetime.fromisoformat(ts_str) if ts_str else datetime.utcnow()
-            except Exception:
-                tx_time = datetime.utcnow()
+                validated_tx = StreamBankTxSchema(
+                    transaction_id=data.get("transaction_id") or f"TX-STREAM-{int(time.time()*1000)}",
+                    sender_name=data.get("sender_name", "Unknown Sender"),
+                    sender_account=data.get("sender_account", "ACC-STREAM-001"),
+                    receiver_name=data.get("receiver_name", "Unknown Receiver"),
+                    receiver_account=data.get("receiver_account", "ACC-STREAM-002"),
+                    amount=float(data.get("amount", 0.0)),
+                    transaction_type=data.get("transaction_type", "NEFT_STREAM"),
+                    timestamp=data.get("timestamp") or datetime.utcnow()
+                )
+            except (ValidationError, ValueError) as val_err:
+                logger.warning("[ZERO TRUST REJECTION] Malformed or adversarial stream transaction: %s", val_err)
+                return False
+
+            tx_id = validated_tx.transaction_id
+            amount = validated_tx.amount
+            tx_time = validated_tx.timestamp
 
             # 1. PostgreSQL Persistence
             tx = BankTransaction(
                 transaction_id=tx_id,
-                sender_name=data.get("sender_name", "Unknown Sender"),
-                sender_account=data.get("sender_account", "ACC-STREAM-001"),
-                receiver_name=data.get("receiver_name", "Unknown Receiver"),
-                receiver_account=data.get("receiver_account", "ACC-STREAM-002"),
+                sender_name=validated_tx.sender_name,
+                sender_account=validated_tx.sender_account,
+                receiver_name=validated_tx.receiver_name,
+                receiver_account=validated_tx.receiver_account,
                 amount=amount,
                 timestamp=tx_time,
-                transaction_type=data.get("transaction_type", "NEFT_STREAM")
+                transaction_type=validated_tx.transaction_type
             )
             db.add(tx)
             db.commit()
