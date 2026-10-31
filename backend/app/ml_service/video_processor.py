@@ -104,6 +104,16 @@ class VideoANPRProcessor:
         detected: List[Dict[str, Any]] = []
         try:
             import pytesseract
+            from PIL import ImageStat
+
+            # Measure frame contrast/sharpness for adaptive confidence scoring
+            stat = ImageStat.Stat(image.convert("L"))
+            contrast_val = stat.stddev[0] if stat.stddev else 50.0
+            if contrast_val < 25.0:
+                calc_confidence = round(max(0.45, min(0.68, contrast_val / 40.0)), 2)
+            else:
+                calc_confidence = 0.94
+
             processed = self.preprocess_frame_for_anpr(image)
             raw_text = pytesseract.image_to_string(processed)
             if not raw_text.strip():
@@ -116,14 +126,49 @@ class VideoANPRProcessor:
                 clean_plate = f"{state_code.upper()} {district_num.zfill(2)} {series.upper()} {plate_seq}"
                 detected.append({
                     "plate_number": clean_plate,
-                    "confidence": 0.94,
+                    "confidence": calc_confidence,
                     "state_code": state_code.upper(),
                     "raw_match": f"{state_code}{district_num}{series}{plate_seq}",
+                    "contrast_stddev": round(contrast_val, 2)
                 })
         except Exception as exc:
             logger.warning("OCR ANPR plate recognition failed: %s", exc)
 
         return detected
+
+    def save_processed_frame(
+        self,
+        frame: Image.Image,
+        plate_number: str = "UNKNOWN",
+        timestamp: Optional[str] = None,
+        output_dir: str = "data/evidence/anpr"
+    ) -> Dict[str, Any]:
+        """
+        Saves the processed video frame with ISO timestamp and cryptographic SHA-256 evidence hash.
+        """
+        import hashlib
+        os.makedirs(output_dir, exist_ok=True)
+        ts_str = timestamp or datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S_%f")
+        safe_plate = plate_number.replace(" ", "_").replace("-", "_")
+        filename = f"ANPR_{safe_plate}_{ts_str}.png"
+        filepath = os.path.join(output_dir, filename)
+
+        buf = io.BytesIO()
+        frame.save(buf, format="PNG")
+        frame_bytes = buf.getvalue()
+        sha256_hash = hashlib.sha256(frame_bytes).hexdigest()
+
+        with open(filepath, "wb") as f:
+            f.write(frame_bytes)
+
+        return {
+            "file_path": filepath,
+            "filename": filename,
+            "sha256_hash": sha256_hash,
+            "plate_number": plate_number,
+            "timestamp": ts_str,
+            "file_size_bytes": len(frame_bytes)
+        }
 
     def publish_sighting(self, sighting: Dict[str, Any]) -> Optional[str]:
         """

@@ -13,14 +13,15 @@ logger = logging.getLogger("crimenexus.ml.rag")
 
 # Adversarial Prompt Injection & Exfiltration Patterns
 ADVERSARIAL_INJECTION_PATTERNS = [
-    r'(?i)ignore\s+(?:all\s+)?(?:previous|prior|above)\s+instructions?',
-    r'(?i)disregard\s+(?:all\s+)?(?:previous|prior|above)\s+instructions?',
+    r'(?i)ignore\s+(?:all\s+)?(?:previous\s+|prior\s+|above\s+)?instructions?',
+    r'(?i)disregard\s+(?:all\s+)?(?:previous\s+|prior\s+|above\s+)?instructions?',
+    r'(?i)forget\s+(?:all\s+)?(?:rules|instructions?|guidelines)',
     r'(?i)output\s+(?:the\s+)?(?:secret|password|credentials?|database\s+password)',
     r'(?i)(?:system\s+prompt|dan\s+mode|jailbreak|developer\s+mode)',
     r'(?i)mark\s+(?:this\s+)?(?:suspect|accused)\s+(?:as\s+)?(?:innocent|clean)',
     r'(?i)(?:suspect\s+is\s+innocent|declare\s+innocence)',
     r'(?i)(?:exonerate\s+(?:all|suspect)|drop\s+all\s+charges)',
-    r'(?i)(?:police\s+database\s+password|admin\s+password|root\s+credentials?)',
+    r'(?i)(?:police\s+database\s+password|admin\s+password|root\s+credentials?|secret\s+key)',
     r'(?i)<script[\s\S]*?>[\s\S]*?<\/script>',
 ]
 
@@ -138,8 +139,8 @@ class RAGDraftEngine:
                 clean_text = re.sub(pattern, "[ADVERSARIAL INJECTION SANITIZED]", clean_text)
 
         # Remove attempts to exfiltrate secret credentials
-        for leaked in ["database password", "admin password", "secret key", "jwt_secret"]:
-            clean_text = re.sub(re.escape(leaked), "[REDACTED_SECURITY_SENSITIVE]", clean_text, flags=re.IGNORECASE)
+        for leaked in ["database password", "police database password", "admin password", "secret key", "jwt_secret", "password"]:
+            clean_text = re.sub(r'(?i)\b' + re.escape(leaked) + r'\b', "[REDACTED_SECURITY_SENSITIVE]", clean_text)
 
         if attack_detected:
             logger.warning("[RED TEAM DEFENSE] Prompt injection attack neutralized in narrative: %s", neutralized_patterns)

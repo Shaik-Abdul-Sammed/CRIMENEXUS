@@ -37,7 +37,10 @@ def parse_telecom_cdr_csv(file_content: str, db: Session) -> Dict[str, Any]:
     performs forensic cell tower geolocation, identifies SIM-swapping / IMEI anomalies,
     and executes dual-write to PostgreSQL and Neo4j.
     """
-    reader = csv.DictReader(io.StringIO(file_content))
+    reader = csv.DictReader(io.StringIO(file_content.strip()))
+    if not reader.fieldnames:
+        raise ValueError("Invalid or empty CDR CSV: no header columns found.")
+
     processed_records: List[Dict[str, Any]] = []
     imei_to_sims: Dict[str, set] = {}
     tower_hits: Dict[str, int] = {}
@@ -52,6 +55,19 @@ def parse_telecom_cdr_csv(file_content: str, db: Session) -> Dict[str, Any]:
         tower = sanitize_csv_cell(row.get("cell_tower") or row.get("tower_id") or row.get("first_cgi") or "TOWER-NOIDA-62")
         imei = sanitize_csv_cell(row.get("imei") or row.get("handset_imei") or "358912093847291")
         call_type = row.get("call_type") or "VOICE"
+
+        # Check for explicit custom lat/lon columns
+        custom_lat = row.get("latitude") or row.get("lat")
+        custom_lon = row.get("longitude") or row.get("lon")
+        parsed_custom_geo = None
+        if custom_lat is not None or custom_lon is not None:
+            if not custom_lat or not custom_lon:
+                logger.warning("CDR record contains missing or partial latitude/longitude values: lat=%s, lon=%s", custom_lat, custom_lon)
+            else:
+                try:
+                    parsed_custom_geo = {"lat": float(custom_lat), "lon": float(custom_lon), "sector": row.get("sector") or "Custom Cell Tower"}
+                except (ValueError, TypeError):
+                    logger.warning("Unparseable GPS coordinates in CDR row: lat=%s, lon=%s", custom_lat, custom_lon)
 
         if not caller or not receiver:
             continue
@@ -74,7 +90,7 @@ def parse_telecom_cdr_csv(file_content: str, db: Session) -> Dict[str, Any]:
         pair_counts[pair_key] = pair_counts.get(pair_key, 0) + 1
 
         # Geolocation lookup
-        tower_geo = KNOWN_TOWERS.get(tower, {"lat": 28.6139, "lon": 77.2090, "sector": "General Metropolitan", "azimuth": 0})
+        tower_geo = parsed_custom_geo or KNOWN_TOWERS.get(tower, {"lat": 28.6139, "lon": 77.2090, "sector": "General Metropolitan", "azimuth": 0})
 
         record_id = f"CDR-{uuid.uuid4().hex[:8].upper()}"
 

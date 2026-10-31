@@ -148,7 +148,11 @@ app.include_router(drafting_router, prefix="/api/v1")
 from app.api.legal import get_audit_ledger
 from app.api.external import sync_live_cctns_fir_endpoint
 from app.api.analytics import get_nearest_police_station, route_to_incident
+from app.api.threats import get_most_wanted_watchlist
+from app.api.cases import export_dossier_pdf
 app.add_api_route("/api/v1/audit/ledger", get_audit_ledger, methods=["GET"], tags=["Case Audit & Timeline"])
+app.add_api_route("/threats/most-wanted", get_most_wanted_watchlist, methods=["GET"], tags=["Threat Intelligence"])
+app.add_api_route("/cases/export/dossier-pdf", export_dossier_pdf, methods=["GET"], tags=["Case Dossier"])
 app.add_api_route("/api/v1/cctns/sync/{case_id}", sync_live_cctns_fir_endpoint, methods=["POST"], tags=["Government Police Grid & Telemetry"])
 app.add_api_route("/api/v1/geo/nearest-station", get_nearest_police_station, methods=["GET"], tags=["Geospatial & Police Proximity"])
 app.add_api_route("/api/v1/geo/route-to-incident", route_to_incident, methods=["POST"], tags=["Geospatial & Police Proximity"])

@@ -254,9 +254,18 @@ def get_movement_timeline(
     # 2. Fetch CDR Phone Records
     cdr_query = db.query(CallRecord)
     if phone_number:
+        p_strip = phone_number.strip()
+        phone_candidates = {
+            phone_number,
+            p_strip,
+            "+" + p_strip.lstrip("+"),
+            p_strip.lstrip("+"),
+            phone_number.replace(" ", "").replace("-", ""),
+            "+" + phone_number.replace(" ", "").replace("-", "").lstrip("+")
+        }
         cdr_query = cdr_query.filter(
-            (CallRecord.caller_number == phone_number) |
-            (CallRecord.receiver_number == phone_number)
+            (CallRecord.caller_number.in_(phone_candidates)) |
+            (CallRecord.receiver_number.in_(phone_candidates))
         )
     calls = cdr_query.order_by(CallRecord.timestamp.asc()).all()
 
@@ -366,13 +375,19 @@ class RouteToIncidentRequest(BaseModel):
 def get_nearest_police_station(
     lat: float = Query(..., description="Latitude of target incident or suspect sighting"),
     lon: float = Query(..., description="Longitude of target incident or suspect sighting"),
-    top_k: int = Query(3, description="Number of closest stations to return")
+    top_k: int = Query(3, description="Number of closest stations to return"),
+    max_radius_km: Optional[float] = Query(None, description="Optional maximum search radius in km")
 ):
     """
     Computes great-circle Haversine distances to official jurisdictional police stations
     and returns ranked proximity list with meter-level accuracy.
     """
-    stations = find_nearest_police_stations(latitude=lat, longitude=lon, top_k=top_k)
+    stations = find_nearest_police_stations(latitude=lat, longitude=lon, top_k=top_k, max_radius_km=max_radius_km)
+    if not stations and max_radius_km is not None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No police station found within radius of {max_radius_km} km."
+        )
     return {
         "status": "success",
         "target_coordinates": {"latitude": lat, "longitude": lon},

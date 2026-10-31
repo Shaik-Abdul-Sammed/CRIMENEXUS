@@ -85,6 +85,22 @@ def ingest_and_parse_fir(
     db.add(report)
     db.commit()
 
+    # 1b. Cryptographic WORM Audit Ledger Record
+    try:
+        from app.services.legal.audit_service import record_audit_event
+        record_audit_event(
+            db=db,
+            officer_badge=filed_by or "IO-INCHARGE",
+            officer_name=filed_by or "Investigating Officer",
+            station_id="STATION-CYBER-01",
+            action="FIR Ingestion & Entity Linkage",
+            resource_type="FIRST_INFORMATION_REPORT",
+            resource_id=case_number,
+            details=f"FIR {case_number} ({report_num}) parsed: {len(extracted.get('suspects_identified', []))} suspects, {len(extracted.get('vehicles_identified', []))} vehicles linked."
+        )
+    except Exception as audit_err:
+        logger.warning("Could not record FIR ingestion in audit ledger: %s", audit_err)
+
     # 2. Neo4j Graph Dual-Write (Parameterized Zero-Click Linkage)
     cypher_entities = """
     MERGE (c:Case {case_number: $case_number})

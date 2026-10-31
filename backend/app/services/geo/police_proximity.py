@@ -29,6 +29,7 @@ def find_nearest_police_stations(
     latitude: float,
     longitude: float,
     top_k: int = 3,
+    max_radius_km: Optional[float] = None,
     stations_pool: Optional[List[Dict[str, Any]]] = None
 ) -> List[Dict[str, Any]]:
     """
@@ -43,6 +44,9 @@ def find_nearest_police_stations(
         stn_lat = float(stn["latitude"])
         stn_lon = float(stn["longitude"])
         dist_km = haversine_distance_km(latitude, longitude, stn_lat, stn_lon)
+
+        if max_radius_km is not None and dist_km > max_radius_km:
+            continue
 
         scored_stations.append({
             "police_station": stn["name"],

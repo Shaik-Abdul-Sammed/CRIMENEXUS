@@ -22,10 +22,10 @@ def get_most_wanted_watchlist() -> List[Dict[str, Any]]:
     Cached for 5 minutes (300s TTL) in Redis.
     """
     cache_key = "cache:threats:most_wanted"
-    r = get_redis_client()
-    if r:
+    redis_client = get_redis_client()
+    if redis_client:
         try:
-            cached_val = r.get(cache_key)
+            cached_val = redis_client.get(cache_key)
             if cached_val:
                 return json.loads(cached_val)
         except Exception:
@@ -157,9 +157,9 @@ def get_most_wanted_watchlist() -> List[Dict[str, Any]]:
             })
 
     watchlist.sort(key=lambda x: x["risk_score"], reverse=True)
-    if r:
+    if redis_client:
         try:
-            r.setex(cache_key, 300, json.dumps(watchlist))
+            redis_client.setex(cache_key, 300, json.dumps(watchlist))
         except Exception:
             pass
     return watchlist
