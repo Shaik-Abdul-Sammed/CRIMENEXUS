@@ -151,6 +151,24 @@ const store = new MockDataStore();
 // Helper to simulate network latency
 const delay = (ms = 120) => new Promise((res) => setTimeout(res, ms));
 
+export interface MostWantedItem {
+  id: string;
+  name: string;
+  aliases?: string[];
+  role: string;
+  risk_score: number;
+  status: string;
+  bounty?: string;
+  danger_level?: string;
+  last_known_location?: string;
+  last_seen?: string;
+  linked_vehicle?: string;
+  linked_phone?: string;
+  warrants?: string[];
+  jurisdiction?: string;
+  [key: string]: unknown;
+}
+
 export const api = {
   // Authentication
   async getCurrentUser(userId = 'usr-1'): Promise<User> {
@@ -685,7 +703,7 @@ export const api = {
   },
 
   // District Most Wanted Watchlist
-  async getMostWanted(): Promise<any[]> {
+  async getMostWanted(): Promise<MostWantedItem[]> {
     try {
       const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
       const res = await axios.get(`${baseURL}/threats/most-wanted`, { timeout: 5000 });

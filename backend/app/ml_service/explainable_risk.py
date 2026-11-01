@@ -1,7 +1,6 @@
-import sys
 import time
 import logging
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 import numpy as np
 from sklearn.ensemble import GradientBoostingRegressor
 

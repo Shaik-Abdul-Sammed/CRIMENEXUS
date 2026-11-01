@@ -16,7 +16,7 @@ import math
 import hashlib
 import json
 import datetime
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List, Optional
 
 
 # In-memory biometric gallery

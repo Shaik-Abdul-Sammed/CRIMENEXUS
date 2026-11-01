@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Sparkles,
   ChevronRight,
   ChevronLeft,
   X,
@@ -108,6 +107,25 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
     }
   }, [isOpen, currentStepIdx, updateTargetPosition]);
 
+  const handleComplete = useCallback(() => {
+    localStorage.setItem('crimenexus_tour_seen', 'true');
+    onClose();
+  }, [onClose]);
+
+  const handleNext = useCallback(() => {
+    if (currentStepIdx < TOUR_STEPS.length - 1) {
+      setCurrentStepIdx((prev) => prev + 1);
+    } else {
+      handleComplete();
+    }
+  }, [currentStepIdx, handleComplete]);
+
+  const handlePrev = useCallback(() => {
+    if (currentStepIdx > 0) {
+      setCurrentStepIdx((prev) => prev - 1);
+    }
+  }, [currentStepIdx]);
+
   // Keyboard navigation
   useEffect(() => {
     if (!isOpen) return;
@@ -122,26 +140,7 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, currentStepIdx]);
-
-  const handleNext = () => {
-    if (currentStepIdx < TOUR_STEPS.length - 1) {
-      setCurrentStepIdx((prev) => prev + 1);
-    } else {
-      handleComplete();
-    }
-  };
-
-  const handlePrev = () => {
-    if (currentStepIdx > 0) {
-      setCurrentStepIdx((prev) => prev - 1);
-    }
-  };
-
-  const handleComplete = () => {
-    localStorage.setItem('crimenexus_tour_seen', 'true');
-    onClose();
-  };
+  }, [isOpen, handleComplete, handleNext, handlePrev]);
 
   if (!isOpen) return null;
 

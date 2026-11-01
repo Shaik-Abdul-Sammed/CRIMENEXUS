@@ -1,12 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Radio, Activity, RefreshCw, Zap, Landmark, Phone, Car, FileText } from 'lucide-react';
+import { Activity, Zap, Landmark, Phone, Car, FileText } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 
+interface IngestionStats {
+  connected: boolean;
+  total_events: number;
+  topics: Record<string, number>;
+  last_event_time: string;
+}
+
 export function LiveIngestionWidget() {
-  const [stats, setStats] = useState<any>({
+  const [stats, setStats] = useState<IngestionStats>({
     connected: true,
     total_events: 142,
     topics: {
@@ -45,12 +52,12 @@ export function LiveIngestionWidget() {
       await fetchStats();
     } catch {
       // Local optimistic update
-      setStats((prev: any) => ({
+      setStats((prev) => ({
         ...prev,
         total_events: prev.total_events + 1,
         topics: {
           ...prev.topics,
-          'bank.transactions': prev.topics['bank.transactions'] + 1,
+          'bank.transactions': (prev.topics['bank.transactions'] || 0) + 1,
         },
         last_event_time: new Date().toISOString(),
       }));

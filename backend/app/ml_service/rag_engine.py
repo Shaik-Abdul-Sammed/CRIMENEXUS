@@ -1,13 +1,11 @@
 import os
 import re
-import json
 import logging
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 import httpx
 
 from app.ml_service.ner_model import get_ner_pipeline
-from app.ml_service.semantic_search import get_mo_semantic_search_engine
 
 logger = logging.getLogger("crimenexus.ml.rag")
 

@@ -4,7 +4,7 @@ import hmac
 import hashlib
 import logging
 from datetime import datetime
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any
 
 logger = logging.getLogger("crimenexus.external.cctns_adapter")
 

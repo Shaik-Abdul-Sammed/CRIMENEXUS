@@ -1,15 +1,14 @@
 import hashlib
 import hmac
-import json
 import logging
 import os
 import uuid
 from datetime import datetime
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 
-from app.models.audit_ledger import AuditLedgerEntry, DualWarrantAuthorization
+from app.models.audit_ledger import AuditLedgerEntry
 from app.config.settings import JWT_SECRET_KEY
 
 logger = logging.getLogger("crimenexus.legal.audit")

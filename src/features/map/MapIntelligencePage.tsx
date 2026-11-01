@@ -7,6 +7,7 @@ import { MapLocation } from '../../types';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
+import { ErrorBoundary } from '../../components/common/ErrorBoundary';
 
 interface TimelineWaypoint {
   type: 'ANPR_SIGHTING' | 'CDR_CELL_PING';
@@ -638,11 +639,22 @@ export function MapIntelligencePage() {
         <div className="lg:col-span-3 space-y-4">
           <Card className="relative h-[650px] overflow-hidden border-primary/30 bg-slate-950">
             {isLoading && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-950/80 text-xs text-slate-400">
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-950/80 text-xs text-slate-400" role="status" aria-live="polite">
                 Initializing MapLibre GL JS spatial renderer...
               </div>
             )}
-            <div ref={mapContainerRef} className="w-full h-full" />
+            <ErrorBoundary
+              fallbackTitle="Spatial Map View Error"
+              fallbackMessage="MapLibre GL JS spatial renderer encountered a WebGL error. Click below to reload."
+            >
+              <div
+                ref={mapContainerRef}
+                role="region"
+                aria-label="Interactive MapLibre Spatial Telemetry Map"
+                tabIndex={0}
+                className="w-full h-full focus:ring-2 focus:ring-primary focus:outline-none"
+              />
+            </ErrorBoundary>
 
             <div className="absolute bottom-4 left-4 p-3 rounded-xl border border-slate-800 bg-slate-900/95 backdrop-blur-md text-[10px] space-y-1.5 select-none shadow-xl">
               <span className="font-bold text-slate-300 block mb-1">Spatial Layer Legend</span>

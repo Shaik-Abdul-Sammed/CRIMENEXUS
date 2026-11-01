@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { useAppStore } from '../../stores/appStore';
 import { useAuthStore } from '../../stores/authStore';
-import { useTranslation } from '../../hooks/useTranslation';
+import { useTranslation, SupportedLanguage } from '../../hooks/useTranslation';
 import { UserRole } from '../../types';
 import { Button } from '../ui/Button';
 import { PoliceDemoModal } from './PoliceDemoModal';
@@ -28,7 +28,7 @@ export function TopNav() {
   const { setGlobalSearchOpen, theme, toggleTheme, notifications, markNotificationAsRead } =
     useAppStore();
   const { activeRole, loginAsRole, logout } = useAuthStore();
-  const { t, language, setLanguage, toggleLanguage } = useTranslation();
+  const { language, setLanguage, t } = useTranslation();
   const [notifMenuOpen, setNotifMenuOpen] = useState(false);
   const [roleMenuOpen, setRoleMenuOpen] = useState(false);
   const [demoModalOpen, setDemoModalOpen] = useState(false);
@@ -112,7 +112,7 @@ export function TopNav() {
           <Languages className="h-3.5 w-3.5 text-cyan-400" />
           <select
             value={language}
-            onChange={(e) => setLanguage(e.target.value as any)}
+            onChange={(e) => setLanguage(e.target.value as SupportedLanguage)}
             className="bg-transparent text-cyan-300 font-bold text-xs focus:outline-none cursor-pointer"
             aria-label="Select Language"
           >

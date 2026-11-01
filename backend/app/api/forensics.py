@@ -394,7 +394,7 @@ async def upload_dvr_footage(
     import tempfile
     import uuid
     import threading
-    from app.ml_service.dvr_jobs import register_dvr_job, get_dvr_job, update_dvr_job
+    from app.ml_service.dvr_jobs import register_dvr_job, update_dvr_job
     from app.ml_service.video_processor import get_video_processor
 
     filename = file.filename or "cctv_export.mp4"

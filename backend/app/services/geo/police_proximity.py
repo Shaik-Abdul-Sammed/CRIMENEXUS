@@ -2,7 +2,7 @@ import os
 import math
 import logging
 import requests
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List, Optional
 from app.ml_service.dataset_registry import get_all_osm_police_stations
 
 logger = logging.getLogger("crimenexus.geo.proximity")

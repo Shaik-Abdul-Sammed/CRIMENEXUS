@@ -9,7 +9,6 @@ from app.services.external.anpr_stream import simulate_anpr_detections
 from app.services.external.cctns_adapter import get_cctns_adapter
 from app.database.postgres import SessionLocal
 from app.database.neo4j import execute_cypher
-from app.models.report import PoliceReport
 from app.models.case import Case
 
 logger = logging.getLogger("crimenexus.api.external")

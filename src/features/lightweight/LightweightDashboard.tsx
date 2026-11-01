@@ -46,7 +46,7 @@ const DEFAULT_FIRS: FIRSummary[] = [
 
 export function LightweightDashboard() {
   const [mostWanted, setMostWanted] = useState<MostWantedRecord[]>(DEFAULT_MOST_WANTED);
-  const [alerts, setAlerts] = useState<SmurfAlert[]>(DEFAULT_ALERTS);
+  const [alerts] = useState<SmurfAlert[]>(DEFAULT_ALERTS);
   const [firs] = useState<FIRSummary[]>(DEFAULT_FIRS);
   const [isCached, setIsCached] = useState<boolean>(false);
   const [cachedTimestamp, setCachedTimestamp] = useState<string>('');

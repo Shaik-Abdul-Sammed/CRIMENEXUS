@@ -14,12 +14,14 @@ interface TranslationStore {
   t: (path: string) => string;
 }
 
-const resources: Record<SupportedLanguage, any> = {
-  en: enTranslations,
-  hi: hiTranslations,
-  mr: mrTranslations,
-  kn: knTranslations,
-  te: teTranslations,
+type TranslationTree = Record<string, unknown>;
+
+const resources: Record<SupportedLanguage, TranslationTree> = {
+  en: enTranslations as unknown as TranslationTree,
+  hi: hiTranslations as unknown as TranslationTree,
+  mr: mrTranslations as unknown as TranslationTree,
+  kn: knTranslations as unknown as TranslationTree,
+  te: teTranslations as unknown as TranslationTree,
 };
 
 export const useTranslation = create<TranslationStore>((set, get) => ({
@@ -44,10 +46,10 @@ export const useTranslation = create<TranslationStore>((set, get) => ({
     const fallbackBundle = resources.en;
 
     const keys = path.split('.');
-    let val: any = currentBundle;
+    let val: unknown = currentBundle;
     for (const k of keys) {
-      if (val && typeof val === 'object' && k in val) {
-        val = val[k];
+      if (val && typeof val === 'object' && k in (val as Record<string, unknown>)) {
+        val = (val as Record<string, unknown>)[k];
       } else {
         val = undefined;
         break;
@@ -57,10 +59,10 @@ export const useTranslation = create<TranslationStore>((set, get) => ({
     if (val !== undefined && typeof val === 'string') return val;
 
     // Fallback to English
-    let fallbackVal: any = fallbackBundle;
+    let fallbackVal: unknown = fallbackBundle;
     for (const k of keys) {
-      if (fallbackVal && typeof fallbackVal === 'object' && k in fallbackVal) {
-        fallbackVal = fallbackVal[k];
+      if (fallbackVal && typeof fallbackVal === 'object' && k in (fallbackVal as Record<string, unknown>)) {
+        fallbackVal = (fallbackVal as Record<string, unknown>)[k];
       } else {
         return path;
       }

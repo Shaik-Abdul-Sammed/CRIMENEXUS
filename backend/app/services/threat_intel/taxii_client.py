@@ -14,7 +14,7 @@ import json
 import logging
 import uuid
 from datetime import datetime
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 
 logger = logging.getLogger("crimenexus.threat_intel.taxii")
 

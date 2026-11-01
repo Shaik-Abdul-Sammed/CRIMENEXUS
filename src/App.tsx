@@ -59,6 +59,7 @@ export function App() {
             <Route path="/entities/:id" element={<EntityDetailPage />} />
             <Route path="/entity-resolution" element={<EntityResolutionPage />} />
             <Route path="/network-graph" element={<NetworkGraphPage />} />
+            <Route path="/graph" element={<Navigate to="/network-graph" replace />} />
             <Route path="/timeline" element={<TimelinePage />} />
             <Route path="/map" element={<MapIntelligencePage />} />
             <Route path="/most-wanted" element={<MostWantedPage />} />

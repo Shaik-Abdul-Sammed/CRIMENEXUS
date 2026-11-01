@@ -11,12 +11,9 @@ import {
   MapPin,
   Clock,
   Download,
-  AlertTriangle,
   Radio,
   FileCheck2,
-  ChevronRight,
   ExternalLink,
-  Lock,
   UserX,
   Scale,
   Brain,
@@ -24,9 +21,46 @@ import {
   ChevronUp,
 } from 'lucide-react';
 import { useMostWanted } from '../../hooks/useIntelligenceApi';
-import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
+import { Card, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
+
+export interface XAIFeatureFactor {
+  feature_name: string;
+  contribution_pct: number;
+  court_impact: string;
+}
+
+export interface XAIExplanation {
+  composite_risk_score?: number;
+  court_admissibility_status?: string;
+  model_type?: string;
+  judicial_audit_summary?: string;
+  factors?: XAIFeatureFactor[];
+  shap_breakdown?: XAIFeatureFactor[];
+  feature_attributions?: XAIFeatureFactor[];
+}
+
+export interface WantedSuspect {
+  id: string;
+  name: string;
+  aliases?: string[];
+  role?: string;
+  risk_score: number;
+  status?: string;
+  bounty?: string;
+  danger_level?: string;
+  last_known_location?: string;
+  last_seen?: string;
+  linked_vehicle?: string;
+  linked_phone?: string;
+  active_cases_count?: number;
+  warrant_status?: string;
+  loc_status?: string;
+  syndicate_id?: string;
+  warrants?: string[];
+  jurisdiction?: string;
+}
 
 export function MostWantedPage() {
   const { data: watchlist, isLoading } = useMostWanted();
@@ -35,7 +69,7 @@ export function MostWantedPage() {
   const [locSuccessNotice, setLocSuccessNotice] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [expandedXaiId, setExpandedXaiId] = useState<string | null>(null);
-  const [xaiDataMap, setXaiDataMap] = useState<Record<string, any>>({});
+  const [xaiDataMap, setXaiDataMap] = useState<Record<string, XAIExplanation>>({});
   const [loadingXaiId, setLoadingXaiId] = useState<string | null>(null);
 
   const handleToggleXai = async (suspectName: string, suspectId: string) => {
@@ -58,7 +92,7 @@ export function MostWantedPage() {
     }
   };
 
-  const filteredWatchlist = (watchlist || []).filter((suspect: any) => {
+  const filteredWatchlist = ((watchlist as unknown as WantedSuspect[]) || []).filter((suspect: WantedSuspect) => {
     const matchesSearch =
       suspect.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       suspect.role?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -78,7 +112,7 @@ export function MostWantedPage() {
     setTimeout(() => setLocSuccessNotice(null), 8000);
   };
 
-  const handleDownloadDossier = async (suspect: any) => {
+  const handleDownloadDossier = async (suspect: WantedSuspect) => {
     setDownloadingId(suspect.id);
     try {
       const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
@@ -248,7 +282,7 @@ export function MostWantedPage() {
             No fugitives match your search criteria.
           </div>
         ) : (
-          filteredWatchlist.map((suspect: any, idx: number) => {
+          filteredWatchlist.map((suspect: WantedSuspect, idx: number) => {
             const isRankOne = idx === 0;
             const riskColor =
               suspect.risk_score >= 90
@@ -508,7 +542,7 @@ export function MostWantedPage() {
                                 contribution_pct: 13.9,
                                 court_impact: '+13.9% towards Composite Risk Score',
                               },
-                            ]).map((item: any, fIdx: number) => (
+                            ]).map((item: XAIFeatureFactor, fIdx: number) => (
                               <div
                                 key={fIdx}
                                 className="p-2.5 rounded-lg bg-background/70 border border-border/60 space-y-1.5"

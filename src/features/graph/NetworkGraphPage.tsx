@@ -23,6 +23,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Ca
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
+import { ErrorBoundary } from '../../components/common/ErrorBoundary';
 
 try {
   cytoscape.use(dagre);
@@ -353,11 +354,22 @@ export function NetworkGraphPage() {
 
           <Card className="relative h-[650px] overflow-hidden border-primary/30 bg-slate-950">
             {isLoading && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-950/80 text-xs text-slate-400">
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-950/80 text-xs text-slate-400" role="status" aria-live="polite">
                 Initializing Cytoscape graph topology engine...
               </div>
             )}
-            <div ref={containerRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
+            <ErrorBoundary
+              fallbackTitle="Graph Topology View Error"
+              fallbackMessage="The interactive Cytoscape graph canvas encountered an issue. Click below to reload."
+            >
+              <div
+                ref={containerRef}
+                role="region"
+                aria-label="Interactive Criminal Network Topology Graph"
+                tabIndex={0}
+                className="w-full h-full cursor-grab active:cursor-grabbing focus:ring-2 focus:ring-primary focus:outline-none"
+              />
+            </ErrorBoundary>
 
             <div className="absolute bottom-4 left-4 p-3 rounded-xl border border-slate-800 bg-slate-900/90 backdrop-blur-md text-[10px] space-y-1.5 select-none shadow-xl">
               <span className="font-bold text-slate-300 block mb-1">Topology Legend</span>

@@ -11,7 +11,7 @@ from app.database.neo4j import execute_cypher
 from app.models.transaction import BankTransaction
 from app.models.call_record import CallRecord
 from app.models.vehicle_sighting import VehicleSighting
-from app.services.streaming.redis_streams import get_redis_client, STREAM_TOPICS, streaming_telemetry
+from app.services.streaming.redis_streams import get_redis_client, STREAM_TOPICS
 
 logger = logging.getLogger("crimenexus.streaming.processor")
 

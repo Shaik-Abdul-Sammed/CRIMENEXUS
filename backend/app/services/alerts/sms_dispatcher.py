@@ -13,8 +13,8 @@ sending in India (Template registration with operator mandatory).
 import os
 import logging
 import time
-from datetime import datetime, timedelta
-from typing import Dict, Optional
+from datetime import datetime
+from typing import Dict
 from collections import defaultdict
 
 logger = logging.getLogger("crimenexus.alerts.sms")

@@ -12,7 +12,7 @@ import json
 import hashlib
 import uuid
 import datetime
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 
 
 def get_backup_dir() -> str:

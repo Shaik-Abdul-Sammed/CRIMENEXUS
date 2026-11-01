@@ -6,14 +6,9 @@ import {
   Sparkles,
   CheckCircle2,
   Copy,
-  FileText,
-  User,
-  AlertCircle,
-  Clock,
   Loader2,
 } from 'lucide-react';
 import { Button } from '../ui/Button';
-import { Badge } from '../ui/Badge';
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
 
 interface WitnessSummarizerModalProps {
@@ -26,7 +21,7 @@ export function WitnessSummarizerModal({ caseNumber = 'FIR-2026-CRIME-890' }: Wi
   const [summaryBullets, setSummaryBullets] = useState<string[] | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const { isListening, toggleListening, isSupported } = useSpeechRecognition({
+  const { isListening, toggleListening } = useSpeechRecognition({
     onTranscript: (spoken) => {
       setTestimonyText((prev) => (prev ? `${prev} ${spoken}` : spoken));
     },

@@ -3,7 +3,6 @@ import axios from 'axios';
 import {
   FileText,
   Scale,
-  ShieldAlert,
   Copy,
   Check,
   Download,
@@ -19,12 +18,19 @@ import { Button } from '../../components/ui/Button';
 
 type TabType = 'FIR' | 'CHARGE_SHEET' | 'BANK_NOTICE' | 'LOC';
 
+interface DraftMetaInfo {
+  applicable_statutes?: string[];
+  source?: string;
+  confidence?: number;
+  [key: string]: unknown;
+}
+
 export function DraftingPage() {
   const [activeTab, setActiveTab] = useState<TabType>('FIR');
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [generatedDraft, setGeneratedDraft] = useState<string>('');
-  const [metaInfo, setMetaInfo] = useState<any>(null);
+  const [metaInfo, setMetaInfo] = useState<DraftMetaInfo | null>(null);
 
   // Form inputs
   const [firNarrative, setFirNarrative] = useState(
@@ -69,7 +75,7 @@ export function DraftingPage() {
         setGeneratedDraft(res.data.draft_text);
         setMetaInfo(res.data);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Drafting generation failed', err);
       // Fallback preview
       setGeneratedDraft(`[OFFLINE GENERATION FALLBACK]\nDraft generation completed for ${activeTab}.\nPlease check backend connection or Ollama service.`);

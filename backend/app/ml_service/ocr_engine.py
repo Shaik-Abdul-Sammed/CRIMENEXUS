@@ -1,6 +1,5 @@
 import io
 import logging
-from typing import Optional
 from PIL import Image, ImageEnhance, ImageFilter
 import pytesseract
 

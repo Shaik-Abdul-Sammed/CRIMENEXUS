@@ -1,13 +1,12 @@
 import re
 import logging
 import uuid
-from typing import Dict, Any, List
+from typing import Dict, Any
 from sqlalchemy.orm import Session
 
 from app.database.neo4j import execute_cypher
 from app.models.report import PoliceReport
 from app.ml_service.ner_model import get_ner_pipeline
-from app.ml_service.ocr_engine import extract_text_from_image_bytes, extract_text_from_scanned_pdf
 from app.ml_service.semantic_search import get_mo_semantic_search_engine
 
 logger = logging.getLogger("crimenexus.forensics.nlp")

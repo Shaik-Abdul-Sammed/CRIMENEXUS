@@ -12,18 +12,6 @@ from app.database.postgres import engine, Base
 from app.database.neo4j import init_neo4j_constraints, close_neo4j_driver
 
 # Import all SQLAlchemy models to register them on Base.metadata
-from app.models.user import User
-from app.models.agency import Agency
-from app.models.case import Case
-from app.models.person import Person
-from app.models.location import Location
-from app.models.relationship import Relationship
-from app.models.alert import Alert
-from app.models.transaction import BankTransaction
-from app.models.call_record import CallRecord
-from app.models.vehicle_sighting import VehicleSighting
-from app.models.report import PoliceReport
-from app.models.audit_ledger import AuditLedgerEntry, DualWarrantAuthorization
 from app.ml_service.model_registry import get_ml_registry
 
 # Import API Routers
@@ -40,7 +28,7 @@ from app.api.drafting import router as drafting_router
 from app.services.streaming.redis_streams import get_streaming_stats
 from app.services.streaming.stream_processor import run_stream_consumer_worker
 from app.services.streaming.stream_producer import simulate_live_event
-from app.services.observability import metrics_endpoint, PrometheusMiddleware
+from app.services.observability import metrics_endpoint
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("crimenexus.main")
@@ -218,7 +206,7 @@ def draft_bail_opposition_endpoint(payload: _BailOppositionRequest):
 # Feature 8: Threat Intelligence TAXII Sync
 @_adv_router.post("/threat-intel/sync", summary="Sync CERT-In STIX/TAXII IoC Feed to Neo4j")
 def threat_intel_sync():
-    from app.services.threat_intel.taxii_client import fetch_taxii_feed, MOCK_STIX_BUNDLE
+    from app.services.threat_intel.taxii_client import fetch_taxii_feed
     import datetime
     iocs = fetch_taxii_feed(use_mock=True)
     return {
@@ -233,7 +221,6 @@ def threat_intel_sync():
 # Feature 10: 3D Scene Reconstruction
 from fastapi import UploadFile, File
 from typing import List as _List
-import tempfile, os as _os, uuid as _uuid
 
 @_adv_router.post("/forensics/scene/reconstruct", summary="3D Crime Scene Reconstruction from Photos (.ply)")
 async def reconstruct_crime_scene(images: _List[UploadFile] = File(...)):

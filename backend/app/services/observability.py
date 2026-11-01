@@ -5,13 +5,10 @@ and Sentry error tracking integration.
 """
 import os
 import time
-import logging
-from typing import Callable
 
 import structlog
 from prometheus_client import Counter, Histogram, Gauge, generate_latest, CONTENT_TYPE_LATEST
 from fastapi import Request, Response
-from fastapi.routing import APIRoute
 
 # --------------------------------------------------------------------------- #
 #  Sentry Initialization                                                        #

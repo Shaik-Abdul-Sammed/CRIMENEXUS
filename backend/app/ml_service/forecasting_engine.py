@@ -1,14 +1,11 @@
-import os
 import logging
 from datetime import datetime, timezone, timedelta
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 import numpy as np
-import pandas as pd
 import xgboost as xgb
 
 from app.ml_service.dataset_registry import (
     get_unified_crime_dataset,
-    DISTRICT_CENTROIDS,
 )
 
 logger = logging.getLogger("crimenexus.ml.forecasting")

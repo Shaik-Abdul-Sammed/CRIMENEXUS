@@ -10,9 +10,6 @@ import {
   ArrowLeft,
   Clock,
   Archive,
-  Download,
-  Sparkles,
-  Lock,
 } from 'lucide-react';
 import { useInvestigationDetail, useCaseEvidence, useEntities, useNetworkGraph } from '../../hooks/useIntelligenceApi';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';

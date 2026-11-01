@@ -1,4 +1,4 @@
-from typing import Dict, Any, List
+from typing import Dict, Any
 from sqlalchemy.orm import Session
 from ai_engine.threat_prediction.threat_model import calculate_suspect_risk_score
 from ai_engine.anomaly_detection.anomaly_model import detect_rapid_fund_dissipation

@@ -5,9 +5,8 @@ live input distributions and stored training distributions.
 Triggers MEDIUM priority alerts when drift score > 0.15.
 """
 import logging
-import json
 from datetime import datetime
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 
 import numpy as np
 

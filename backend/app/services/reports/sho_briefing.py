@@ -12,7 +12,7 @@ Compiles the daily 08:00 Roll Call Briefing for Station House Officers (SHOs):
 
 import io
 import datetime
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle

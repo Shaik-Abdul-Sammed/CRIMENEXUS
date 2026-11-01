@@ -6,11 +6,10 @@ Guarantees nearest station resolution within 50 km for any coordinate inside Ind
 """
 
 import os
-import math
 import logging
 import numpy as np
 import pandas as pd
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List, Optional
 from sklearn.neighbors import BallTree
 import geopy.distance
 

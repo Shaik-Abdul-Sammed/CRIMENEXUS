@@ -11,7 +11,7 @@ for admissibility of blockchain timestamps under BSA Section 63.
 """
 import hashlib
 import logging
-from typing import List, Optional, Tuple, Dict, Any
+from typing import List, Optional, Dict, Any
 from datetime import datetime
 
 logger = logging.getLogger("crimenexus.legal.merkle_notary")

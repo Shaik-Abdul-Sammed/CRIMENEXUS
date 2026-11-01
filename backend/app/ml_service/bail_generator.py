@@ -9,7 +9,7 @@ This is NOT AI-generated legal advice — it produces a DRAFT that a
 qualified Public Prosecutor must review and sign before submission.
 """
 import logging
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 from datetime import datetime
 
 logger = logging.getLogger("crimenexus.ml.bail_generator")

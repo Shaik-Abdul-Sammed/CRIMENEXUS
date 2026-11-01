@@ -9,7 +9,7 @@ and active target geofence interception.
 
 import math
 import datetime
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 from collections import deque
 
 # In-memory watch targets and live packet ring buffer (capacity 10,000 packets)

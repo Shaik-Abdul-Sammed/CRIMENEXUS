@@ -1,7 +1,6 @@
 import io
 import hashlib
 from datetime import datetime
-from typing import Dict, Any, Optional
 
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors

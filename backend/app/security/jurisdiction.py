@@ -1,5 +1,4 @@
 import logging
-from typing import List, Optional
 from fastapi import HTTPException, status
 from pydantic import BaseModel
 

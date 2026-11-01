@@ -1,8 +1,6 @@
 import time
 import random
 import logging
-from typing import Dict, Any, Optional
-import threading
 
 from app.services.streaming.redis_streams import publish_stream_event
 

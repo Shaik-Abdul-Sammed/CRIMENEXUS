@@ -3,7 +3,7 @@ import io
 import logging
 import uuid
 from datetime import datetime
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 from sqlalchemy.orm import Session
 
 from app.database.neo4j import execute_cypher

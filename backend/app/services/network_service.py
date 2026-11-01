@@ -1,4 +1,4 @@
-from typing import Dict, Any, List
+from typing import Dict, Any
 from app.database.neo4j import execute_cypher
 
 

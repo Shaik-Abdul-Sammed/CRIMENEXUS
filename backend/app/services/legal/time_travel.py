@@ -10,7 +10,7 @@ Guarantees Section 63 BSA / Section 65B Indian Evidence Act admissibility.
 import hashlib
 import json
 import datetime
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 from sqlalchemy.orm import Session
 
 

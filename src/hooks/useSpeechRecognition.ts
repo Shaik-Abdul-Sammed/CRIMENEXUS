@@ -1,14 +1,56 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
+interface SpeechRecognitionResultItem {
+  transcript: string;
+  confidence: number;
+}
+
+interface SpeechRecognitionAlternativeList {
+  [index: number]: SpeechRecognitionResultItem;
+  length: number;
+}
+
+interface SpeechRecognitionResultList {
+  length: number;
+  [index: number]: SpeechRecognitionAlternativeList;
+}
+
+interface ISpeechRecognitionEvent {
+  resultIndex: number;
+  results: SpeechRecognitionResultList;
+}
+
+interface ISpeechRecognitionErrorEvent {
+  error: string;
+  message?: string;
+}
+
+interface ISpeechRecognitionInstance {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: ((event: ISpeechRecognitionEvent) => void) | null;
+  onerror: ((event: ISpeechRecognitionErrorEvent) => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+}
+
+interface IWindowWithSpeech {
+  SpeechRecognition?: new () => ISpeechRecognitionInstance;
+  webkitSpeechRecognition?: new () => ISpeechRecognitionInstance;
+}
+
 export function useSpeechRecognition({ onTranscript }: { onTranscript?: (text: string) => void } = {}) {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [isSupported, setIsSupported] = useState(false);
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<ISpeechRecognitionInstance | null>(null);
 
   useEffect(() => {
-    const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const speechWin = window as unknown as IWindowWithSpeech;
+    const SpeechRecognition = speechWin.SpeechRecognition || speechWin.webkitSpeechRecognition;
 
     if (SpeechRecognition) {
       setIsSupported(true);
@@ -17,7 +59,7 @@ export function useSpeechRecognition({ onTranscript }: { onTranscript?: (text: s
       recognition.interimResults = true;
       recognition.lang = 'en-IN'; // Optimized for Indian English police dictation
 
-      recognition.onresult = (event: any) => {
+      recognition.onresult = (event: ISpeechRecognitionEvent) => {
         let currentTranscript = '';
         for (let i = event.resultIndex; i < event.results.length; i++) {
           currentTranscript += event.results[i][0].transcript;
@@ -28,7 +70,7 @@ export function useSpeechRecognition({ onTranscript }: { onTranscript?: (text: s
         }
       };
 
-      recognition.onerror = (event: any) => {
+      recognition.onerror = (event: ISpeechRecognitionErrorEvent) => {
         console.warn('SpeechRecognition error:', event.error);
         setIsListening(false);
       };

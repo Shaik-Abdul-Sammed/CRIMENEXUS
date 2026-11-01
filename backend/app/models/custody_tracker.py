@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, Text
 from app.database.postgres import Base
 
