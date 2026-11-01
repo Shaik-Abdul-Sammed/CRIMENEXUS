@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import {
   FolderGit2,
   FileCheck2,
@@ -164,9 +165,18 @@ export function DashboardPage() {
 
       {/* High-Priority Financial Tripwire Smurfing Alert Banner */}
       {tripwireAlert && (
-        <div
+        <motion.div
           id="tour-alerts"
-          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl border-2 border-red-500/60 bg-red-950/40 text-red-200 shadow-xl shadow-red-950/40 animate-in fade-in duration-300"
+          animate={{
+            scale: [1, 1.01, 1],
+            boxShadow: [
+              '0 0 0 rgba(220,38,38,0)',
+              '0 0 20px rgba(220,38,38,0.45)',
+              '0 0 0 rgba(220,38,38,0)',
+            ],
+          }}
+          transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl border-2 border-accent-crimson/60 bg-bg-secondary/90 backdrop-blur-md text-red-200 shadow-glass"
         >
           <div className="flex items-start gap-3">
             <div className="p-2.5 rounded-xl bg-red-500/20 text-red-400 border border-red-500/40 shrink-0 mt-0.5">
@@ -198,7 +208,7 @@ export function DashboardPage() {
               Freeze Account Now
             </Button>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Live Real-Time Ingestion Streaming Pipeline Widget */}

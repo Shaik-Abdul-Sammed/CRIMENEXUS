@@ -21,6 +21,7 @@ import { DraftingPage } from './features/drafting/DraftingPage';
 import { ReportsPage } from './features/reports/ReportsPage';
 import { AuditLogsPage } from './features/audit/AuditLogsPage';
 import { SettingsPage } from './features/settings/SettingsPage';
+import { DesignSystemPage } from './features/design-system/DesignSystemPage';
 import { LightweightDashboard } from './features/lightweight/LightweightDashboard';
 
 const queryClient = new QueryClient({
@@ -67,6 +68,7 @@ export function App() {
             <Route path="/ai-assistant" element={<AIAssistantPage />} />
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/audit-logs" element={<AuditLogsPage />} />
+            <Route path="/design-system" element={<DesignSystemPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
 

@@ -19,6 +19,7 @@ import {
   ShieldCheck,
   Flame,
   Scale,
+  Palette,
 } from 'lucide-react';
 import { useAppStore } from '../../stores/appStore';
 import { useAuthStore } from '../../stores/authStore';
@@ -46,6 +47,7 @@ export function Sidebar() {
     { label: 'Legal Drafting', path: '/drafting', icon: Scale, badge: 'AUTO' },
     { label: t('nav.reports'), path: '/reports', icon: FileText },
     { label: t('nav.auditLogs'), path: '/audit-logs', icon: History, minRole: 'ANALYST' },
+    { label: 'Design System', path: '/design-system', icon: Palette, badge: 'FIGMA' },
     { label: t('nav.settings'), path: '/settings', icon: Settings },
   ];
 

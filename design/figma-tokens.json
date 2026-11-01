@@ -1,0 +1,210 @@
+{
+  "version": "1.0.0",
+  "name": "CRIMENEXUS Command Center Design Tokens",
+  "global": {
+    "color": {
+      "bg-primary": {
+        "value": "#0A1929",
+        "type": "color",
+        "description": "State Command Navy background, optimized for 24/7 command center displays."
+      },
+      "bg-secondary": {
+        "value": "#112240",
+        "type": "color",
+        "description": "Secondary elevation, card container, and panel background."
+      },
+      "bg-tertiary": {
+        "value": "#1E293B",
+        "type": "color",
+        "description": "Hover state, table header, and subtle nested card background."
+      },
+      "accent-emerald": {
+        "value": "#10B981",
+        "type": "color",
+        "description": "Positive forensic verification, live telemetry active, inlier transaction."
+      },
+      "accent-crimson": {
+        "value": "#DC2626",
+        "type": "color",
+        "description": "Critical danger, Most Wanted Red Notice, Section 111 BNS organized syndicate alert."
+      },
+      "accent-amber": {
+        "value": "#F59E0B",
+        "type": "color",
+        "description": "Remand clock urgent deadline warning, high-risk suspect, advisory alert."
+      },
+      "accent-indigo": {
+        "value": "#6366F1",
+        "type": "color",
+        "description": "Deep AI autoencoder, RAG statutory engine, topological graph indicator."
+      },
+      "accent-cyan": {
+        "value": "#06B6D4",
+        "type": "color",
+        "description": "Geospatial ANPR transit trajectory, cell tower link, live tracking waypoint."
+      },
+      "text-primary": {
+        "value": "#FFFFFF",
+        "type": "color",
+        "description": "Primary header, high-contrast critical information."
+      },
+      "text-secondary": {
+        "value": "#E2E8F0",
+        "type": "color",
+        "description": "Body copy, narrative report prose, table cell records."
+      },
+      "text-muted": {
+        "value": "#94A3B8",
+        "type": "color",
+        "description": "Timestamps, statutory metadata captions, secondary labels."
+      },
+      "border-subtle": {
+        "value": "rgba(255, 255, 255, 0.08)",
+        "type": "color",
+        "description": "Subtle glassmorphic border for low-contrast divider lines."
+      },
+      "border-focus": {
+        "value": "rgba(99, 102, 241, 0.6)",
+        "type": "color",
+        "description": "Keyboard accessible focus indicator border."
+      }
+    },
+    "typography": {
+      "font-family": {
+        "sans": {
+          "value": "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          "type": "fontFamilies"
+        },
+        "mono": {
+          "value": "'JetBrains Mono', 'Fira Code', Menlo, Monaco, Consolas, monospace",
+          "type": "fontFamilies"
+        }
+      },
+      "font-size": {
+        "size-xs": {
+          "value": "12px",
+          "type": "fontSizes",
+          "description": "Badge text, micro-telemetry, secondary table metadata."
+        },
+        "size-sm": {
+          "value": "14px",
+          "type": "fontSizes",
+          "description": "Body text, form inputs, navigation items."
+        },
+        "size-base": {
+          "value": "16px",
+          "type": "fontSizes",
+          "description": "Standard readable content, modal body text."
+        },
+        "size-lg": {
+          "value": "20px",
+          "type": "fontSizes",
+          "description": "Card titles, subsection headings."
+        },
+        "size-xl": {
+          "value": "24px",
+          "type": "fontSizes",
+          "description": "Page headers, primary module titles."
+        },
+        "size-2xl": {
+          "value": "32px",
+          "type": "fontSizes",
+          "description": "Metric numbers, high-impact KPI counters."
+        },
+        "size-3xl": {
+          "value": "44px",
+          "type": "fontSizes",
+          "description": "Hero command center headlines."
+        }
+      },
+      "line-height": {
+        "leading-none": { "value": "1", "type": "lineHeights" },
+        "leading-tight": { "value": "1.25", "type": "lineHeights" },
+        "leading-normal": { "value": "1.5", "type": "lineHeights" },
+        "leading-relaxed": { "value": "1.625", "type": "lineHeights" }
+      },
+      "font-weight": {
+        "regular": { "value": "400", "type": "fontWeights" },
+        "medium": { "value": "500", "type": "fontWeights" },
+        "semibold": { "value": "600", "type": "fontWeights" },
+        "bold": { "value": "700", "type": "fontWeights" },
+        "extrabold": { "value": "800", "type": "fontWeights" }
+      }
+    },
+    "spacing": {
+      "space-1": { "value": "4px", "type": "spacing" },
+      "space-2": { "value": "8px", "type": "spacing" },
+      "space-3": { "value": "12px", "type": "spacing" },
+      "space-4": { "value": "16px", "type": "spacing" },
+      "space-6": { "value": "24px", "type": "spacing" },
+      "space-8": { "value": "32px", "type": "spacing" },
+      "space-12": { "value": "48px", "type": "spacing" }
+    },
+    "borderRadius": {
+      "sm": { "value": "4px", "type": "borderRadius" },
+      "md": { "value": "8px", "type": "borderRadius" },
+      "lg": { "value": "12px", "type": "borderRadius" },
+      "xl": { "value": "16px", "type": "borderRadius" },
+      "full": { "value": "9999px", "type": "borderRadius" }
+    },
+    "boxShadow": {
+      "glass": {
+        "value": {
+          "x": "0",
+          "y": "4",
+          "blur": "30",
+          "spread": "0",
+          "color": "rgba(0, 0, 0, 0.25)",
+          "type": "dropShadow"
+        },
+        "type": "boxShadow",
+        "description": "Standard glassmorphic card shadow."
+      },
+      "glass-elevated": {
+        "value": {
+          "x": "0",
+          "y": "8",
+          "blur": "32",
+          "spread": "0",
+          "color": "rgba(0, 0, 0, 0.45)",
+          "type": "dropShadow"
+        },
+        "type": "boxShadow",
+        "description": "Elevated modal and inspection flyout shadow."
+      },
+      "glow-emerald": {
+        "value": {
+          "x": "0",
+          "y": "0",
+          "blur": "15",
+          "spread": "0",
+          "color": "rgba(16, 185, 129, 0.4)",
+          "type": "dropShadow"
+        },
+        "type": "boxShadow"
+      },
+      "glow-crimson": {
+        "value": {
+          "x": "0",
+          "y": "0",
+          "blur": "20",
+          "spread": "0",
+          "color": "rgba(220, 38, 38, 0.5)",
+          "type": "dropShadow"
+        },
+        "type": "boxShadow"
+      },
+      "glow-indigo": {
+        "value": {
+          "x": "0",
+          "y": "0",
+          "blur": "20",
+          "spread": "0",
+          "color": "rgba(99, 102, 241, 0.35)",
+          "type": "dropShadow"
+        },
+        "type": "boxShadow"
+      }
+    }
+  }
+}

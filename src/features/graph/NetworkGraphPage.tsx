@@ -111,6 +111,21 @@ export function NetworkGraphPage() {
           },
         },
         {
+          selector: 'node[label *= "Rajan"], node[id = "ent-1"], node[riskLevel = "CRITICAL"][type = "PERSON"]',
+          style: {
+            width: 68,
+            height: 68,
+            'background-color': '#DC2626',
+            'border-width': 4,
+            'border-color': '#EF4444',
+            'border-opacity': 1,
+            'font-size': '13px',
+            'font-weight': 'bolder',
+            color: '#FEE2E2',
+            'text-margin-y': 8,
+          },
+        },
+        {
           selector: 'edge',
           style: {
             label: 'data(label)',
@@ -123,6 +138,27 @@ export function NetworkGraphPage() {
             'font-size': '9px',
             'text-rotation': 'autorotate',
             'text-margin-y': -8,
+          },
+        },
+        {
+          selector: 'edge[label *= "ASSOCIATE"], edge[label *= "CALL"], edge[label *= "COMMUNICATE"], edge[label *= "OPERATES"]',
+          style: {
+            'line-style': 'dashed',
+            'curve-style': 'bezier',
+            'line-color': '#64748B',
+            'line-dash-pattern': [6, 3],
+            width: 2,
+            'target-arrow-color': '#64748B',
+          },
+        },
+        {
+          selector: 'edge[label *= "TRANSFER"], edge[label *= "FINANCIAL"], edge[label *= "PAYMENT"], edge[label *= "TRANSACTION"], edge[label *= "SMURF"]',
+          style: {
+            'line-style': 'solid',
+            'curve-style': 'bezier',
+            'line-color': '#F59E0B',
+            'target-arrow-color': '#F59E0B',
+            width: 3.5,
           },
         },
         {
@@ -371,31 +407,53 @@ export function NetworkGraphPage() {
               />
             </ErrorBoundary>
 
-            <div className="absolute bottom-4 left-4 p-3 rounded-xl border border-slate-800 bg-slate-900/90 backdrop-blur-md text-[10px] space-y-1.5 select-none shadow-xl">
-              <span className="font-bold text-slate-300 block mb-1">Topology Legend</span>
-              <div className="flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
-                <span className="text-slate-400">PERSON (Suspect / Mule)</span>
+            <div className="absolute bottom-4 left-4 p-4 rounded-xl border border-white/10 bg-bg-secondary/90 backdrop-blur-md text-[11px] space-y-2 select-none shadow-glass">
+              <span className="font-bold text-text-primary block mb-1 uppercase tracking-wider text-[10px] text-muted-foreground">
+                Tactical Topology Legend
+              </span>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+                <div className="flex items-center gap-2">
+                  <span className="h-3.5 w-3.5 rounded-full bg-accent-crimson border-2 border-red-300 flex items-center justify-center text-[7px] font-bold text-white">★</span>
+                  <span className="text-slate-200 font-semibold">Kingpin (Rajan)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
+                  <span className="text-slate-400">PERSON (Mule/Associate)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
+                  <span className="text-slate-400">PHONE (SIM / CDR)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                  <span className="text-slate-400">BANK (HDFC / Mule)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 rounded-full bg-purple-500" />
+                  <span className="text-slate-400">VEHICLE (ANPR Hit)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 rounded-full bg-orange-500" />
+                  <span className="text-slate-400">ORGANIZATION (Shell)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 rounded-full bg-yellow-500" />
+                  <span className="text-slate-400">CRYPTO (USDT)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 rounded-full bg-cyan-500" />
+                  <span className="text-slate-400">LOCATION (Geofence)</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
-                <span className="text-slate-400">PHONE (Target SIM / CDR)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                <span className="text-slate-400">BANK ACCOUNT (HDFC / Mule)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-purple-500" />
-                <span className="text-slate-400">VEHICLE (ANPR Toll Match)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-orange-500" />
-                <span className="text-slate-400">ORGANIZATION (Shell Firm)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-yellow-500" />
-                <span className="text-slate-400">CRYPTO WALLET (USDT Off-Ramp)</span>
+              <div className="pt-2 border-t border-white/10 flex items-center gap-4 text-[10px]">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-4 h-0 border-t-2 border-dashed border-slate-400 inline-block" />
+                  <span className="text-slate-400">Associate Link</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-4 h-0.5 bg-amber-400 inline-block" />
+                  <span className="text-amber-400 font-semibold">Hawala / Smurfing</span>
+                </div>
               </div>
             </div>
           </Card>
