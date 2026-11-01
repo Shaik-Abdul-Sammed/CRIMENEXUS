@@ -42,7 +42,7 @@ export function LoginPage() {
   ];
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-6 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <main className="min-h-screen w-full flex items-center justify-center p-6 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       <div className="w-full max-w-4xl grid md:grid-cols-2 gap-8 items-center">
         {/* Left Branding & Guarantees */}
         <div className="space-y-6">
@@ -133,6 +133,6 @@ export function LoginPage() {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

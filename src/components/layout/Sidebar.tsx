@@ -90,10 +90,12 @@ export function Sidebar() {
       {/* Active Case Selector */}
       {sidebarOpen && (
         <div className="p-3 border-b border-border/50 bg-background/50">
-          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
+          <label htmlFor="sidebar-case-select" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
             Active Target Case
           </label>
           <select
+            id="sidebar-case-select"
+            aria-label="Active Target Case"
             value={activeCaseId}
             onChange={(e) => setActiveCaseId(e.target.value)}
             className="w-full h-8 px-2 text-xs rounded border border-border bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-primary truncate font-mono"

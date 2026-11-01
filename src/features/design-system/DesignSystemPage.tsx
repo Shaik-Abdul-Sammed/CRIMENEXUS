@@ -286,10 +286,14 @@ export function DesignSystemPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-semibold text-text-muted block mb-1">
+              <label htmlFor="jurisdiction-filter-select" className="text-xs font-semibold text-text-muted block mb-1">
                 Jurisdictional Filter
               </label>
-              <select className="w-full h-10 px-3 text-xs rounded-lg border border-white/15 bg-bg-primary/80 text-foreground focus:outline-none focus:ring-1 focus:ring-accent-indigo">
+              <select
+                id="jurisdiction-filter-select"
+                aria-label="Jurisdictional Filter"
+                className="w-full h-10 px-3 text-xs rounded-lg border border-white/15 bg-bg-primary/80 text-foreground focus:outline-none focus:ring-1 focus:ring-accent-indigo"
+              >
                 <option>All Police Ranges (Delhi NCR & Yamuna Corridor)</option>
                 <option>Cyber Crime Police Station, Sector 20</option>
                 <option>Special Cell Delhi Police (Lodhi Colony)</option>

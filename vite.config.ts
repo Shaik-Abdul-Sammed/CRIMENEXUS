@@ -28,6 +28,9 @@ export default defineConfig(({ mode }) => {
               if (id.includes('recharts')) {
                 return 'vendor-charts';
               }
+              if (id.includes('framer-motion') || id.includes('motion-dom')) {
+                return 'vendor-motion';
+              }
               if (id.includes('@tanstack')) {
                 return 'vendor-tanstack';
               }
@@ -43,8 +46,11 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
-      port: 3000,
+      port: 5173,
       host: true,
+      watch: {
+        ignored: ['**/frontend/**', '**/backend/**', '**/.git/**', '**/dist/**', '**/demo_data/**'],
+      },
     },
   };
 });

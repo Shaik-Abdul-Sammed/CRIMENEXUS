@@ -18,20 +18,22 @@ test.describe('CRIMENEXUS Production E2E Investigation Workflows', () => {
     await page.getByText('Investigations').first().click();
 
     await page.waitForURL('/cases');
-    await page.getByText('Operation Shadow Vault').first().click();
+    await page.getByRole('link', { name: /Workspace/i }).first().click();
+    await page.waitForURL('**/cases/*');
 
     // Launch Network Canvas
     await page.getByText('Launch Network Graph').first().click();
-    await page.waitForURL('/network-graph');
-    await expect(page.getByText('HERO: Criminal Network Topology')).toBeVisible();
+    await page.waitForURL('**/network-graph');
+    await expect(page.getByText('HERO: Interactive Criminal Network Topology')).toBeVisible();
   });
 
   test('Flow 3: Entity Directory -> Grounded Evidence Inspection', async ({ page }) => {
     await page.goto('/entities');
     await expect(page.getByText('Extracted Entity Directory')).toBeVisible();
 
-    await page.getByText('Ramesh Kumar').first().click();
-    await expect(page.getByText('Structured Attributes Ledger')).toBeVisible();
+    await page.getByRole('link', { name: /Inspect Entity/i }).first().click();
+    await page.waitForURL('**/entities/*');
+    await expect(page.getByText('Entity Attributes & Telemetry')).toBeVisible();
   });
 
   test('Flow 4: AI Assistant -> Grounded Evidence Discovery', async ({ page }) => {
