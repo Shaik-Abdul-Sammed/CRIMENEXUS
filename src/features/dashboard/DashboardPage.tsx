@@ -15,6 +15,11 @@ import {
   Lock,
   Download,
   Eye,
+  EyeOff,
+  LayoutGrid,
+  ShieldCheck,
+  FileText,
+  Clock,
 } from 'lucide-react';
 import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import {
@@ -28,11 +33,56 @@ import {
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
+import { Modal } from '../../components/ui/Modal';
 import { getStatusBadgeClass } from '../../utils/formatters';
 import { RecommendedActions } from './RecommendedActions';
 import { LiveIngestionWidget } from './LiveIngestionWidget';
 import { RemandDeadlinesWidget } from './RemandDeadlinesWidget';
 import { DocumentPreviewModal } from '../../components/common/DocumentPreviewModal';
+
+const FREEZE_NOTICE_TEXT = `STATUTORY NOTICE UNDER SECTION 102 Cr.P.C. / SECTION 106 BNSS 2023
+GOVERNMENT OF NCT OF DELHI • SPECIAL CRIME BRANCH & CYBER CELL
+CYBER CRIME POLICE STATION, SECTOR 20, NEW DELHI
+
+DISPATCH REFERENCE: CCTNS-FRZ-2026-908122-SEC102
+DATE OF TRANSMISSION: 02 NOVEMBER 2026, 15:30 IST
+CASE REFERENCE: FIR NO. 2026-CRIME-890 (OPERATION SHADOW VAULT)
+STATUTORY OFFENCES: Section 111 (Organized Crime Syndicate) BNS 2023, Sections 316/318 BNS, Section 5 PMLA 2002
+
+TO:
+The Chief Compliance Officer / Nodal Banking Officer / Branch Manager,
+HDFC Bank Limited, Commercial & Retail Operations,
+New Delhi Banking Zone, Delhi - 110001.
+
+SUBJECT: STATUTORY ORDER FOR FORTHWITH FREEZING OF DEBIT TRANSACTIONS UNDER SECTION 102 Cr.P.C. / SECTION 106 BNSS IN RESPECT OF BENEFICIARY ACCOUNT NO. ACC-HDFC-908122.
+
+WHEREAS an active investigation is being conducted by this Specialized Investigation Team into FIR No. 2026-CRIME-890 involving organized extortion, multi-state Hawala financial layering, and smurfing operations;
+
+AND WHEREAS real-time intelligence telemetry and automated financial clustering algorithms have detected structured cash deposits and rapid incoming credits below the statutory threshold of ₹50,000 (totaling ₹4,80,000 across 11 transactions within a 48-hour window) into:
+   - Account Holder / Beneficial Entity: RAJAN & SYNDICATE CONDUITS
+   - Beneficiary Account Number: ACC-HDFC-908122
+   - IFSC Code: HDFC0001244 (Karol Bagh Branch)
+
+AND WHEREAS there is credible reason to believe that the credits in the said account constitute proceeds of crime generated through organized extortion and illegal bookmaking operations;
+
+NOW, THEREFORE, by virtue of the statutory powers vested in me under Section 102 of the Code of Criminal Procedure, 1973 (read with Section 106 of the Bharatiya Nagarik Suraksha Sanhita, 2023 and Section 5 of the Prevention of Money Laundering Act, 2002), I, Inspector Rajesh Sharma, Investigating Officer, Cyber Crime Branch, do hereby ORDER AND DIRECT you to:
+
+1. IMMEDIATELY AND FORTHWITH STOP ALL DEBIT TRANSACTIONS, cash withdrawals, outward NEFT/RTGS/IMPS/UPI transfers, and ATM operations on Account No. ACC-HDFC-908122.
+2. PRESERVE AND SECURE all banking logs, including Account Opening Forms (AOF), KYC documentation, signature cards, linked mobile numbers, and IP connection access timestamps.
+3. PRESERVE ALL CCTV SURVEILLANCE RECORDINGS for the past 60 days relating to all ATM and teller transactions conducted for this account.
+4. CONFIRM EXECUTION of this debit freeze directive by return encrypted acknowledgment through the CCTNS / FIU-IND Gateway within two (2) hours of receipt.
+
+TAKE NOTICE that any willful disregard, deliberate delay, or unauthorized dissipation of funds subsequent to the receipt of this statutory communication shall render you liable for legal proceedings under Sections 175, 188, and 201 of the Indian Penal Code / Sections 223 and 238 of the Bharatiya Nyaya Sanhita, 2023.
+
+A report of this seizure and freeze is being forwarded forthwith to the Court of the Learned Chief Metropolitan Magistrate, Patiala House Courts, New Delhi in strict compliance with Section 102(3) Cr.P.C.
+
+GIVEN UNDER MY HAND AND SEAL OF OFFICE.
+
+[DIGITALLY SIGNED & TRANSMITTED]
+INSPECTOR RAJESH SHARMA
+Investigating Officer, Cyber Crime Branch & Special Cell
+Delhi Police • CCTNS ID: DL-POL-IO-8812
+Cryptographic Hash (SHA-256): 9b4e7a2b91c0e3957fba3082e5b871c4d9201a4e5f76b90831ce829140aef531`;
 
 export function DashboardPage() {
   const { data: cases } = useInvestigations();
@@ -73,6 +123,44 @@ export function DashboardPage() {
 
   const [downloadingDossier, setDownloadingDossier] = useState(false);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
+
+  // Show/Hide Dashboard Toggle State
+  const [showDashboard, setShowDashboard] = useState(true);
+
+  // Statutory Account Freeze Action State Flow
+  const [freezeModalOpen, setFreezeModalOpen] = useState(false);
+  const [freezeNoticeModalOpen, setFreezeNoticeModalOpen] = useState(false);
+  const [isFrozen, setIsFrozen] = useState(false);
+  const [isSubmittingFreeze, setIsSubmittingFreeze] = useState(false);
+  const [freezeConsentChecked, setFreezeConsentChecked] = useState(true);
+  const [freezeRecord, setFreezeRecord] = useState<{
+    ackNumber: string;
+    timestamp: string;
+    ioName: string;
+    targetAccount: string;
+    bankName: string;
+    statute: string;
+    reason: string;
+  } | null>(null);
+
+  const handleConfirmFreeze = () => {
+    setIsSubmittingFreeze(true);
+    setTimeout(() => {
+      const timestamp = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+      setFreezeRecord({
+        ackNumber: 'CCTNS-FRZ-2026-908122-SEC102',
+        timestamp,
+        ioName: 'Inspector Rajesh Sharma (Cyber Cell & Special Branch)',
+        targetAccount: tripwireAlert?.account || 'ACC-HDFC-908122',
+        bankName: 'HDFC Bank Ltd., Karol Bagh Branch',
+        statute: 'Section 102 CrPC / Section 106 BNSS / Section 5 PMLA 2002',
+        reason: 'Structured smurfing deposits (₹4.8L across 11 tranches) below ₹50k reporting limit within 48h.',
+      });
+      setIsFrozen(true);
+      setIsSubmittingFreeze(false);
+      setFreezeModalOpen(false);
+    }, 750);
+  };
 
   const handleDownloadDossier = async () => {
     setDownloadingDossier(true);
@@ -148,7 +236,27 @@ export function DashboardPage() {
             Active Syndicate Investigation: Operation Shadow Vault (FIR-2026-CRIME-890)
           </p>
         </div>
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex items-center gap-2.5 shrink-0 flex-wrap sm:flex-nowrap">
+          <Button
+            id="tour-toggle-dashboard-btn"
+            variant="outline"
+            size="sm"
+            onClick={() => setShowDashboard((prev) => !prev)}
+            className="border-border text-foreground hover:bg-accent font-semibold text-xs flex items-center gap-1.5 whitespace-nowrap shrink-0 shadow-sm"
+          >
+            {showDashboard ? (
+              <>
+                <EyeOff className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <span className="whitespace-nowrap">Hide Dashboard</span>
+              </>
+            ) : (
+              <>
+                <LayoutGrid className="h-4 w-4 shrink-0 text-primary" />
+                <span className="whitespace-nowrap">Show Dashboard</span>
+              </>
+            )}
+          </Button>
+
           <Button
             id="tour-preview-dossier-btn"
             variant="outline"
@@ -177,8 +285,8 @@ export function DashboardPage() {
         </div>
       </div>
 
-      {/* High-Priority Financial Tripwire Smurfing Alert Banner */}
-      {tripwireAlert && (
+      {/* High-Priority Financial Tripwire Smurfing Alert or Active Enforced Freeze Banner */}
+      {tripwireAlert && !isFrozen && (
         <motion.div
           id="tour-alerts"
           animate={{
@@ -216,7 +324,7 @@ export function DashboardPage() {
               variant="danger"
               size="sm"
               className="bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-lg shadow-red-900/50 flex items-center gap-1.5"
-              onClick={() => alert(`EMERGENCY FREEZE ORDER TRANSMITTED: Formal debit freeze issued for ${tripwireAlert.account} via CCTNS/FIU-IND gateway under Section 102 CrPC.`)}
+              onClick={() => setFreezeModalOpen(true)}
             >
               <Lock className="h-3.5 w-3.5" />
               Freeze Account Now
@@ -225,14 +333,63 @@ export function DashboardPage() {
         </motion.div>
       )}
 
-      {/* Live Real-Time Ingestion Streaming Pipeline Widget */}
-      <LiveIngestionWidget />
+      {tripwireAlert && isFrozen && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl border-2 border-emerald-500/70 bg-emerald-950/40 backdrop-blur-md text-emerald-100 shadow-lg shadow-emerald-950/50"
+        >
+          <div className="flex items-start gap-3">
+            <div className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shrink-0 mt-0.5">
+              <ShieldCheck className="h-5 w-5 text-emerald-400" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge className="bg-emerald-600 text-white font-bold text-[10px] tracking-wider uppercase px-2 py-0.5">
+                  STATUTORY DEBIT FREEZE ENFORCED
+                </Badge>
+                <span className="text-[11px] font-mono text-emerald-400 font-semibold">Section 102 CrPC / Sec 106 BNSS</span>
+                <span className="text-[10px] font-mono bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/30">
+                  ACK #{freezeRecord?.ackNumber}
+                </span>
+              </div>
+              <h3 className="text-sm font-extrabold text-white mt-1">
+                Debit Operations Suspended: Account {tripwireAlert.account} (HDFC Bank)
+              </h3>
+              <p className="text-xs text-emerald-200/90 mt-0.5 max-w-3xl leading-relaxed">
+                Emergency freeze directive successfully transmitted via CCTNS / FIU-IND gateway to HDFC Bank Nodal Officer. Outward debits are blocked. Compliance report scheduled for submission to Chief Metropolitan Magistrate under Section 102(3) CrPC.
+              </p>
+              <div className="flex items-center gap-3 mt-2 text-[11px] text-emerald-300/80 font-mono">
+                <span>Transmitted: {freezeRecord?.timestamp}</span>
+                <span>•</span>
+                <span>Authorized IO: {freezeRecord?.ioName}</span>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-emerald-500/50 bg-emerald-900/30 hover:bg-emerald-800/40 text-emerald-200 font-bold text-xs flex items-center gap-1.5 shadow-sm"
+              onClick={() => setFreezeNoticeModalOpen(true)}
+            >
+              <FileText className="h-3.5 w-3.5 text-emerald-400" />
+              View Statutory Freeze Order
+            </Button>
+          </div>
+        </motion.div>
+      )}
 
-      {/* Statutory Custody Remand & Default Bail Deadline Clock */}
-      <RemandDeadlinesWidget />
+      {showDashboard ? (
+        <>
+          {/* Live Real-Time Ingestion Streaming Pipeline Widget */}
+          <LiveIngestionWidget />
 
-      {/* Top Stat Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Statutory Custody Remand & Default Bail Deadline Clock */}
+          <RemandDeadlinesWidget />
+
+          {/* Top Stat Metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="hover:border-primary/40 transition-all">
           <CardContent className="p-5 flex items-center justify-between">
             <div>
@@ -453,6 +610,130 @@ export function DashboardPage() {
           </Card>
         </div>
       </div>
+        </>
+      ) : (
+        <div className="p-8 text-center rounded-xl border border-dashed border-border/80 bg-card/40 backdrop-blur-sm space-y-3">
+          <div className="inline-flex p-3 rounded-full bg-primary/10 text-primary border border-primary/20">
+            <LayoutGrid className="h-6 w-6" />
+          </div>
+          <h3 className="text-sm font-bold text-foreground">Dashboard Analytics & Live Monitors Minimized</h3>
+          <p className="text-xs text-muted-foreground max-w-md mx-auto">
+            Operational charts, real-time ingestion streams, and investigative metrics are currently hidden for focused case examination. Target case FIR-2026-CRIME-890 remains active in context.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowDashboard(true)}
+            className="gap-2 text-xs font-semibold"
+          >
+            <Eye className="h-3.5 w-3.5 text-primary" />
+            Show Dashboard Widgets
+          </Button>
+        </div>
+      )}
+
+      {/* Emergency Account Debit Freeze Authorization Modal */}
+      <Modal
+        isOpen={freezeModalOpen}
+        onClose={() => !isSubmittingFreeze && setFreezeModalOpen(false)}
+        title="Emergency Statutory Debit Freeze Directive"
+        size="lg"
+      >
+        <div className="space-y-4">
+          <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs flex items-start gap-2.5">
+            <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold text-amber-300 uppercase tracking-wide">
+                STATUTORY LEGAL MANDATE • SECTION 102 CrPC / SECTION 106 BNSS / SECTION 5 PMLA
+              </p>
+              <p className="mt-0.5 text-amber-200/80 leading-relaxed">
+                Confirming this action transmits an encrypted debit freeze order directly to HDFC Bank Nodal Operations and creates an authenticated record on the CCTNS / FIU-IND inter-agency gateway.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 text-xs bg-background/80 p-3.5 rounded-lg border border-border">
+            <div>
+              <span className="text-[10px] uppercase font-bold text-muted-foreground block">Target Account</span>
+              <span className="font-mono font-bold text-foreground text-sm">ACC-HDFC-908122</span>
+              <span className="text-[11px] text-muted-foreground block">HDFC Bank Ltd., Karol Bagh Branch</span>
+            </div>
+            <div>
+              <span className="text-[10px] uppercase font-bold text-muted-foreground block">Primary Nexus Suspect</span>
+              <span className="font-bold text-foreground text-sm">Rajan (Hawala Syndicate Kingpin)</span>
+              <span className="text-[11px] text-muted-foreground block">FIR-2026-CRIME-890</span>
+            </div>
+            <div className="col-span-2 pt-2 border-t border-border/50">
+              <span className="text-[10px] uppercase font-bold text-muted-foreground block">Detected Anomaly Pattern</span>
+              <p className="text-foreground font-medium mt-0.5">
+                Structured Smurfing: 11 rapid deposits totaling ₹4,80,000 kept strictly below the ₹50,000 threshold within a 48-hour window.
+              </p>
+            </div>
+          </div>
+
+          <div className="p-3 rounded-lg bg-card border border-border space-y-2">
+            <label className="flex items-start gap-2 text-xs text-foreground cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={freezeConsentChecked}
+                onChange={(e) => setFreezeConsentChecked(e.target.checked)}
+                className="mt-0.5 rounded border-border text-primary focus:ring-primary"
+              />
+              <span className="leading-relaxed">
+                I, <strong className="text-primary font-semibold">Inspector Rajesh Sharma</strong>, certify that this emergency freeze is required to prevent dissipation of proceeds of crime. I undertake to submit the statutory seizure report to the Chief Metropolitan Magistrate under Section 102(3) CrPC.
+              </span>
+            </label>
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={isSubmittingFreeze}
+              onClick={() => setFreezeModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              size="sm"
+              disabled={!freezeConsentChecked || isSubmittingFreeze}
+              onClick={handleConfirmFreeze}
+              className="bg-red-600 hover:bg-red-700 text-white font-bold gap-2"
+            >
+              {isSubmittingFreeze ? (
+                <>
+                  <Clock className="h-4 w-4 animate-spin" />
+                  <span>Transmitting to FIU-IND Gateway...</span>
+                </>
+              ) : (
+                <>
+                  <Lock className="h-4 w-4" />
+                  <span>Authorize & Transmit Debit Freeze</span>
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Statutory Freeze Order Notice Document Viewer */}
+      <DocumentPreviewModal
+        isOpen={freezeNoticeModalOpen}
+        onClose={() => setFreezeNoticeModalOpen(false)}
+        title="Statutory Debit Freeze Directive & Notice"
+        subtitle="Order under Section 102 CrPC / Section 106 BNSS 2023 & Section 5 PMLA 2002"
+        caseNumber="FIR-2026-CRIME-890"
+        fileName="Statutory_Freeze_Order_ACC-HDFC-908122.txt"
+        textContent={FREEZE_NOTICE_TEXT}
+        metadata={{
+          ioName: 'Inspector Rajesh Sharma (Cyber Cell & Special Branch)',
+          policeStation: 'Cyber Crime Police Station, Sector 20',
+          suspectName: 'Rajan (Hawala Syndicate Kingpin)',
+          crimeType: 'Hawala Smurfing & Organized Extortion Nexus',
+          hash: '9b4e7a2b91c0e3957fba3082e5b871c4d9201a4e5f76b90831ce829140aef531',
+        }}
+      />
 
       <DocumentPreviewModal
         isOpen={previewModalOpen}

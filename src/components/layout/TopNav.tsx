@@ -34,16 +34,6 @@ export function TopNav() {
   const [demoModalOpen, setDemoModalOpen] = useState(false);
   const [tourOpen, setTourOpen] = useState(false);
 
-  React.useEffect(() => {
-    const hasSeenTour = localStorage.getItem('crimenexus_tour_seen');
-    if (!hasSeenTour) {
-      const timer = setTimeout(() => {
-        setTourOpen(true);
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, []);
-
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const pathParts = location.pathname.split('/').filter(Boolean);
