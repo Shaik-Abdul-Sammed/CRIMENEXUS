@@ -19,11 +19,13 @@ import {
   Brain,
   ChevronDown,
   ChevronUp,
+  Eye,
 } from 'lucide-react';
 import { useMostWanted } from '../../hooks/useIntelligenceApi';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
+import { DocumentPreviewModal } from '../../components/common/DocumentPreviewModal';
 
 export interface XAIFeatureFactor {
   feature_name: string;
@@ -68,6 +70,7 @@ export function MostWantedPage() {
   const [filterLevel, setFilterLevel] = useState<string>('ALL');
   const [locSuccessNotice, setLocSuccessNotice] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [previewSuspect, setPreviewSuspect] = useState<WantedSuspect | null>(null);
   const [expandedXaiId, setExpandedXaiId] = useState<string | null>(null);
   const [xaiDataMap, setXaiDataMap] = useState<Record<string, XAIExplanation>>({});
   const [loadingXaiId, setLoadingXaiId] = useState<string | null>(null);
@@ -486,11 +489,21 @@ export function MostWantedPage() {
                         variant="outline"
                         size="sm"
                         className="text-xs border-primary/40 text-primary hover:bg-primary/10 flex items-center gap-1.5"
+                        onClick={() => setPreviewSuspect(suspect)}
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                        <span>Preview Dossier</span>
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs border-primary/40 text-primary hover:bg-primary/10 flex items-center gap-1.5"
                         onClick={() => handleDownloadDossier(suspect)}
                         disabled={downloadingId === suspect.id}
                       >
                         <Download className="h-3.5 w-3.5" />
-                        {downloadingId === suspect.id ? 'Generating...' : 'Court-Ready Dossier (PDF)'}
+                        {downloadingId === suspect.id ? 'Generating...' : 'Download (PDF)'}
                       </Button>
                     </div>
                   </div>
@@ -578,6 +591,25 @@ export function MostWantedPage() {
           })
         )}
       </div>
+
+      {previewSuspect && (
+        <DocumentPreviewModal
+          isOpen={!!previewSuspect}
+          onClose={() => setPreviewSuspect(null)}
+          title={`Fugitive Dossier: ${previewSuspect.name}`}
+          subtitle={`Warrant Ref: FIR-2026-${previewSuspect.name.toUpperCase()}-WARRANT • Section 63 BSA Admissible`}
+          caseNumber={`FIR-2026-${previewSuspect.name.toUpperCase()}-WARRANT`}
+          pdfUrl={`${import.meta.env.VITE_API_BASE_URL || '/api/v1'}/cases/export/dossier-pdf?case_number=FIR-2026-${encodeURIComponent(previewSuspect.name.toUpperCase())}-WARRANT&title=District%20Most%20Wanted%20Fugitive%20Syndicate%20Profile%3A%20${encodeURIComponent(previewSuspect.name)}`}
+          fileName={`Dossier_WANTED_${previewSuspect.name}_Court_Ready.pdf`}
+          metadata={{
+            ioName: 'Inspector V. K. Sharma (Special Cell)',
+            policeStation: 'Cyber Crime Police Station, Sector 20',
+            suspectName: previewSuspect.name,
+            crimeType: previewSuspect.role || 'Syndicate Kingpin & Hawala Mastermind',
+            hash: '7a89b342110c9d8e76f5a43210feebda889021c34a56b7890123456789abcdef',
+          }}
+        />
+      )}
     </div>
   );
 }

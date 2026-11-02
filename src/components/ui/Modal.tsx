@@ -9,7 +9,7 @@ export interface ModalProps {
   description?: string;
   children: React.ReactNode;
   className?: string;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
 }
 
 export function Modal({
@@ -94,6 +94,8 @@ export function Modal({
     md: 'max-w-lg',
     lg: 'max-w-2xl',
     xl: 'max-w-4xl',
+    '2xl': 'max-w-5xl',
+    full: 'max-w-[95vw] w-[95vw]',
   };
 
   const titleId = title ? 'modal-title' : undefined;

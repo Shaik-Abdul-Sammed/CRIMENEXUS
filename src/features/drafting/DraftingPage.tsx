@@ -10,11 +10,13 @@ import {
   Landmark,
   Compass,
   FileCheck2,
-  RefreshCw
+  RefreshCw,
+  Eye,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
+import { DocumentPreviewModal } from '../../components/common/DocumentPreviewModal';
 
 type TabType = 'FIR' | 'CHARGE_SHEET' | 'BANK_NOTICE' | 'LOC';
 
@@ -31,6 +33,7 @@ export function DraftingPage() {
   const [copied, setCopied] = useState(false);
   const [generatedDraft, setGeneratedDraft] = useState<string>('');
   const [metaInfo, setMetaInfo] = useState<DraftMetaInfo | null>(null);
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
 
   // Form inputs
   const [firNarrative, setFirNarrative] = useState(
@@ -303,6 +306,16 @@ export function DraftingPage() {
                 <Button
                   variant="outline"
                   size="sm"
+                  className="text-xs flex items-center gap-1.5 border-primary/40 text-primary hover:bg-primary/10"
+                  onClick={() => setPreviewModalOpen(true)}
+                  disabled={!generatedDraft}
+                >
+                  <Eye className="h-3.5 w-3.5" />
+                  <span>Preview</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="text-xs flex items-center gap-1.5"
                   onClick={handleCopy}
                   disabled={!generatedDraft}
@@ -340,6 +353,24 @@ export function DraftingPage() {
           </Card>
         </div>
       </div>
+
+      <DocumentPreviewModal
+        isOpen={previewModalOpen}
+        onClose={() => setPreviewModalOpen(false)}
+        title={`Statutory Judicial Draft Preview: ${activeTab.replace('_', ' ')}`}
+        subtitle="Formatted Official Police Pleading • Section 63 BSA Certified Output"
+        documentType="legal_draft"
+        caseNumber="FIR-2026-CRIME-890"
+        textContent={generatedDraft}
+        fileName={`CRIMENEXUS_Legal_Draft_${activeTab}_${Date.now()}.txt`}
+        metadata={{
+          ioName: 'Inspector V. K. Sharma (Special Cell)',
+          policeStation: 'Cyber Crime Police Station, Sector 20',
+          suspectName: activeTab === 'CHARGE_SHEET' ? chargeSheetAccused : 'Rajan & Associates',
+          crimeType: activeTab === 'FIR' ? 'First Information Report under BNSS' : `${activeTab.replace('_', ' ')} Statutory Submission`,
+          hash: '6b89c3140aef51bc38901234567890abcdef1234567890abcdef1234567890ab',
+        }}
+      />
     </div>
   );
 }

@@ -10,6 +10,7 @@ import {
   ArrowLeft,
   Clock,
   Archive,
+  Eye,
 } from 'lucide-react';
 import { useInvestigationDetail, useCaseEvidence, useEntities, useNetworkGraph } from '../../hooks/useIntelligenceApi';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
@@ -18,6 +19,7 @@ import { Button } from '../../components/ui/Button';
 import { getStatusBadgeClass, getRiskColorClass } from '../../utils/formatters';
 import { VisualCaseTimeline } from '../../components/cases/VisualCaseTimeline';
 import { WitnessSummarizerModal } from '../../components/cases/WitnessSummarizerModal';
+import { DocumentPreviewModal } from '../../components/common/DocumentPreviewModal';
 
 export function CaseDetailPage() {
   const { id = 'case-101' } = useParams<{ id: string }>();
@@ -28,6 +30,7 @@ export function CaseDetailPage() {
 
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'TIMELINE' | 'EVIDENCE' | 'ENTITIES' | 'GRAPH'>('OVERVIEW');
   const [downloadingBundle, setDownloadingBundle] = useState(false);
+  const [previewManifestOpen, setPreviewManifestOpen] = useState(false);
 
   const handleDownloadEvidenceBundle = async () => {
     if (!caseDetail) return;
@@ -95,6 +98,15 @@ export function CaseDetailPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+            <Button
+              variant="outline"
+              onClick={() => setPreviewManifestOpen(true)}
+              className="border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 flex items-center gap-1.5"
+              title="Preview Evidence Bundle Manifest & Hashes"
+            >
+              <Eye className="h-4 w-4 text-emerald-400" />
+              <span>Preview Bundle</span>
+            </Button>
             <Button
               variant="outline"
               onClick={handleDownloadEvidenceBundle}
@@ -262,6 +274,60 @@ export function CaseDetailPage() {
             <Button icon={<Network className="h-4 w-4" />}>Open Full Network Canvas</Button>
           </Link>
         </Card>
+      )}
+
+      {caseDetail && (
+        <DocumentPreviewModal
+          isOpen={previewManifestOpen}
+          onClose={() => setPreviewManifestOpen(false)}
+          title={`Digital Evidence Bundle Manifest: ${caseDetail.caseNumber}`}
+          subtitle={`Case: ${caseDetail.title} • AES-256 Protected Zip Archive`}
+          documentType="evidence_bundle"
+          caseNumber={caseDetail.caseNumber}
+          fileName={`Evidence_Bundle_${caseDetail.caseNumber}.zip`}
+          textContent={`================================================================================
+CRIMENEXUS DIGITAL EVIDENCE BUNDLE & CHAIN OF CUSTODY MANIFEST
+================================================================================
+Case Reference   : ${caseDetail.caseNumber}
+Title            : ${caseDetail.title}
+Police Station   : Cyber Crime Police Station, Sector 20
+Officer Badge    : BADGE-9081
+Encryption Level : AES-256 (Password: ${caseDetail.caseNumber}BADGE-9081)
+Statutory Basis  : Section 63 Bharatiya Sakshya Adhiniyam, 2023 (BSA)
+Generated At     : ${new Date().toISOString()}
+
+--------------------------------------------------------------------------------
+1. ENCLOSED FORENSIC FILES & CRYPTOGRAPHIC HASH INVENTORY (SHA-256)
+--------------------------------------------------------------------------------
+[FILE 01] case_forensic_narrative.txt
+  - Status      : Verified & Hashed
+  - SHA-256     : 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
+
+[FILE 02] bank_transaction_ledger_export.csv
+  - Status      : Verified & Hashed
+  - SHA-256     : 5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8
+
+[FILE 03] cell_tower_triangulation_records.json
+  - Status      : Verified & Hashed
+  - SHA-256     : 4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a
+
+[FILE 04] section_63_bsa_certificate.pdf
+  - Status      : Formally Certified by Investigating Officer
+  - SHA-256     : e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+
+--------------------------------------------------------------------------------
+2. DIGITAL EVIDENCE INTEGRITY STATEMENT
+--------------------------------------------------------------------------------
+This bundle contains electronic records gathered lawfully under Section 63 BSA.
+Any alteration of encrypted zip contents will invalidate the cryptographic hash.`}
+          metadata={{
+            ioName: 'Inspector V. K. Sharma (Special Cell)',
+            policeStation: 'Cyber Crime Police Station, Sector 20',
+            suspectName: 'Identified Syndicate Co-Conspirators',
+            crimeType: 'Forensic Evidence Manifest',
+            hash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+          }}
+        />
       )}
     </div>
   );

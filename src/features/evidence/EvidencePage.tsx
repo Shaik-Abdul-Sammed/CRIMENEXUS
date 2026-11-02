@@ -15,6 +15,7 @@ import {
   Hash,
   ShieldCheck,
   Archive,
+  Eye,
 } from 'lucide-react';
 import axios from 'axios';
 import { useForm } from 'react-hook-form';
@@ -27,6 +28,7 @@ import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Modal } from '../../components/ui/Modal';
+import { DocumentPreviewModal } from '../../components/common/DocumentPreviewModal';
 import { formatDate } from '../../utils/formatters';
 
 const evidenceUploadSchema = z.object({
@@ -53,6 +55,7 @@ export function EvidencePage() {
   const [typeFilter, setTypeFilter] = useState('ALL');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [downloadingBundle, setDownloadingBundle] = useState(false);
+  const [previewManifestOpen, setPreviewManifestOpen] = useState(false);
 
   const handleDownloadEvidenceBundle = async () => {
     setDownloadingBundle(true);
@@ -142,6 +145,15 @@ export function EvidencePage() {
           </p>
         </div>
         <div className="flex items-center gap-2.5">
+          <Button
+            variant="outline"
+            onClick={() => setPreviewManifestOpen(true)}
+            className="border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 flex items-center gap-1.5"
+            title="Preview Evidence Bundle Manifest and Cryptographic Hashes"
+          >
+            <Eye className="h-4 w-4 text-emerald-400" />
+            <span>Preview Manifest</span>
+          </Button>
           <Button
             variant="outline"
             onClick={handleDownloadEvidenceBundle}
@@ -311,6 +323,68 @@ export function EvidencePage() {
           </div>
         </form>
       </Modal>
+
+      <DocumentPreviewModal
+        isOpen={previewManifestOpen}
+        onClose={() => setPreviewManifestOpen(false)}
+        title="Evidence Bundle Manifest & Cryptographic Ledger"
+        subtitle="Case: FIR-2026-CRIME-890 • AES-256 Encrypted Zip Archive • Section 63 BSA Certified"
+        documentType="evidence_bundle"
+        caseNumber="FIR-2026-CRIME-890"
+        fileName="Evidence_Bundle_FIR-2026-CRIME-890.zip"
+        textContent={`================================================================================
+CRIMENEXUS DIGITAL EVIDENCE BUNDLE & CHAIN OF CUSTODY MANIFEST
+================================================================================
+Case Reference   : FIR-2026-CRIME-890
+Police Station   : Cyber Crime Police Station, Sector 20
+Investigating IO : Inspector V. K. Sharma (Special Cell)
+Officer Badge    : BADGE-9081
+Bundle Encryption: AES-256 (Password: FIR-2026-CRIME-890BADGE-9081)
+Statutory Basis  : Section 63 Bharatiya Sakshya Adhiniyam, 2023 (BSA)
+Generated At     : ${new Date().toISOString()}
+
+--------------------------------------------------------------------------------
+1. ENCLOSED FORENSIC FILES & CRYPTOGRAPHIC HASH INVENTORY (SHA-256)
+--------------------------------------------------------------------------------
+[FILE 01] case_forensic_narrative.txt
+  - Type        : Primary Investigation Summary
+  - SHA-256 Hash: 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
+  - File Size   : 14.8 KB
+
+[FILE 02] bank_transaction_ledger_apex_trading.csv
+  - Type        : Smurfing Inflow/Outflow Financial Records (HDFC Bank #908122)
+  - SHA-256 Hash: 5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8
+  - File Size   : 38.2 KB
+
+[FILE 03] cdr_cell_tower_triangulation_rajan.json
+  - Type        : Telecom Call Detail Records & Geo-coordinates (Airtel Node 4402)
+  - SHA-256 Hash: 4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a
+  - File Size   : 22.4 KB
+
+[FILE 04] anpr_toll_checkpoint_imagery.jpg
+  - Type        : Automated Number Plate Recognition (Toyota Fortuner TS 09 AB 1234)
+  - SHA-256 Hash: ef2d127de37b942baad06145e54b0c619a1f22327b2ebbcfbec78f5564afe39d
+  - File Size   : 2.1 MB
+
+[FILE 05] section_63_bsa_certificate.pdf
+  - Type        : Electronic Evidence Admissibility Certificate
+  - SHA-256 Hash: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  - File Size   : 412 KB
+
+--------------------------------------------------------------------------------
+2. STATUTORY INTEGRITY DECLARATION
+--------------------------------------------------------------------------------
+I certify under Section 63 of Bharatiya Sakshya Adhiniyam 2023 that the above
+evidence items were ingested, extracted, and compiled using lawful digital
+forensics protocols without human alteration or file bit decay.`}
+        metadata={{
+          ioName: 'Inspector V. K. Sharma (Special Cell)',
+          policeStation: 'Cyber Crime Police Station, Sector 20',
+          suspectName: 'Rajan Syndicate',
+          crimeType: 'Digital Evidence Chain of Custody',
+          hash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+        }}
+      />
     </div>
   );
 }

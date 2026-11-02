@@ -14,6 +14,7 @@ import {
   Sparkles,
   Lock,
   Download,
+  Eye,
 } from 'lucide-react';
 import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import {
@@ -31,6 +32,7 @@ import { getStatusBadgeClass } from '../../utils/formatters';
 import { RecommendedActions } from './RecommendedActions';
 import { LiveIngestionWidget } from './LiveIngestionWidget';
 import { RemandDeadlinesWidget } from './RemandDeadlinesWidget';
+import { DocumentPreviewModal } from '../../components/common/DocumentPreviewModal';
 
 export function DashboardPage() {
   const { data: cases } = useInvestigations();
@@ -70,6 +72,7 @@ export function DashboardPage() {
   }, []);
 
   const [downloadingDossier, setDownloadingDossier] = useState(false);
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
 
   const handleDownloadDossier = async () => {
     setDownloadingDossier(true);
@@ -147,6 +150,17 @@ export function DashboardPage() {
         </div>
         <div className="flex items-center gap-2.5 shrink-0">
           <Button
+            id="tour-preview-dossier-btn"
+            variant="outline"
+            size="sm"
+            onClick={() => setPreviewModalOpen(true)}
+            className="border-primary/40 text-primary hover:bg-primary/10 font-bold text-xs flex items-center gap-1.5 whitespace-nowrap shrink-0 shadow-sm"
+          >
+            <Eye className="h-4 w-4 shrink-0 text-primary" />
+            <span className="whitespace-nowrap">Preview Dossier</span>
+          </Button>
+
+          <Button
             id="tour-dossier-btn"
             variant="primary"
             size="sm"
@@ -155,7 +169,7 @@ export function DashboardPage() {
             className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs shadow-md shadow-primary/20 flex items-center gap-2 whitespace-nowrap shrink-0"
           >
             <Download className="h-4 w-4 shrink-0" />
-            <span className="whitespace-nowrap">{downloadingDossier ? 'Compiling Dossier...' : 'Download Court-Ready Dossier (PDF)'}</span>
+            <span className="whitespace-nowrap">{downloadingDossier ? 'Compiling Dossier...' : 'Download (PDF)'}</span>
             <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/30 text-white font-mono whitespace-nowrap shrink-0 border border-white/10">
               Sec 63 BSA
             </span>
@@ -439,6 +453,23 @@ export function DashboardPage() {
           </Card>
         </div>
       </div>
+
+      <DocumentPreviewModal
+        isOpen={previewModalOpen}
+        onClose={() => setPreviewModalOpen(false)}
+        title="Court-Ready Forensic Dossier & Case Synthesis"
+        subtitle="FIR-2026-CRIME-890 • Operation Shadow Vault • Section 63 BSA Certified"
+        caseNumber="FIR-2026-CRIME-890"
+        pdfUrl={`${import.meta.env.VITE_API_BASE_URL || '/api/v1'}/cases/export/dossier-pdf?case_number=FIR-2026-CRIME-890&title=Illicit%20Hawala%20Financial%20Network%20%26%20Extortion%20Syndicate`}
+        fileName="Court_Ready_Dossier_FIR-2026-CRIME-890.pdf"
+        metadata={{
+          ioName: 'Inspector V. K. Sharma (Special Cell)',
+          policeStation: 'Cyber Crime Police Station, Sector 20',
+          suspectName: 'Rajan & Associated Hawala Syndicate',
+          crimeType: 'Organized Hawala Smurfing & Extortion Syndicate',
+          hash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855f41029c7d413b8',
+        }}
+      />
     </div>
   );
 }
