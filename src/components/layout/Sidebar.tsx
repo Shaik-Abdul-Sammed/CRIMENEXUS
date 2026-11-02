@@ -98,12 +98,13 @@ export function Sidebar() {
             aria-label="Active Target Case"
             value={activeCaseId}
             onChange={(e) => setActiveCaseId(e.target.value)}
-            className="w-full h-8 px-2 text-xs rounded border border-border bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-primary truncate font-mono"
+            title={cases?.find((c) => c.id === activeCaseId)?.title || 'All Active Cases'}
+            className="w-full h-8 px-2 text-xs rounded border border-border bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-primary truncate font-sans font-medium"
           >
             <option value="ALL">All Active Cases (Global Workspace)</option>
             {cases?.map((c) => (
               <option key={c.id} value={c.id} title={`${c.caseNumber} - ${c.title}`}>
-                {c.caseNumber} - {c.title}
+                {c.caseNumber} • {c.title}
               </option>
             ))}
           </select>
@@ -157,17 +158,17 @@ export function Sidebar() {
               className="h-9 w-9 rounded-full object-cover border border-primary/30 shrink-0"
             />
             <div className="flex flex-col min-w-0 flex-1">
-              <div className="flex items-center justify-between gap-1.5">
-                <span className="text-xs font-semibold text-foreground truncate" title={currentUser?.name}>
-                  {currentUser?.name}
-                </span>
-                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-primary/20 text-primary border border-primary/30 shrink-0">
+              <span className="text-xs font-bold text-foreground truncate" title={currentUser?.name}>
+                {currentUser?.name}
+              </span>
+              <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
+                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-primary/20 text-primary border border-primary/30 shrink-0">
                   {activeRole}
                 </span>
+                <span className="text-[10px] text-muted-foreground truncate" title={currentUser?.department}>
+                  {currentUser?.department}
+                </span>
               </div>
-              <span className="text-[10px] text-muted-foreground truncate" title={currentUser?.department}>
-                {currentUser?.department}
-              </span>
             </div>
           </div>
           <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground bg-muted/40 p-2 rounded border border-border/30 leading-tight">
