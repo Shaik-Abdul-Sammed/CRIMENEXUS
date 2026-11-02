@@ -62,10 +62,10 @@ export function RemandDeadlinesWidget() {
   const fetchCustodyData = async () => {
     setLoading(true);
     try {
-      const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+      const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
       const [sumRes, actRes] = await Promise.all([
-        axios.get(`${baseURL}/legal/custody/summary`, { timeout: 2500 }),
-        axios.get(`${baseURL}/legal/custody/active`, { timeout: 2500 }),
+        axios.get(`${baseURL}/legal/custody/summary`, { timeout: 10000 }),
+        axios.get(`${baseURL}/legal/custody/active`, { timeout: 10000 }),
       ]);
       if (sumRes.data) setSummary(sumRes.data);
       if (actRes.data && Array.isArray(actRes.data)) {

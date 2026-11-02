@@ -105,12 +105,12 @@ export function VisualCaseTimeline({ caseId }: { caseId: string }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+    const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
     setLoading(true);
     axios
       .get(`${baseURL}/audit/ledger`, {
         params: { case_id: caseId },
-        timeout: 4000,
+        timeout: 10000,
       })
       .then((res) => {
         if (res.data && Array.isArray(res.data) && res.data.length > 0) {

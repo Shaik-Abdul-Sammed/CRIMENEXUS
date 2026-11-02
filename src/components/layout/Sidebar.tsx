@@ -55,7 +55,7 @@ export function Sidebar() {
     <aside
       className={cn(
         'relative flex flex-col border-r border-border bg-card/95 transition-all duration-300 z-30 shrink-0 select-none',
-        sidebarOpen ? 'w-64' : 'w-16'
+        sidebarOpen ? 'w-72' : 'w-16'
       )}
     >
       {/* Brand Header */}
@@ -102,8 +102,8 @@ export function Sidebar() {
           >
             <option value="ALL">All Active Cases (Global Workspace)</option>
             {cases?.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.caseNumber} - {c.title.slice(0, 26)}...
+              <option key={c.id} value={c.id} title={`${c.caseNumber} - ${c.title}`}>
+                {c.caseNumber} - {c.title}
               </option>
             ))}
           </select>
@@ -150,19 +150,25 @@ export function Sidebar() {
       {/* User & Compliance Footer */}
       {sidebarOpen ? (
         <div className="p-3 border-t border-border/60 bg-background/40 space-y-2">
-          <div className="flex items-center gap-2.5 p-2 rounded-lg border border-border/50 bg-card">
+          <div className="flex items-center gap-3 p-2.5 rounded-lg border border-border/50 bg-card">
             <img
               src={currentUser?.avatar}
               alt={currentUser?.name}
-              className="h-8 w-8 rounded-full object-cover border border-primary/30 shrink-0"
+              className="h-9 w-9 rounded-full object-cover border border-primary/30 shrink-0"
             />
             <div className="flex flex-col min-w-0 flex-1">
-              <span className="text-xs font-semibold text-foreground truncate">{currentUser?.name}</span>
-              <span className="text-[10px] text-muted-foreground truncate">{currentUser?.department}</span>
+              <div className="flex items-center justify-between gap-1.5">
+                <span className="text-xs font-semibold text-foreground truncate" title={currentUser?.name}>
+                  {currentUser?.name}
+                </span>
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-primary/20 text-primary border border-primary/30 shrink-0">
+                  {activeRole}
+                </span>
+              </div>
+              <span className="text-[10px] text-muted-foreground truncate" title={currentUser?.department}>
+                {currentUser?.department}
+              </span>
             </div>
-            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-primary/20 text-primary border border-primary/30 shrink-0">
-              {activeRole}
-            </span>
           </div>
           <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground bg-muted/40 p-2 rounded border border-border/30 leading-tight">
             <ShieldCheck className="h-3 w-3 text-emerald-400 shrink-0" />

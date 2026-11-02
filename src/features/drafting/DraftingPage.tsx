@@ -42,7 +42,7 @@ export function DraftingPage() {
   const [bankName, setBankName] = useState('State Bank of India');
   const [locSuspect, setLocSuspect] = useState('Rajan');
 
-  const getBaseURL = () => import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+  const getBaseURL = () => import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
   const handleGenerate = async () => {
     setLoading(true);

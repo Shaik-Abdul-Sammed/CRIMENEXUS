@@ -422,8 +422,8 @@ export const api = {
     const isMock = import.meta.env.VITE_API_MOCK_MODE === 'true';
     if (!isMock) {
       try {
-        const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
-        const response = await axios.get(`${baseURL}/network/graph`, { timeout: 3500 });
+        const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+        const response = await axios.get(`${baseURL}/network/graph`, { timeout: 10000 });
         if (response.data && Array.isArray(response.data.nodes) && response.data.nodes.length > 0) {
           interface RawGraphNode {
             data: { id: string; name?: string; label?: string; type?: Entity['type']; riskScore?: number; properties?: Record<string, unknown> };
@@ -705,8 +705,8 @@ export const api = {
   // District Most Wanted Watchlist
   async getMostWanted(): Promise<MostWantedItem[]> {
     try {
-      const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
-      const res = await axios.get(`${baseURL}/threats/most-wanted`, { timeout: 5000 });
+      const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+      const res = await axios.get(`${baseURL}/threats/most-wanted`, { timeout: 10000 });
       return res.data;
     } catch {
       return [

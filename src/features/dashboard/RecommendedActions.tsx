@@ -86,10 +86,10 @@ export function RecommendedActions() {
   useEffect(() => {
     const isMock = import.meta.env.VITE_API_MOCK_MODE === 'true';
     if (!isMock) {
-      const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+      const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
       // Query Rajan (the primary seeded suspect) to generate dynamic actionable directives
       axios
-        .get(`${baseURL}/threats/risk-score/Rajan`, { timeout: 2500 })
+        .get(`${baseURL}/threats/risk-score/Rajan`, { timeout: 10000 })
         .then((res) => {
           const recs = res.data?.recommended_actions || res.data?.recommendations;
           if (recs && Array.isArray(recs)) {

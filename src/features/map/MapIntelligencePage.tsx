@@ -71,9 +71,9 @@ export function MapIntelligencePage() {
   const [interceptRoute, setInterceptRoute] = useState<InterceptRouteInfo | null>(null);
 
   const fetchInterceptRoute = (targetLat: number, targetLon: number) => {
-    const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+    const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
     axios
-      .post(`${baseURL}/geo/route-to-incident`, { incident_lat: targetLat, incident_lon: targetLon }, { timeout: 3500 })
+      .post(`${baseURL}/geo/route-to-incident`, { incident_lat: targetLat, incident_lon: targetLon }, { timeout: 10000 })
       .then((res) => {
         if (res.data?.status === 'SUCCESS') {
           setInterceptRoute(res.data);
@@ -97,11 +97,11 @@ export function MapIntelligencePage() {
 
   // 1. Fetch Correlated Movement Timeline from Backend Analytics
   useEffect(() => {
-    const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+    const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
     
     // Fetch 7-Day Predictive Crime Forecast
     axios
-      .get(`${baseURL}/analytics/forecast`, { timeout: 3500 })
+      .get(`${baseURL}/analytics/forecast`, { timeout: 10000 })
       .then((res) => {
         if (res.data?.high_risk_zones) {
           setForecastData(res.data);
@@ -159,7 +159,7 @@ export function MapIntelligencePage() {
       });
 
     axios
-      .get(`${baseURL}/analytics/movement-timeline?plate_number=TS%2009%20AB%201234&phone_number=%2B91%2098765%2043210`, { timeout: 3500 })
+      .get(`${baseURL}/analytics/movement-timeline?plate_number=TS%2009%20AB%201234&phone_number=%2B91%2098765%2043210`, { timeout: 10000 })
       .then((res) => {
         if (res.data?.timeline_events && res.data.timeline_events.length > 0) {
           setTimelineWaypoints(res.data.timeline_events);

@@ -28,8 +28,8 @@ export function LiveIngestionWidget() {
 
   const fetchStats = async () => {
     try {
-      const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
-      const res = await axios.get(`${baseURL}/streaming/stats`, { timeout: 2000 });
+      const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+      const res = await axios.get(`${baseURL}/streaming/stats`, { timeout: 10000 });
       if (res.data) {
         setStats(res.data);
       }
@@ -47,8 +47,8 @@ export function LiveIngestionWidget() {
   const handleSimulate = async () => {
     setSimulating(true);
     try {
-      const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
-      await axios.post(`${baseURL}/streaming/simulate`, {}, { timeout: 2500 });
+      const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+      await axios.post(`${baseURL}/streaming/simulate`, {}, { timeout: 10000 });
       await fetchStats();
     } catch {
       // Local optimistic update
@@ -103,7 +103,7 @@ export function LiveIngestionWidget() {
       </CardHeader>
 
       <CardContent className="p-4">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {/* Bank Transactions */}
           <div className="p-3 rounded-xl bg-background/60 border border-border/60 space-y-1">
             <div className="flex items-center justify-between text-muted-foreground">

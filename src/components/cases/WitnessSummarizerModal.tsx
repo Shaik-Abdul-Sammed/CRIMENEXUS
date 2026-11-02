@@ -31,10 +31,10 @@ export function WitnessSummarizerModal({ caseNumber = 'FIR-2026-CRIME-890' }: Wi
     if (!testimonyText.trim()) return;
     setLoading(true);
     try {
-      const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+      const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
       const res = await axios.post(`${baseURL}/forensics/witness/summarize`, {
         testimony: testimonyText,
-      });
+      }, { timeout: 10000 });
       if (res.data?.summary_bullets) {
         setSummaryBullets(res.data.summary_bullets);
       }

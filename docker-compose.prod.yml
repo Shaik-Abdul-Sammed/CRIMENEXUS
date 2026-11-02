@@ -60,6 +60,8 @@ services:
     # ZERO-TRUST: Internal network only, all traffic routed exclusively through reverse proxy
     expose:
       - "8000"
+    ports:
+      - "127.0.0.1:8000:8000"
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-crimenexus}
       - POSTGRES_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-crimenexus}

@@ -59,7 +59,7 @@ export function LightweightDashboard() {
     window.addEventListener('offline', handleOffline);
 
     async function loadData() {
-      const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+      const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
       try {
         const res = await fetch(`${baseURL}/threats/most-wanted`, { headers: { Accept: 'application/json' } });
         if (!res.ok) throw new Error('Network error');

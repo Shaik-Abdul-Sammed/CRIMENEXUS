@@ -33,7 +33,7 @@ export function CaseDetailPage() {
     if (!caseDetail) return;
     setDownloadingBundle(true);
     try {
-      const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+      const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
       const response = await axios.get(`${baseURL}/cases/${caseDetail.caseNumber}/evidence-bundle`, {
         params: { officer_badge: 'BADGE-9081' },
         responseType: 'blob',

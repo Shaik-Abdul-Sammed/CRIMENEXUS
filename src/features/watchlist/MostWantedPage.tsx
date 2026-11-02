@@ -81,8 +81,8 @@ export function MostWantedPage() {
     if (!xaiDataMap[suspectId]) {
       setLoadingXaiId(suspectId);
       try {
-        const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
-        const res = await axios.get(`${baseURL}/threats/risk-score/${encodeURIComponent(suspectName)}`);
+        const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+        const res = await axios.get(`${baseURL}/threats/risk-score/${encodeURIComponent(suspectName)}`, { timeout: 10000 });
         setXaiDataMap((prev) => ({ ...prev, [suspectId]: res.data }));
       } catch (err) {
         console.warn('Failed to load XAI risk score attribution', err);
@@ -115,13 +115,14 @@ export function MostWantedPage() {
   const handleDownloadDossier = async (suspect: WantedSuspect) => {
     setDownloadingId(suspect.id);
     try {
-      const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+      const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
       const response = await axios.get(`${baseURL}/cases/export/dossier-pdf`, {
         params: {
           case_number: `FIR-2026-${suspect.name.toUpperCase()}-WARRANT`,
           title: `District Most Wanted Fugitive Syndicate Profile: ${suspect.name}`,
         },
         responseType: 'blob',
+        timeout: 10000,
       });
       const blob = new Blob([response.data], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(blob);

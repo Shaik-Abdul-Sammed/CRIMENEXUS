@@ -51,9 +51,9 @@ export function DashboardPage() {
   });
 
   useEffect(() => {
-    const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+    const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
     axios
-      .get(`${baseURL}/analytics/smurfing`, { timeout: 3000 })
+      .get(`${baseURL}/analytics/smurfing`, { timeout: 10000 })
       .then((res) => {
         if (res.data?.alerts && res.data.alerts.length > 0) {
           const firstAlert = res.data.alerts[0];
@@ -74,7 +74,7 @@ export function DashboardPage() {
   const handleDownloadDossier = async () => {
     setDownloadingDossier(true);
     try {
-      const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+      const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
       const response = await axios.get(`${baseURL}/cases/export/dossier-pdf`, {
         params: {
           case_number: 'FIR-2026-CRIME-890',
@@ -127,15 +127,15 @@ export function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Disclaimer Banner */}
-      <div className="flex items-center gap-3 p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-300 text-xs">
-        <ShieldAlert className="h-5 w-5 text-amber-400 shrink-0" />
-        <div className="flex-1 leading-relaxed">
-          <span className="font-bold">INVESTIGATION ASSISTANCE MANDATE:</span> AI findings provide evidence-backed analytical suggestions. AI models do NOT assign guilt scores or make autonomous law-enforcement determinations. Human supervisor review is required.
+      <div className="flex items-center gap-2.5 py-2.5 px-3.5 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-200/90 text-xs">
+        <ShieldAlert className="h-4 w-4 text-amber-400 shrink-0" />
+        <div className="flex-1 leading-snug">
+          <span className="font-bold text-amber-300">INVESTIGATION ASSISTANCE MANDATE:</span> AI findings provide evidence-backed analytical suggestions. AI models do NOT assign guilt scores or make autonomous law-enforcement determinations. Human supervisor review is required.
         </div>
       </div>
 
       {/* Rapid Operational Action Bar with Court-Ready Dossier Download */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-xl border border-primary/30 bg-card/80 backdrop-blur-sm shadow-md">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl border border-primary/30 bg-card/80 backdrop-blur-sm shadow-md">
         <div>
           <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
@@ -145,18 +145,18 @@ export function DashboardPage() {
             Active Syndicate Investigation: Operation Shadow Vault (FIR-2026-CRIME-890)
           </p>
         </div>
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 shrink-0">
           <Button
             id="tour-dossier-btn"
             variant="primary"
             size="sm"
             onClick={handleDownloadDossier}
             disabled={downloadingDossier}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs shadow-md shadow-primary/20 flex items-center gap-2"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs shadow-md shadow-primary/20 flex items-center gap-2 whitespace-nowrap shrink-0"
           >
-            <Download className="h-4 w-4" />
-            <span>{downloadingDossier ? 'Compiling Dossier...' : 'Download Court-Ready Dossier (PDF)'}</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/20 text-white font-mono">
+            <Download className="h-4 w-4 shrink-0" />
+            <span className="whitespace-nowrap">{downloadingDossier ? 'Compiling Dossier...' : 'Download Court-Ready Dossier (PDF)'}</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/30 text-white font-mono whitespace-nowrap shrink-0 border border-white/10">
               Sec 63 BSA
             </span>
           </Button>

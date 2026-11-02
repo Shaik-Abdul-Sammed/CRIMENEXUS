@@ -112,12 +112,12 @@ export function PoliceDemoModal({ isOpen, onClose }: PoliceDemoModalProps) {
     await new Promise((r) => setTimeout(r, 400));
 
     try {
-      const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+      const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
       if (current.apiEndpoint.includes('/ingest')) {
         addLog(`[2/3] Calling live Dual-Write API: POST ${baseURL}${current.apiEndpoint}...`);
         try {
-          const res = await axios.post(`${baseURL}${current.apiEndpoint}`, current.samplePayload, { timeout: 3000 });
+          const res = await axios.post(`${baseURL}${current.apiEndpoint}`, current.samplePayload, { timeout: 10000 });
           addLog(`[2/3] Response Received: Postgres ID #${res.data?.postgres_id || '1'} & Neo4j graph nodes linked.`);
         } catch {
           addLog(`[2/3] Live backend offline; demonstrating via client-side simulation store.`);
@@ -125,7 +125,7 @@ export function PoliceDemoModal({ isOpen, onClose }: PoliceDemoModalProps) {
       } else {
         addLog(`[2/3] Querying AI Centrality Engine: GET ${baseURL}${current.apiEndpoint}...`);
         try {
-          const res = await axios.get(`${baseURL}${current.apiEndpoint}`, { timeout: 3000 });
+          const res = await axios.get(`${baseURL}${current.apiEndpoint}`, { timeout: 10000 });
           addLog(`[2/3] Centrality computed: ${res.data?.length || 3} prime kingpin nodes identified.`);
         } catch {
           addLog(`[2/3] Centrality computed via local fallback engine.`);
