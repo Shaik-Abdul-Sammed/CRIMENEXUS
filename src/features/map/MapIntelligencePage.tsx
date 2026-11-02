@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import { MapPin, ShieldAlert, X, Navigation, Clock, BellRing, Flame, Compass, Shield, Route } from 'lucide-react';
 import { useMapLocations } from '../../hooks/useIntelligenceApi';
 import { MapLocation } from '../../types';
