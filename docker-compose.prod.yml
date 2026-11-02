@@ -96,6 +96,7 @@ services:
     restart: always
     ports:
       - "80:80"
+    # Assets are baked into container via multi-stage build; no host volume mount needed
     depends_on:
       - backend
     networks:

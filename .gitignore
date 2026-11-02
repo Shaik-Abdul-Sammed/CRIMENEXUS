@@ -159,3 +159,4 @@ __pycache__/
 .pytest_cache/
 playwright-report/
 test-results/
+frontend/node_modules

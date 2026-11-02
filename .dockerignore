@@ -1,9 +1,9 @@
-node_modules/
-dist/
-.git/
-backend/venv/
-backend/.venv/
-**/__pycache__/
+node_modules
+dist
+.env
+.git
+backend/venv
+backend/.venv
+**/__pycache__
 *.pyc
-.pytest_cache/
-frontend
+.pytest_cache

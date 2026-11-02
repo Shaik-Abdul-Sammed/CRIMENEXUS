@@ -26,6 +26,10 @@ bleach>=6.1.0
 pandas>=2.2.0
 numpy>=1.26.0
 scipy>=1.13.0
+scikit-learn>=1.5.0
+xgboost>=2.0.0
+geopy>=2.4.0
+redis>=5.0.0
 
 # --- Document Parsing & Forensics Extraction ---
 pymupdf>=1.24.0
