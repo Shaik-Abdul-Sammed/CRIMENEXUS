@@ -35,10 +35,11 @@ class CaseResponse(BaseModel):
     risk_level: str
 
 
+@router.get("", response_model=List[CaseResponse])
 @router.get("/", response_model=List[CaseResponse])
-def list_cases(db: Session = Depends(get_db)):
+def list_cases(limit: int = 50, skip: int = 0, db: Session = Depends(get_db)):
     """Returns all police cases."""
-    return db.query(Case).all()
+    return db.query(Case).offset(skip).limit(limit).all()
 
 
 @router.post("/", response_model=CaseResponse, status_code=status.HTTP_201_CREATED)
@@ -207,4 +208,59 @@ def get_case(case_id: int, db: Session = Depends(get_db)):
     case = db.query(Case).filter(Case.id == case_id).first()
     if not case:
         raise HTTPException(status_code=404, detail="Case not found")
+    return case
+
+
+class WitnessSummaryPayload(BaseModel):
+    witness_name: Optional[str] = "Witness Statement"
+    summary: str
+    key_entities: Optional[List[str]] = []
+    officer_badge: Optional[str] = "BADGE-9081"
+
+
+_WITNESS_SUMMARIES = {}
+
+
+@router.post("/{case_identifier}/witness-summary", summary="Persist AI Witness Statement Summary into Case Ledger")
+def save_witness_summary(
+    case_identifier: str,
+    payload: WitnessSummaryPayload,
+    db: Session = Depends(get_db)
+):
+    import uuid
+    entry = {
+        "id": f"WS-{uuid.uuid4().hex[:6].upper()}",
+        "case_id": case_identifier,
+        "witness_name": payload.witness_name,
+        "summary": payload.summary,
+        "key_entities": payload.key_entities or [],
+        "officer_badge": payload.officer_badge or "BADGE-9081",
+        "timestamp": datetime.utcnow().isoformat()
+    }
+    if case_identifier not in _WITNESS_SUMMARIES:
+        _WITNESS_SUMMARIES[case_identifier] = []
+    _WITNESS_SUMMARIES[case_identifier].append(entry)
+
+    try:
+        from app.services.legal.audit_service import record_audit_event
+        record_audit_event(
+            db=db,
+            officer_badge=payload.officer_badge or "BADGE-9081",
+            officer_name="Investigating Officer",
+            station_id="STATION_FIELD",
+            action="SAVE_WITNESS_SUMMARY",
+            resource_type="CASE",
+            resource_id=case_identifier,
+            details=f"Persisted AI-generated 3-bullet witness summary for {case_identifier}"
+        )
+    except Exception:
+        pass
+
+    return {"status": "SUCCESS", "data": entry}
+
+
+@router.get("/{case_identifier}/witness-summary", summary="Retrieve Persisted AI Witness Summaries")
+def get_witness_summaries(case_identifier: str):
+    return _WITNESS_SUMMARIES.get(case_identifier, [])
+
     return case

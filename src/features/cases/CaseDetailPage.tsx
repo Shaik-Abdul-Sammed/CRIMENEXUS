@@ -11,7 +11,12 @@ import {
   Clock,
   Archive,
   Eye,
+  ZoomIn,
+  ZoomOut,
+  Maximize2,
+  RotateCcw,
 } from 'lucide-react';
+import cytoscape from 'cytoscape';
 import { useInvestigationDetail, useCaseEvidence, useEntities, useNetworkGraph } from '../../hooks/useIntelligenceApi';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
@@ -31,6 +36,53 @@ export function CaseDetailPage() {
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'TIMELINE' | 'EVIDENCE' | 'ENTITIES' | 'GRAPH'>('OVERVIEW');
   const [downloadingBundle, setDownloadingBundle] = useState(false);
   const [previewManifestOpen, setPreviewManifestOpen] = useState(false);
+
+  const cyInstanceRef = React.useRef<cytoscape.Core | null>(null);
+  const embeddedGraphContainerRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (activeTab === 'GRAPH' && embeddedGraphContainerRef.current) {
+      const nodes = (entities || []).map((ent) => ({
+        data: { id: ent.id, label: ent.name, type: ent.type },
+      }));
+      const edges = (network?.edges || []).map((rel) => ({
+        data: { id: rel.id, source: rel.sourceEntityId, target: rel.targetEntityId, label: rel.type },
+      }));
+
+      const cy = cytoscape({
+        container: embeddedGraphContainerRef.current,
+        elements: [...nodes, ...edges],
+        style: [
+          {
+            selector: 'node',
+            style: {
+              label: 'data(label)',
+              color: '#fff',
+              'font-size': '10px',
+              'background-color': '#3b82f6',
+              'text-valign': 'bottom',
+              'text-margin-y': 4,
+            },
+          },
+          {
+            selector: 'edge',
+            style: {
+              label: 'data(label)',
+              'font-size': '8px',
+              'line-color': '#64748b',
+              'target-arrow-color': '#64748b',
+              'target-arrow-shape': 'triangle',
+              'curve-style': 'bezier',
+            },
+          },
+        ],
+        layout: { name: 'cose', animate: true, padding: 30 },
+      });
+
+      cyInstanceRef.current = cy;
+      return () => cy.destroy();
+    }
+  }, [activeTab, entities, network]);
 
   const handleDownloadEvidenceBundle = async () => {
     if (!caseDetail) return;
@@ -264,15 +316,62 @@ export function CaseDetailPage() {
       )}
 
       {activeTab === 'GRAPH' && (
-        <Card className="p-8 text-center space-y-4">
-          <Network className="h-12 w-12 text-primary mx-auto" />
-          <h3 className="font-bold text-base text-foreground">Interactive Cytoscape Topology</h3>
-          <p className="text-xs text-muted-foreground max-w-md mx-auto">
-            View full graph visualization with node positioning, relationship edge inspection, and neighbor expansion in the main Hero workspace.
-          </p>
-          <Link to="/network-graph">
-            <Button icon={<Network className="h-4 w-4" />}>Open Full Network Canvas</Button>
-          </Link>
+        <Card className="p-4 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/60 pb-3">
+            <div className="flex items-center gap-2">
+              <Network className="h-4 w-4 text-primary" />
+              <h3 className="font-bold text-xs text-foreground uppercase tracking-wider">
+                Case Topology & Subgraph ({caseDetail.caseNumber})
+              </h3>
+            </div>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 px-2"
+                onClick={() => cyInstanceRef.current?.zoom(cyInstanceRef.current.zoom() * 1.2)}
+                title="Zoom In"
+              >
+                <ZoomIn className="h-3 w-3" />
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 px-2"
+                onClick={() => cyInstanceRef.current?.zoom(cyInstanceRef.current.zoom() / 1.2)}
+                title="Zoom Out"
+              >
+                <ZoomOut className="h-3 w-3" />
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 px-2"
+                onClick={() => cyInstanceRef.current?.fit()}
+                title="Fit View"
+              >
+                <Maximize2 className="h-3 w-3" />
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 px-2"
+                onClick={() => cyInstanceRef.current?.layout({ name: 'cose', animate: true }).run()}
+                title="Reset Layout"
+              >
+                <RotateCcw className="h-3 w-3" />
+              </Button>
+              <Link to="/network-graph">
+                <Button size="sm" className="h-7 px-2 text-xs" icon={<Network className="h-3 w-3" />}>
+                  Full Canvas
+                </Button>
+              </Link>
+            </div>
+          </div>
+          <div
+            ref={embeddedGraphContainerRef}
+            className="h-80 w-full rounded-xl bg-slate-950 border border-border"
+          />
         </Card>
       )}
 

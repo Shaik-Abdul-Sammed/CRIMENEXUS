@@ -12,6 +12,19 @@ from app.database.postgres import engine, Base
 from app.database.neo4j import init_neo4j_constraints, close_neo4j_driver
 
 # Import all SQLAlchemy models to register them on Base.metadata
+from app.models.user import User
+from app.models.agency import Agency
+from app.models.case import Case
+from app.models.person import Person
+from app.models.location import Location
+from app.models.relationship import Relationship
+from app.models.alert import Alert
+from app.models.transaction import BankTransaction
+from app.models.call_record import CallRecord
+from app.models.vehicle_sighting import VehicleSighting
+from app.models.report import PoliceReport
+from app.models.audit_ledger import AuditLedgerEntry, DualWarrantAuthorization
+from app.models.custody_tracker import CustodyTracker
 from app.ml_service.model_registry import get_ml_registry
 
 # Import API Routers
@@ -25,6 +38,7 @@ from app.api.legal import router as legal_router
 from app.api.external import router as external_router
 from app.api.analytics import router as analytics_router
 from app.api.drafting import router as drafting_router
+from app.api.alerts import router as alerts_router
 from app.services.streaming.redis_streams import get_streaming_stats
 from app.services.streaming.stream_processor import run_stream_consumer_worker
 from app.services.streaming.stream_producer import simulate_live_event
@@ -148,6 +162,7 @@ app.include_router(legal_router, prefix="/api/v1")
 app.include_router(external_router, prefix="/api/v1")
 app.include_router(analytics_router, prefix="/api/v1")
 app.include_router(drafting_router, prefix="/api/v1")
+app.include_router(alerts_router, prefix="/api/v1")
 
 # ── Advanced Feature Endpoints ────────────────────────────────────────────────
 # Feature 1: Prometheus Metrics

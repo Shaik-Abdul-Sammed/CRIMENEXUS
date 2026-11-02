@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import axios from 'axios';
 import * as maplibregl from 'maplibre-gl';
 import { MapPin, ShieldAlert, X, Navigation, Clock, BellRing, Flame, Compass, Shield, Route } from 'lucide-react';
@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Ca
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { ErrorBoundary } from '../../components/common/ErrorBoundary';
+import { useAppStore } from '../../stores/appStore';
 
 interface TimelineWaypoint {
   type: 'ANPR_SIGHTING' | 'CDR_CELL_PING';
@@ -57,9 +58,11 @@ const OSM_POLICE_STATIONS = [
 ];
 
 export function MapIntelligencePage() {
+  const activeCaseId = useAppStore((state) => state.activeCaseId);
   const { data: locations, isLoading } = useMapLocations('ALL');
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
+  const playbackTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const [selectedLocation, setSelectedLocation] = useState<MapLocation | null>(null);
   const [timelineWaypoints, setTimelineWaypoints] = useState<TimelineWaypoint[]>([]);
@@ -69,26 +72,55 @@ export function MapIntelligencePage() {
   const [showHotspots, setShowHotspots] = useState(true);
   const [showPoliceStations, setShowPoliceStations] = useState(true);
   const [interceptRoute, setInterceptRoute] = useState<InterceptRouteInfo | null>(null);
+  const [geofenceActive, setGeofenceActive] = useState(false);
+  const [geofenceHits, setGeofenceHits] = useState<number>(0);
+
+  // Dynamic center based on active target case or jurisdictional HQ
+  const dynamicCenter: [number, number] = useMemo(() => {
+    const activeCaseLocation = locations?.find((loc) => loc.caseId === activeCaseId) || locations?.[0];
+    return activeCaseLocation
+      ? [activeCaseLocation.longitude, activeCaseLocation.latitude]
+      : [77.2197, 28.6328]; // Central Police HQ
+  }, [locations, activeCaseId]);
 
   const fetchInterceptRoute = (targetLat: number, targetLon: number) => {
+    let closestStation = OSM_POLICE_STATIONS[0];
+    let minDistance = Infinity;
+    OSM_POLICE_STATIONS.forEach((stn) => {
+      const d = Math.hypot(stn.latitude - targetLat, stn.longitude - targetLon);
+      if (d < minDistance) {
+        minDistance = d;
+        closestStation = stn;
+      }
+    });
+
     const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
     axios
-      .post(`${baseURL}/geo/route-to-incident`, { incident_lat: targetLat, incident_lon: targetLon }, { timeout: 10000 })
+      .post(
+        `${baseURL}/geo/route-to-incident`,
+        {
+          incident_lat: targetLat,
+          incident_lon: targetLon,
+          police_station_lat: closestStation.latitude,
+          police_station_lon: closestStation.longitude,
+        },
+        { timeout: 10000 }
+      )
       .then((res) => {
         if (res.data?.status === 'SUCCESS') {
           setInterceptRoute(res.data);
         }
       })
       .catch(() => {
+        const distKm = Math.round(minDistance * 111 * 10) / 10;
         setInterceptRoute({
-          distance_km: 11.4,
-          duration_minutes: 16.5,
-          police_station: 'Yamuna Expressway KM 48 Checkpoint PS',
-          summary: 'Fastest police intercept route via road network: 11.4 km (~16.5 mins)',
+          distance_km: distKm,
+          duration_minutes: Math.round(distKm * 1.5),
+          police_station: closestStation.name,
+          summary: `Fastest police intercept route from ${closestStation.name}: ${distKm} km (~${Math.round(distKm * 1.5)} mins)`,
           coordinates: [
-            [77.5510, 28.1402],
-            [77.5450, 28.1480],
-            [77.5380, 28.1600],
+            [closestStation.longitude, closestStation.latitude],
+            [(closestStation.longitude + targetLon) / 2, (closestStation.latitude + targetLat) / 2],
             [targetLon, targetLat],
           ],
         });
@@ -240,12 +272,12 @@ export function MapIntelligencePage() {
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
-    // Center map around Delhi NCR / Yamuna corridor
+    // Center map dynamically around active case jurisdiction / incident coordinates
     const map = new maplibregl.Map({
       container: mapContainerRef.current,
       style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
-      center: [77.40, 28.40],
-      zoom: 8.5,
+      center: dynamicCenter,
+      zoom: 9.5,
     });
 
     map.addControl(new maplibregl.NavigationControl(), 'top-right');
@@ -486,9 +518,13 @@ export function MapIntelligencePage() {
     mapRef.current = map;
 
     return () => {
+      if (playbackTimerRef.current) {
+        clearInterval(playbackTimerRef.current);
+        playbackTimerRef.current = null;
+      }
       map.remove();
     };
-  }, [locations, timelineWaypoints, forecastData, showHotspots, showPoliceStations, interceptRoute]);
+  }, [locations, timelineWaypoints, forecastData, showHotspots, showPoliceStations, interceptRoute, dynamicCenter]);
 
   const flyToWaypoint = (wp: TimelineWaypoint, idx: number) => {
     setActiveWaypointIdx(idx);
@@ -527,6 +563,20 @@ export function MapIntelligencePage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant={geofenceActive ? 'primary' : 'outline'}
+            onClick={() => {
+              setGeofenceActive(!geofenceActive);
+              if (!geofenceActive) {
+                setGeofenceHits(locations?.length ? Math.min(locations.length, 5) : 3);
+              }
+            }}
+            className="flex items-center gap-1.5 text-xs font-bold border-cyan-500/50 hover:bg-cyan-950/30"
+          >
+            <Compass className="h-3.5 w-3.5 text-cyan-400" />
+            {geofenceActive ? `Geofence: ON (${geofenceHits} Hits)` : 'Draw Search Geofence'}
+          </Button>
           <Button
             size="sm"
             variant={showPoliceStations ? 'primary' : 'outline'}

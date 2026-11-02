@@ -29,6 +29,9 @@ class DraftChargeSheetRequest(BaseModel):
 
 class DraftBankNoticeRequest(BaseModel):
     bank_name: Optional[str] = "State Bank of India"
+    ifsc_code: Optional[str] = "SBIN0001244"
+    branch_name: Optional[str] = "Parliament Street Main Branch"
+    amount: Optional[str] = "Entire Credit Balance"
     reason: Optional[str] = "Smurfing / Structuring deposits under Section 102 CrPC"
 
 
@@ -63,8 +66,19 @@ def draft_bank_freeze_notice_endpoint(
 ):
     clean_acc = sanitize(account)
     bank = sanitize(payload.bank_name) if payload and payload.bank_name else "State Bank of India"
+    ifsc = sanitize(payload.ifsc_code) if payload and payload.ifsc_code else "SBIN0001244"
+    branch = sanitize(payload.branch_name) if payload and payload.branch_name else "Parliament Street Main Branch"
+    amount = sanitize(payload.amount) if payload and payload.amount else "Entire Credit Balance"
+    reason = sanitize(payload.reason) if payload and payload.reason else "Smurfing / Structuring deposits under Section 102 CrPC"
     engine = get_rag_engine()
-    return engine.draft_bank_freeze_notice(account_number=clean_acc, bank_name=bank)
+    return engine.draft_bank_freeze_notice(
+        account_number=clean_acc,
+        bank_name=bank,
+        ifsc_code=ifsc,
+        branch_name=branch,
+        amount=amount,
+        reason=reason
+    )
 
 
 @router.post("/lookout-circular/{suspect}", summary="Draft Ministry of Home Affairs Lookout Circular (LOC)")

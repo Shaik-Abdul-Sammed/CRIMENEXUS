@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import ReactDOM from 'react-dom';
 import {
   ChevronRight,
   ChevronLeft,
@@ -20,7 +21,17 @@ export interface TourStep {
 
 const TOUR_STEPS: TourStep[] = [
   {
-    targetId: 'tour-nav-graph',
+    targetId: 'sidebar-dashboard',
+    title: 'Operational Command Center',
+    policeRole: 'Incident Command & Synthesis',
+    description:
+      'Provides a bird’s-eye view of active syndicates, recent FIRs, critical financial tripwires, and statutory freeze controls.',
+    workloadReduction:
+      'Aggregates multi-station alerts in one real-time dashboard without manual phone calls.',
+    position: 'right',
+  },
+  {
+    targetId: 'sidebar-graph',
     title: 'Interactive Crime Network Graph',
     policeRole: 'Syndicate Topology & Link Analysis',
     description:
@@ -30,27 +41,27 @@ const TOUR_STEPS: TourStep[] = [
     position: 'right',
   },
   {
-    targetId: 'tour-cases',
-    title: 'Zero-Click FIR & CDR Evidence Vault',
-    policeRole: 'Evidence Extraction & Ingestion',
+    targetId: 'sidebar-cases',
+    title: 'Case Directory & Evidence Linkage',
+    policeRole: 'Investigation Lifecycle & FIR Ingestion',
     description:
-      'Upload FIR PDFs, CDR telecom dumps, and bank CSVs. Our NLP engine automatically extracts suspect names, vehicle registration plates, and bank accounts directly into Neo4j.',
+      'Manage open, under-investigation, and chargesheeted cases with deep links to seized assets, suspects, and electronic records.',
     workloadReduction:
-      'Eliminates 4 to 6 hours of manual data-entry and typing per FIR for the Investigating Officer.',
+      'Eliminates paper file tracking across station jurisdictions.',
     position: 'right',
   },
   {
-    targetId: 'tour-alerts',
-    title: 'Financial Tripwire & Real-Time Alerts',
-    policeRole: 'Hawala & Smurfing Surveillance',
+    targetId: 'sidebar-evidence',
+    title: 'Cryptographic Evidence Vault',
+    policeRole: 'Forensic Integrity & Chain of Custody',
     description:
-      'Monitors suspicious structured transfers (e.g., 3+ transactions below ₹50,000 threshold within 48h). Trigger immediate Section 102 CrPC bank freezes with one click.',
+      'Direct binary drag-and-drop upload for CCTV videos, CDR dumps, and bank statements with automated client-side WebCrypto SHA-256 verification.',
     workloadReduction:
-      'Prevents money laundering without requiring manual cross-checking of thousands of bank ledger rows.',
-    position: 'bottom',
+      'Secures Sec 63 BSA compliance automatically before presenting evidence to magistrates.',
+    position: 'right',
   },
   {
-    targetId: 'tour-most-wanted',
+    targetId: 'sidebar-most-wanted',
     title: 'District "Most Wanted" Watchlist',
     policeRole: 'Tactical Interception & LOC Tracking',
     description:
@@ -58,16 +69,6 @@ const TOUR_STEPS: TourStep[] = [
     workloadReduction:
       'Provides field officers with instant tactical threat briefing at borders and toll checkpoints.',
     position: 'right',
-  },
-  {
-    targetId: 'tour-dossier-btn',
-    title: 'One-Click "Court-Ready" PDF Dossier',
-    policeRole: 'Legal Charge-Sheet Compliance',
-    description:
-      'Generate a formal forensic investigation dossier with case summaries, suspect hierarchies, seized assets, and a statutory Section 63 BSA / 65B IEA digital evidence certificate.',
-    workloadReduction:
-      'IOs spend 3-4 hours typing reports in MS Word. This compiles complete evidence in 1 click.',
-    position: 'bottom',
   },
 ];
 
@@ -83,13 +84,20 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
   const step = TOUR_STEPS[currentStepIdx];
 
   const updateTargetPosition = useCallback(() => {
-    if (!step) return;
-    const el = document.getElementById(step.targetId);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      const rect = el.getBoundingClientRect();
-      setTargetRect(rect);
-    } else {
+    try {
+      if (!step) {
+        setTargetRect(null);
+        return;
+      }
+      const el = document.getElementById(step.targetId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const rect = el.getBoundingClientRect();
+        setTargetRect(rect);
+      } else {
+        setTargetRect(null);
+      }
+    } catch {
       setTargetRect(null);
     }
   }, [step]);
@@ -144,18 +152,23 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-hidden select-none">
+  const tourContent = (
+    <div
+      className="fixed inset-0 z-[9999] overflow-hidden select-none"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Investigating Officer Onboarding Tour"
+    >
       {/* Dark semi-transparent backdrop */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-[2px] transition-opacity duration-300"
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity duration-300"
         onClick={handleComplete}
       />
 
       {/* Target Element Highlight Box */}
       {targetRect && (
         <div
-          className="absolute border-2 border-primary rounded-xl pointer-events-none transition-all duration-300 shadow-[0_0_25px_rgba(59,130,246,0.6)] animate-pulse"
+          className="absolute border-2 border-primary rounded-xl pointer-events-none transition-all duration-300 shadow-[0_0_35px_rgba(59,130,246,0.8)] animate-pulse"
           style={{
             top: targetRect.top - 6,
             left: targetRect.left - 6,
@@ -167,7 +180,7 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
 
       {/* Tour Dialog Card */}
       <div className="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
-        <div className="relative w-full max-w-lg bg-card/95 border-2 border-primary/50 text-card-foreground rounded-2xl shadow-2xl p-6 pointer-events-auto backdrop-blur-md animate-in fade-in zoom-in-95 duration-200">
+        <div className="relative w-full max-w-lg bg-card text-card-foreground border-2 border-primary/60 rounded-2xl shadow-2xl p-6 pointer-events-auto backdrop-blur-md animate-in fade-in zoom-in-95 duration-200">
           {/* Header */}
           <div className="flex items-center justify-between pb-3 border-b border-border/70">
             <div className="flex items-center gap-2 text-primary font-bold text-sm tracking-wide">
@@ -178,6 +191,7 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
               onClick={handleComplete}
               className="text-muted-foreground hover:text-foreground p-1 rounded-md hover:bg-accent transition-colors"
               title="Close Tour (Esc)"
+              aria-label="Close Tour"
             >
               <X className="h-4 w-4" />
             </button>
@@ -227,6 +241,7 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
                       : 'w-2 bg-muted hover:bg-muted-foreground'
                   }`}
                   title={`Go to step ${idx + 1}`}
+                  aria-label={`Go to step ${idx + 1}`}
                 />
               ))}
             </div>
@@ -277,4 +292,8 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined'
+    ? ReactDOM.createPortal(tourContent, document.body)
+    : tourContent;
 }

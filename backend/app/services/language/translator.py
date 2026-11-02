@@ -181,6 +181,35 @@ def detect_language(text: str) -> str:
     return "en"
 
 
+def translate_text_google(text: str, target_lang: str = "en", source_lang: str = "auto") -> str:
+    """
+    Translates text using Google Translate public API with graceful fallback to local engine.
+    Supports English, Hindi, Marathi, Kannada, Telugu, Tamil, and Bengali.
+    """
+    if not text or not text.strip():
+        return ""
+    if source_lang == target_lang:
+        return text
+
+    import json
+    import urllib.parse
+    import urllib.request
+
+    try:
+        encoded = urllib.parse.quote(text.strip())
+        url = f"https://translate.googleapis.com/translate_a/single?client=gtx&sl={source_lang}&tl={target_lang}&dt=t&q={encoded}"
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"})
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            if data and isinstance(data, list) and len(data) > 0 and isinstance(data[0], list):
+                translated_segments = [seg[0] for seg in data[0] if seg and len(seg) > 0 and seg[0]]
+                return "".join(translated_segments)
+    except Exception as exc:
+        logger.warning("[TRANSLATOR] Google Translate API request failed: %s", exc)
+
+    return text
+
+
 def translate_to_english(text: str, source_lang: Optional[str] = None) -> Tuple[str, str]:
     """
     Translates an Indian regional vernacular police narrative into English.

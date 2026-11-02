@@ -46,8 +46,8 @@ const DEFAULT_FIRS: FIRSummary[] = [
 
 export function LightweightDashboard() {
   const [mostWanted, setMostWanted] = useState<MostWantedRecord[]>(DEFAULT_MOST_WANTED);
-  const [alerts] = useState<SmurfAlert[]>(DEFAULT_ALERTS);
-  const [firs] = useState<FIRSummary[]>(DEFAULT_FIRS);
+  const [alerts, setAlerts] = useState<SmurfAlert[]>(DEFAULT_ALERTS);
+  const [firs, setFirs] = useState<FIRSummary[]>(DEFAULT_FIRS);
   const [isCached, setIsCached] = useState<boolean>(false);
   const [cachedTimestamp, setCachedTimestamp] = useState<string>('');
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
@@ -60,33 +60,105 @@ export function LightweightDashboard() {
 
     async function loadData() {
       const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+      let hasNetError = false;
+
+      // 1. Fetch Most Wanted
       try {
         const res = await fetch(`${baseURL}/threats/most-wanted`, { headers: { Accept: 'application/json' } });
-        if (!res.ok) throw new Error('Network error');
-        const data = await res.json();
-        const records = data.records || data;
-        if (Array.isArray(records) && records.length > 0) {
-          setMostWanted(records);
-          const nowStr = new Date().toLocaleTimeString();
-          localStorage.setItem('crimenexus_lite_mw', JSON.stringify({ data: records, time: nowStr }));
-          setIsCached(false);
+        if (res.ok) {
+          const data = await res.json();
+          const records = data.records || data;
+          if (Array.isArray(records) && records.length > 0) {
+            setMostWanted(records);
+            localStorage.setItem('crimenexus_lite_mw', JSON.stringify({ data: records, time: new Date().toLocaleTimeString() }));
+          }
+        } else {
+          hasNetError = true;
         }
       } catch {
-        // Fallback to offline local storage
+        hasNetError = true;
         const saved = localStorage.getItem('crimenexus_lite_mw');
         if (saved) {
           try {
             const parsed = JSON.parse(saved);
             setMostWanted(parsed.data);
             setCachedTimestamp(parsed.time || 'earlier session');
-            setIsCached(true);
           } catch {
-            // keep default
+            // keep fallback
+          }
+        }
+      }
+
+      // 2. Fetch Live Alerts
+      try {
+        const resAlerts = await fetch(`${baseURL}/alerts`, { headers: { Accept: 'application/json' } });
+        if (resAlerts.ok) {
+          const dataAlerts = await resAlerts.json();
+          if (Array.isArray(dataAlerts) && dataAlerts.length > 0) {
+            const mappedAlerts: SmurfAlert[] = dataAlerts.map((a: Record<string, unknown>, idx: number) => ({
+              id: String(a.id || `ALT-${idx + 1}`),
+              beneficiary: String(a.beneficiary || a.beneficiary_account || a.target_account || 'ACC-MULE-SEC102'),
+              senders_count: Number(a.senders_count || 4),
+              total_amount: Number(a.total_amount || a.amount || 240000),
+              severity: (a.severity || a.urgency || 'CRITICAL') as SmurfAlert['severity'],
+              timestamp: String(a.timestamp || 'Live stream'),
+            }));
+            setAlerts(mappedAlerts);
+            localStorage.setItem('crimenexus_lite_alerts', JSON.stringify({ data: mappedAlerts, time: new Date().toLocaleTimeString() }));
           }
         } else {
-          setIsCached(true);
-          setCachedTimestamp('Station Terminal Pre-seed');
+          hasNetError = true;
         }
+      } catch {
+        hasNetError = true;
+        const savedAlerts = localStorage.getItem('crimenexus_lite_alerts');
+        if (savedAlerts) {
+          try {
+            const parsed = JSON.parse(savedAlerts);
+            setAlerts(parsed.data);
+          } catch {
+            // keep fallback
+          }
+        }
+      }
+
+      // 3. Fetch Recent FIRs
+      try {
+        const resCases = await fetch(`${baseURL}/cases?limit=10`, { headers: { Accept: 'application/json' } });
+        if (resCases.ok) {
+          const dataCases = await resCases.json();
+          if (Array.isArray(dataCases) && dataCases.length > 0) {
+            const mappedFirs: FIRSummary[] = dataCases.map((c: Record<string, unknown>) => ({
+              case_number: String(c.case_number || c.caseNumber || 'FIR-2026-DEL-8902'),
+              police_station: String(c.location || c.police_station || 'Cyber Crime PS, Sector 20'),
+              sections: Array.isArray(c.crime_type) ? (c.crime_type as string[]) : c.crime_type ? [String(c.crime_type), '111 BNS', '318 BNS'] : ['111 BNS', '318 BNS', '66D IT Act'],
+              status: (c.status as FIRSummary['status']) || 'UNDER_INVESTIGATION',
+              registration_date: c.created_at ? new Date(String(c.created_at)).toISOString().split('T')[0] : '2026-03-20',
+            }));
+            setFirs(mappedFirs);
+            localStorage.setItem('crimenexus_lite_firs', JSON.stringify({ data: mappedFirs, time: new Date().toLocaleTimeString() }));
+          }
+        } else {
+          hasNetError = true;
+        }
+      } catch {
+        hasNetError = true;
+        const savedFirs = localStorage.getItem('crimenexus_lite_firs');
+        if (savedFirs) {
+          try {
+            const parsed = JSON.parse(savedFirs);
+            setFirs(parsed.data);
+          } catch {
+            // keep fallback
+          }
+        }
+      }
+
+      if (hasNetError) {
+        setIsCached(true);
+        setCachedTimestamp((prev) => prev || new Date().toLocaleTimeString());
+      } else {
+        setIsCached(false);
       }
     }
 

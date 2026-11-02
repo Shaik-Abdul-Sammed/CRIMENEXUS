@@ -24,6 +24,7 @@ from app.models.call_record import CallRecord
 from app.models.vehicle_sighting import VehicleSighting
 from app.models.report import PoliceReport
 from app.models.audit_ledger import AuditLedgerEntry, DualWarrantAuthorization
+from app.models.custody_tracker import CustodyTracker
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

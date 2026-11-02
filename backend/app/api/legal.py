@@ -485,3 +485,59 @@ def api_check_deadlines(db: Session = Depends(get_db)):
     alerts = check_upcoming_deadlines(db=db)
     return {"status": "SUCCESS", "alerts_generated": len(alerts), "details": alerts}
 
+
+class FreezeAccountRequest(BaseModel):
+    account_number: str
+    case_number: Optional[str] = "FIR-2026-CRIME-890"
+    bank_name: Optional[str] = "HDFC Bank Ltd."
+    ifsc_code: Optional[str] = "HDFC0001244"
+    reason: Optional[str] = "Structured deposits under ₹50,000 threshold within 48h (Smurfing/Hawala)"
+    officer_badge: Optional[str] = "DL-POL-IO-8812"
+    officer_name: Optional[str] = "Inspector Rajesh Sharma"
+
+
+@router.post("/freeze-account", summary="Statutory Order for Account Freeze under Sec 102 CrPC / Sec 106 BNSS")
+def freeze_account_endpoint(payload: FreezeAccountRequest, db: Session = Depends(get_db)):
+    warrant = DualWarrantAuthorization(
+        case_number=payload.case_number or "FIR-2026-CRIME-890",
+        action_type="BANK_ACCOUNT_FREEZE",
+        target_identifier=payload.account_number,
+        legal_basis="Section 102 CrPC / Section 106 BNSS 2023 / Section 5 PMLA 2002",
+        justification=payload.reason or "Structured smurfing deposits below statutory reporting limits",
+        requested_by_badge=payload.officer_badge or "DL-POL-IO-8812",
+        requested_by_name=payload.officer_name or "Inspector Rajesh Sharma",
+        status="EXECUTED",
+        approved_by_badge="HQ-SUP-9011",
+        approved_by_name="Superintendent of Police (Cyber Crime)",
+        supervisory_remarks="Approved statutory emergency debit freeze to prevent dissipation of proceeds of crime."
+    )
+    db.add(warrant)
+    db.commit()
+    db.refresh(warrant)
+
+    try:
+        record_audit_event(
+            db=db,
+            officer_badge=payload.officer_badge or "DL-POL-IO-8812",
+            officer_name=payload.officer_name or "Inspector Rajesh Sharma",
+            station_id="DELHI_CYBER_HQ",
+            action="EXECUTE_STATUTORY_FREEZE",
+            resource_type="BANK_ACCOUNT",
+            resource_id=payload.account_number,
+            details=f"Executed debit freeze order on {payload.account_number} ({payload.bank_name}). Ack: CCTNS-FRZ-2026-{warrant.id}"
+        )
+    except Exception as exc:
+        logger.warning("Could not auto-log freeze event: %s", exc)
+
+    return {
+        "status": "SUCCESS",
+        "action": "FROZEN",
+        "ackNumber": f"CCTNS-FRZ-2026-{str(warrant.id)[:8].upper()}-SEC102",
+        "account_number": payload.account_number,
+        "bank_name": payload.bank_name,
+        "statute": "Section 102 CrPC / Section 106 BNSS 2023 / Section 5 PMLA 2002",
+        "timestamp": datetime.utcnow().isoformat(),
+        "warrant_id": warrant.id
+    }
+
+

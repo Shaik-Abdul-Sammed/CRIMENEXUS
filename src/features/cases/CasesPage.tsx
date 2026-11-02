@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Plus, Search, FolderGit2, Calendar, MapPin, Tag, UserCheck, Filter, Mic, MicOff } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -24,9 +24,33 @@ const caseSchema = z.object({
 type CaseFormData = z.infer<typeof caseSchema>;
 
 export function CasesPage() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+  const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || 'ALL');
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const updateSearch = (value: string) => {
+    setSearchTerm(value);
+    const newParams = new URLSearchParams(searchParams);
+    if (value) newParams.set('search', value);
+    else newParams.delete('search');
+    setSearchParams(newParams, { replace: true });
+  };
+
+  const updateStatus = (status: string) => {
+    setStatusFilter(status);
+    const newParams = new URLSearchParams(searchParams);
+    if (status && status !== 'ALL') newParams.set('status', status);
+    else newParams.delete('status');
+    setSearchParams(newParams, { replace: true });
+  };
+
+  useEffect(() => {
+    const s = searchParams.get('search') || '';
+    const st = searchParams.get('status') || 'ALL';
+    if (s !== searchTerm) setSearchTerm(s);
+    if (st !== statusFilter) setStatusFilter(st);
+  }, [searchParams, searchTerm, statusFilter]);
 
   const { data: cases, isLoading } = useInvestigations(searchTerm, statusFilter);
   const createCaseMutation = useCreateCaseMutation();
@@ -91,7 +115,7 @@ export function CasesPage() {
           <Input
             placeholder="Search by case number, title, or crime type..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => updateSearch(e.target.value)}
             icon={<Search className="h-4 w-4" />}
           />
         </div>
@@ -101,7 +125,7 @@ export function CasesPage() {
           {['ALL', 'UNDER_INVESTIGATION', 'OPEN', 'COLD_CASE', 'CLOSED'].map((st) => (
             <button
               key={st}
-              onClick={() => setStatusFilter(st)}
+              onClick={() => updateStatus(st)}
               className={`px-2.5 py-1 text-xs rounded-md border font-medium transition-colors ${
                 statusFilter === st
                   ? 'bg-primary text-primary-foreground border-primary'

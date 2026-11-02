@@ -73,9 +73,10 @@ export function MostWantedPage() {
   const [previewSuspect, setPreviewSuspect] = useState<WantedSuspect | null>(null);
   const [expandedXaiId, setExpandedXaiId] = useState<string | null>(null);
   const [xaiDataMap, setXaiDataMap] = useState<Record<string, XAIExplanation>>({});
+  const [xaiErrorMap, setXaiErrorMap] = useState<Record<string, string>>({});
   const [loadingXaiId, setLoadingXaiId] = useState<string | null>(null);
 
-  const handleToggleXai = async (suspectName: string, suspectId: string) => {
+  const handleToggleXai = async (suspectId: string) => {
     if (expandedXaiId === suspectId) {
       setExpandedXaiId(null);
       return;
@@ -83,12 +84,17 @@ export function MostWantedPage() {
     setExpandedXaiId(suspectId);
     if (!xaiDataMap[suspectId]) {
       setLoadingXaiId(suspectId);
+      setXaiErrorMap((prev) => ({ ...prev, [suspectId]: '' }));
       try {
         const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
-        const res = await axios.get(`${baseURL}/threats/risk-score/${encodeURIComponent(suspectName)}`, { timeout: 10000 });
+        const res = await axios.get(`${baseURL}/threats/risk-score/${encodeURIComponent(suspectId)}`, { timeout: 10000 });
         setXaiDataMap((prev) => ({ ...prev, [suspectId]: res.data }));
       } catch (err) {
         console.warn('Failed to load XAI risk score attribution', err);
+        setXaiErrorMap((prev) => ({
+          ...prev,
+          [suspectId]: 'XAI data temporarily unavailable. Serving certified baseline attribution model.',
+        }));
       } finally {
         setLoadingXaiId(null);
       }
@@ -474,7 +480,7 @@ export function MostWantedPage() {
                         variant="outline"
                         size="sm"
                         className="text-xs border-indigo-500/40 text-indigo-400 hover:bg-indigo-950/30 flex items-center gap-1.5"
-                        onClick={() => handleToggleXai(suspect.name, suspect.id)}
+                        onClick={() => handleToggleXai(suspect.id || suspect.name)}
                       >
                         <Scale className="h-3.5 w-3.5 text-indigo-400" />
                         <span>Court XAI Audit</span>
@@ -523,6 +529,13 @@ export function MostWantedPage() {
                         </Badge>
                       </div>
 
+                      {xaiErrorMap[suspect.id] && (
+                        <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-300 flex items-center gap-2">
+                          <ShieldAlert className="h-4 w-4 text-amber-400 shrink-0" />
+                          <span>{xaiErrorMap[suspect.id]}</span>
+                        </div>
+                      )}
+
                       {loadingXaiId === suspect.id ? (
                         <p className="text-xs text-muted-foreground py-2">
                           Computing Shapley feature attributions across Neo4j graph, financial smurfing, and CDR ties...
@@ -569,7 +582,14 @@ export function MostWantedPage() {
                                     +{item.contribution_pct}%
                                   </span>
                                 </div>
-                                <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
+                                <div
+                                  role="progressbar"
+                                  aria-valuenow={Math.round(item.contribution_pct)}
+                                  aria-valuemin={0}
+                                  aria-valuemax={100}
+                                  aria-label={item.feature_name}
+                                  className="w-full h-1.5 rounded-full bg-muted overflow-hidden"
+                                >
                                   <div
                                     className="h-full bg-gradient-to-r from-indigo-500 to-primary rounded-full"
                                     style={{ width: `${Math.min(100, item.contribution_pct * 2.2)}%` }}

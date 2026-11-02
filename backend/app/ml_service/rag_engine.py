@@ -323,7 +323,15 @@ Economic Offences Wing & Cyber Cell"""
             "generated_at": datetime.utcnow().isoformat()
         }
 
-    def draft_bank_freeze_notice(self, account_number: str, bank_name: str = "State Bank of India") -> Dict[str, Any]:
+    def draft_bank_freeze_notice(
+        self,
+        account_number: str,
+        bank_name: str = "State Bank of India",
+        ifsc_code: str = "SBIN0001244",
+        branch_name: str = "Commercial Branch",
+        amount: str = "Entire Balance",
+        reason: str = "Smurfing / Structuring deposits under Section 102 CrPC"
+    ) -> Dict[str, Any]:
         """
         Drafts a formal Statutory Bank Account Debit Freeze Order under Section 102 CrPC / Sec 106 BNSS.
         """
@@ -335,22 +343,27 @@ Ref No: {notice_ref}
 Date: {datetime.utcnow().strftime('%d-%b-%Y')}
 
 To:
-The Branch Manager / Nodal Officer,
-{bank_name}, Operations & Compliance Branch.
+The Chief Compliance Officer / Branch Manager / Nodal Officer,
+{bank_name}, {branch_name} (IFSC: {ifsc_code}).
 
 ORDER FOR IMMEDIATE DEBIT FREEZE OF BANK ACCOUNT UNDER SECTION 106 BNSS / SECTION 102 Cr.P.C.
 READ WITH SECTIONS 3 & 4 OF THE PREVENTION OF MONEY LAUNDERING ACT (PMLA), 2002.
 
-Account Number: {account_number}
-Category: Suspected Proceeds of Crime / Smurfing & Layering Syndicate
+Target Account Details:
+- Account Number   : {account_number}
+- Beneficiary Bank : {bank_name}
+- Branch Name      : {branch_name}
+- IFSC Code        : {ifsc_code}
+- Freeze Directive : DEBIT FREEZE (Quantum: {amount})
+- Category/Offense : {reason}
 
 1. Whereas, reliable forensic intelligence and graph-analytics tripwires have established that Account No. {account_number}
-   maintained at your bank is actively utilized for receiving structured deposits ('smurfing') directly connected to an
+   maintained at your branch is actively utilized for receiving structured deposits ('smurfing') directly connected to an
    inter-state cyber fraud and hawala network currently under police investigation.
 
 2. Therefore, in exercise of powers conferred under Section 106 of Bharatiya Nagarik Suraksha Sanhita (BNSS) / Section 102 Cr.P.C.,
    YOU ARE HEREBY DIRECTED TO:
-   a) Immediately impose a 100% DEBIT FREEZE on Account No. {account_number} and all associated debit cards, net-banking, and UPI IDs.
+   a) Immediately impose a 100% DEBIT FREEZE on Account No. {account_number} (Amount to Freeze: {amount}) and all associated debit cards, net-banking, and UPI IDs.
    b) Ensure no withdrawals, transfers, or liquidations occur from this account until further statutory orders.
    c) Furnish certified copy of Account Opening Form (AOF), KYC dossiers, PAN/Aadhaar cards, and complete transaction statements
       since inception to this office within 24 HOURS of receipt of this notice.
@@ -365,6 +378,10 @@ Superintendent of Police / Authorized Investigating Officer"""
             "status": "success",
             "notice_ref": notice_ref,
             "account_number": account_number,
+            "bank_name": bank_name,
+            "ifsc_code": ifsc_code,
+            "branch_name": branch_name,
+            "freeze_amount": amount,
             "statutory_act": "Section 106 BNSS / Section 102 CrPC",
             "draft_text": draft_text,
             "generated_at": datetime.utcnow().isoformat()

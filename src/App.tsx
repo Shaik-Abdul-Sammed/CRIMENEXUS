@@ -5,6 +5,7 @@ import { AppLayout } from './app/AppLayout';
 import { ProtectedRoute } from './features/auth/ProtectedRoute';
 import { LoginPage } from './features/auth/LoginPage';
 import { SkeletonLoader } from './components/common/SkeletonLoader';
+import { ToastProvider } from './components/ui/Toast';
 
 // Lazy-loaded routes for optimal bundle code-splitting and rapid FCP
 const DashboardPage = React.lazy(() => import('./features/dashboard/DashboardPage').then((m) => ({ default: m.DashboardPage })));
@@ -45,48 +46,50 @@ const queryClient = new QueryClient({
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <React.Suspense fallback={LazyRouteFallback}>
-          <Routes>
-            {/* Public Auth & Ultra-Low Bandwidth Thana Lite Mode */}
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/lite" element={<LightweightDashboard />} />
+      <ToastProvider>
+        <BrowserRouter>
+          <React.Suspense fallback={LazyRouteFallback}>
+            <Routes>
+              {/* Public Auth & Ultra-Low Bandwidth Thana Lite Mode */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/lite" element={<LightweightDashboard />} />
 
-            {/* Protected Application Workspace */}
-            <Route
-              element={
-                <ProtectedRoute>
-                  <AppLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/cases" element={<CasesPage />} />
-              <Route path="/cases/:id" element={<CaseDetailPage />} />
-              <Route path="/evidence" element={<EvidencePage />} />
-              <Route path="/evidence/:id" element={<EvidenceDetailPage />} />
-              <Route path="/entities" element={<EntitiesPage />} />
-              <Route path="/entities/:id" element={<EntityDetailPage />} />
-              <Route path="/entity-resolution" element={<EntityResolutionPage />} />
-              <Route path="/network-graph" element={<NetworkGraphPage />} />
-              <Route path="/graph" element={<Navigate to="/network-graph" replace />} />
-              <Route path="/timeline" element={<TimelinePage />} />
-              <Route path="/map" element={<MapIntelligencePage />} />
-              <Route path="/most-wanted" element={<MostWantedPage />} />
-              <Route path="/drafting" element={<DraftingPage />} />
-              <Route path="/ai-assistant" element={<AIAssistantPage />} />
-              <Route path="/reports" element={<ReportsPage />} />
-              <Route path="/audit-logs" element={<AuditLogsPage />} />
-              <Route path="/design-system" element={<DesignSystemPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-            </Route>
+              {/* Protected Application Workspace */}
+              <Route
+                element={
+                  <ProtectedRoute>
+                    <AppLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/cases" element={<CasesPage />} />
+                <Route path="/cases/:id" element={<CaseDetailPage />} />
+                <Route path="/evidence" element={<EvidencePage />} />
+                <Route path="/evidence/:id" element={<EvidenceDetailPage />} />
+                <Route path="/entities" element={<EntitiesPage />} />
+                <Route path="/entities/:id" element={<EntityDetailPage />} />
+                <Route path="/entity-resolution" element={<EntityResolutionPage />} />
+                <Route path="/network-graph" element={<NetworkGraphPage />} />
+                <Route path="/graph" element={<Navigate to="/network-graph" replace />} />
+                <Route path="/timeline" element={<TimelinePage />} />
+                <Route path="/map" element={<MapIntelligencePage />} />
+                <Route path="/most-wanted" element={<MostWantedPage />} />
+                <Route path="/drafting" element={<DraftingPage />} />
+                <Route path="/ai-assistant" element={<AIAssistantPage />} />
+                <Route path="/reports" element={<ReportsPage />} />
+                <Route path="/audit-logs" element={<AuditLogsPage />} />
+                <Route path="/design-system" element={<DesignSystemPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+              </Route>
 
-            {/* Catch-all fallback */}
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
-        </React.Suspense>
-      </BrowserRouter>
+              {/* Catch-all fallback */}
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </React.Suspense>
+        </BrowserRouter>
+      </ToastProvider>
     </QueryClientProvider>
   );
 }

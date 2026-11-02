@@ -10,19 +10,58 @@
     "timeline": "Timeline Stream",
     "map": "Map Intelligence",
     "aiAssistant": "AI Assistant",
+    "legalDrafting": "Legal Drafting",
     "reports": "Reports",
     "auditLogs": "Audit Logs",
+    "designSystem": "Design System",
     "settings": "Settings"
+  },
+  "sidebar": {
+    "activeTargetCase": "Active Target Case",
+    "allCases": "All Active Cases (Global Workspace)",
+    "complianceNotice": "AI Decision Support System. Human supervisor approval mandatory."
   },
   "dashboard": {
     "title": "Operational Command Center & Case Synthesis",
+    "mandateTitle": "INVESTIGATION ASSISTANCE MANDATE:",
+    "mandateText": "AI findings provide evidence-backed analytical suggestions. AI models do NOT assign guilt scores or make autonomous law-enforcement determinations. Human supervisor review is required.",
     "activeCases": "Active Investigations",
     "evidenceVault": "Evidence Vault Count",
     "entitiesExtracted": "Extracted Entities",
     "networkLinks": "Network Links",
     "downloadDossier": "Download Court-Ready Dossier (PDF)",
+    "previewDossier": "Preview Dossier",
+    "downloadPdf": "Download (PDF)",
+    "hideDashboard": "Hide Dashboard",
+    "showDashboard": "Show Dashboard",
     "tripwireAlertTitle": "Critical Financial Tripwire",
-    "freezeAccount": "Freeze Account Now"
+    "freezeAccount": "Freeze Account Now",
+    "freezeEnforced": "Statutory Debit Freeze Enforced",
+    "viewFreezeOrder": "View Statutory Freeze Order",
+    "aiDiscoveryTitle": "AI Discovery & Investigative Synthesis",
+    "askAi": "Ask AI Assistant",
+    "entityDistribution": "Entity Distribution",
+    "relationshipBreakdown": "Relationship Types Breakdown",
+    "activeTargetCases": "Active Target Cases",
+    "launchNetworkCanvas": "Launch Network Canvas",
+    "viewAll": "View All"
+  },
+  "graph": {
+    "title": "Interactive Criminal Network Topology (Cytoscape.js Engine)",
+    "subtitle": "Multi-entity network relationship discovery, edge inspection, and neighbor traversal.",
+    "zoomIn": "Zoom In",
+    "zoomOut": "Zoom Out",
+    "fitView": "Fit View",
+    "resetLayout": "Reset Layout",
+    "exportPng": "Export PNG",
+    "searchPlaceholder": "Search node label...",
+    "typeLabel": "Type:",
+    "allEntities": "ALL ENTITIES",
+    "layoutLabel": "Layout:",
+    "minConfidence": "Min Conf:",
+    "legendTitle": "Tactical Topology Legend",
+    "selectedInspector": "Selected Entity Inspector",
+    "edgeInspector": "Relationship Inspector"
   },
   "actions": {
     "search": "Search cases, entities, evidence...",
@@ -40,5 +79,16 @@
     "evidenceTab": "Evidence Vault",
     "entitiesTab": "Entities",
     "graphTab": "Network Graph"
+  },
+  "evidence": {
+    "title": "Evidence Vault & Chain of Custody",
+    "subtitle": "Cryptographically hashed multi-source intelligence artifacts, extract logs, and source references.",
+    "previewManifest": "Preview Manifest",
+    "uploadEvidence": "Upload Evidence",
+    "dropzonePrompt": "Drop forensic evidence files here, or browse to upload",
+    "dropzoneHint": "Supports PDF FIRs, Telecom CDR CSVs, Bank Ledgers, and CCTV Videos (.mp4). Automatic client-side SHA-256 verification.",
+    "noEvidenceTitle": "No Evidence Uploaded Yet",
+    "noEvidenceHint": "There are no evidence artifacts for the selected filter. Drag and drop documents, CCTV recordings, or CDR telecom files above to begin forensic ingestion.",
+    "viewDetails": "View Details"
   }
 }

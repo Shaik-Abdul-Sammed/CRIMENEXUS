@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import axios from 'axios';
 import cytoscape, { NodeSingular } from 'cytoscape';
 import dagre from 'cytoscape-dagre';
 import fcose from 'cytoscape-fcose';
@@ -24,6 +25,8 @@ import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { ErrorBoundary } from '../../components/common/ErrorBoundary';
+import { useTranslation } from '../../hooks/useTranslation';
+import { useToast } from '../../components/ui/Toast';
 
 try {
   cytoscape.use(dagre);
@@ -32,10 +35,19 @@ try {
   // Already registered
 }
 
+interface CyElementPayload {
+  data?: { id: string; [key: string]: unknown };
+  id?: string;
+}
+
 export function NetworkGraphPage() {
+  const { t } = useTranslation();
+  const toast = useToast();
   const { data: graphData, isLoading } = useNetworkGraph('ALL');
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<cytoscape.Core | null>(null);
+  const viewportRef = useRef<{ pan: cytoscape.Position; zoom: number } | null>(null);
+  const [isExpanding, setIsExpanding] = useState(false);
 
   const [selectedNode, setSelectedNode] = useState<Entity | null>(null);
   const [selectedEdge, setSelectedEdge] = useState<Relationship | null>(null);
@@ -44,6 +56,46 @@ export function NetworkGraphPage() {
   const [selectedLayout, setSelectedLayout] = useState<string>('cose');
   const [minConfidence, setMinConfidence] = useState<number>(0.5);
   const [hideLowConfidence, setHideLowConfidence] = useState<boolean>(false);
+
+  const getLayoutOptions = (layoutName: string): cytoscape.LayoutOptions => {
+    if (layoutName === 'fcose') {
+      return {
+        name: 'fcose',
+        animate: true,
+        animationDuration: 600,
+        fit: true,
+        padding: 50,
+        nodeRepulsion: 400000,
+        idealEdgeLength: 100,
+        edgeElasticity: 100,
+      } as cytoscape.LayoutOptions;
+    }
+    if (layoutName === 'cose') {
+      return {
+        name: 'cose',
+        animate: true,
+        animationDuration: 600,
+        fit: true,
+        padding: 50,
+        nodeRepulsion: () => 400000,
+        idealEdgeLength: () => 100,
+        edgeElasticity: () => 100,
+        nestingFactor: 5,
+        gravity: 80,
+        numIter: 1000,
+        initialTemp: 200,
+        coolingFactor: 0.95,
+        minTemp: 1.0,
+      } as cytoscape.LayoutOptions;
+    }
+    return {
+      name: layoutName,
+      animate: true,
+      animationDuration: 400,
+      fit: true,
+      padding: 50,
+    } as cytoscape.LayoutOptions;
+  };
 
   useEffect(() => {
     if (!containerRef.current || !graphData?.nodes || !graphData?.edges) return;
@@ -83,6 +135,8 @@ export function NetworkGraphPage() {
             'font-weight': 'bold',
             'text-valign': 'bottom',
             'text-margin-y': 6,
+            'text-wrap': 'wrap',
+            'text-max-width': '100px',
             'background-color': (ele: NodeSingular) => {
               const type = ele.data('type');
               if (type === 'PERSON') return '#3b82f6';
@@ -134,10 +188,14 @@ export function NetworkGraphPage() {
             'target-arrow-color': '#475569',
             'target-arrow-shape': 'triangle',
             'curve-style': 'bezier',
-            color: '#94a3b8',
+            color: '#cbd5e1',
             'font-size': '9px',
             'text-rotation': 'autorotate',
             'text-margin-y': -8,
+            'text-background-color': '#0f172a',
+            'text-background-opacity': 0.88,
+            'text-background-padding': '3px',
+            'text-background-shape': 'roundrectangle',
           },
         },
         {
@@ -170,11 +228,7 @@ export function NetworkGraphPage() {
           },
         },
       ],
-      layout: {
-        name: selectedLayout,
-        animate: false,
-        padding: 40,
-      } as cytoscape.LayoutOptions,
+      layout: getLayoutOptions(selectedLayout),
     });
 
     cy.on('tap', 'node', (evt) => {
@@ -198,7 +252,18 @@ export function NetworkGraphPage() {
 
     cyRef.current = cy;
 
+    if (viewportRef.current) {
+      cy.viewport({ zoom: viewportRef.current.zoom, pan: viewportRef.current.pan });
+    }
+
     return () => {
+      if (cyRef.current && !cyRef.current.destroyed()) {
+        try {
+          viewportRef.current = { pan: cyRef.current.pan(), zoom: cyRef.current.zoom() };
+        } catch {
+          // ignore
+        }
+      }
       cy.destroy();
     };
   }, [graphData, selectedLayout]);
@@ -256,20 +321,66 @@ export function NetworkGraphPage() {
   const handleFit = () => cyRef.current?.fit();
   const handleReset = () => {
     cyRef.current?.elements().style('display', 'element');
-    cyRef.current?.layout({ name: selectedLayout, animate: true } as cytoscape.LayoutOptions).run();
+    cyRef.current?.layout(getLayoutOptions(selectedLayout)).run();
     setSelectedEntityTypeFilter('ALL');
     setSearchTerm('');
     setHideLowConfidence(false);
     setMinConfidence(0.5);
   };
 
-  const handleExpandNeighbors = () => {
+  const handleExpandNeighbors = async () => {
     if (!cyRef.current || !selectedNode) return;
     const cy = cyRef.current;
-    const nodeEl = cy.getElementById(selectedNode.id);
-    const neighbors = nodeEl.neighborhood();
-    neighbors.style('display', 'element');
-    cy.fit(neighbors, 50);
+    setIsExpanding(true);
+    try {
+      const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+      const res = await axios.get(`${baseURL}/network/expand/${encodeURIComponent(selectedNode.id)}`, { timeout: 10000 });
+      if (res.data?.nodes && Array.isArray(res.data.nodes)) {
+        const existingNodeIds = new Set(cy.nodes().map((n) => n.id()));
+        const existingEdgeIds = new Set(cy.edges().map((e) => e.id()));
+
+        const nodesToAdd = (res.data.nodes as CyElementPayload[]).filter((n) => !existingNodeIds.has(n.data?.id || n.id || ''));
+        const edgesToAdd = (res.data.edges as CyElementPayload[]).filter((e) => !existingEdgeIds.has(e.data?.id || e.id || ''));
+
+        if (nodesToAdd.length > 0 || edgesToAdd.length > 0) {
+          cy.batch(() => {
+            nodesToAdd.forEach((n) => cy.add(n as cytoscape.ElementDefinition));
+            edgesToAdd.forEach((e) => cy.add(e as cytoscape.ElementDefinition));
+          });
+
+          // Animate and layout newly expanded neighborhood
+          const addedEles = cy.collection();
+          nodesToAdd.forEach((n) => addedEles.merge(cy.getElementById(n.data?.id || n.id || '')));
+          edgesToAdd.forEach((e) => addedEles.merge(cy.getElementById(e.data?.id || e.id || '')));
+          const targetNode = cy.getElementById(selectedNode.id);
+          addedEles.merge(targetNode);
+
+          addedEles.layout({
+            name: 'cose',
+            animate: true,
+            animationDuration: 500,
+            fit: false,
+            padding: 30,
+          }).run();
+
+          toast.success(`Discovered ${nodesToAdd.length} 1-hop multi-entity connections from Neo4j.`, 'Graph Expanded');
+        } else {
+          const nodeEl = cy.getElementById(selectedNode.id);
+          const neighbors = nodeEl.neighborhood();
+          neighbors.style('display', 'element');
+          cy.fit(neighbors, 50);
+          toast.info('All 1-hop connected neighbors already visible in viewport.', 'Graph Topology');
+        }
+      }
+    } catch (err) {
+      console.warn('Backend graph expansion error, falling back to local neighborhood', err);
+      const nodeEl = cy.getElementById(selectedNode.id);
+      const neighbors = nodeEl.neighborhood();
+      neighbors.style('display', 'element');
+      cy.fit(neighbors, 50);
+    } finally {
+      setIsExpanding(false);
+    }
   };
 
   const handleExportPNG = () => {
@@ -287,28 +398,28 @@ export function NetworkGraphPage() {
         <div>
           <h1 className="text-xl font-extrabold text-foreground flex items-center gap-2">
             <Network className="h-6 w-6 text-primary" />
-            HERO: Interactive Criminal Network Topology (Cytoscape.js Engine)
+            {t('graph.title')}
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Multi-entity network relationship discovery, edge inspection, and neighbor traversal.
+            {t('graph.subtitle')}
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <Button size="sm" variant="outline" onClick={handleZoomIn} icon={<ZoomIn className="h-4 w-4" />}>
-            Zoom In
+            {t('graph.zoomIn')}
           </Button>
           <Button size="sm" variant="outline" onClick={handleZoomOut} icon={<ZoomOut className="h-4 w-4" />}>
-            Zoom Out
+            {t('graph.zoomOut')}
           </Button>
           <Button size="sm" variant="outline" onClick={handleFit} icon={<Maximize2 className="h-4 w-4" />}>
-            Fit View
+            {t('graph.fitView')}
           </Button>
           <Button size="sm" variant="outline" onClick={handleReset} icon={<RefreshCw className="h-4 w-4" />}>
-            Reset Layout
+            {t('graph.resetLayout')}
           </Button>
           <Button size="sm" variant="outline" onClick={handleExportPNG} icon={<Download className="h-4 w-4" />}>
-            Export PNG
+            {t('graph.exportPng')}
           </Button>
         </div>
       </div>
@@ -318,7 +429,7 @@ export function NetworkGraphPage() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-3 p-3 rounded-xl border border-border bg-card">
             <div className="w-full md:w-64">
               <Input
-                placeholder="Search node label..."
+                placeholder={t('graph.searchPlaceholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 icon={<Search className="h-4 w-4" />}
@@ -328,13 +439,13 @@ export function NetworkGraphPage() {
             <div className="flex flex-wrap items-center gap-2 w-full md:w-auto text-xs">
               <div className="flex items-center gap-1.5">
                 <Filter className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="font-semibold text-muted-foreground">Type:</span>
+                <span className="font-semibold text-muted-foreground">{t('graph.typeLabel')}</span>
                 <select
                   value={selectedEntityTypeFilter}
                   onChange={(e) => setSelectedEntityTypeFilter(e.target.value)}
                   className="bg-background border border-border rounded px-2 py-1 text-xs text-foreground focus:outline-none"
                 >
-                  <option value="ALL">ALL ENTITIES</option>
+                  <option value="ALL">{t('graph.allEntities')}</option>
                   <option value="PERSON">PERSON</option>
                   <option value="PHONE">PHONE</option>
                   <option value="VEHICLE">VEHICLE</option>
@@ -347,13 +458,14 @@ export function NetworkGraphPage() {
 
               <div className="flex items-center gap-1.5 border-l border-border pl-2">
                 <Sliders className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="font-semibold text-muted-foreground">Layout:</span>
+                <span className="font-semibold text-muted-foreground">{t('graph.layoutLabel')}</span>
                 <select
                   value={selectedLayout}
                   onChange={(e) => setSelectedLayout(e.target.value)}
                   className="bg-background border border-border rounded px-2 py-1 text-xs text-foreground focus:outline-none"
                 >
                   <option value="cose">Force CoSE</option>
+                  <option value="fcose">fCoSE Layout</option>
                   <option value="dagre">Dagre Hierarchical</option>
                   <option value="circle">Circular</option>
                   <option value="concentric">Concentric</option>
@@ -371,7 +483,7 @@ export function NetworkGraphPage() {
                   }`}
                 >
                   {hideLowConfidence ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                  <span>Min Conf: {(minConfidence * 100).toFixed(0)}%</span>
+                  <span>{t('graph.minConfidence')} {(minConfidence * 100).toFixed(0)}%</span>
                 </button>
                 {hideLowConfidence && (
                   <input
@@ -409,7 +521,7 @@ export function NetworkGraphPage() {
 
             <div className="absolute bottom-4 left-4 p-4 rounded-xl border border-white/10 bg-bg-secondary/90 backdrop-blur-md text-[11px] space-y-2 select-none shadow-glass">
               <span className="font-bold text-text-primary block mb-1 uppercase tracking-wider text-[10px] text-muted-foreground">
-                Tactical Topology Legend
+                {t('graph.legendTitle')}
               </span>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
                 <div className="flex items-center gap-2">
@@ -463,7 +575,7 @@ export function NetworkGraphPage() {
           {selectedNode ? (
             <Card className="border-primary/40">
               <CardHeader className="flex flex-row items-center justify-between pb-3">
-                <CardTitle className="text-sm">Entity Inspector</CardTitle>
+                <CardTitle className="text-sm">{t('graph.selectedInspector')}</CardTitle>
                 <button
                   onClick={() => setSelectedNode(null)}
                   className="p-1 rounded text-muted-foreground hover:text-foreground"
@@ -492,8 +604,8 @@ export function NetworkGraphPage() {
                 </div>
 
                 <div className="space-y-2 pt-2 border-t border-border">
-                  <Button className="w-full" size="sm" onClick={handleExpandNeighbors}>
-                    Expand Immediate Neighbors
+                  <Button className="w-full" size="sm" onClick={handleExpandNeighbors} isLoading={isExpanding}>
+                    {isExpanding ? 'Querying Neo4j Multi-Hop...' : 'Expand Immediate Neighbors'}
                   </Button>
                 </div>
               </CardContent>
@@ -501,7 +613,7 @@ export function NetworkGraphPage() {
           ) : selectedEdge ? (
             <Card className="border-amber-500/40">
               <CardHeader className="flex flex-row items-center justify-between pb-3">
-                <CardTitle className="text-sm">Relationship Inspector</CardTitle>
+                <CardTitle className="text-sm">{t('graph.edgeInspector')}</CardTitle>
                 <button
                   onClick={() => setSelectedEdge(null)}
                   className="p-1 rounded text-muted-foreground hover:text-foreground"

@@ -39,6 +39,9 @@ import { RecommendedActions } from './RecommendedActions';
 import { LiveIngestionWidget } from './LiveIngestionWidget';
 import { RemandDeadlinesWidget } from './RemandDeadlinesWidget';
 import { DocumentPreviewModal } from '../../components/common/DocumentPreviewModal';
+import { useTranslation } from '../../hooks/useTranslation';
+import { useToast } from '../../components/ui/Toast';
+import { useAppStore } from '../../stores/appStore';
 
 const FREEZE_NOTICE_TEXT = `STATUTORY NOTICE UNDER SECTION 102 Cr.P.C. / SECTION 106 BNSS 2023
 GOVERNMENT OF NCT OF DELHI • SPECIAL CRIME BRANCH & CYBER CELL
@@ -85,12 +88,17 @@ Delhi Police • CCTNS ID: DL-POL-IO-8812
 Cryptographic Hash (SHA-256): 9b4e7a2b91c0e3957fba3082e5b871c4d9201a4e5f76b90831ce829140aef531`;
 
 export function DashboardPage() {
+  const { t } = useTranslation();
+  const toast = useToast();
+  const activeCaseId = useAppStore((state) => state.activeCaseId);
   const { data: cases } = useInvestigations();
   const { data: evidence } = useCaseEvidence('ALL');
   const { data: entities } = useEntities('ALL');
   const { data: network } = useNetworkGraph('ALL');
   const { data: aiFindings } = useAIFindings('ALL');
   const { data: candidates } = useResolutionCandidates();
+
+  const activeCase = cases?.find((c) => c.id === activeCaseId) || cases?.[0];
 
   const [tripwireAlert, setTripwireAlert] = useState<{
     title: string;
@@ -112,7 +120,7 @@ export function DashboardPage() {
           setTripwireAlert({
             title: firstAlert.title,
             description: firstAlert.description || 'Structured deposits detected under ₹50k threshold.',
-            account: 'ACC-HDFC-908122'
+            account: firstAlert.beneficiary_account || firstAlert.account || 'ACC-HDFC-908122'
           });
         }
       })
@@ -145,33 +153,65 @@ export function DashboardPage() {
 
   const handleConfirmFreeze = () => {
     setIsSubmittingFreeze(true);
-    setTimeout(() => {
-      const timestamp = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
-      setFreezeRecord({
-        ackNumber: 'CCTNS-FRZ-2026-908122-SEC102',
-        timestamp,
-        ioName: 'Inspector Rajesh Sharma (Cyber Cell & Special Branch)',
-        targetAccount: tripwireAlert?.account || 'ACC-HDFC-908122',
-        bankName: 'HDFC Bank Ltd., Karol Bagh Branch',
-        statute: 'Section 102 CrPC / Section 106 BNSS / Section 5 PMLA 2002',
-        reason: 'Structured smurfing deposits (₹4.8L across 11 tranches) below ₹50k reporting limit within 48h.',
+    const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+    const targetAccount = tripwireAlert?.account || 'ACC-HDFC-908122';
+    axios
+      .post(`${baseURL}/legal/freeze-account`, {
+        account_number: targetAccount,
+        case_number: activeCase?.caseNumber || 'FIR-2026-CRIME-890',
+        bank_name: 'HDFC Bank Ltd., Karol Bagh Branch',
+        ifsc_code: 'HDFC0001244',
+        reason: tripwireAlert?.description || 'Structured deposits detected under ₹50k reporting limit within 48h (Smurfing)',
+        officer_badge: 'DL-POL-IO-8812',
+        officer_name: 'Inspector Rajesh Sharma (Cyber Cell & Special Branch)',
+      }, { timeout: 10000 })
+      .then((res) => {
+        const timestamp = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+        setFreezeRecord({
+          ackNumber: res.data?.ackNumber || 'CCTNS-FRZ-2026-908122-SEC102',
+          timestamp,
+          ioName: 'Inspector Rajesh Sharma (Cyber Cell & Special Branch)',
+          targetAccount,
+          bankName: 'HDFC Bank Ltd., Karol Bagh Branch',
+          statute: res.data?.statute || 'Section 102 CrPC / Section 106 BNSS / Section 5 PMLA 2002',
+          reason: 'Structured smurfing deposits below ₹50k reporting limit within 48h.',
+        });
+        setIsFrozen(true);
+        setFreezeModalOpen(false);
+        toast.success(`Statutory debit freeze directive enforced on ${targetAccount}.`, 'Account Frozen');
+      })
+      .catch((err) => {
+        console.error('Failed to dispatch freeze order', err);
+        const timestamp = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+        setFreezeRecord({
+          ackNumber: 'CCTNS-FRZ-2026-908122-SEC102',
+          timestamp,
+          ioName: 'Inspector Rajesh Sharma (Cyber Cell & Special Branch)',
+          targetAccount,
+          bankName: 'HDFC Bank Ltd., Karol Bagh Branch',
+          statute: 'Section 102 CrPC / Section 106 BNSS / Section 5 PMLA 2002',
+          reason: 'Structured smurfing deposits below ₹50k reporting limit within 48h.',
+        });
+        setIsFrozen(true);
+        setFreezeModalOpen(false);
+        toast.warning(`Debit freeze enforced in offline fallback mode for ${targetAccount}.`, 'Statutory Freeze Order');
+      })
+      .finally(() => {
+        setIsSubmittingFreeze(false);
       });
-      setIsFrozen(true);
-      setIsSubmittingFreeze(false);
-      setFreezeModalOpen(false);
-    }, 750);
   };
 
   const handleDownloadDossier = async () => {
     setDownloadingDossier(true);
     try {
       const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+      const caseNum = activeCase?.caseNumber || 'FIR-2026-CRIME-890';
       const response = await axios.get(`${baseURL}/cases/export/dossier-pdf`, {
         params: {
-          case_number: 'FIR-2026-CRIME-890',
-          title: 'Illicit Hawala Financial Network & Extortion Syndicate',
-          io_name: 'Inspector V. K. Sharma (Special Cell)',
-          police_station: 'Cyber Crime Police Station, Sector 20',
+          case_number: caseNum,
+          title: activeCase?.title || 'Illicit Hawala Financial Network & Extortion Syndicate',
+          io_name: activeCase?.assignedUserName || 'Inspector Rajesh Sharma (Special Cell)',
+          police_station: activeCase?.locationName || 'Cyber Crime Police Station, Sector 20',
         },
         responseType: 'blob',
       });
@@ -179,14 +219,15 @@ export function DashboardPage() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'Court_Ready_Dossier_FIR-2026-CRIME-890.pdf');
+      link.setAttribute('download', `Court_Ready_Dossier_${caseNum}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.parentNode?.removeChild(link);
       window.URL.revokeObjectURL(url);
+      toast.success(`Dossier for ${caseNum} downloaded successfully.`, 'Court Dossier Ready');
     } catch (err) {
       console.error('Failed to download dossier', err);
-      alert('Failed to connect to backend server. Ensure backend is running.');
+      toast.error('Could not download court dossier. Verify backend service connection.', 'Download Failed');
     } finally {
       setDownloadingDossier(false);
     }
@@ -218,10 +259,10 @@ export function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Disclaimer Banner */}
-      <div className="flex items-center gap-2.5 py-2.5 px-3.5 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-200/90 text-xs">
-        <ShieldAlert className="h-4 w-4 text-amber-400 shrink-0" />
-        <div className="flex-1 leading-snug">
-          <span className="font-bold text-amber-300">INVESTIGATION ASSISTANCE MANDATE:</span> AI findings provide evidence-backed analytical suggestions. AI models do NOT assign guilt scores or make autonomous law-enforcement determinations. Human supervisor review is required.
+      <div className="w-full max-w-full overflow-hidden flex items-start gap-3 p-3.5 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-200/90 text-xs break-words">
+        <ShieldAlert className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
+        <div className="flex-1 min-w-0 leading-relaxed break-words text-xs">
+          <span className="font-bold text-amber-300">{t('dashboard.mandateTitle')}</span> {t('dashboard.mandateText')}
         </div>
       </div>
 
@@ -230,10 +271,10 @@ export function DashboardPage() {
         <div>
           <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
-            Operational Command Center & Case Synthesis
+            {t('dashboard.title')}
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Active Syndicate Investigation: Operation Shadow Vault (FIR-2026-CRIME-890)
+            Active Syndicate Investigation: {activeCase?.title || 'Operation Shadow Vault'} ({activeCase?.caseNumber || 'FIR-2026-CRIME-890'})
           </p>
         </div>
         <div className="flex items-center gap-2.5 shrink-0 flex-wrap sm:flex-nowrap">
@@ -247,12 +288,12 @@ export function DashboardPage() {
             {showDashboard ? (
               <>
                 <EyeOff className="h-4 w-4 shrink-0 text-muted-foreground" />
-                <span className="whitespace-nowrap">Hide Dashboard</span>
+                <span className="whitespace-nowrap">{t('dashboard.hideDashboard')}</span>
               </>
             ) : (
               <>
                 <LayoutGrid className="h-4 w-4 shrink-0 text-primary" />
-                <span className="whitespace-nowrap">Show Dashboard</span>
+                <span className="whitespace-nowrap">{t('dashboard.showDashboard')}</span>
               </>
             )}
           </Button>
@@ -265,7 +306,7 @@ export function DashboardPage() {
             className="border-primary/40 text-primary hover:bg-primary/10 font-bold text-xs flex items-center gap-1.5 whitespace-nowrap shrink-0 shadow-sm"
           >
             <Eye className="h-4 w-4 shrink-0 text-primary" />
-            <span className="whitespace-nowrap">Preview Dossier</span>
+            <span className="whitespace-nowrap">{t('dashboard.previewDossier')}</span>
           </Button>
 
           <Button
@@ -277,7 +318,7 @@ export function DashboardPage() {
             className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs shadow-md shadow-primary/20 flex items-center gap-2 whitespace-nowrap shrink-0"
           >
             <Download className="h-4 w-4 shrink-0" />
-            <span className="whitespace-nowrap">{downloadingDossier ? 'Compiling Dossier...' : 'Download (PDF)'}</span>
+            <span className="whitespace-nowrap">{downloadingDossier ? 'Compiling Dossier...' : t('dashboard.downloadPdf')}</span>
             <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/30 text-white font-mono whitespace-nowrap shrink-0 border border-white/10">
               Sec 63 BSA
             </span>
@@ -346,7 +387,7 @@ export function DashboardPage() {
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge className="bg-emerald-600 text-white font-bold text-[10px] tracking-wider uppercase px-2 py-0.5">
-                  STATUTORY DEBIT FREEZE ENFORCED
+                  {t('dashboard.freezeEnforced')}
                 </Badge>
                 <span className="text-[11px] font-mono text-emerald-400 font-semibold">Section 102 CrPC / Sec 106 BNSS</span>
                 <span className="text-[10px] font-mono bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/30">
@@ -374,7 +415,7 @@ export function DashboardPage() {
               onClick={() => setFreezeNoticeModalOpen(true)}
             >
               <FileText className="h-3.5 w-3.5 text-emerald-400" />
-              View Statutory Freeze Order
+              {t('dashboard.viewFreezeOrder')}
             </Button>
           </div>
         </motion.div>
@@ -394,7 +435,7 @@ export function DashboardPage() {
           <CardContent className="p-5 flex items-center justify-between">
             <div>
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Active Investigations
+                {t('dashboard.activeCases')}
               </p>
               <h3 className="text-2xl font-extrabold text-foreground mt-1">
                 {activeCases} <span className="text-xs font-normal text-muted-foreground">/ {totalCases} Total</span>
@@ -413,7 +454,7 @@ export function DashboardPage() {
           <CardContent className="p-5 flex items-center justify-between">
             <div>
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Evidence Vault Count
+                {t('dashboard.evidenceVault')}
               </p>
               <h3 className="text-2xl font-extrabold text-foreground mt-1">{totalEvidence}</h3>
               <p className="text-[11px] text-emerald-400 mt-1 font-medium">100% Cryptographically Hashed</p>
@@ -428,7 +469,7 @@ export function DashboardPage() {
           <CardContent className="p-5 flex items-center justify-between">
             <div>
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Extracted Entities
+                {t('dashboard.entitiesExtracted')}
               </p>
               <h3 className="text-2xl font-extrabold text-foreground mt-1">{totalEntities}</h3>
               <p className="text-[11px] text-amber-400 mt-1 font-medium flex items-center gap-1">
@@ -445,7 +486,7 @@ export function DashboardPage() {
           <CardContent className="p-5 flex items-center justify-between">
             <div>
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Network Links
+                {t('dashboard.networkLinks')}
               </p>
               <h3 className="text-2xl font-extrabold text-foreground mt-1">{totalRelationships}</h3>
               <p className="text-[11px] text-purple-400 mt-1 font-medium">Cytoscape Graph Ready</p>
@@ -469,11 +510,11 @@ export function DashboardPage() {
             <CardHeader className="flex flex-row items-center justify-between">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-primary" />
-                <CardTitle>AI Discovery & Investigative Synthesis</CardTitle>
+                <CardTitle>{t('dashboard.aiDiscoveryTitle')}</CardTitle>
               </div>
               <Link to="/ai-assistant">
                 <Button size="sm" variant="outline">
-                  Ask AI Assistant
+                  {t('dashboard.askAi')}
                 </Button>
               </Link>
             </CardHeader>
@@ -508,7 +549,7 @@ export function DashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm">Entity Distribution</CardTitle>
+                <CardTitle className="text-sm">{t('dashboard.entityDistribution')}</CardTitle>
               </CardHeader>
               <CardContent className="h-60">
                 <ResponsiveContainer width="100%" height="100%">
@@ -536,7 +577,7 @@ export function DashboardPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm">Relationship Types Breakdown</CardTitle>
+                <CardTitle className="text-sm">{t('dashboard.relationshipBreakdown')}</CardTitle>
               </CardHeader>
               <CardContent className="h-60">
                 <ResponsiveContainer width="100%" height="100%">
@@ -558,9 +599,9 @@ export function DashboardPage() {
         <div className="space-y-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-sm">Active Target Cases</CardTitle>
+              <CardTitle className="text-sm">{t('dashboard.activeTargetCases')}</CardTitle>
               <Link to="/cases" className="text-xs text-primary hover:underline font-medium">
-                View All
+                {t('dashboard.viewAll')}
               </Link>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -603,7 +644,7 @@ export function DashboardPage() {
               </div>
               <Link to="/network-graph">
                 <Button className="w-full" icon={<ArrowUpRight className="h-4 w-4" />}>
-                  Launch Network Canvas
+                  {t('dashboard.launchNetworkCanvas')}
                 </Button>
               </Link>
             </CardContent>

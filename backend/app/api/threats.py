@@ -171,10 +171,10 @@ def get_main_suspects(top_n: int = 5) -> List[Dict[str, Any]]:
     return compute_main_suspects(top_n=top_n)
 
 
-@router.get("/risk-score/{person_name}")
-def get_entity_risk_score(person_name: str) -> Dict[str, Any]:
-    """Generates comprehensive risk score (0-100%) and actionable recommendations."""
-    return calculate_risk_score(person_name)
+@router.get("/risk-score/{identifier}")
+def get_entity_risk_score(identifier: str) -> Dict[str, Any]:
+    """Generates comprehensive risk score (0-100%) and actionable recommendations by suspect ID or name."""
+    return calculate_risk_score(identifier)
 
 
 @router.get("/criminal-cells")

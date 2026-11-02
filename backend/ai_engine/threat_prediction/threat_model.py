@@ -7,14 +7,15 @@ from app.ml_service.explainable_risk import get_risk_model
 logger = logging.getLogger("crimenexus.ai.threat")
 
 
-def calculate_risk_score(person_name: str) -> Dict[str, Any]:
+def calculate_risk_score(identifier: str) -> Dict[str, Any]:
     """
     Calculates a comprehensive multi-factor threat/risk score (0 to 100%) for an entity,
     evaluating degree centrality, direct and indirect transaction volume, phone communication spikes,
     vehicle ownership/driving links, and ANPR sightings.
     """
     query = """
-    MATCH (p:Person {name: $name})
+    MATCH (p:Person)
+    WHERE p.name = $ident OR p.id = $ident OR p.suspect_id = $ident OR ('suspect-' + toString(id(p))) = $ident
     // 1. Transaction volume (direct or through controlled accounts)
     OPTIONAL MATCH (p)-[:HAS_ACCOUNT|OWNS_ACCOUNT*0..1]-(b:BankAccount)-[r:TRANSFERRED_MONEY_TO]-(other)
     WITH p, count(r) as tx_count, sum(coalesce(r.amount, 0)) as total_volume
@@ -38,7 +39,7 @@ def calculate_risk_score(person_name: str) -> Dict[str, Any]:
         sighting_count,
         count(distinct connected) as degree_count
     """
-    records = execute_cypher(query, {"name": person_name})
+    records = execute_cypher(query, {"ident": identifier})
 
     if not records or records[0]["degree_count"] is None:
         # Default baseline assessment with Explainable AI (SHAP)

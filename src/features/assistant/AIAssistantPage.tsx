@@ -13,10 +13,12 @@ import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Ca
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
+import { useAppStore } from '../../stores/appStore';
 
 export function AIAssistantPage() {
+  const activeCaseId = useAppStore((state) => state.activeCaseId);
   const [promptText, setPromptText] = useState('');
-  const { data: findings, isLoading } = useAIFindings('ALL');
+  const { data: findings, isLoading } = useAIFindings(activeCaseId || 'ALL');
   const queryAIMutation = useQueryAIMutation();
 
   const presetQueries = [
@@ -32,7 +34,7 @@ export function AIAssistantPage() {
     if (!query.trim()) return;
 
     queryAIMutation.mutate(
-      { caseId: 'case-101', promptText: query },
+      { caseId: activeCaseId || 'case-101', promptText: query },
       {
         onSuccess: () => {
           setPromptText('');

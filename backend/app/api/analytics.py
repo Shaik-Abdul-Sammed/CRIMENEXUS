@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
 from fastapi import APIRouter, Depends, Query, HTTPException
@@ -26,7 +27,8 @@ def detect_smurfing(
     db: Session = Depends(get_db),
     threshold_amount: float = Query(50000.0, description="Upper threshold for smurfing/structuring transactions"),
     min_senders: int = Query(3, description="Minimum distinct sender accounts required to flag smurfing"),
-    window_hours: int = Query(48, description="Time window in hours")
+    window_hours: int = Query(48, description="Time window in hours"),
+    bypass_cache: bool = Query(False, description="Bypass Redis cache")
 ) -> Dict[str, Any]:
     """
     Automated Financial Tripwire:
@@ -37,7 +39,7 @@ def detect_smurfing(
     """
     cache_key = f"cache:analytics:smurfing:{threshold_amount}:{min_senders}:{window_hours}"
     r = get_redis_client()
-    if r:
+    if r and not bypass_cache and not os.environ.get("PYTEST_CURRENT_TEST"):
         try:
             cached_val = r.get(cache_key)
             if cached_val:

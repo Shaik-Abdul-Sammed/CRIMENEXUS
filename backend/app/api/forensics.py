@@ -478,3 +478,143 @@ def get_dvr_status(job_id: str):
     if not job:
         raise HTTPException(status_code=404, detail=f"DVR job '{job_id}' not found.")
     return job
+
+
+# In-memory persistent register for uploaded forensic evidence items
+EVIDENCE_STORE = [
+    {
+        "id": "EV-2026-CDR-01",
+        "evidence_id": "EV-2026-CDR-01",
+        "evidenceNumber": "EVD-2026-8801",
+        "caseId": "case-101",
+        "title": "Telecom CDR Dump - Primary Hawala Target",
+        "type": "CALL_RECORD",
+        "source": "Bharti Airtel Nodal Cyber Cell",
+        "sourceReference": "AIRTEL-DEL-2026-901",
+        "description": "Call detail records covering 90-day window of primary syndicate burner phone with cell tower azimuth bearings.",
+        "uploadedBy": "Inspector Rajesh Sharma",
+        "filename": "airtel_cdr_9876543210.csv",
+        "file_size": 2451000,
+        "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "sha256_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "processingStatus": "PROCESSED",
+        "timestamp": "2026-10-28T14:30:00Z",
+        "uploaded_at": "2026-10-28T14:30:00Z",
+        "chain_of_custody_status": "VERIFIED"
+    },
+    {
+        "id": "EV-2026-BNK-02",
+        "evidence_id": "EV-2026-BNK-02",
+        "evidenceNumber": "EVD-2026-8802",
+        "caseId": "case-101",
+        "title": "HDFC Mule Bank Account Ledger (Smurfing Audit)",
+        "type": "FINANCIAL_TRANSACTION",
+        "source": "HDFC Bank LEA Compliance Portal",
+        "sourceReference": "HDFC-LEA-9921",
+        "description": "Structured transaction statement detailing 14 incoming deposits under ₹50,000 threshold within 48 hours.",
+        "uploadedBy": "Inspector Rajesh Sharma",
+        "filename": "hdfc_ledger_acc908122.csv",
+        "file_size": 1824000,
+        "hash": "4a5957b49cf525b642ec3e59508ffb8f9e0130dbd5c9c9966ea5e3ae30e70397",
+        "sha256_hash": "4a5957b49cf525b642ec3e59508ffb8f9e0130dbd5c9c9966ea5e3ae30e70397",
+        "processingStatus": "PROCESSED",
+        "timestamp": "2026-10-29T09:15:00Z",
+        "uploaded_at": "2026-10-29T09:15:00Z",
+        "chain_of_custody_status": "VERIFIED"
+    },
+    {
+        "id": "EV-2026-ANPR-03",
+        "evidence_id": "EV-2026-ANPR-03",
+        "evidenceNumber": "EVD-2026-8803",
+        "caseId": "case-101",
+        "title": "Yamuna Expressway ANPR Toll Gate Frame Capture",
+        "type": "CCTV",
+        "source": "YEIDA Highway Surveillance Control",
+        "sourceReference": "YEIDA-KM48-ANPR",
+        "description": "High-resolution camera capture of black Mahindra Scorpio fleeing toll plaza KM 48.",
+        "uploadedBy": "Sub-Inspector Meera Patil",
+        "filename": "anpr_km48_scorpio.mp4",
+        "file_size": 15400000,
+        "hash": "35a9e381b1a27567549b5f8a6f783c167ebf809630c399da84100b20d6b1331c",
+        "sha256_hash": "35a9e381b1a27567549b5f8a6f783c167ebf809630c399da84100b20d6b1331c",
+        "processingStatus": "PROCESSED",
+        "timestamp": "2026-10-29T11:42:00Z",
+        "uploaded_at": "2026-10-29T11:42:00Z",
+        "chain_of_custody_status": "VERIFIED"
+    }
+]
+
+
+@router.get("/evidence", summary="List all forensic evidence artifacts")
+def list_evidence_items(case_id: Optional[str] = None, type: Optional[str] = None):
+    """Retrieves verified forensic evidence artifacts, optionally filtered by case or category."""
+    items = EVIDENCE_STORE
+    if case_id and case_id != "ALL":
+        items = [i for i in items if i.get("caseId") == case_id or i.get("case_id") == case_id]
+    if type and type != "ALL":
+        items = [i for i in items if i.get("type") == type]
+    return items
+
+
+@router.get("/evidence/{evidence_id}", summary="Get single forensic evidence artifact")
+def get_evidence_item(evidence_id: str):
+    """Retrieves full metadata and cryptographic audit details for an evidence artifact."""
+    for item in EVIDENCE_STORE:
+        if item.get("id") == evidence_id or item.get("evidence_id") == evidence_id or item.get("evidenceNumber") == evidence_id:
+            return item
+    raise HTTPException(status_code=404, detail=f"Evidence artifact '{evidence_id}' not found.")
+
+
+@router.post("/evidence/upload", summary="Ingest binary evidence file with client/server SHA-256 verification")
+async def upload_evidence_file(
+    file: UploadFile = File(...),
+    title: str = Form(...),
+    type: str = Form("DOCUMENT"),
+    source: str = Form("CCTNS Vault"),
+    sourceReference: str = Form("SR-101"),
+    description: str = Form(""),
+    case_id: Optional[str] = Form("case-101"),
+    client_sha256: Optional[str] = Form(None),
+    db: Session = Depends(get_db)
+):
+    import hashlib
+    import uuid
+    from datetime import datetime
+
+    content = await file.read()
+    if len(content) > 50 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Evidence file exceeds 50MB limit.")
+
+    server_sha256 = hashlib.sha256(content).hexdigest()
+    evidence_id = f"EV-{datetime.utcnow().strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
+    ev_number = f"EVD-{datetime.utcnow().strftime('%Y')}-{uuid.uuid4().hex[:4].upper()}"
+    hash_matched = (client_sha256.lower() == server_sha256.lower()) if client_sha256 else True
+
+    record = {
+        "status": "SUCCESS",
+        "evidence_id": evidence_id,
+        "id": evidence_id,
+        "evidenceNumber": ev_number,
+        "title": title,
+        "type": type,
+        "source": source,
+        "sourceReference": sourceReference,
+        "description": description,
+        "case_id": case_id,
+        "caseId": case_id,
+        "filename": file.filename,
+        "file_size": len(content),
+        "hash": server_sha256,
+        "sha256_hash": server_sha256,
+        "client_sha256": client_sha256,
+        "integrity_verified": hash_matched,
+        "uploadedBy": "Inspector In-Charge",
+        "processingStatus": "PROCESSED",
+        "timestamp": datetime.utcnow().isoformat(),
+        "uploaded_at": datetime.utcnow().isoformat(),
+        "chain_of_custody_status": "VERIFIED"
+    }
+
+    EVIDENCE_STORE.insert(0, record)
+    return record
+
