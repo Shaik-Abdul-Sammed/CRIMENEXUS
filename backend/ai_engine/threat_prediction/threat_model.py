@@ -42,6 +42,7 @@ def calculate_risk_score(identifier: str) -> Dict[str, Any]:
     records = execute_cypher(query, {"ident": identifier})
 
     if not records or records[0]["degree_count"] is None:
+        person_name = identifier
         # Default baseline assessment with Explainable AI (SHAP)
         xai_res = get_risk_model().compute_risk_with_shap(
             degree_centrality=12.0,
@@ -52,7 +53,9 @@ def calculate_risk_score(identifier: str) -> Dict[str, Any]:
         return {
             "suspect_name": person_name,
             "overall_threat_score": xai_res["overall_threat_score"],
+            "risk_score": xai_res["overall_threat_score"],
             "risk_level": "CRITICAL",
+            "explanation": "Model fallback due to missing data",
             "factors": {
                 "financial_score": 92.0,
                 "telecom_score": 85.0,

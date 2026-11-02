@@ -132,28 +132,28 @@ export function CaseDetailPage() {
           </Button>
         </Link>
 
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-6 rounded-2xl border border-primary/30 bg-gradient-to-r from-card via-card to-primary/10 min-w-0">
-          <div className="space-y-2 min-w-0 flex-1">
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 p-6 rounded-2xl border border-primary/30 bg-gradient-to-r from-card via-card to-primary/10 w-full min-w-0">
+          <div className="space-y-2 flex-1 w-full min-w-0">
             <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-              <span className="font-mono text-sm font-extrabold text-primary px-2.5 py-0.5 rounded bg-primary/10 border border-primary/30">
+              <span className="font-mono text-sm font-extrabold text-primary px-2.5 py-0.5 rounded bg-primary/10 border border-primary/30 shrink-0">
                 {caseDetail.caseNumber}
               </span>
-              <span className={`text-xs px-2.5 py-0.5 rounded border font-semibold ${getStatusBadgeClass(caseDetail.status)}`}>
+              <span className={`text-xs px-2.5 py-0.5 rounded border font-semibold shrink-0 ${getStatusBadgeClass(caseDetail.status)}`}>
                 {caseDetail.status.replace(/_/g, ' ')}
               </span>
-              <span className={`text-xs px-2.5 py-0.5 rounded border font-semibold ${getRiskColorClass(caseDetail.priority)}`}>
+              <span className={`text-xs px-2.5 py-0.5 rounded border font-semibold shrink-0 ${getRiskColorClass(caseDetail.priority)}`}>
                 {caseDetail.priority} Priority
               </span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-extrabold text-foreground break-words">{caseDetail.title}</h1>
-            <p className="text-xs text-muted-foreground leading-relaxed break-words line-clamp-3">{caseDetail.description}</p>
+            <h1 className="text-xl sm:text-2xl font-extrabold text-foreground break-words w-full">{caseDetail.title}</h1>
+            <p className="text-xs text-muted-foreground leading-relaxed break-words line-clamp-3 w-full">{caseDetail.description}</p>
           </div>
 
-          <div className="flex flex-wrap sm:flex-nowrap gap-2 shrink-0">
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             <Button
               variant="outline"
               onClick={() => setPreviewManifestOpen(true)}
-              className="border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 flex items-center gap-1.5"
+              className="border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 flex items-center gap-1.5 shrink-0"
               title="Preview Evidence Bundle Manifest & Hashes"
             >
               <Eye className="h-4 w-4 text-emerald-400" />
@@ -163,16 +163,16 @@ export function CaseDetailPage() {
               variant="outline"
               onClick={handleDownloadEvidenceBundle}
               disabled={downloadingBundle}
-              className="border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 flex items-center gap-1.5"
+              className="border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 flex items-center gap-1.5 shrink-0"
               title="Download password-protected court evidence zip (Password: case_number + badge)"
             >
               <Archive className="h-4 w-4 text-emerald-400" />
               <span>{downloadingBundle ? 'Bundling...' : 'Download Evidence Bundle (.zip)'}</span>
             </Button>
-            <Link to="/network-graph">
+            <Link to="/network-graph" className="shrink-0">
               <Button icon={<Network className="h-4 w-4" />}>Launch Network Graph</Button>
             </Link>
-            <Link to="/ai-assistant">
+            <Link to="/ai-assistant" className="shrink-0">
               <Button variant="outline" icon={<Bot className="h-4 w-4" />}>
                 Query AI Assistant
               </Button>

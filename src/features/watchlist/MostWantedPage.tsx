@@ -480,11 +480,11 @@ export function MostWantedPage() {
                         variant="outline"
                         size="sm"
                         className="text-xs border-indigo-500/40 text-indigo-400 hover:bg-indigo-950/30 flex items-center gap-1.5"
-                        onClick={() => handleToggleXai(suspect.id || suspect.name)}
+                        onClick={() => handleToggleXai(suspect.id || 'ent-1')}
                       >
                         <Scale className="h-3.5 w-3.5 text-indigo-400" />
                         <span>Court XAI Audit</span>
-                        {expandedXaiId === suspect.id ? (
+                        {expandedXaiId === (suspect.id || 'ent-1') ? (
                           <ChevronUp className="h-3 w-3 ml-0.5" />
                         ) : (
                           <ChevronDown className="h-3 w-3 ml-0.5" />

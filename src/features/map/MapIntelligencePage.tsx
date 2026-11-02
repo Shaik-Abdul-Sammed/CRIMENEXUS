@@ -58,29 +58,28 @@ const OSM_POLICE_STATIONS = [
   { name: 'Cyber Hub Police Post Gurugram', latitude: 28.4950, longitude: 77.0895, district: 'GURUGRAM' },
 ];
 
-// Reliable CartoDB Dark Matter raster tiles specification - never black screens
-const RELIABLE_DARK_STYLE: maplibregl.StyleSpecification = {
+// Authenticated Google Maps Raster Tiles via MapLibre GL
+const GOOGLE_MAPS_KEY = 'AIzaSyDKQEYlzdG9OQ6B7vPtHkzNBNbTkkLrKt4';
+
+const GOOGLE_MAPS_STYLE: maplibregl.StyleSpecification = {
   version: 8,
   sources: {
-    'carto-dark-tiles': {
+    'google-maps': {
       type: 'raster',
       tiles: [
-        'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
-        'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
-        'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
-        'https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+        `https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&key=${GOOGLE_MAPS_KEY}`,
       ],
       tileSize: 256,
-      attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+      attribution: '© Google Maps',
     },
   },
   layers: [
     {
-      id: 'carto-dark-layer',
+      id: 'google-maps-layer',
       type: 'raster',
-      source: 'carto-dark-tiles',
+      source: 'google-maps',
       minzoom: 0,
-      maxzoom: 20,
+      maxzoom: 22,
     },
   ],
 };
@@ -322,7 +321,7 @@ export function MapIntelligencePage() {
     // Center map dynamically around active case jurisdiction / incident coordinates
     const map = new maplibregl.Map({
       container: mapContainerRef.current,
-      style: RELIABLE_DARK_STYLE,
+      style: GOOGLE_MAPS_STYLE,
       center: dynamicCenter,
       zoom: 9.5,
     });

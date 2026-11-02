@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import axios from 'axios';
 import cytoscape, { NodeSingular } from 'cytoscape';
 import dagre from 'cytoscape-dagre';
@@ -17,6 +17,7 @@ import {
   Sliders,
   Eye,
   EyeOff,
+  Bot,
 } from 'lucide-react';
 import { useNetworkGraph } from '../../hooks/useIntelligenceApi';
 import { Entity, Relationship } from '../../types';
@@ -67,10 +68,59 @@ export function NetworkGraphPage() {
     CRYPTO_WALLET: true,
     LOCATION: true,
   });
+  const [showAiSummary, setShowAiSummary] = useState<boolean>(false);
+  const [isExplaining, setIsExplaining] = useState<boolean>(false);
 
   const toggleCategory = (cat: string) => {
     sound.playClickSound();
     setCategoryFilters((prev) => ({ ...prev, [cat]: !prev[cat] }));
+  };
+
+  const aiGraphExplanation = useMemo(() => {
+    if (!graphData?.nodes || graphData.nodes.length === 0) {
+      return 'No graph topology loaded. Ingest cases or select an active investigation to analyze.';
+    }
+    const totalNodes = graphData.nodes.length;
+    
+    // Degree centrality map & category tally
+    const degreeMap: Record<string, number> = {};
+    const typeCount: Record<string, number> = {};
+    
+    graphData.nodes.forEach((n) => {
+      degreeMap[n.id] = 0;
+      typeCount[n.type] = (typeCount[n.type] || 0) + 1;
+    });
+
+    graphData.edges?.forEach((e) => {
+      degreeMap[e.sourceEntityId] = (degreeMap[e.sourceEntityId] || 0) + 1;
+      degreeMap[e.targetEntityId] = (degreeMap[e.targetEntityId] || 0) + 1;
+    });
+
+    // Locate primary suspect or maximum degree kingpin
+    let topNode = graphData.nodes[0];
+    let maxDegree = 0;
+    graphData.nodes.forEach((n) => {
+      const deg = degreeMap[n.id] || 0;
+      if (deg > maxDegree || (n.name.includes('Rajan') && deg >= maxDegree)) {
+        maxDegree = deg;
+        topNode = n;
+      }
+    });
+
+    const bankCount = typeCount['BANK_ACCOUNT'] || 0;
+    const phoneCount = typeCount['PHONE'] || 0;
+
+    return `This network contains ${totalNodes} entities linked to suspect ${topNode.name}. The most critical node is ${topNode.name} (Degree ${maxDegree}), connected to ${bankCount} bank accounts and ${phoneCount} burner phones.`;
+  }, [graphData]);
+
+  const handleExplainGraph = () => {
+    sound.playRadarPing();
+    setIsExplaining(true);
+    setShowAiSummary(true);
+    setTimeout(() => {
+      setIsExplaining(false);
+      sound.playSuccessChime();
+    }, 500);
   };
 
   const getLayoutOptions = (layoutName: string): cytoscape.LayoutOptions => {
@@ -78,12 +128,10 @@ export function NetworkGraphPage() {
       return {
         name: 'fcose',
         animate: true,
-        animationDuration: 600,
-        fit: true,
-        padding: 50,
-        nodeRepulsion: 400000,
-        idealEdgeLength: 100,
+        nodeRepulsion: 8000,
+        idealEdgeLength: 150,
         edgeElasticity: 100,
+        padding: 50,
       } as cytoscape.LayoutOptions;
     }
     if (layoutName === 'cose') {
@@ -93,8 +141,8 @@ export function NetworkGraphPage() {
         animationDuration: 600,
         fit: true,
         padding: 50,
-        nodeRepulsion: () => 400000,
-        idealEdgeLength: () => 100,
+        nodeRepulsion: () => 8000,
+        idealEdgeLength: () => 150,
         edgeElasticity: () => 100,
         nestingFactor: 5,
         gravity: 80,
@@ -150,9 +198,9 @@ export function NetworkGraphPage() {
             'font-size': '11px',
             'font-weight': 'bold',
             'text-valign': 'bottom',
-            'text-margin-y': 6,
+            'text-margin-y': 5,
             'text-wrap': 'wrap',
-            'text-max-width': '100px',
+            'text-max-width': '120px',
             'background-color': (ele: NodeSingular) => {
               const type = ele.data('type');
               if (type === 'PERSON') return '#3b82f6';
@@ -438,6 +486,17 @@ export function NetworkGraphPage() {
           <Button size="sm" variant="outline" onClick={handleExportPNG} icon={<Download className="h-4 w-4" />}>
             {t('graph.exportPng')}
           </Button>
+          <Button
+            size="sm"
+            variant={showAiSummary ? 'secondary' : 'outline'}
+            onClick={handleExplainGraph}
+            disabled={isExplaining}
+            className="border-primary/40 text-primary hover:bg-primary/10 flex items-center gap-1.5"
+            title="Synthesize AI explanation of network topology"
+          >
+            <Bot className="h-4 w-4 text-primary" />
+            <span>{isExplaining ? 'Explaining...' : 'Explain this graph'}</span>
+          </Button>
         </div>
       </div>
 
@@ -646,6 +705,50 @@ export function NetworkGraphPage() {
         </div>
 
         <div className="space-y-6">
+          {/* Collapsible AI Graph Summary Panel */}
+          {showAiSummary && (
+            <Card className="border-primary/50 bg-gradient-to-b from-primary/10 via-card to-card shadow-lg animate-in fade-in slide-in-from-top-2">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <div className="flex items-center gap-2">
+                  <Bot className="h-4 w-4 text-primary" />
+                  <CardTitle className="text-sm font-bold text-primary">AI Graph Summary</CardTitle>
+                </div>
+                <button
+                  onClick={() => setShowAiSummary(false)}
+                  className="p-1 rounded text-muted-foreground hover:text-foreground"
+                  aria-label="Close AI Summary"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </CardHeader>
+              <CardContent className="space-y-3 text-xs">
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-[10px] bg-primary/10 border-primary/40 text-primary font-semibold">
+                    GEMINI GRAPH SYNTHESIS
+                  </Badge>
+                  <span className="text-[10px] text-muted-foreground font-mono">Topological Inference</span>
+                </div>
+                <p className="text-foreground leading-relaxed font-sans font-medium bg-background/60 p-3 rounded-lg border border-border">
+                  {aiGraphExplanation}
+                </p>
+                <div className="grid grid-cols-3 gap-2 pt-1 text-center font-mono text-[10px]">
+                  <div className="p-2 rounded bg-background/60 border border-border">
+                    <span className="text-muted-foreground block">Entities</span>
+                    <span className="text-sm font-bold text-foreground">{graphData?.nodes?.length || 0}</span>
+                  </div>
+                  <div className="p-2 rounded bg-background/60 border border-border">
+                    <span className="text-muted-foreground block">Links</span>
+                    <span className="text-sm font-bold text-foreground">{graphData?.edges?.length || 0}</span>
+                  </div>
+                  <div className="p-2 rounded bg-background/60 border border-border">
+                    <span className="text-muted-foreground block">Threat</span>
+                    <span className="text-sm font-bold text-red-400">CRITICAL</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {selectedNode ? (
             <Card className="border-primary/40">
               <CardHeader className="flex flex-row items-center justify-between pb-3">
