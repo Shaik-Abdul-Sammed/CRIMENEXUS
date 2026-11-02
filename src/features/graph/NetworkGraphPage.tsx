@@ -27,6 +27,7 @@ import { Input } from '../../components/ui/Input';
 import { ErrorBoundary } from '../../components/common/ErrorBoundary';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useToast } from '../../components/ui/Toast';
+import { sound } from '../../utils/soundEffects';
 
 try {
   cytoscape.use(dagre);
@@ -53,9 +54,24 @@ export function NetworkGraphPage() {
   const [selectedEdge, setSelectedEdge] = useState<Relationship | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEntityTypeFilter, setSelectedEntityTypeFilter] = useState<string>('ALL');
-  const [selectedLayout, setSelectedLayout] = useState<string>('cose');
+  const [selectedLayout, setSelectedLayout] = useState<string>('fcose');
   const [minConfidence, setMinConfidence] = useState<number>(0.5);
   const [hideLowConfidence, setHideLowConfidence] = useState<boolean>(false);
+  const [legendOpen, setLegendOpen] = useState<boolean>(false);
+  const [categoryFilters, setCategoryFilters] = useState<Record<string, boolean>>({
+    PERSON: true,
+    PHONE: true,
+    VEHICLE: true,
+    BANK_ACCOUNT: true,
+    ORGANIZATION: true,
+    CRYPTO_WALLET: true,
+    LOCATION: true,
+  });
+
+  const toggleCategory = (cat: string) => {
+    sound.playClickSound();
+    setCategoryFilters((prev) => ({ ...prev, [cat]: !prev[cat] }));
+  };
 
   const getLayoutOptions = (layoutName: string): cytoscape.LayoutOptions => {
     if (layoutName === 'fcose') {
@@ -289,12 +305,13 @@ export function NetworkGraphPage() {
 
     cy.batch(() => {
       cy.nodes().forEach((n) => {
-        const type = n.data('type');
+        const type = n.data('type') as string;
         const conf = n.data('confidence') || 1;
         const matchesType = selectedEntityTypeFilter === 'ALL' || type === selectedEntityTypeFilter;
+        const matchesCategory = categoryFilters[type] !== false;
         const matchesConf = !hideLowConfidence || conf >= minConfidence;
 
-        if (matchesType && matchesConf) {
+        if (matchesType && matchesCategory && matchesConf) {
           n.style('display', 'element');
         } else {
           n.style('display', 'none');
@@ -314,7 +331,7 @@ export function NetworkGraphPage() {
         }
       });
     });
-  }, [selectedEntityTypeFilter, minConfidence, hideLowConfidence]);
+  }, [selectedEntityTypeFilter, categoryFilters, minConfidence, hideLowConfidence]);
 
   const handleZoomIn = () => cyRef.current?.zoom(cyRef.current.zoom() * 1.2);
   const handleZoomOut = () => cyRef.current?.zoom(cyRef.current.zoom() / 1.2);
@@ -498,6 +515,35 @@ export function NetworkGraphPage() {
                 )}
               </div>
             </div>
+            {/* Quick Multi-Entity Category Filter Toggles */}
+            <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-border/60 text-xs">
+              <span className="font-semibold text-muted-foreground text-[11px] mr-1">Categories:</span>
+              {[
+                { type: 'PERSON', label: 'Persons', color: '#3b82f6' },
+                { type: 'PHONE', label: 'Phones', color: '#f59e0b' },
+                { type: 'VEHICLE', label: 'Vehicles', color: '#a855f7' },
+                { type: 'BANK_ACCOUNT', label: 'Bank Accts', color: '#10b981' },
+                { type: 'ORGANIZATION', label: 'Orgs', color: '#f97316' },
+                { type: 'CRYPTO_WALLET', label: 'Crypto', color: '#eab308' },
+                { type: 'LOCATION', label: 'Locations', color: '#06b6d4' },
+              ].map((cat) => {
+                const isChecked = categoryFilters[cat.type] ?? true;
+                return (
+                  <button
+                    key={cat.type}
+                    onClick={() => toggleCategory(cat.type)}
+                    className={`flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium border transition-colors ${
+                      isChecked
+                        ? 'bg-primary/10 border-primary/50 text-foreground'
+                        : 'bg-background/40 border-border text-muted-foreground line-through opacity-50'
+                    }`}
+                  >
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: cat.color }} />
+                    <span>{cat.label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <Card className="relative h-[650px] overflow-hidden border-primary/30 bg-slate-950">
@@ -519,54 +565,82 @@ export function NetworkGraphPage() {
               />
             </ErrorBoundary>
 
-            <div className="absolute bottom-4 left-4 p-4 rounded-xl border border-white/10 bg-bg-secondary/90 backdrop-blur-md text-[11px] space-y-2 select-none shadow-glass">
-              <span className="font-bold text-text-primary block mb-1 uppercase tracking-wider text-[10px] text-muted-foreground">
-                {t('graph.legendTitle')}
-              </span>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
-                <div className="flex items-center gap-2">
-                  <span className="h-3.5 w-3.5 rounded-full bg-accent-crimson border-2 border-red-300 flex items-center justify-center text-[7px] font-bold text-white">★</span>
-                  <span className="text-slate-200 font-semibold">Kingpin (Rajan)</span>
+            {/* Collapsible Floating Tactical Legend */}
+            <div className="absolute bottom-4 left-4 z-20">
+              {legendOpen ? (
+                <div className="p-4 rounded-xl border border-white/20 bg-slate-900/95 backdrop-blur-md text-[11px] space-y-2 select-none shadow-2xl animate-in fade-in zoom-in-95 max-w-xs">
+                  <div className="flex items-center justify-between pb-1 border-b border-white/10">
+                    <span className="font-bold text-white uppercase tracking-wider text-[10px]">
+                      {t('graph.legendTitle')}
+                    </span>
+                    <button
+                      onClick={() => {
+                        sound.playClickSound();
+                        setLegendOpen(false);
+                      }}
+                      className="text-slate-400 hover:text-white p-0.5 rounded"
+                      aria-label="Close Legend"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="h-3.5 w-3.5 rounded-full bg-accent-crimson border-2 border-red-300 flex items-center justify-center text-[7px] font-bold text-white">★</span>
+                      <span className="text-slate-200 font-semibold">Kingpin (Rajan)</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
+                      <span className="text-slate-400">PERSON</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
+                      <span className="text-slate-400">PHONE</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                      <span className="text-slate-400">BANK ACCOUNT</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="h-2.5 w-2.5 rounded-full bg-purple-500" />
+                      <span className="text-slate-400">VEHICLE</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="h-2.5 w-2.5 rounded-full bg-orange-500" />
+                      <span className="text-slate-400">ORGANIZATION</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="h-2.5 w-2.5 rounded-full bg-yellow-500" />
+                      <span className="text-slate-400">CRYPTO WALLET</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="h-2.5 w-2.5 rounded-full bg-cyan-500" />
+                      <span className="text-slate-400">LOCATION</span>
+                    </div>
+                  </div>
+                  <div className="pt-2 border-t border-white/10 flex items-center gap-4 text-[10px]">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-4 h-0 border-t-2 border-dashed border-slate-400 inline-block" />
+                      <span className="text-slate-400">Associate Link</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-4 h-0.5 bg-amber-400 inline-block" />
+                      <span className="text-amber-400 font-semibold">Hawala / Smurf</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
-                  <span className="text-slate-400">PERSON (Mule/Associate)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
-                  <span className="text-slate-400">PHONE (SIM / CDR)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                  <span className="text-slate-400">BANK (HDFC / Mule)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-purple-500" />
-                  <span className="text-slate-400">VEHICLE (ANPR Hit)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-orange-500" />
-                  <span className="text-slate-400">ORGANIZATION (Shell)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-yellow-500" />
-                  <span className="text-slate-400">CRYPTO (USDT)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-cyan-500" />
-                  <span className="text-slate-400">LOCATION (Geofence)</span>
-                </div>
-              </div>
-              <div className="pt-2 border-t border-white/10 flex items-center gap-4 text-[10px]">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-4 h-0 border-t-2 border-dashed border-slate-400 inline-block" />
-                  <span className="text-slate-400">Associate Link</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-4 h-0.5 bg-amber-400 inline-block" />
-                  <span className="text-amber-400 font-semibold">Hawala / Smurfing</span>
-                </div>
-              </div>
+              ) : (
+                <button
+                  onClick={() => {
+                    sound.playClickSound();
+                    setLegendOpen(true);
+                  }}
+                  className="px-3 py-1.5 rounded-lg border border-primary/40 bg-slate-900/90 text-primary font-bold text-xs hover:bg-primary/20 transition-all shadow-lg flex items-center gap-1.5 backdrop-blur-md"
+                >
+                  <Network className="h-3.5 w-3.5" />
+                  <span>Tactical Legend</span>
+                </button>
+              )}
             </div>
           </Card>
         </div>

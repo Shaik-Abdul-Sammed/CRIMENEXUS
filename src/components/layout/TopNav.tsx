@@ -15,7 +15,10 @@ import {
   Zap,
   Settings as SettingsIcon,
   X,
+  CheckCheck,
+  Trash2,
 } from 'lucide-react';
+import { sound } from '../../utils/soundEffects';
 import { useAppStore } from '../../stores/appStore';
 import { useAuthStore } from '../../stores/authStore';
 import { useTranslation, SupportedLanguage } from '../../hooks/useTranslation';
@@ -26,8 +29,15 @@ import { OnboardingTour } from '../tour/OnboardingTour';
 
 export function TopNav() {
   const location = useLocation();
-  const { setGlobalSearchOpen, theme, toggleTheme, notifications, markNotificationAsRead } =
-    useAppStore();
+  const {
+    setGlobalSearchOpen,
+    theme,
+    toggleTheme,
+    notifications,
+    markNotificationAsRead,
+    markAllNotificationsAsRead,
+    clearNotifications,
+  } = useAppStore();
   const { currentUser, activeRole, loginAsRole, logout } = useAuthStore();
   const { language, setLanguage, t } = useTranslation();
 
@@ -123,28 +133,65 @@ export function TopNav() {
           </button>
 
           {notifMenuOpen && (
-            <div className="absolute right-0 mt-2 w-80 rounded-xl border border-border bg-card p-3 shadow-2xl z-50 animate-in fade-in zoom-in-95">
+            <div className="absolute right-0 mt-2 w-84 rounded-xl border border-border bg-card p-3 shadow-2xl z-50 animate-in fade-in zoom-in-95">
               <div className="flex items-center justify-between pb-2 border-b border-border mb-2">
-                <span className="text-xs font-bold text-foreground">Intelligence Alerts</span>
-                <span className="text-[10px] text-muted-foreground">{unreadCount} unread</span>
+                <div>
+                  <span className="text-xs font-bold text-foreground">Intelligence Alerts</span>
+                  <span className="text-[10px] text-muted-foreground ml-1.5 font-mono">
+                    ({unreadCount} unread / {notifications.length} total)
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={() => {
+                        sound.playSuccessChime();
+                        markAllNotificationsAsRead();
+                      }}
+                      className="text-[10px] text-primary hover:text-primary/80 font-medium flex items-center gap-1 px-1.5 py-0.5 rounded hover:bg-primary/10 transition-colors"
+                      title="Mark all notifications as read"
+                    >
+                      <CheckCheck className="h-3 w-3" />
+                      <span>Mark all read</span>
+                    </button>
+                  )}
+                  {notifications.length > 0 && (
+                    <button
+                      onClick={() => {
+                        sound.playClickSound();
+                        clearNotifications();
+                      }}
+                      className="text-[10px] text-muted-foreground hover:text-destructive font-medium flex items-center gap-1 px-1.5 py-0.5 rounded hover:bg-destructive/10 transition-colors"
+                      title="Clear all notifications"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                      <span>Clear</span>
+                    </button>
+                  )}
+                </div>
               </div>
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {notifications.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-4">No active alerts</p>
+                  <p className="text-xs text-muted-foreground text-center py-6 font-mono">
+                    No active notifications or alerts
+                  </p>
                 ) : (
                   notifications.map((n) => (
                     <div
                       key={n.id}
-                      onClick={() => markNotificationAsRead(n.id)}
+                      onClick={() => {
+                        sound.playClickSound();
+                        markNotificationAsRead(n.id);
+                      }}
                       className={`p-2 rounded-lg text-xs border transition-colors cursor-pointer ${
                         n.read
                           ? 'bg-background/40 border-border/40 text-muted-foreground'
-                          : 'bg-primary/5 border-primary/20 text-foreground font-medium'
+                          : 'bg-primary/5 border-primary/20 text-foreground font-medium shadow-sm'
                       }`}
                     >
                       <div className="flex items-center justify-between font-semibold mb-0.5">
                         <span className="flex items-center gap-1">
-                          <AlertTriangle className="h-3 w-3 text-amber-400" />
+                          <AlertTriangle className={`h-3 w-3 ${n.type === 'CRITICAL' ? 'text-rose-400' : 'text-amber-400'}`} />
                           {n.title}
                         </span>
                         <span className="text-[9px] text-muted-foreground">{n.timestamp}</span>

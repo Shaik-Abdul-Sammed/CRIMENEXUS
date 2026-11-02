@@ -101,7 +101,7 @@ def test_streaming_100_rapid_events():
 
     for i in range(events_count):
         payload = {
-            "transaction_id": f"TX-BURST-{i}-{uuid.uuid4().hex[:4]}",
+            "transaction_id": f"TX-BURST-{int(time.time() * 1000)}-{i}-{uuid.uuid4().hex}",
             "sender_name": f"Burst Sender {i}",
             "sender_account": f"ACC-BURST-SRC-{i}",
             "receiver_name": "Burst Receiver",

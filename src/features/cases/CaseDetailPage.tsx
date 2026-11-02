@@ -132,9 +132,9 @@ export function CaseDetailPage() {
           </Button>
         </Link>
 
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl border border-primary/30 bg-gradient-to-r from-card via-card to-primary/10">
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-6 rounded-2xl border border-primary/30 bg-gradient-to-r from-card via-card to-primary/10 min-w-0">
+          <div className="space-y-2 min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
               <span className="font-mono text-sm font-extrabold text-primary px-2.5 py-0.5 rounded bg-primary/10 border border-primary/30">
                 {caseDetail.caseNumber}
               </span>
@@ -145,11 +145,11 @@ export function CaseDetailPage() {
                 {caseDetail.priority} Priority
               </span>
             </div>
-            <h1 className="text-2xl font-extrabold text-foreground">{caseDetail.title}</h1>
-            <p className="text-xs text-muted-foreground max-w-3xl leading-relaxed">{caseDetail.description}</p>
+            <h1 className="text-xl sm:text-2xl font-extrabold text-foreground break-words">{caseDetail.title}</h1>
+            <p className="text-xs text-muted-foreground leading-relaxed break-words line-clamp-3">{caseDetail.description}</p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+          <div className="flex flex-wrap sm:flex-nowrap gap-2 shrink-0">
             <Button
               variant="outline"
               onClick={() => setPreviewManifestOpen(true)}
@@ -182,7 +182,7 @@ export function CaseDetailPage() {
       </div>
 
       {/* Tabs Bar */}
-      <div className="flex items-center gap-2 border-b border-border overflow-x-auto">
+      <div className="flex items-center gap-1 border-b border-border overflow-x-auto whitespace-nowrap scrollbar-none pb-0.5">
         {[
           { id: 'OVERVIEW', label: 'Overview & Witness AI', icon: FolderGit2 },
           { id: 'TIMELINE', label: 'Case History Timeline (WORM)', icon: Clock },
@@ -195,7 +195,7 @@ export function CaseDetailPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as 'OVERVIEW' | 'TIMELINE' | 'EVIDENCE' | 'ENTITIES' | 'GRAPH')}
-              className={`flex items-center gap-2 px-4 py-3 text-xs font-semibold border-b-2 transition-all whitespace-nowrap ${
+              className={`flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold border-b-2 transition-all shrink-0 ${
                 activeTab === tab.id
                   ? 'border-primary text-primary bg-primary/5'
                   : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -210,30 +210,30 @@ export function CaseDetailPage() {
 
       {/* Tab Content */}
       {activeTab === 'OVERVIEW' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <Card>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-w-0">
+          <div className="lg:col-span-2 space-y-6 min-w-0">
+            <Card className="min-w-0">
               <CardHeader>
                 <CardTitle className="text-sm">Investigation Context & Objectives</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4 text-xs text-muted-foreground leading-relaxed">
-                <p>
+              <CardContent className="space-y-4 text-xs text-muted-foreground leading-relaxed min-w-0">
+                <p className="break-words">
                   This target case involves multi-jurisdictional intelligence discovery across cybercrime channels, illicit bank transfers, and suspect co-location. All linked evidence artifacts are cryptographically hashed and cataloged in compliance with law enforcement directives.
                 </p>
-                <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-background/50 border border-border">
-                  <div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-background/50 border border-border min-w-0">
+                  <div className="min-w-0">
                     <span className="font-semibold text-foreground block">Crime Category:</span>
-                    <span>{caseDetail.crimeType}</span>
+                    <span className="break-words">{caseDetail.crimeType}</span>
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <span className="font-semibold text-foreground block">Primary Jurisdiction:</span>
-                    <span>{caseDetail.locationName}</span>
+                    <span className="break-words">{caseDetail.locationName}</span>
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <span className="font-semibold text-foreground block">Assigned Lead Investigator:</span>
-                    <span>{caseDetail.assignedUserName}</span>
+                    <span className="break-words">{caseDetail.assignedUserName}</span>
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <span className="font-semibold text-foreground block">Date Opened:</span>
                     <span>{new Date(caseDetail.createdAt).toLocaleDateString()}</span>
                   </div>

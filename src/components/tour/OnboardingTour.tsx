@@ -9,6 +9,8 @@ import {
   Zap,
 } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { useAppStore } from '../../stores/appStore';
+import { sound } from '../../utils/soundEffects';
 
 export interface TourStep {
   targetId: string;
@@ -89,14 +91,19 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
         setTargetRect(null);
         return;
       }
-      const el = document.getElementById(step.targetId);
+      if (step.targetId.startsWith('sidebar-')) {
+        useAppStore.getState().setSidebarOpen(true);
+      }
+      const el = document.getElementById(step.targetId) || document.querySelector(`[data-tour="${step.targetId}"]`);
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         const rect = el.getBoundingClientRect();
-        setTargetRect(rect);
-      } else {
-        setTargetRect(null);
+        if (rect.width > 10 && rect.height > 10) {
+          setTargetRect(rect);
+          return;
+        }
       }
+      setTargetRect(null);
     } catch {
       setTargetRect(null);
     }
@@ -166,7 +173,7 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
       />
 
       {/* Target Element Highlight Box */}
-      {targetRect && (
+      {targetRect && targetRect.width > 10 && targetRect.height > 10 && (
         <div
           className="absolute border-2 border-primary rounded-xl pointer-events-none transition-all duration-300 shadow-[0_0_35px_rgba(59,130,246,0.8)] animate-pulse"
           style={{

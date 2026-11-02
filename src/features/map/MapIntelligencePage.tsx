@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import axios from 'axios';
 import * as maplibregl from 'maplibre-gl';
-import { MapPin, ShieldAlert, X, Navigation, Clock, BellRing, Flame, Compass, Shield, Route } from 'lucide-react';
+import { MapPin, ShieldAlert, X, Navigation, Clock, BellRing, Flame, Compass, Shield, Route, Ruler } from 'lucide-react';
 import { useMapLocations } from '../../hooks/useIntelligenceApi';
 import { MapLocation } from '../../types';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
@@ -9,6 +9,7 @@ import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { ErrorBoundary } from '../../components/common/ErrorBoundary';
 import { useAppStore } from '../../stores/appStore';
+import { sound } from '../../utils/soundEffects';
 
 interface TimelineWaypoint {
   type: 'ANPR_SIGHTING' | 'CDR_CELL_PING';
@@ -57,6 +58,47 @@ const OSM_POLICE_STATIONS = [
   { name: 'Cyber Hub Police Post Gurugram', latitude: 28.4950, longitude: 77.0895, district: 'GURUGRAM' },
 ];
 
+// Reliable CartoDB Dark Matter raster tiles specification - never black screens
+const RELIABLE_DARK_STYLE: maplibregl.StyleSpecification = {
+  version: 8,
+  sources: {
+    'carto-dark-tiles': {
+      type: 'raster',
+      tiles: [
+        'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+        'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+        'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+        'https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+      ],
+      tileSize: 256,
+      attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+    },
+  },
+  layers: [
+    {
+      id: 'carto-dark-layer',
+      type: 'raster',
+      source: 'carto-dark-tiles',
+      minzoom: 0,
+      maxzoom: 20,
+    },
+  ],
+};
+
+function calculateHaversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371; // Earth radius in km
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return Math.round(R * c * 100) / 100;
+}
+
 export function MapIntelligencePage() {
   const activeCaseId = useAppStore((state) => state.activeCaseId);
   const { data: locations, isLoading } = useMapLocations('ALL');
@@ -74,6 +116,11 @@ export function MapIntelligencePage() {
   const [interceptRoute, setInterceptRoute] = useState<InterceptRouteInfo | null>(null);
   const [geofenceActive, setGeofenceActive] = useState(false);
   const [geofenceHits, setGeofenceHits] = useState<number>(0);
+  const [measureMode, setMeasureMode] = useState<boolean>(false);
+  const measureModeRef = useRef<boolean>(false);
+  measureModeRef.current = measureMode;
+  const [measurePoints, setMeasurePoints] = useState<[number, number][]>([]);
+  const [measuredDistanceKm, setMeasuredDistanceKm] = useState<number | null>(null);
 
   // Dynamic center based on active target case or jurisdictional HQ
   const dynamicCenter: [number, number] = useMemo(() => {
@@ -275,7 +322,7 @@ export function MapIntelligencePage() {
     // Center map dynamically around active case jurisdiction / incident coordinates
     const map = new maplibregl.Map({
       container: mapContainerRef.current,
-      style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+      style: RELIABLE_DARK_STYLE,
       center: dynamicCenter,
       zoom: 9.5,
     });
@@ -365,6 +412,64 @@ export function MapIntelligencePage() {
             'line-color': '#34d399',
             'line-width': 3.5,
           },
+        });
+      }
+
+      // Distance Measure Tool GeoJSON source & layers
+      map.addSource('measure-trajectory', {
+        type: 'geojson',
+        data: {
+          type: 'Feature',
+          properties: {},
+          geometry: {
+            type: 'LineString',
+            coordinates: measurePoints.length === 2 ? measurePoints : [],
+          },
+        },
+      });
+
+      map.addLayer({
+        id: 'measure-line-glow',
+        type: 'line',
+        source: 'measure-trajectory',
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: {
+          'line-color': '#10b981',
+          'line-width': 8,
+          'line-opacity': 0.4,
+        },
+      });
+
+      map.addLayer({
+        id: 'measure-line',
+        type: 'line',
+        source: 'measure-trajectory',
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: {
+          'line-color': '#34d399',
+          'line-width': 3.5,
+          'line-dasharray': [3, 2],
+        },
+      });
+    });
+
+    // Map Click Listener for Google Maps-style Distance Measurement
+    map.on('click', (e) => {
+      if (measureModeRef.current) {
+        sound.playRadarPing();
+        const pt: [number, number] = [e.lngLat.lng, e.lngLat.lat];
+        setMeasurePoints((prev) => {
+          if (prev.length === 0) {
+            return [pt];
+          } else if (prev.length === 1) {
+            const p1 = prev[0];
+            const d = calculateHaversineKm(p1[1], p1[0], pt[1], pt[0]);
+            setMeasuredDistanceKm(d);
+            return [p1, pt];
+          } else {
+            setMeasuredDistanceKm(null);
+            return [pt];
+          }
         });
       }
     });
@@ -526,6 +631,23 @@ export function MapIntelligencePage() {
     };
   }, [locations, timelineWaypoints, forecastData, showHotspots, showPoliceStations, interceptRoute, dynamicCenter]);
 
+  // Update dynamic measurement line
+  useEffect(() => {
+    if (!mapRef.current) return;
+    const map = mapRef.current;
+    if (map.isStyleLoaded() && map.getSource('measure-trajectory')) {
+      const src = map.getSource('measure-trajectory') as maplibregl.GeoJSONSource;
+      src.setData({
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'LineString',
+          coordinates: measurePoints.length === 2 ? measurePoints : [],
+        },
+      });
+    }
+  }, [measurePoints]);
+
   const flyToWaypoint = (wp: TimelineWaypoint, idx: number) => {
     setActiveWaypointIdx(idx);
     setSelectedLocation({
@@ -567,6 +689,7 @@ export function MapIntelligencePage() {
             size="sm"
             variant={geofenceActive ? 'primary' : 'outline'}
             onClick={() => {
+              sound.playClickSound();
               setGeofenceActive(!geofenceActive);
               if (!geofenceActive) {
                 setGeofenceHits(locations?.length ? Math.min(locations.length, 5) : 3);
@@ -576,6 +699,23 @@ export function MapIntelligencePage() {
           >
             <Compass className="h-3.5 w-3.5 text-cyan-400" />
             {geofenceActive ? `Geofence: ON (${geofenceHits} Hits)` : 'Draw Search Geofence'}
+          </Button>
+          <Button
+            size="sm"
+            variant={measureMode ? 'primary' : 'outline'}
+            onClick={() => {
+              sound.playClickSound();
+              setMeasureMode(!measureMode);
+              if (measureMode) {
+                setMeasurePoints([]);
+                setMeasuredDistanceKm(null);
+              }
+            }}
+            className="flex items-center gap-1.5 text-xs font-bold border-emerald-500/50 hover:bg-emerald-950/30"
+            title="Google Maps-style Point-to-Point Distance Calculation"
+          >
+            <Ruler className="h-3.5 w-3.5 text-emerald-400" />
+            {measureMode ? 'Measuring: ON' : 'Measure Distance'}
           </Button>
           <Button
             size="sm"
@@ -688,6 +828,40 @@ export function MapIntelligencePage() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-3 space-y-4">
           <Card className="relative h-[650px] overflow-hidden border-primary/30 bg-slate-950">
+            {/* Google Maps-style Distance Measurement Floating Overlay */}
+            {measureMode && (
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 px-4 py-2.5 rounded-xl bg-slate-900/95 border-2 border-emerald-500 text-white shadow-2xl backdrop-blur-md flex items-center gap-3 animate-in fade-in zoom-in-95 text-xs font-mono">
+                <Ruler className="h-4 w-4 text-emerald-400 shrink-0 animate-pulse" />
+                <div>
+                  {measurePoints.length === 0 && (
+                    <span>Click Point A (start) on map</span>
+                  )}
+                  {measurePoints.length === 1 && (
+                    <span>Point A logged ({measurePoints[0][1].toFixed(4)}, {measurePoints[0][0].toFixed(4)}). Click Point B (target)</span>
+                  )}
+                  {measurePoints.length === 2 && measuredDistanceKm !== null && (
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-emerald-300">
+                        Distance: {measuredDistanceKm} km (~{Math.round((measuredDistanceKm / 45) * 60)} mins driving ETA)
+                      </span>
+                    </div>
+                  )}
+                </div>
+                {measurePoints.length > 0 && (
+                  <button
+                    onClick={() => {
+                      sound.playClickSound();
+                      setMeasurePoints([]);
+                      setMeasuredDistanceKm(null);
+                    }}
+                    className="ml-2 text-[10px] text-slate-400 hover:text-white px-2 py-0.5 rounded bg-slate-800 border border-slate-700"
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
+            )}
+
             {isLoading && (
               <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-950/80 text-xs text-slate-400" role="status" aria-live="polite">
                 Initializing MapLibre GL JS spatial renderer...

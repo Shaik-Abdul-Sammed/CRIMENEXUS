@@ -23,6 +23,7 @@ interface AppState {
   setTheme: (theme: 'dark' | 'light') => void;
   toggleTheme: () => void;
   markNotificationAsRead: (id: string) => void;
+  markAllNotificationsAsRead: () => void;
   clearNotifications: () => void;
 }
 
@@ -77,6 +78,10 @@ export const useAppStore = create<AppState>((set, get) => ({
   markNotificationAsRead: (id) =>
     set((state) => ({
       notifications: state.notifications.map((n) => (n.id === id ? { ...n, read: true } : n)),
+    })),
+  markAllNotificationsAsRead: () =>
+    set((state) => ({
+      notifications: state.notifications.map((n) => ({ ...n, read: true })),
     })),
   clearNotifications: () => set({ notifications: [] }),
 }));

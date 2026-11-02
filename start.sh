@@ -70,6 +70,11 @@ echo -e "${GREEN}✓ Relational tables & schema constraints synchronized.${NC}"
 
 # 4. Start Backend Server
 echo -e "${BLUE}[4/5] Launching FastAPI Backend on port 8000...${NC}"
+# Gracefully stop any existing docker backend container or orphan process holding port 8000
+docker stop crimenexus_backend_prod 2>/dev/null || true
+fuser -k 8000/tcp 2>/dev/null || true
+sleep 1
+
 if [ -f "backend/venv/bin/uvicorn" ]; then
     (cd backend && ./venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload) &
     BACKEND_PID=$!
