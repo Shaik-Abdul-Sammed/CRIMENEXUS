@@ -24,7 +24,8 @@ def ingest_bank(data: BankTransactionIngest, db: Session = Depends(get_db)):
     Dual-writes a bank transaction to PostgreSQL and Neo4j graph.
     Creates Sender, Receiver, Account nodes, and money transfer edges.
     """
-    result = ingest_bank_transaction(data.dict(), db)
+    payload = data.model_dump() if hasattr(data, "model_dump") else data.dict()
+    result = ingest_bank_transaction(payload, db)
     return result
 
 
@@ -34,7 +35,8 @@ def ingest_cdr(data: CallRecordIngest, db: Session = Depends(get_db)):
     Dual-writes Call Detail Records (CDR) to PostgreSQL and Neo4j graph.
     Creates Person, Phone nodes, and call event edges.
     """
-    result = ingest_call_record(data.dict(), db)
+    payload = data.model_dump() if hasattr(data, "model_dump") else data.dict()
+    result = ingest_call_record(payload, db)
     return result
 
 
@@ -44,7 +46,8 @@ def ingest_vehicle(data: VehicleSightingIngest, db: Session = Depends(get_db)):
     Dual-writes ANPR / CCTV vehicle sightings to PostgreSQL and Neo4j.
     Creates Vehicle, Location nodes, and sighting edges.
     """
-    result = ingest_vehicle_sighting(data.dict(), db)
+    payload = data.model_dump() if hasattr(data, "model_dump") else data.dict()
+    result = ingest_vehicle_sighting(payload, db)
     return result
 
 
@@ -54,5 +57,6 @@ def ingest_report(data: PoliceReportIngest, db: Session = Depends(get_db)):
     Dual-writes FIR and Witness statements to PostgreSQL and Neo4j.
     Creates Case, Witness, Suspect nodes, and association edges.
     """
-    result = ingest_police_report(data.dict(), db)
+    payload = data.model_dump() if hasattr(data, "model_dump") else data.dict()
+    result = ingest_police_report(payload, db)
     return result

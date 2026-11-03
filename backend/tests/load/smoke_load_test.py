@@ -62,7 +62,7 @@ def run_smoke_load_test_sync(base_url: str = "http://localhost:8000") -> Dict[st
         for _ in range(N_CONCURRENT_USERS // len(ENDPOINTS_TO_TEST)):
             start = time.perf_counter()
             try:
-                response = client.get(endpoint, timeout=10)
+                response = client.get(endpoint)
                 duration_ms = (time.perf_counter() - start) * 1000
                 ok = response.status_code < 500
                 if not ok:

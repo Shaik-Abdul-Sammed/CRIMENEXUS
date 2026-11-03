@@ -31,7 +31,7 @@ async def validate_and_read_upload(file: UploadFile) -> str:
     content_bytes = await file.read()
     if len(content_bytes) > MAX_UPLOAD_SIZE_BYTES:
         raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            status_code=status.HTTP_413_CONTENT_TOO_LARGE,
             detail=f"File exceeds strict maximum allowable limit of 10MB (size: {len(content_bytes):,} bytes)."
         )
     return content_bytes.decode("utf-8", errors="replace")
@@ -44,7 +44,7 @@ def extract_text_from_file_bytes(content_bytes: bytes, filename: str = "") -> st
     """
     if len(content_bytes) > MAX_UPLOAD_SIZE_BYTES:
         raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            status_code=status.HTTP_413_CONTENT_TOO_LARGE,
             detail=f"File exceeds strict maximum allowable limit of 10MB (size: {len(content_bytes):,} bytes)."
         )
 
@@ -354,7 +354,7 @@ async def process_video_anpr_feed(
     content_bytes = await file.read()
     if len(content_bytes) > MAX_UPLOAD_SIZE_BYTES:
         raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            status_code=status.HTTP_413_CONTENT_TOO_LARGE,
             detail=f"Video payload exceeds maximum limit of 10MB (size: {len(content_bytes):,} bytes)."
         )
 
@@ -423,7 +423,7 @@ async def upload_dvr_footage(
                 if os.path.exists(saved_path):
                     os.remove(saved_path)
                 raise HTTPException(
-                    status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                    status_code=status.HTTP_413_CONTENT_TOO_LARGE,
                     detail=f"DVR upload exceeds maximum allowable 5GB limit (size: {total_bytes:,} bytes)."
                 )
             f_out.write(chunk)
