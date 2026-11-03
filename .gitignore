@@ -157,6 +157,43 @@ __pycache__/
 *$py.class
 *.egg-info/
 .pytest_cache/
+.ruff_cache/
+.mypy_cache/
 playwright-report/
 test-results/
 frontend/node_modules
+frontend/node_modules/
+.vitest/
+
+# Test Coverage & Profiling
+.coverage
+.coverage.*
+htmlcov/
+*.lcov
+
+# SQLite & Local Databases
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+
+# Forensic & Temporary Uploads
+uploads/
+backend/uploads/
+temp/
+backend/temp/
+*.ply
+
+# IDEs & System Metadata
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Docker Local Overrides
+docker-compose.override.yml
+*.override.yml
+
