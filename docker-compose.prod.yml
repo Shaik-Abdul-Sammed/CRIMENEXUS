@@ -7,7 +7,9 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-crimenexus}
-    # STRICT ZERO-TRUST: No host port mapping. Accessible strictly within internal Docker bridge.
+    # Loopback-only port binding for local CLI, tests and diagnostic tools
+    ports:
+      - "127.0.0.1:5435:5432"
     expose:
       - "5432"
     volumes:
@@ -27,7 +29,10 @@ services:
     environment:
       NEO4J_AUTH: ${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-crimenexus123}
       NEO4J_PLUGINS: '["apoc"]'
-    # STRICT ZERO-TRUST: No host port mapping. Accessible strictly within internal Docker bridge.
+    # Loopback-only port binding for local CLI, tests and diagnostic tools
+    ports:
+      - "127.0.0.1:7474:7474"
+      - "127.0.0.1:7687:7687"
     expose:
       - "7474"
       - "7687"
