@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import {
   Search,
   Bell,
@@ -37,6 +37,7 @@ import { KeyboardShortcutsModal } from '../common/KeyboardShortcutsModal';
 
 export function TopNav() {
   const location = useLocation();
+  const navigate = useNavigate();
   const {
     setGlobalSearchOpen,
     theme,
@@ -84,7 +85,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
   { id: 'amber-tactical', name: 'Highway Intercept', icon: '🚨', dotColor: '#EF4444', badge: 'Pursuit' },
 ];
 
-  // Close menus on outside click or Escape
+  // Close menus on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
@@ -97,20 +98,69 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
         setThemeMenuOpen(false);
       }
     }
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Global Tactical Keyboard Shortcuts (?, /, M, P, N, E, S, Esc)
+  useEffect(() => {
+    function handleGlobalKeyDown(e: KeyboardEvent) {
+      const target = e.target as HTMLElement | null;
+      const isInput = target && (
+        ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) ||
+        target.isContentEditable
+      );
+
+      // ESC should always close active modals and dropdowns, even when focused in an input
+      if (e.key === 'Escape') {
+        setShortcutsOpen(false);
+        setStatutoryRulesOpen(false);
         setSettingsMenuOpen(false);
         setNotifMenuOpen(false);
         setThemeMenuOpen(false);
+        setDemoModalOpen(false);
+        setGlobalSearchOpen(false);
+        return;
+      }
+
+      // Do not trigger hotkeys if user is actively typing in a form or input
+      if (isInput) return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+      if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
+        e.preventDefault();
+        sound.playClickSound();
+        setShortcutsOpen((prev) => !prev);
+      } else if (e.key === '/') {
+        e.preventDefault();
+        sound.playClickSound();
+        setGlobalSearchOpen(true);
+      } else if (e.key.toLowerCase() === 'm') {
+        e.preventDefault();
+        sound.playClickSound();
+        navigate('/map');
+      } else if (e.key.toLowerCase() === 'p') {
+        e.preventDefault();
+        sound.playClickSound();
+        navigate('/live-tracking');
+      } else if (e.key.toLowerCase() === 'n') {
+        e.preventDefault();
+        sound.playClickSound();
+        navigate('/network-graph');
+      } else if (e.key.toLowerCase() === 'e') {
+        e.preventDefault();
+        sound.playClickSound();
+        navigate('/evidence');
+      } else if (e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        sound.playClickSound();
+        setStatutoryRulesOpen((prev) => !prev);
       }
     }
-    document.addEventListener('mousedown', handleClickOutside);
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, []);
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [navigate, setGlobalSearchOpen]);
 
   return (
     <header className="sticky top-0 z-20 flex h-16 w-full items-center justify-between border-b border-border bg-card/90 px-4 md:px-6 backdrop-blur-md">
@@ -631,6 +681,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
       <KeyboardShortcutsModal
         isOpen={shortcutsOpen}
         onClose={() => setShortcutsOpen(false)}
+        onOpenRules={() => setStatutoryRulesOpen(true)}
       />
     </header>
   );
