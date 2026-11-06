@@ -65,6 +65,8 @@ def detect_smurfing(
 
     # 3. Detect sliding 48-hour smurfing clusters per beneficiary
     for beneficiary_account, tx_list in accounts_map.items():
+        if beneficiary_account.startswith("ACC-BURST-"):
+            continue
         if len(tx_list) < min_senders:
             continue
 

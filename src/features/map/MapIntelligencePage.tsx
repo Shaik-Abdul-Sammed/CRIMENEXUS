@@ -211,12 +211,12 @@ export function MapIntelligencePage() {
   const [showPatrolForecast, setShowPatrolForecast] = useState<boolean>(true);
   const [showBreadcrumbs, setShowBreadcrumbs] = useState<boolean>(true);
 
-  // Dynamic center based on active target case or jurisdictional HQ
+  // Dynamic center based on active target case or primary incident corridor
   const dynamicCenter: [number, number] = useMemo(() => {
     const activeCaseLocation = locations?.find((loc) => loc.caseId === activeCaseId) || locations?.[0];
     return activeCaseLocation
       ? [activeCaseLocation.longitude, activeCaseLocation.latitude]
-      : [77.2197, 28.6328]; // Central Police HQ
+      : [77.3180, 28.5850]; // Primary Operation Shadow Net corridor (Noida Sector 20 / Jewar Yamuna Expressway)
   }, [locations, activeCaseId]);
 
   const fetchInterceptRoute = (targetLat: number, targetLon: number) => {
@@ -769,10 +769,64 @@ export function MapIntelligencePage() {
     map.on('load', () => {
       map.resize();
       syncLayersAndHeatmap(map);
+
+      // Connecting route line between thief (V. Malhotra) and police station (Jewar PS)
+      if (!map.getSource('route')) {
+        map.addSource('route', {
+          type: 'geojson',
+          data: {
+            type: 'Feature',
+            properties: {},
+            geometry: {
+              type: 'LineString',
+              coordinates: [
+                [77.3180, 28.5850], // Thief (V. Malhotra) coords
+                [77.5510, 28.1402], // Police Station (Jewar PS) coords
+              ],
+            },
+          },
+        });
+      }
+      if (!map.getLayer('route')) {
+        map.addLayer({
+          id: 'route',
+          type: 'line',
+          source: 'route',
+          layout: { 'line-join': 'round', 'line-cap': 'round' },
+          paint: { 'line-color': '#10B981', 'line-width': 3, 'line-dasharray': [2, 2] },
+        });
+      }
     });
 
     map.on('styledata', () => {
       syncLayersAndHeatmap(map);
+
+      // Re-add connecting route line if cleared during style transition
+      if (!map.getSource('route')) {
+        map.addSource('route', {
+          type: 'geojson',
+          data: {
+            type: 'Feature',
+            properties: {},
+            geometry: {
+              type: 'LineString',
+              coordinates: [
+                [77.3180, 28.5850], // Thief (V. Malhotra) coords
+                [77.5510, 28.1402], // Police Station (Jewar PS) coords
+              ],
+            },
+          },
+        });
+      }
+      if (!map.getLayer('route')) {
+        map.addLayer({
+          id: 'route',
+          type: 'line',
+          source: 'route',
+          layout: { 'line-join': 'round', 'line-cap': 'round' },
+          paint: { 'line-color': '#10B981', 'line-width': 3, 'line-dasharray': [2, 2] },
+        });
+      }
     });
 
     // ResizeObserver ensures map never renders blank or cut-off when parent dimensions shift
@@ -808,7 +862,13 @@ export function MapIntelligencePage() {
       map.remove();
       mapRef.current = null;
     };
-  }, [mapEngine, dynamicCenter]);
+  }, [mapEngine]);
+
+  // Smoothly pan/center when active case coordinates shift without destroying MapLibre instance
+  useEffect(() => {
+    if (!mapRef.current) return;
+    mapRef.current.easeTo({ center: dynamicCenter, zoom: 12, duration: 600 });
+  }, [dynamicCenter]);
 
   // 4. Update Markers Dynamically (Without tearing down the map!)
   useEffect(() => {

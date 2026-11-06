@@ -215,13 +215,26 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
                   <Palette className="h-3.5 w-3.5 text-primary" />
                   <span className="text-xs font-bold text-foreground">Figma Sovereign Themes</span>
                 </div>
-                <Link
-                  to="/design-system"
-                  onClick={() => setThemeMenuOpen(false)}
-                  className="text-[10px] text-primary hover:underline font-mono"
-                >
-                  Tokens Guide
-                </Link>
+                <div className="flex items-center gap-1.5">
+                  <Link
+                    to="/design-system"
+                    onClick={() => setThemeMenuOpen(false)}
+                    className="text-[10px] text-primary hover:underline font-mono"
+                  >
+                    Tokens
+                  </Link>
+                  <button
+                    onClick={() => {
+                      sound.playClickSound();
+                      setThemeMenuOpen(false);
+                    }}
+                    className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                    title="Close theme menu"
+                    aria-label="Close theme menu"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-1.5">

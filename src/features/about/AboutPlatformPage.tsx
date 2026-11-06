@@ -557,6 +557,8 @@ export function AboutPlatformPage() {
                   icon: RefreshCw,
                   color: '#10b981',
                   desc: 'Background daemon queries state CCTNS API gateways every 900s, pulling FIR registrations, arrest memos, and modus-operandi tags across state borders without manual data entry.',
+                  image: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=500',
+                  imageLabel: 'NCRB CCTNS Database Network',
                 },
                 {
                   title: 'FASTag & Highway ANPR Network',
@@ -566,6 +568,8 @@ export function AboutPlatformPage() {
                   icon: Car,
                   color: '#f59e0b',
                   desc: 'Streams real-time 4K optical character recognition scans from toll plaza cameras (Yamuna Expressway, NH-48), auto-matching hotlist number plates against the Most Wanted Watchlist.',
+                  image: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=500',
+                  imageLabel: 'Yamuna Expressway 4K ANPR Gantry',
                 },
                 {
                   title: 'Lawful Telecom CDR & Tower Dumps',
@@ -575,6 +579,8 @@ export function AboutPlatformPage() {
                   icon: Radio,
                   color: '#3b82f6',
                   desc: 'Ingests Call Detail Records, IMEI/IMSI pairing logs, and tower dump geospatial pings to triangulate burner phone locations and detect co-located syndicate co-conspirators.',
+                  image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=500',
+                  imageLabel: 'Telecom Sector Antenna Mast',
                 },
                 {
                   title: 'FIU-IND & Banking Core Gateways',
@@ -584,6 +590,8 @@ export function AboutPlatformPage() {
                   icon: TrendingDown,
                   color: '#eab308',
                   desc: 'Unsupervised Isolation Forest algorithm monitors high-velocity smurfing cash deposits under Rs. 50,000 across multiple bank branches funneled into common syndicate beneficiary accounts.',
+                  image: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=500',
+                  imageLabel: 'FIU Banking Mule Sentry',
                 },
                 {
                   title: 'NAFIS Biometrics & 3D Crime Scenes',
@@ -593,15 +601,28 @@ export function AboutPlatformPage() {
                   icon: Fingerprint,
                   color: '#ec4899',
                   desc: 'Converts latent crime scene fingerprints into 192-dimensional minutiae vectors matched against NAFIS, and stitches photogrammetric scene images into interactive 3D spatial models.',
+                  image: 'https://images.unsplash.com/photo-1562962230-16e4623d36e6?w=500',
+                  imageLabel: 'NAFIS Automated Fingerprint Sensor',
                 },
               ].map((pipe, pIdx) => {
                 const Icon = pipe.icon;
                 return (
-                  <Card key={pIdx} className="p-4 border-border/80 bg-card/80 space-y-3 shadow-md flex flex-col justify-between">
+                  <Card key={pIdx} className="p-4 border-border/80 bg-card/80 space-y-3 shadow-md flex flex-col justify-between overflow-hidden">
                     <div className="space-y-2">
-                      <div className="flex items-center justify-between">
+                      <div className="relative rounded-lg overflow-hidden h-28 border border-border/40 group">
+                        <img
+                          src={pipe.image}
+                          alt={pipe.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-transparent p-1.5 px-2 flex items-center justify-between text-[9px] text-slate-300 font-mono">
+                          <span>{pipe.imageLabel}</span>
+                          <span className="text-emerald-400 font-bold">OPERATIONAL</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between pt-1">
                         <div
-                          className="h-9 w-9 rounded-xl flex items-center justify-center border"
+                          className="h-8 w-8 rounded-lg flex items-center justify-center border"
                           style={{
                             backgroundColor: `${pipe.color}15`,
                             borderColor: `${pipe.color}40`,
@@ -685,58 +706,82 @@ export function AboutPlatformPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
-                  <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2 relative">
-                    <div className="flex justify-between items-center text-[10px] text-sky-400 font-mono font-bold">
-                      <span>STEP 01</span>
-                      <span>📷 ANPR SIGHTING</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150" alt="Target" className="w-8 h-8 rounded-full object-cover border-2 border-red-500" />
-                      <div>
-                        <div className="font-bold text-white text-[11px]">🎯 V. Malhotra Sighted</div>
-                        <div className="text-[10px] text-red-300 font-mono">TS 09 AB 1234 • 118 km/h</div>
+                  <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2 relative flex flex-col justify-between">
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-[10px] text-sky-400 font-mono font-bold">
+                        <span>STEP 01</span>
+                        <span>📷 ANPR SIGHTING</span>
                       </div>
-                    </div>
-                    <p className="text-[10.5px] text-slate-300">FASTag camera at Yamuna Toll KM 48 flags the getaway Scorpio. Alert flashes on PCR-04 tablet.</p>
-                  </div>
-
-                  <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2 relative">
-                    <div className="flex justify-between items-center text-[10px] text-sky-400 font-mono font-bold">
-                      <span>STEP 02</span>
-                      <span>⚡ TACTICAL FLANKING</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150" alt="Officer" className="w-8 h-8 rounded-full object-cover border-2 border-sky-400" />
-                      <div>
-                        <div className="font-bold text-white text-[11px]">🚔 PCR-04 Dispatched</div>
-                        <div className="text-[10px] text-sky-300 font-mono">Lateral Offset +0.00075°</div>
+                      <div className="relative rounded-lg overflow-hidden h-24 border border-red-500/30">
+                        <img src="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=400" alt="ANPR Toll Camera" className="w-full h-full object-cover" />
+                        <div className="absolute top-1 right-1 bg-red-600/90 px-1.5 py-0.5 rounded text-[8px] font-bold text-white">HOTLIST HIT</div>
                       </div>
+                      <div className="flex items-center gap-2">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150" alt="Target" className="w-7 h-7 rounded-full object-cover border-2 border-red-500" />
+                        <div>
+                          <div className="font-bold text-white text-[11px]">🎯 V. Malhotra Sighted</div>
+                          <div className="text-[10px] text-red-300 font-mono">TS 09 AB 1234 • 118 km/h</div>
+                        </div>
+                      </div>
+                      <p className="text-[10.5px] text-slate-300">FASTag camera at Yamuna Toll KM 48 flags the getaway Scorpio. Alert flashes on PCR-04 tablet.</p>
                     </div>
-                    <p className="text-[10.5px] text-slate-300">System guides police interceptor to flank on adjacent right lane. Prevents high-speed collision.</p>
                   </div>
 
-                  <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2 relative">
-                    <div className="flex justify-between items-center text-[10px] text-sky-400 font-mono font-bold">
-                      <span>STEP 03</span>
-                      <span>🛑 ROAD APPREHENSION</span>
+                  <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2 relative flex flex-col justify-between">
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-[10px] text-sky-400 font-mono font-bold">
+                        <span>STEP 02</span>
+                        <span>⚡ TACTICAL FLANKING</span>
+                      </div>
+                      <div className="relative rounded-lg overflow-hidden h-24 border border-sky-500/30">
+                        <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400" alt="Police Pursuit Squad" className="w-full h-full object-cover" />
+                        <div className="absolute top-1 right-1 bg-sky-600/90 px-1.5 py-0.5 rounded text-[8px] font-bold text-white">LATERAL VECTOR</div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="h-7 w-7 rounded-full bg-sky-500/20 border-2 border-sky-400 flex items-center justify-center text-xs">🚔</div>
+                        <div>
+                          <div className="font-bold text-white text-[11px]">PCR-04 Interceptor Squad</div>
+                          <div className="text-[10px] text-sky-300 font-mono">Pacing at 112 km/h</div>
+                        </div>
+                      </div>
+                      <p className="text-[10.5px] text-slate-300">System guides police interceptor to flank on adjacent right lane. Prevents high-speed collision.</p>
                     </div>
-                    <div className="p-1.5 rounded bg-red-950/40 border border-red-500/40 text-[10px]">
-                      <div className="font-bold text-white">Target Boxed: 0 km/h</div>
-                      <div className="text-red-300 font-mono">BNSS Sec 35 Arrest Executed</div>
-                    </div>
-                    <p className="text-[10.5px] text-slate-300">PCR-04 boxes suspect safely. Visual photo match verified on mobile screen before officer exits vehicle.</p>
                   </div>
 
-                  <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2 relative">
-                    <div className="flex justify-between items-center text-[10px] text-emerald-400 font-mono font-bold">
-                      <span>STEP 04</span>
-                      <span>🔒 REMAND & BSA SEAL</span>
+                  <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2 relative flex flex-col justify-between">
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-[10px] text-sky-400 font-mono font-bold">
+                        <span>STEP 03</span>
+                        <span>🛑 ROAD APPREHENSION</span>
+                      </div>
+                      <div className="relative rounded-lg overflow-hidden h-24 border border-amber-500/30">
+                        <img src="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=400" alt="Apprehension Safe Stop" className="w-full h-full object-cover" />
+                        <div className="absolute top-1 right-1 bg-amber-600/90 px-1.5 py-0.5 rounded text-[8px] font-bold text-white">TARGET BOXED</div>
+                      </div>
+                      <div className="p-1.5 rounded bg-red-950/40 border border-red-500/40 text-[10px]">
+                        <div className="font-bold text-white">Target Boxed: 0 km/h</div>
+                        <div className="text-red-300 font-mono">BNSS Sec 35 Arrest Executed</div>
+                      </div>
+                      <p className="text-[10.5px] text-slate-300">PCR-04 boxes suspect safely. Visual photo match verified on mobile screen before officer exits vehicle.</p>
                     </div>
-                    <div className="p-1.5 rounded bg-emerald-950/40 border border-emerald-500/40 text-[10px]">
-                      <div className="font-bold text-emerald-300">24h Clock: 23h 59m Active</div>
-                      <div className="text-emerald-400 font-mono">SHA-256 Hash Locked</div>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2 relative flex flex-col justify-between">
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-[10px] text-emerald-400 font-mono font-bold">
+                        <span>STEP 04</span>
+                        <span>🔒 REMAND & BSA SEAL</span>
+                      </div>
+                      <div className="relative rounded-lg overflow-hidden h-24 border border-emerald-500/30">
+                        <img src="https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400" alt="Evidence Sealing" className="w-full h-full object-cover" />
+                        <div className="absolute top-1 right-1 bg-emerald-600/90 px-1.5 py-0.5 rounded text-[8px] font-bold text-white">CLOCK LOCKED</div>
+                      </div>
+                      <div className="p-1.5 rounded bg-emerald-950/40 border border-emerald-500/40 text-[10px]">
+                        <div className="font-bold text-emerald-300">24h Clock: 23h 59m Active</div>
+                        <div className="text-emerald-400 font-mono">SHA-256 Hash Locked</div>
+                      </div>
+                      <p className="text-[10.5px] text-slate-300">Live custody clock starts immediately, precluding default bail under BNSS 187/57. Evidence sealed.</p>
                     </div>
-                    <p className="text-[10.5px] text-slate-300">Live custody clock starts immediately, precluding default bail under BNSS 187/57. Evidence sealed.</p>
                   </div>
                 </div>
 
@@ -760,37 +805,64 @@ export function AboutPlatformPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
-                  <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2">
-                    <div className="flex justify-between text-[10px] text-emerald-400 font-mono font-bold">
-                      <span>PHASE 01</span>
-                      <span>CDR INGESTION</span>
+                  <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2 flex flex-col justify-between">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-[10px] text-emerald-400 font-mono font-bold">
+                        <span>PHASE 01</span>
+                        <span>CDR INGESTION</span>
+                      </div>
+                      <div className="relative rounded-lg overflow-hidden h-24 border border-blue-500/30">
+                        <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400" alt="CDR Telecom Ingestion" className="w-full h-full object-cover" />
+                        <div className="absolute top-1 right-1 bg-blue-600/90 px-1.5 py-0.5 rounded text-[8px] font-bold text-white">4.8s PARSING</div>
+                      </div>
+                      <div className="font-bold text-white text-[11px]">4.8s Automated Parsing</div>
+                      <p className="text-[10.5px] text-slate-300">IO uploads 120,000-row telecom CDR CSV. System extracts suspect burners and tower coordinates in 4.8s.</p>
                     </div>
-                    <div className="font-bold text-white text-[11px]">4.8s Automated Parsing</div>
-                    <p className="text-[10.5px] text-slate-300">IO uploads 120,000-row telecom CDR CSV. System extracts suspect burners and tower coordinates in 4.8s.</p>
                   </div>
-                  <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2">
-                    <div className="flex justify-between text-[10px] text-emerald-400 font-mono font-bold">
-                      <span>PHASE 02</span>
-                      <span>MULE TRIPWIRE</span>
+
+                  <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2 flex flex-col justify-between">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-[10px] text-emerald-400 font-mono font-bold">
+                        <span>PHASE 02</span>
+                        <span>MULE TRIPWIRE</span>
+                      </div>
+                      <div className="relative rounded-lg overflow-hidden h-24 border border-amber-500/30">
+                        <img src="https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400" alt="Bank Mule Smurfing" className="w-full h-full object-cover" />
+                        <div className="absolute top-1 right-1 bg-amber-600/90 px-1.5 py-0.5 rounded text-[8px] font-bold text-white">BNSS 106 FREEZE</div>
+                      </div>
+                      <div className="font-bold text-white text-[11px]">BNSS Sec 106 Freeze</div>
+                      <p className="text-[10.5px] text-slate-300">Isolation Forest flags 14 accounts smurfing Rs. 48,500. Automatic bank freeze notice saves Rs. 42.8 Lakhs.</p>
                     </div>
-                    <div className="font-bold text-white text-[11px]">BNSS Sec 106 Freeze</div>
-                    <p className="text-[10.5px] text-slate-300">Isolation Forest flags 14 accounts smurfing Rs. 48,500. Automatic bank freeze notice saves Rs. 42.8 Lakhs.</p>
                   </div>
-                  <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2">
-                    <div className="flex justify-between text-[10px] text-emerald-400 font-mono font-bold">
-                      <span>PHASE 03</span>
-                      <span>AI GRAPH FUSION</span>
+
+                  <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2 flex flex-col justify-between">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-[10px] text-emerald-400 font-mono font-bold">
+                        <span>PHASE 03</span>
+                        <span>AI GRAPH FUSION</span>
+                      </div>
+                      <div className="relative rounded-lg overflow-hidden h-24 border border-purple-500/30">
+                        <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=400" alt="Graph Centrality Network" className="w-full h-full object-cover" />
+                        <div className="absolute top-1 right-1 bg-purple-600/90 px-1.5 py-0.5 rounded text-[8px] font-bold text-white">BETWEENNESS 9990</div>
+                      </div>
+                      <div className="font-bold text-white text-[11px]">Kingpin Unmasking</div>
+                      <p className="text-[10.5px] text-slate-300">Cytoscape betweenness centrality reveals Vikram Malhotra behind 3 interstate FIRs in Delhi, Gurugram, and Noida.</p>
                     </div>
-                    <div className="font-bold text-white text-[11px]">Kingpin Unmasking</div>
-                    <p className="text-[10.5px] text-slate-300">Cytoscape betweenness centrality reveals Vikram Malhotra behind 3 interstate FIRs in Delhi, Gurugram, and Noida.</p>
                   </div>
-                  <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2">
-                    <div className="flex justify-between text-[10px] text-emerald-400 font-mono font-bold">
-                      <span>PHASE 04</span>
-                      <span>PRO FIR DRAFTING</span>
+
+                  <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2 flex flex-col justify-between">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-[10px] text-emerald-400 font-mono font-bold">
+                        <span>PHASE 04</span>
+                        <span>PRO FIR DRAFTING</span>
+                      </div>
+                      <div className="relative rounded-lg overflow-hidden h-24 border border-emerald-500/30">
+                        <img src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=400" alt="Court Dossier Drafting" className="w-full h-full object-cover" />
+                        <div className="absolute top-1 right-1 bg-emerald-600/90 px-1.5 py-0.5 rounded text-[8px] font-bold text-white">BSA CERTIFIED</div>
+                      </div>
+                      <div className="font-bold text-white text-[11px]">90s Court Dossier</div>
+                      <p className="text-[10.5px] text-slate-300">Generates complete NCRB Form 1 citing BNS 308, 318, 111 with Section 63 BSA certificate for trial court.</p>
                     </div>
-                    <div className="font-bold text-white text-[11px]">90s Court Dossier</div>
-                    <p className="text-[10.5px] text-slate-300">Generates complete NCRB Form 1 citing BNS 308, 318, 111 with Section 63 BSA certificate for trial court.</p>
                   </div>
                 </div>
 
@@ -814,37 +886,64 @@ export function AboutPlatformPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
-                  <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2">
-                    <div className="flex justify-between text-[10px] text-purple-400 font-mono font-bold">
-                      <span>TIER 01</span>
-                      <span>PREDICTIVE PATROL</span>
+                  <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2 flex flex-col justify-between">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-[10px] text-purple-400 font-mono font-bold">
+                        <span>TIER 01</span>
+                        <span>PREDICTIVE PATROL</span>
+                      </div>
+                      <div className="relative rounded-lg overflow-hidden h-24 border border-purple-500/30">
+                        <img src="https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=400" alt="Command Center Wall" className="w-full h-full object-cover" />
+                        <div className="absolute top-1 right-1 bg-purple-600/90 px-1.5 py-0.5 rounded text-[8px] font-bold text-white">POISSON MODEL</div>
+                      </div>
+                      <div className="font-bold text-white text-[11px]">Poisson AI Model</div>
+                      <p className="text-[10.5px] text-slate-300">Forecasts crime clusters 48h in advance; pre-positions PCR vans at expressway chokepoints, cutting fuel waste.</p>
                     </div>
-                    <div className="font-bold text-white text-[11px]">Poisson AI Model</div>
-                    <p className="text-[10.5px] text-slate-300">Forecasts crime clusters 48h in advance; pre-positions PCR vans at expressway chokepoints, cutting fuel waste.</p>
                   </div>
-                  <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2">
-                    <div className="flex justify-between text-[10px] text-purple-400 font-mono font-bold">
-                      <span>TIER 02</span>
-                      <span>JURISDICTION SYNC</span>
+
+                  <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2 flex flex-col justify-between">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-[10px] text-purple-400 font-mono font-bold">
+                        <span>TIER 02</span>
+                        <span>JURISDICTION SYNC</span>
+                      </div>
+                      <div className="relative rounded-lg overflow-hidden h-24 border border-blue-500/30">
+                        <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=400" alt="GIS Boundaries" className="w-full h-full object-cover" />
+                        <div className="absolute top-1 right-1 bg-blue-600/90 px-1.5 py-0.5 rounded text-[8px] font-bold text-white">GEOJSON SYNC</div>
+                      </div>
+                      <div className="font-bold text-white text-[11px]">GeoJSON Boundary</div>
+                      <p className="text-[10.5px] text-slate-300">Eliminates inter-thana jurisdictional squabbles; automatically identifies competent station for instant handover.</p>
                     </div>
-                    <div className="font-bold text-white text-[11px]">GeoJSON Boundary</div>
-                    <p className="text-[10.5px] text-slate-300">Eliminates inter-thana jurisdictional squabbles; automatically identifies competent station for instant handover.</p>
                   </div>
-                  <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2">
-                    <div className="flex justify-between text-[10px] text-purple-400 font-mono font-bold">
-                      <span>TIER 03</span>
-                      <span>AUDIT IMMUNITY</span>
+
+                  <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2 flex flex-col justify-between">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-[10px] text-purple-400 font-mono font-bold">
+                        <span>TIER 03</span>
+                        <span>AUDIT IMMUNITY</span>
+                      </div>
+                      <div className="relative rounded-lg overflow-hidden h-24 border border-emerald-500/30">
+                        <img src="https://images.unsplash.com/photo-1563986768609-322da13575f3?w=400" alt="WORM Audit Ledger" className="w-full h-full object-cover" />
+                        <div className="absolute top-1 right-1 bg-emerald-600/90 px-1.5 py-0.5 rounded text-[8px] font-bold text-white">HMAC-SHA256</div>
+                      </div>
+                      <div className="font-bold text-white text-[11px]">WORM Security Ledger</div>
+                      <p className="text-[10.5px] text-slate-300">HMAC-SHA256 chained logs track every query, download, and freeze, safeguarding officers from judicial censure.</p>
                     </div>
-                    <div className="font-bold text-white text-[11px]">WORM Security Ledger</div>
-                    <p className="text-[10.5px] text-slate-300">HMAC-SHA256 chained logs track every query, download, and freeze, safeguarding officers from judicial censure.</p>
                   </div>
-                  <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2">
-                    <div className="flex justify-between text-[10px] text-purple-400 font-mono font-bold">
-                      <span>TIER 04</span>
-                      <span>FISCAL SOVEREIGNTY</span>
+
+                  <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2 flex flex-col justify-between">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-[10px] text-purple-400 font-mono font-bold">
+                        <span>TIER 04</span>
+                        <span>FISCAL SOVEREIGNTY</span>
+                      </div>
+                      <div className="relative rounded-lg overflow-hidden h-24 border border-amber-500/30">
+                        <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400" alt="Sovereign Server Rack" className="w-full h-full object-cover" />
+                        <div className="absolute top-1 right-1 bg-amber-600/90 px-1.5 py-0.5 rounded text-[8px] font-bold text-white">AIR-GAPPED</div>
+                      </div>
+                      <div className="font-bold text-white text-[11px]">Rs. 0 Software Cost</div>
+                      <p className="text-[10.5px] text-slate-300">Saves Rs. 1.5 Cr to Rs. 4 Cr annually in vendor lock-in. Air-gapped on-premise deployment satisfies DPDP Act 2023.</p>
                     </div>
-                    <div className="font-bold text-white text-[11px]">Rs. 0 Software Cost</div>
-                    <p className="text-[10.5px] text-slate-300">Saves Rs. 1.5 Cr to Rs. 4 Cr annually in vendor lock-in. Air-gapped on-premise deployment satisfies DPDP Act 2023.</p>
                   </div>
                 </div>
 

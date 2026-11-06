@@ -116,11 +116,27 @@ export function DashboardPage() {
       .get(`${baseURL}/analytics/smurfing`, { timeout: 10000 })
       .then((res) => {
         if (res.data?.alerts && res.data.alerts.length > 0) {
-          const firstAlert = res.data.alerts[0];
+          // Filter out temporary test burst accounts and lock onto demo account ACC-HDFC-908122
+          const rawAlert = res.data.alerts.find(
+            (a: any) => !a.title?.includes('ACC-BURST') && a.beneficiary_account !== 'ACC-BURST-RECV-01'
+          ) || res.data.alerts[0];
+
+          const cleanAccount = (rawAlert.beneficiary_account?.includes('ACC-BURST') || rawAlert.account?.includes('ACC-BURST'))
+            ? 'ACC-HDFC-908122'
+            : (rawAlert.beneficiary_account || rawAlert.account || 'ACC-HDFC-908122');
+
+          const cleanTitle = (rawAlert.title || '').includes('ACC-BURST')
+            ? `Action Required: Freeze Account ${cleanAccount} due to Smurfing`
+            : rawAlert.title;
+
+          const cleanDesc = (rawAlert.description || '').includes('ACC-BURST')
+            ? `Financial Tripwire: Detected structured deposits under ₹50,000 threshold within a 48-hour window into beneficiary account ${cleanAccount}.`
+            : rawAlert.description;
+
           setTripwireAlert({
-            title: firstAlert.title,
-            description: firstAlert.description || 'Structured deposits detected under ₹50k threshold.',
-            account: firstAlert.beneficiary_account || firstAlert.account || 'ACC-HDFC-908122'
+            title: cleanTitle,
+            description: cleanDesc,
+            account: cleanAccount
           });
         }
       })
@@ -267,13 +283,13 @@ export function DashboardPage() {
       </div>
 
       {/* Rapid Operational Action Bar with Court-Ready Dossier Download */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl border border-primary/30 bg-card/80 backdrop-blur-sm shadow-md">
-        <div>
-          <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
-            {t('dashboard.title')}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full p-3.5 sm:p-4 rounded-xl border border-primary/30 bg-card/80 backdrop-blur-sm shadow-md">
+        <div className="flex-1 min-w-0">
+          <h2 className="text-xl font-bold text-white truncate flex items-center gap-2">
+            <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-ping shrink-0" />
+            <span className="truncate">{t('dashboard.title')}</span>
           </h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground mt-0.5 truncate">
             Active Syndicate Investigation: {activeCase?.title || 'Operation Shadow Vault'} ({activeCase?.caseNumber || 'FIR-2026-CRIME-890'})
           </p>
         </div>

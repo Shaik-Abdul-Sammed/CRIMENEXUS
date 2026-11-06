@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Scale,
   ShieldCheck,
@@ -36,6 +37,17 @@ export const StatutoryRulesModal: React.FC<StatutoryRulesModalProps> = ({
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedRule, setSelectedRule] = useState<StatutoryRule>(STATUTORY_RULES[0]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   // Run real-time compliance validation
@@ -69,14 +81,20 @@ export const StatutoryRulesModal: React.FC<StatutoryRulesModalProps> = ({
     return matchesCategory && matchesSearch;
   });
 
-  return (
+  const modalContent = (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
       role="dialog"
       aria-modal="true"
       aria-labelledby="statutory-rules-modal-title"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          sound.playClickSound();
+          onClose();
+        }
+      }}
     >
-      <div className="relative w-full max-w-5xl rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
+      <div className="relative w-full max-w-5xl rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-800 bg-slate-950/60">
           <div className="flex items-center gap-3">
@@ -309,18 +327,34 @@ export const StatutoryRulesModal: React.FC<StatutoryRulesModalProps> = ({
           <span className="text-[11px] text-slate-500 font-mono hidden sm:inline">
             Statutory Framework: BNS 2023, BNSS 2023, BSA 2023, JJ Act 2015, PMLA 2002
           </span>
-          <Button
-            size="sm"
-            onClick={() => {
-              sound.playClickSound();
-              onClose();
-            }}
-            className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold ml-auto"
-          >
-            Acknowledge & Close
-          </Button>
+          <div className="flex items-center gap-2 ml-auto">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                sound.playClickSound();
+                onClose();
+              }}
+              className="border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
+            >
+              <X className="h-3.5 w-3.5 mr-1" />
+              Close
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => {
+                sound.playClickSound();
+                onClose();
+              }}
+              className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold"
+            >
+              Acknowledge & Close
+            </Button>
+          </div>
         </div>
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent;
 };

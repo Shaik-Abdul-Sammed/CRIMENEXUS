@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Shield,
   Eye,
@@ -150,6 +151,8 @@ interface ScenarioPhase {
   tacticalLog: string;
   policeDispatch: string;
   cluesActive: string[];
+  image: string;
+  imageCaption: string;
 }
 
 const SCENARIO_PHASES: ScenarioPhase[] = [
@@ -161,7 +164,9 @@ const SCENARIO_PHASES: ScenarioPhase[] = [
     speed: '45 km/h',
     tacticalLog: 'Suspect Vikram Malhotra activates burner SIM +91 98765 43210 at CP safehouse. Dispatches extortion threat to victim businessman demanding Rs. 25 Lakhs hawala transfer.',
     policeDispatch: 'Cyber Cell flags active call keyword hit on Hawala monitoring grid. Local PCR-01 alerted to patrol outer circle.',
-    cluesActive: ['clue-3']
+    cluesActive: ['clue-3'],
+    image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=500',
+    imageCaption: 'RF Telecom Gateway: Cellular sector tower dump ping tracking burner SIM +91 98765 43210 in Connaught Place'
   },
   {
     step: 2,
@@ -171,7 +176,9 @@ const SCENARIO_PHASES: ScenarioPhase[] = [
     speed: '75 km/h',
     tacticalLog: 'Suspect vehicle TS 09 AB 1234 crosses Delhi-UP border heading into Noida. ANPR camera records vehicle at 75 km/h.',
     policeDispatch: 'UP Police Inter-State Border Control room receives automated VAHAN hotlist hit. Inter-state alert dispatched to Noida Control.',
-    cluesActive: ['clue-1']
+    cluesActive: ['clue-1'],
+    image: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=500',
+    imageCaption: 'Highway ANPR Gantry: High-speed infrared optical OCR camera capture at Chilla Toll Plaza'
   },
   {
     step: 3,
@@ -181,7 +188,9 @@ const SCENARIO_PHASES: ScenarioPhase[] = [
     speed: '80 km/h',
     tacticalLog: 'Suspect makes quick 3-minute stop at Sector 18 ATM withdrawing Rs. 49,000 cash. Cellular tower at KM 14 records encrypted coordination call with syndicate safehouse in Mathura.',
     policeDispatch: 'Financial Intelligence Unit registers structured smurfing transaction. Highway patrol unit PCR-04 dispatched toward Greater Noida gateway.',
-    cluesActive: ['clue-3', 'clue-4']
+    cluesActive: ['clue-3', 'clue-4'],
+    image: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=500',
+    imageCaption: 'CCTV Kiosk Surveillance: Sector 18 ATM optical feed capturing cash withdrawal under BNSS Sec 106'
   },
   {
     step: 4,
@@ -191,7 +200,9 @@ const SCENARIO_PHASES: ScenarioPhase[] = [
     speed: '118 km/h',
     tacticalLog: 'Vehicle speeds through Toll KM 48 at 118 km/h. High-speed infrared ANPR confirms plate, 4K camera captures facial landmarks, and side camera photographs right forearm tattoo.',
     policeDispatch: 'CRIMENEXUS spatial engine calculates optimal interdiction: Jewar PS Interceptor Squad PCR-04 executes highway rolling roadblock, halting vehicle safely at KM 52.',
-    cluesActive: ['clue-1', 'clue-2', 'clue-3', 'clue-4', 'clue-5']
+    cluesActive: ['clue-1', 'clue-2', 'clue-3', 'clue-4', 'clue-5'],
+    image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500',
+    imageCaption: 'Tactical Interdiction: Lead IO Insp. Rajesh Varma and PCR-04 squad executing rolling roadblock at KM 52'
   }
 ];
 
@@ -234,12 +245,31 @@ export function ForensicClueReplayModal({
     };
   }, [isPlayingScenario, scenarioSpeed]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const currentPhase = SCENARIO_PHASES[currentPhaseIdx];
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/85 backdrop-blur-md animate-in fade-in">
+  const modalContent = (
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-md animate-in fade-in"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          sound.playClickSound();
+          onClose();
+        }
+      }}
+    >
       <div className="relative w-full max-w-6xl max-h-[92vh] flex flex-col rounded-2xl border-2 border-primary/50 bg-slate-900 shadow-2xl overflow-hidden text-slate-100">
         {/* Modal Header */}
         <div className="p-4 px-6 border-b border-border/80 bg-slate-950 flex flex-wrap items-center justify-between gap-3">
@@ -605,6 +635,22 @@ export function ForensicClueReplayModal({
 
                 {/* Evidence Clues Triggered in this Phase */}
                 <div className="lg:col-span-5 space-y-3">
+                  {/* Phase Scene Photographic Evidence */}
+                  <div className="relative rounded-xl overflow-hidden border border-slate-700 bg-slate-900 shadow-xl group">
+                    <img
+                      src={currentPhase.image}
+                      alt={currentPhase.title}
+                      className="w-full h-36 object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute top-2 left-2 bg-slate-950/90 backdrop-blur-md px-2 py-0.5 rounded border border-blue-500/50 text-[9px] font-bold text-blue-300 flex items-center gap-1">
+                      <Camera className="h-3 w-3 text-blue-400" />
+                      <span>OPTICAL TELEMETRY STILL</span>
+                    </div>
+                    <div className="p-2 bg-slate-950/95 border-t border-slate-800 text-[10px] text-slate-300 font-mono leading-tight">
+                      {currentPhase.imageCaption}
+                    </div>
+                  </div>
+
                   <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-3">
                     <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
                       <Eye className="h-4 w-4" />
@@ -783,18 +829,24 @@ export function ForensicClueReplayModal({
             <span className="h-2 w-2 rounded-full bg-emerald-400" />
             <span>CRIMENEXUS Multi-Modal Telecast Engine v2.4</span>
           </div>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              sound.playClickSound();
-              onClose();
-            }}
-          >
-            Close Inspector
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                sound.playClickSound();
+                onClose();
+              }}
+              className="border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
+            >
+              <X className="h-3.5 w-3.5 mr-1" />
+              Close [Esc]
+            </Button>
+          </div>
         </div>
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent;
 }

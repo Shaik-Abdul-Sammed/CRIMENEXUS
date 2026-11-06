@@ -315,15 +315,15 @@ export function NetworkGraphPage() {
         name: 'cose',
         animate: true,
         animationDuration: 700,
-        nodeRepulsion: () => 35000 * scale,
-        idealEdgeLength: () => 170 * scale,
+        nodeRepulsion: () => 8000 * scale,
+        idealEdgeLength: () => 180 * scale,
         edgeElasticity: () => 60 / scale,
         padding: 60,
         randomize: false,
         componentSpacing: 120 * scale,
         nodeOverlap: 10,
-        gravity: 0.2 / scale,
-        nestingFactor: 0.1,
+        gravity: 0.25 / scale,
+        nestingFactor: 1.2,
         numIter: 1000,
       } as cytoscape.LayoutOptions;
     }
@@ -882,6 +882,12 @@ export function NetworkGraphPage() {
     cyRef.current = cy;
     (window as any).__cy = cy;
     applyLabelMode(labelModeRef.current);
+
+    cy.ready(() => {
+      // Hide isolated nodes by default
+      cy.nodes().filter((node) => node.degree() === 0).style('display', 'none');
+      cy.fit(); // Re-center the graph
+    });
 
     // Enforce Clean View immediately on initial graph initialization (Hides 71 orphan nodes and centers syndicate)
     if (hideDisconnectedRef.current) {
