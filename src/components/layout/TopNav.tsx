@@ -84,7 +84,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
   { id: 'amber-tactical', name: 'Highway Intercept', icon: '🚨', dotColor: '#EF4444', badge: 'Pursuit' },
 ];
 
-  // Close menus on outside click
+  // Close menus on outside click or Escape
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
@@ -97,8 +97,19 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
         setThemeMenuOpen(false);
       }
     }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setSettingsMenuOpen(false);
+        setNotifMenuOpen(false);
+        setThemeMenuOpen(false);
+      }
+    }
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   return (

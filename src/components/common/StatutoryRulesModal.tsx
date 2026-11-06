@@ -83,7 +83,7 @@ export const StatutoryRulesModal: React.FC<StatutoryRulesModalProps> = ({
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-labelledby="statutory-rules-modal-title"
@@ -94,9 +94,9 @@ export const StatutoryRulesModal: React.FC<StatutoryRulesModalProps> = ({
         }
       }}
     >
-      <div className="relative w-full max-w-5xl rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
+      <div className="relative w-full max-w-5xl rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl flex flex-col max-h-[88vh] my-auto overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-800 bg-slate-950/60">
+        <div className="shrink-0 flex items-center justify-between p-4 sm:p-5 border-b border-slate-800 bg-slate-950/60">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400">
               <Scale className="h-6 w-6" />

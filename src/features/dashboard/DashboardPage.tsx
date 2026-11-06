@@ -42,6 +42,7 @@ import { DocumentPreviewModal } from '../../components/common/DocumentPreviewMod
 import { useTranslation } from '../../hooks/useTranslation';
 import { useToast } from '../../components/ui/Toast';
 import { useAppStore } from '../../stores/appStore';
+import { sound } from '../../utils/soundEffects';
 
 const FREEZE_NOTICE_TEXT = `STATUTORY NOTICE UNDER SECTION 102 Cr.P.C. / SECTION 106 BNSS 2023
 GOVERNMENT OF NCT OF DELHI • SPECIAL CRIME BRANCH & CYBER CELL
@@ -240,6 +241,7 @@ export function DashboardPage() {
       link.click();
       link.parentNode?.removeChild(link);
       window.URL.revokeObjectURL(url);
+      sound.playSuccessChime();
       toast.success(`Dossier for ${caseNum} downloaded successfully.`, 'Court Dossier Ready');
     } catch (err) {
       console.error('Failed to download dossier', err);
@@ -318,7 +320,10 @@ export function DashboardPage() {
             id="tour-preview-dossier-btn"
             variant="outline"
             size="sm"
-            onClick={() => setPreviewModalOpen(true)}
+            onClick={() => {
+              sound.playClickSound();
+              setPreviewModalOpen(true);
+            }}
             className="border-primary/40 text-primary hover:bg-primary/10 font-bold text-xs flex items-center gap-1.5 whitespace-nowrap shrink-0 shadow-sm"
           >
             <Eye className="h-4 w-4 shrink-0 text-primary" />
@@ -712,7 +717,7 @@ export function DashboardPage() {
           <div className="grid grid-cols-2 gap-3 text-xs bg-background/80 p-3.5 rounded-lg border border-border">
             <div>
               <span className="text-[10px] uppercase font-bold text-muted-foreground block">Target Account</span>
-              <span className="font-mono font-bold text-foreground text-sm">ACC-HDFC-908122</span>
+              <span className="font-mono font-bold text-foreground text-sm">{tripwireAlert?.account || 'ACC-HDFC-908122'}</span>
               <span className="text-[11px] text-muted-foreground block">HDFC Bank Ltd., Karol Bagh Branch</span>
             </div>
             <div>

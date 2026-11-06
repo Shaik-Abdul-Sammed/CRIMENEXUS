@@ -313,8 +313,8 @@ export function NetworkGraphPage() {
     if (layoutName === 'cose' || layoutName === 'fcose') {
       return {
         name: 'cose',
-        animate: true,
-        animationDuration: 700,
+        animate: 'end',
+        animationDuration: 400,
         nodeRepulsion: () => 8000 * scale,
         idealEdgeLength: () => 180 * scale,
         edgeElasticity: () => 60 / scale,
@@ -324,7 +324,7 @@ export function NetworkGraphPage() {
         nodeOverlap: 10,
         gravity: 0.25 / scale,
         nestingFactor: 1.2,
-        numIter: 1000,
+        numIter: 500,
       } as cytoscape.LayoutOptions;
     }
     return {
@@ -886,7 +886,8 @@ export function NetworkGraphPage() {
     cy.ready(() => {
       // Hide isolated nodes by default
       cy.nodes().filter((node) => node.degree() === 0).style('display', 'none');
-      cy.fit(); // Re-center the graph
+      const visibleEles = cy.elements().filter((ele) => ele.style('display') !== 'none');
+      cy.fit(visibleEles.length > 0 ? visibleEles : cy.elements(), 60); // Re-center on connected syndicate
     });
 
     // Enforce Clean View immediately on initial graph initialization (Hides 71 orphan nodes and centers syndicate)

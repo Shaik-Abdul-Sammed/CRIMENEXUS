@@ -202,7 +202,25 @@ backend/temp/
 .DS_Store
 Thumbs.db
 
-# Docker Local Overrides
+# Docker Local Overrides & Caches
 docker-compose.override.yml
+docker-compose*.override.yml
 *.override.yml
+.docker/
+*.docker.log
+
+# Build Artifacts & Temporary Archives
+dist/
+dist-*/
+build/
+*.tar
+*.tar.gz
+*.zip
+
+# Local Diagnostic & Profiling Dumps
+.coverage*
+*.prof
+*.hprof
+*.heapsnapshot
+
 

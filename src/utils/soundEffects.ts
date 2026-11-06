@@ -146,6 +146,36 @@ class SoundController {
     }
   }
 
+  /** High-impact two-tone police siren sound for emergency pursuit & apprehending suspects */
+  public playSirenAlert() {
+    if (!this.enabled) return;
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    try {
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(650, now);
+      osc.frequency.linearRampToValueAtTime(950, now + 0.15);
+      osc.frequency.linearRampToValueAtTime(650, now + 0.30);
+      osc.frequency.linearRampToValueAtTime(950, now + 0.45);
+
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.55);
+    } catch {
+      // Graceful fallback
+    }
+  }
+
   /** Soft click tone for tactical buttons */
   public playClickSound() {
     if (!this.enabled) return;

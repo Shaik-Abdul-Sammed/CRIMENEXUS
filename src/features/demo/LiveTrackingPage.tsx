@@ -1083,7 +1083,7 @@ export function LiveTrackingPage() {
   };
 
   const handleExecuteIntercept = () => {
-    sound.playAlertBeep();
+    sound.playSirenAlert();
     setIsPlaying(false);
     setIsApprehended(true);
     const interceptMsg = '🚨 TACTICAL INTERCEPT EXECUTED: Suspect vehicle blocked at checkpoint! Suspect restrained. Custody & Section 63 BSA certificate locked.';
@@ -1318,9 +1318,19 @@ export function LiveTrackingPage() {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => setSoundEnabled(!soundEnabled)}
+            onClick={() => {
+              const next = !soundEnabled;
+              setSoundEnabled(next);
+              sound.setEnabled(next);
+              if (next) {
+                sound.playRadarPing();
+                toast.info('Tactical Audio Systems: Activated (Radar ping & Intercept siren enabled)', 'Sound Enabled');
+              } else {
+                toast.info('Tactical Audio Systems: Muted', 'Sound Muted');
+              }
+            }}
             className="p-2"
-            title={soundEnabled ? 'Mute radar ping' : 'Enable radar audio ping'}
+            title={soundEnabled ? 'Mute tactical audio systems' : 'Enable tactical radar audio & siren alerts'}
           >
             {soundEnabled ? <Volume2 className="h-4 w-4 text-primary" /> : <VolumeX className="h-4 w-4 text-muted-foreground" />}
           </Button>
@@ -2284,60 +2294,96 @@ export function LiveTrackingPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-                  <div className="p-2 rounded-lg bg-slate-900 border border-border/80 space-y-1">
+                  <div
+                    onClick={() => {
+                      sound.playClickSound();
+                      setPreviewDocType('certificate_63b');
+                    }}
+                    className="p-2 rounded-lg bg-slate-900 border border-border/80 space-y-1 cursor-pointer hover:border-emerald-500/60 hover:bg-slate-800/60 transition-all group"
+                  >
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-white flex items-center gap-1 text-[11px]">
+                      <span className="font-bold text-white flex items-center gap-1 text-[11px] group-hover:text-emerald-300">
                         <FileText className="h-3 w-3 text-emerald-400" />
                         Exhibit A: CCTNS FIR Record
                       </span>
-                      <Badge className="bg-emerald-950 text-emerald-400 text-[9px] px-1 py-0 border border-emerald-500/30">
-                        CCTNS
-                      </Badge>
+                      <div className="flex items-center gap-1">
+                        <Badge className="bg-emerald-950 text-emerald-400 text-[9px] px-1 py-0 border border-emerald-500/30">
+                          CCTNS
+                        </Badge>
+                        <Eye className="h-3 w-3 text-emerald-400 opacity-60 group-hover:opacity-100" />
+                      </div>
                     </div>
                     <div className="text-[10px] text-slate-400 font-mono truncate">
                       SHA-256: e4c119a084ef7721d3f9b20b2aa98231c518b539
                     </div>
                   </div>
 
-                  <div className="p-2 rounded-lg bg-slate-900 border border-border/80 space-y-1">
+                  <div
+                    onClick={() => {
+                      sound.playClickSound();
+                      setPreviewDocType('certificate_63b');
+                    }}
+                    className="p-2 rounded-lg bg-slate-900 border border-border/80 space-y-1 cursor-pointer hover:border-sky-500/60 hover:bg-slate-800/60 transition-all group"
+                  >
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-white flex items-center gap-1 text-[11px]">
+                      <span className="font-bold text-white flex items-center gap-1 text-[11px] group-hover:text-sky-300">
                         <Radio className="h-3 w-3 text-sky-400" />
                         Exhibit B: BTS DEL-ND-T892 CDR Handover
                       </span>
-                      <Badge className="bg-sky-950 text-sky-400 text-[9px] px-1 py-0 border border-sky-500/30">
-                        TELECOM
-                      </Badge>
+                      <div className="flex items-center gap-1">
+                        <Badge className="bg-sky-950 text-sky-400 text-[9px] px-1 py-0 border border-sky-500/30">
+                          TELECOM
+                        </Badge>
+                        <Eye className="h-3 w-3 text-sky-400 opacity-60 group-hover:opacity-100" />
+                      </div>
                     </div>
                     <div className="text-[10px] text-slate-400 font-mono truncate">
                       SHA-256: 3a9f02c6114a298bf681c4e09d8417c8227b6891
                     </div>
                   </div>
 
-                  <div className="p-2 rounded-lg bg-slate-900 border border-border/80 space-y-1">
+                  <div
+                    onClick={() => {
+                      sound.playClickSound();
+                      setPreviewDocType('certificate_63b');
+                    }}
+                    className="p-2 rounded-lg bg-slate-900 border border-border/80 space-y-1 cursor-pointer hover:border-red-500/60 hover:bg-slate-800/60 transition-all group"
+                  >
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-white flex items-center gap-1 text-[11px]">
+                      <span className="font-bold text-white flex items-center gap-1 text-[11px] group-hover:text-red-300">
                         <Car className="h-3 w-3 text-red-400" />
                         Exhibit C: Yamuna Toll ANPR 4K Frame
                       </span>
-                      <Badge className="bg-red-950 text-red-400 text-[9px] px-1 py-0 border border-red-500/30">
-                        HIGHWAY ANPR
-                      </Badge>
+                      <div className="flex items-center gap-1">
+                        <Badge className="bg-red-950 text-red-400 text-[9px] px-1 py-0 border border-red-500/30">
+                          HIGHWAY ANPR
+                        </Badge>
+                        <Eye className="h-3 w-3 text-red-400 opacity-60 group-hover:opacity-100" />
+                      </div>
                     </div>
                     <div className="text-[10px] text-slate-400 font-mono truncate">
                       SHA-256: 7f83b1657ff1fc53b9275bf9754168e3314051a8
                     </div>
                   </div>
 
-                  <div className="p-2 rounded-lg bg-slate-900 border border-border/80 space-y-1">
+                  <div
+                    onClick={() => {
+                      sound.playClickSound();
+                      setPreviewDocType('certificate_63b');
+                    }}
+                    className="p-2 rounded-lg bg-slate-900 border border-border/80 space-y-1 cursor-pointer hover:border-purple-500/60 hover:bg-slate-800/60 transition-all group"
+                  >
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-white flex items-center gap-1 text-[11px]">
+                      <span className="font-bold text-white flex items-center gap-1 text-[11px] group-hover:text-purple-300">
                         <Navigation className="h-3 w-3 text-purple-400" />
                         Exhibit D: GPS Road Pursuit Vector
                       </span>
-                      <Badge className="bg-purple-950 text-purple-400 text-[9px] px-1 py-0 border border-purple-500/30">
-                        TELEMETRY
-                      </Badge>
+                      <div className="flex items-center gap-1">
+                        <Badge className="bg-purple-950 text-purple-400 text-[9px] px-1 py-0 border border-purple-500/30">
+                          TELEMETRY
+                        </Badge>
+                        <Eye className="h-3 w-3 text-purple-400 opacity-60 group-hover:opacity-100" />
+                      </div>
                     </div>
                     <div className="text-[10px] text-slate-400 font-mono truncate">
                       SHA-256: 9b2d84e18374d9e01f66d48c26781932e6a14352
@@ -2358,8 +2404,8 @@ export function LiveTrackingPage() {
                   }}
                   className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold flex items-center gap-1.5 shadow-md shadow-indigo-600/30 border border-indigo-400/40 text-xs h-8"
                 >
-                  <ShieldCheck className="h-3.5 w-3.5 text-indigo-200" />
-                  <span>View Section 63 BSA Certificate</span>
+                  <Eye className="h-3.5 w-3.5 text-indigo-200" />
+                  <span>Preview & Download Sec 63 BSA Certificate</span>
                 </Button>
 
                 <Button
@@ -2370,8 +2416,8 @@ export function LiveTrackingPage() {
                   }}
                   className="bg-sky-600 hover:bg-sky-700 text-white font-bold flex items-center gap-1.5 shadow-md shadow-sky-600/30 border border-sky-400/40 text-xs h-8"
                 >
-                  <Scale className="h-3.5 w-3.5 text-sky-200" />
-                  <span>View Court Remand Dossier</span>
+                  <FileText className="h-3.5 w-3.5 text-sky-200" />
+                  <span>Preview & Download Remand Dossier</span>
                 </Button>
 
                 <Button

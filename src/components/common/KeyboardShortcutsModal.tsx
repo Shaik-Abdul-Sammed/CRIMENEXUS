@@ -48,7 +48,7 @@ export const KeyboardShortcutsModal: React.FC<KeyboardShortcutsModalProps> = ({ 
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-labelledby="keyboard-shortcuts-title"
@@ -59,9 +59,9 @@ export const KeyboardShortcutsModal: React.FC<KeyboardShortcutsModalProps> = ({ 
         }
       }}
     >
-      <div className="relative w-full max-w-xl max-h-[90vh] rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-xl max-h-[88vh] my-auto rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-800 bg-slate-950/80">
+        <div className="shrink-0 flex items-center justify-between p-4 sm:p-5 border-b border-slate-800 bg-slate-950/80">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-400">
               <Keyboard className="h-6 w-6" />
@@ -95,7 +95,7 @@ export const KeyboardShortcutsModal: React.FC<KeyboardShortcutsModalProps> = ({ 
         </div>
 
         {/* Shortcuts List */}
-        <div className="p-5 space-y-2.5 overflow-y-auto max-h-[60vh]">
+        <div className="flex-1 min-h-0 p-5 space-y-2.5 overflow-y-auto max-h-[55vh]">
           {KEYBOARD_SHORTCUTS.map((item) => {
             const Icon = item.icon;
             return (
@@ -118,7 +118,7 @@ export const KeyboardShortcutsModal: React.FC<KeyboardShortcutsModalProps> = ({ 
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-800 bg-slate-950/90 flex items-center justify-between text-xs text-slate-400">
+        <div className="shrink-0 p-4 border-t border-slate-800 bg-slate-950/90 flex items-center justify-between text-xs text-slate-400">
           <span className="truncate mr-2">Press any highlighted hotkey anywhere in the system.</span>
           <div className="flex items-center gap-2 shrink-0">
             <Button

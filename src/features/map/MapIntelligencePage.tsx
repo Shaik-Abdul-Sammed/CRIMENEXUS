@@ -766,17 +766,16 @@ export function MapIntelligencePage() {
     map.addControl(new maplibregl.NavigationControl(), 'top-right');
     mapRef.current = map;
 
-    map.on('load', () => {
-      map.resize();
-      syncLayersAndHeatmap(map);
-
-      // Connecting route line between thief (V. Malhotra) and police station (Jewar PS)
-      if (!map.getSource('route')) {
-        map.addSource('route', {
+    const safeAddConnectingRoute = (targetMap: maplibregl.Map) => {
+      try {
+        if (!targetMap.isStyleLoaded()) return;
+        if (targetMap.getLayer('route')) targetMap.removeLayer('route');
+        if (targetMap.getSource('route')) targetMap.removeSource('route');
+        targetMap.addSource('route', {
           type: 'geojson',
           data: {
             type: 'Feature',
-            properties: {},
+            properties: { name: 'Thief to Police Intercept Corridor' },
             geometry: {
               type: 'LineString',
               coordinates: [
@@ -786,47 +785,27 @@ export function MapIntelligencePage() {
             },
           },
         });
-      }
-      if (!map.getLayer('route')) {
-        map.addLayer({
+        targetMap.addLayer({
           id: 'route',
           type: 'line',
           source: 'route',
           layout: { 'line-join': 'round', 'line-cap': 'round' },
-          paint: { 'line-color': '#10B981', 'line-width': 3, 'line-dasharray': [2, 2] },
+          paint: { 'line-color': '#10B981', 'line-width': 3.5, 'line-dasharray': [2, 2] },
         });
+      } catch (err) {
+        console.warn('Connecting route safe guard:', err);
       }
+    };
+
+    map.on('load', () => {
+      map.resize();
+      syncLayersAndHeatmap(map);
+      safeAddConnectingRoute(map);
     });
 
     map.on('styledata', () => {
       syncLayersAndHeatmap(map);
-
-      // Re-add connecting route line if cleared during style transition
-      if (!map.getSource('route')) {
-        map.addSource('route', {
-          type: 'geojson',
-          data: {
-            type: 'Feature',
-            properties: {},
-            geometry: {
-              type: 'LineString',
-              coordinates: [
-                [77.3180, 28.5850], // Thief (V. Malhotra) coords
-                [77.5510, 28.1402], // Police Station (Jewar PS) coords
-              ],
-            },
-          },
-        });
-      }
-      if (!map.getLayer('route')) {
-        map.addLayer({
-          id: 'route',
-          type: 'line',
-          source: 'route',
-          layout: { 'line-join': 'round', 'line-cap': 'round' },
-          paint: { 'line-color': '#10B981', 'line-width': 3, 'line-dasharray': [2, 2] },
-        });
-      }
+      safeAddConnectingRoute(map);
     });
 
     // ResizeObserver ensures map never renders blank or cut-off when parent dimensions shift
@@ -859,6 +838,12 @@ export function MapIntelligencePage() {
       }
       markersRef.current.forEach((m) => m.remove());
       markersRef.current = [];
+      try {
+        if (map.getLayer('route')) map.removeLayer('route');
+        if (map.getSource('route')) map.removeSource('route');
+      } catch {
+        // ignore
+      }
       map.remove();
       mapRef.current = null;
     };
