@@ -9,6 +9,7 @@ import {
   FileCheck2,
   CheckCircle2,
   SlidersHorizontal,
+  X,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
@@ -257,6 +258,15 @@ export function RecommendedActions() {
                     Execute Directive
                   </Button>
                 )}
+
+                <button
+                  onClick={() => setActions((prev) => prev.filter((a) => a.id !== item.id))}
+                  className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors ml-1"
+                  title="Dismiss this recommendation"
+                  aria-label="Dismiss recommendation"
+                >
+                  <X className="h-4 w-4" />
+                </button>
               </div>
             </div>
 

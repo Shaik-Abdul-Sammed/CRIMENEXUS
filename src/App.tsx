@@ -26,7 +26,9 @@ const ReportsPage = React.lazy(() => import('./features/reports/ReportsPage').th
 const AuditLogsPage = React.lazy(() => import('./features/audit/AuditLogsPage').then((m) => ({ default: m.AuditLogsPage })));
 const SettingsPage = React.lazy(() => import('./features/settings/SettingsPage').then((m) => ({ default: m.SettingsPage })));
 const DesignSystemPage = React.lazy(() => import('./features/design-system/DesignSystemPage').then((m) => ({ default: m.DesignSystemPage })));
+const AboutPlatformPage = React.lazy(() => import('./features/about/AboutPlatformPage').then((m) => ({ default: m.AboutPlatformPage })));
 const LightweightDashboard = React.lazy(() => import('./features/lightweight/LightweightDashboard').then((m) => ({ default: m.LightweightDashboard })));
+const LiveTrackingPage = React.lazy(() => import('./features/demo/LiveTrackingPage').then((m) => ({ default: m.LiveTrackingPage })));
 
 const LazyRouteFallback = (
   <div className="p-6 space-y-4">
@@ -75,12 +77,15 @@ export function App() {
                 <Route path="/graph" element={<Navigate to="/network-graph" replace />} />
                 <Route path="/timeline" element={<TimelinePage />} />
                 <Route path="/map" element={<MapIntelligencePage />} />
+                <Route path="/live-tracking" element={<LiveTrackingPage />} />
+                <Route path="/forensics" element={<Navigate to="/live-tracking?tab=forensics" replace />} />
                 <Route path="/most-wanted" element={<MostWantedPage />} />
                 <Route path="/drafting" element={<DraftingPage />} />
                 <Route path="/ai-assistant" element={<AIAssistantPage />} />
                 <Route path="/reports" element={<ReportsPage />} />
                 <Route path="/audit-logs" element={<AuditLogsPage />} />
                 <Route path="/design-system" element={<DesignSystemPage />} />
+                <Route path="/about" element={<AboutPlatformPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
               </Route>
 

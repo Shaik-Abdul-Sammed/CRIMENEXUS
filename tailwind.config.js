@@ -7,10 +7,10 @@ export default {
       colors: {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
-        // State Command Center Palette (Figma Token Aligned)
-        'bg-primary': '#0A1929',
-        'bg-secondary': '#112240',
-        'bg-tertiary': '#1E293B',
+        // State Command Center Palette (Figma Token Aligned, Multi-Theme Responsive)
+        'bg-primary': 'hsl(var(--background) / <alpha-value>)',
+        'bg-secondary': 'hsl(var(--card) / <alpha-value>)',
+        'bg-tertiary': 'hsl(var(--secondary) / <alpha-value>)',
         'accent-emerald': '#10B981',
         'accent-crimson': '#DC2626',
         'accent-amber': '#F59E0B',

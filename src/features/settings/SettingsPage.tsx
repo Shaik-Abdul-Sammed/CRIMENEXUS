@@ -5,16 +5,19 @@ import {
   Sun,
   Info,
   CheckCircle2,
+  Palette,
+  Check,
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
-import { useAppStore } from '../../stores/appStore';
+import { useAppStore, FigmaTheme } from '../../stores/appStore';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
+import { sound } from '../../utils/soundEffects';
 
 export function SettingsPage() {
   const { currentUser, activeRole } = useAuthStore();
-  const { theme, toggleTheme } = useAppStore();
+  const { theme, toggleTheme, figmaTheme, setFigmaTheme } = useAppStore();
 
   const permissionsMatrix = [
     { module: 'Dashboard & Intelligence Workspace', INVESTIGATOR: true, ANALYST: true, SUPERVISOR: true, ADMIN: true },
@@ -115,16 +118,57 @@ export function SettingsPage() {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm flex items-center gap-2">
-                <Sun className="h-4 w-4 text-amber-400" />
-                UI Theme Preference
+              <CardTitle className="text-sm flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <Palette className="h-4 w-4 text-primary" />
+                  Figma Sovereign Theme Architecture
+                </span>
+                <Badge variant="outline" className="text-[10px] font-mono">
+                  {figmaTheme.toUpperCase()}
+                </Badge>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-xs">
-              <p className="text-muted-foreground">Select dark or light mode interface palette.</p>
-              <Button variant="outline" className="w-full" onClick={toggleTheme}>
-                Current Mode: <span className="font-bold text-foreground uppercase ml-1">{theme}</span> (Click to Switch)
-              </Button>
+              <p className="text-muted-foreground leading-relaxed">
+                Select your operational tactical interface theme. Calibrated to WCAG 2.1 AA standards for 24/7 command centers and field tablets.
+              </p>
+              
+              <div className="space-y-2 pt-1">
+                {[
+                  { id: 'dark' as FigmaTheme, name: 'Palantir Midnight Command', icon: '🌙', hex: '#0A1929', desc: 'Ops Room Dark Navy & Cobalt' },
+                  { id: 'light' as FigmaTheme, name: 'Daylight Thana Patrol', icon: '☀️', hex: '#F8FAFC', desc: 'Station Desk Crisp White & Cobalt' },
+                  { id: 'cyber-matrix' as FigmaTheme, name: 'Cyber Forensics Matrix', icon: '⚡', hex: '#020B08', desc: 'Wiretap Terminal Void & Emerald' },
+                  { id: 'amber-tactical' as FigmaTheme, name: 'Highway Intercept Tactical', icon: '🚨', hex: '#0C0A07', desc: 'PCR Pursuit Charcoal & Amber' },
+                ].map((th) => {
+                  const isActive = figmaTheme === th.id;
+                  return (
+                    <button
+                      key={th.id}
+                      onClick={() => {
+                        sound.playClickSound();
+                        setFigmaTheme(th.id);
+                      }}
+                      className={`w-full flex items-center justify-between p-2.5 rounded-lg border text-left transition-all ${
+                        isActive
+                          ? 'border-primary bg-primary/10 text-foreground font-semibold shadow-sm'
+                          : 'border-border/60 bg-background/50 hover:border-primary/40 text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-lg">{th.icon}</span>
+                        <div>
+                          <div className="text-xs font-bold text-foreground leading-tight">{th.name}</div>
+                          <div className="text-[10px] text-muted-foreground">{th.desc}</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="h-3 w-3 rounded-full border border-white/20" style={{ backgroundColor: th.hex }} />
+                        {isActive ? <Check className="h-4 w-4 text-primary" /> : null}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </CardContent>
           </Card>
 

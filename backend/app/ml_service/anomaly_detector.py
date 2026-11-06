@@ -1,3 +1,4 @@
+import os
 import time
 import logging
 import gc
@@ -5,7 +6,14 @@ import numpy as np
 from typing import Dict, Any, List
 from sklearn.ensemble import IsolationForest
 
+try:
+    import joblib
+except ImportError:
+    joblib = None
+
 logger = logging.getLogger("crimenexus.ml.anomaly")
+
+SAVED_MODEL_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models", "isolation_forest.pkl")
 
 
 class DeepAutoencoderModel:
@@ -95,16 +103,42 @@ class FinancialSmurfingAnomalyDetector:
     """
 
     def __init__(self):
-        self.version = "3.0.0-deep-autoencoder-hybrid"
-        self.model = IsolationForest(
-            n_estimators=20,
-            contamination=0.10,
-            max_samples="auto",
-            random_state=42
-        )
+        self.version = "3.1.0-joblib-trained-isolation-forest"
         self.autoencoder = DeepAutoencoderModel(input_dim=5, latent_dim=4)
+        self.model = None
         self._is_trained = False
-        self._train_baseline_model()
+        self._load_or_train_baseline()
+
+    def _load_or_train_baseline(self):
+        """
+        Loads the pre-trained Isolation Forest model from disk using joblib.
+        Falls back to baseline initialization only if the serialized .pkl is not yet present.
+        """
+        if joblib and os.path.exists(SAVED_MODEL_PATH):
+            try:
+                self.model = joblib.load(SAVED_MODEL_PATH)
+                self._is_trained = True
+                logger.info("Successfully loaded pre-trained Isolation Forest model from %s", SAVED_MODEL_PATH)
+            except Exception as exc:
+                logger.warning("Failed to load saved model from %s: %s; falling back to internal fit", SAVED_MODEL_PATH, exc)
+
+        if self.model is None:
+            self.model = IsolationForest(
+                n_estimators=150,
+                contamination=0.20,
+                max_samples="auto",
+                random_state=42
+            )
+            self._train_baseline_model()
+        else:
+            # Fit autoencoder baseline on benchmark distribution
+            np.random.seed(42)
+            normal_samples = np.random.uniform(
+                low=[1000, 5000, 1, 1, 12.0],
+                high=[250000, 200000, 2, 2, 96.0],
+                size=(400, 5)
+            )
+            self.autoencoder.fit_normal_baseline(normal_samples)
 
     def _train_baseline_model(self):
         """

@@ -1,0 +1,48 @@
+{
+  "lang":"en",
+  "name":"pipeline",
+  "version":"0.0.0",
+  "spacy_version":">=3.8.18,<3.9.0",
+  "description":"",
+  "author":"",
+  "email":"",
+  "url":"",
+  "license":"",
+  "spacy_git_version":"4331199",
+  "vectors":{
+    "width":0,
+    "vectors":0,
+    "keys":0,
+    "name":null,
+    "mode":"default"
+  },
+  "labels":{
+    "entity_ruler":[
+
+    ],
+    "tok2vec":[
+
+    ],
+    "ner":[
+      "LEGAL_SECTION",
+      "LOCATION",
+      "PHONE",
+      "SUSPECT",
+      "VEHICLE",
+      "VICTIM"
+    ]
+  },
+  "pipeline":[
+    "entity_ruler",
+    "tok2vec",
+    "ner"
+  ],
+  "components":[
+    "entity_ruler",
+    "tok2vec",
+    "ner"
+  ],
+  "disabled":[
+
+  ]
+}

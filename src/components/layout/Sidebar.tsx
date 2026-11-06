@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   ShieldAlert,
   LayoutDashboard,
@@ -20,6 +20,9 @@ import {
   Flame,
   Scale,
   Palette,
+  Navigation,
+  Sparkles,
+  Camera,
 } from 'lucide-react';
 import { useAppStore } from '../../stores/appStore';
 import { useAuthStore } from '../../stores/authStore';
@@ -29,10 +32,38 @@ import { cn } from '../../utils/cn';
 
 export function Sidebar() {
   const location = useLocation();
-  const { sidebarOpen, toggleSidebar, activeCaseId, setActiveCaseId } = useAppStore();
+  const navigate = useNavigate();
+  const { sidebarOpen, toggleSidebar, setSidebarOpen, activeCaseId, setActiveCaseId } = useAppStore();
   const { currentUser, activeRole } = useAuthStore();
   const { data: cases } = useInvestigations();
   const { t } = useTranslation();
+
+  const handleCaseChange = (newCaseId: string) => {
+    setActiveCaseId(newCaseId);
+    if (location.pathname.startsWith('/cases/')) {
+      if (newCaseId && newCaseId !== 'ALL') {
+        navigate(`/cases/${newCaseId}`);
+      } else {
+        navigate('/cases');
+      }
+    } else {
+      const currentParams = new URLSearchParams(location.search);
+      if (newCaseId && newCaseId !== 'ALL') {
+        currentParams.set('case', newCaseId);
+      } else {
+        currentParams.delete('case');
+      }
+      const searchStr = currentParams.toString() ? `?${currentParams.toString()}` : '';
+      navigate(`${location.pathname}${searchStr}`);
+    }
+  };
+
+  React.useEffect(() => {
+    // Prevent accidental collapse on large desktop screens
+    if (typeof window !== 'undefined' && window.innerWidth >= 1024 && !sidebarOpen) {
+      setSidebarOpen(true);
+    }
+  }, []);
 
   const isItemActive = (path: string) => {
     if (path === '/dashboard') {
@@ -51,9 +82,12 @@ export function Sidebar() {
     { label: t('nav.graph'), path: '/network-graph', icon: Network, hero: true, id: 'sidebar-graph' },
     { label: t('nav.timeline'), path: '/timeline', icon: Clock, id: 'sidebar-timeline' },
     { label: t('nav.map'), path: '/map', icon: MapPin, id: 'sidebar-map' },
+    { label: 'Live Tracking (Demo)', path: '/live-tracking', icon: Navigation, badge: 'LIVE', id: 'sidebar-live-tracking' },
+    { label: 'Forensic Clues & Telecast', path: '/forensics', icon: Camera, badge: 'BSA', id: 'sidebar-forensics' },
     { label: t('nav.aiAssistant'), path: '/ai-assistant', icon: Bot, badge: 'RAG', id: 'sidebar-assistant' },
     { label: t('nav.legalDrafting'), path: '/drafting', icon: Scale, badge: 'AUTO', id: 'sidebar-drafting' },
     { label: t('nav.reports'), path: '/reports', icon: FileText, id: 'sidebar-reports' },
+    { label: '32 Features & Benchmark', path: '/about', icon: Sparkles, badge: '32 DEMO', id: 'sidebar-about' },
     { label: t('nav.auditLogs'), path: '/audit-logs', icon: History, minRole: 'ANALYST', id: 'sidebar-audit-logs' },
     { label: t('nav.designSystem'), path: '/design-system', icon: Palette, badge: 'FIGMA', id: 'sidebar-design' },
     { label: t('nav.settings'), path: '/settings', icon: Settings, id: 'sidebar-settings' },
@@ -125,7 +159,7 @@ export function Sidebar() {
             id="sidebar-case-select"
             aria-label={t('sidebar.activeTargetCase')}
             value={activeCaseId}
-            onChange={(e) => setActiveCaseId(e.target.value)}
+            onChange={(e) => handleCaseChange(e.target.value)}
             title={cases?.find((c) => c.id === activeCaseId)?.title || t('sidebar.allCases')}
             className="w-full h-8 px-2 text-xs rounded border border-border bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-primary truncate font-sans font-medium"
           >

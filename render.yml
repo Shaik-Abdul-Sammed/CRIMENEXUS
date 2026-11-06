@@ -1,0 +1,56 @@
+# Render Infrastructure-as-Code (Blueprint) for CRIMENEXUS
+# Deploys FastAPI Intelligence Backend & High-Performance Vite Frontend
+
+services:
+  # ============================================================================
+  # 1. FastAPI Intelligence Backend Web Service
+  # ============================================================================
+  - type: web
+    name: crimenexus-backend
+    runtime: python
+    region: singapore
+    plan: starter
+    buildCommand: pip install --upgrade pip && pip install -r backend/requirements.txt
+    startCommand: python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT --app-dir backend --workers 2
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.14
+      - key: ENVIRONMENT
+        value: production
+      - key: ALLOWED_HOSTS
+        value: "*"
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET
+        generateValue: true
+      - key: REDIS_URL
+        value: redis://localhost:6379/0
+
+  # ============================================================================
+  # 2. Vite React SPA Frontend Static Site
+  # ============================================================================
+  - type: web
+    name: crimenexus-frontend
+    runtime: static
+    region: singapore
+    plan: free
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    autoDeploy: true
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: NODE_VERSION
+        value: 20.12.0
+      - key: VITE_API_BASE_URL
+        fromService:
+          name: crimenexus-backend
+          type: web
+          property: host
+          value: https://crimenexus-backend.onrender.com/api/v1

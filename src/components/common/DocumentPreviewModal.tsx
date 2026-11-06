@@ -24,8 +24,11 @@ export interface DocumentPreviewModalProps {
   onClose: () => void;
   title?: string;
   subtitle?: string;
-  documentType?: 'dossier_pdf' | 'legal_draft' | 'evidence_bundle';
+  documentType?: 'dossier_pdf' | 'legal_draft' | 'evidence_bundle' | 'certificate_63b' | 'court_dossier';
   caseNumber?: string;
+  evidenceNumber?: string;
+  evidenceHash?: string;
+  evidenceTitle?: string;
   pdfUrl?: string;
   fileName?: string;
   textContent?: string;
@@ -37,6 +40,8 @@ export interface DocumentPreviewModalProps {
     hash?: string;
     generatedAt?: string;
     courtName?: string;
+    investigatingOfficer?: string;
+    jurisdiction?: string;
     [key: string]: unknown;
   };
 }

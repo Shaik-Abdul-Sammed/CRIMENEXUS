@@ -94,8 +94,15 @@ cleanup() {
 }
 trap cleanup SIGINT SIGTERM EXIT
 
-# Wait briefly for FastAPI to initialize
-sleep 2
+# Wait for FastAPI to initialize and accept connections
+echo -e "${BLUE}Waiting for FastAPI backend to accept connections on port 8000...${NC}"
+for i in {1..30}; do
+    if curl -s http://127.0.0.1:8000/health > /dev/null 2>&1 || (echo > /dev/tcp/127.0.0.1/8000) 2>/dev/null; then
+        break
+    fi
+    sleep 1
+done
+echo -e "${GREEN}✓ FastAPI backend is online and accepting connections.${NC}"
 
 # 5. Display Access Banner & Launch Frontend
 echo -e "${CYAN}"

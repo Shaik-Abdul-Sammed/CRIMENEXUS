@@ -27,6 +27,18 @@ def haversine_distance_km(lat1: float, lon1: float, lat2: float, lon2: float) ->
     return r_earth * c
 
 
+DEFAULT_CRITICAL_STATIONS = [
+    {"name": "Jewar Police Station (Yamuna Expressway Jurisdiction)", "state": "Uttar Pradesh", "district": "JEWAR_NOIDA", "latitude": 28.1285, "longitude": 77.5562},
+    {"name": "Rabupura Police Station", "state": "Uttar Pradesh", "district": "JEWAR_NOIDA", "latitude": 28.2435, "longitude": 77.6020},
+    {"name": "Noida Sector 20 Police Station", "state": "Uttar Pradesh", "district": "NOIDA", "latitude": 28.5830, "longitude": 77.3320},
+    {"name": "Noida Sector 62 Police Post", "state": "Uttar Pradesh", "district": "NOIDA", "latitude": 28.6280, "longitude": 77.3649},
+    {"name": "Connaught Place Police Station", "state": "Delhi", "district": "DELHI_CENTRAL", "latitude": 28.6328, "longitude": 77.2197},
+    {"name": "Parliament Street Police Station", "state": "Delhi", "district": "DELHI_CENTRAL", "latitude": 28.6231, "longitude": 77.2140},
+    {"name": "Hauz Khas Police Station", "state": "Delhi", "district": "DELHI_SOUTH", "latitude": 28.5482, "longitude": 77.2045},
+    {"name": "Cyber Hub Police Post Gurugram", "state": "Haryana", "district": "GURUGRAM", "latitude": 28.4950, "longitude": 77.0895},
+]
+
+
 def find_nearest_police_stations(
     latitude: float,
     longitude: float,
@@ -39,10 +51,26 @@ def find_nearest_police_stations(
     or suspect vehicle ANPR sighting.
     """
     if stations_pool is None:
-        stations_pool = get_all_osm_police_stations()
+        try:
+            stations_pool = get_all_osm_police_stations()
+        except Exception:
+            stations_pool = []
+
+    # Merge critical operational stations
+    combined_stations = list(stations_pool)
+    seen_names = {s.get("name") or s.get("police_station") for s in combined_stations}
+    for def_stn in DEFAULT_CRITICAL_STATIONS:
+        if def_stn["name"] not in seen_names:
+            combined_stations.append(def_stn)
+            seen_names.add(def_stn["name"])
 
     scored_stations = []
-    for stn in stations_pool:
+    for stn in combined_stations:
+        stn_name = stn.get("name") or stn.get("police_station", "Police Station")
+        # Ignore checkpoint node at distance 0 if operational stations are available
+        if "Checkpoint" in stn_name and math.hypot(float(stn["latitude"]) - latitude, float(stn["longitude"]) - longitude) < 0.001:
+            continue
+
         stn_lat = float(stn["latitude"])
         stn_lon = float(stn["longitude"])
         dist_km = haversine_distance_km(latitude, longitude, stn_lat, stn_lon)
@@ -51,7 +79,7 @@ def find_nearest_police_stations(
             continue
 
         scored_stations.append({
-            "police_station": stn["name"],
+            "police_station": stn_name,
             "state": stn.get("state", "India"),
             "district": stn.get("district", "METRO"),
             "station_latitude": stn_lat,

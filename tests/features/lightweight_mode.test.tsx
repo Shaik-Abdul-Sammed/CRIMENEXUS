@@ -14,7 +14,11 @@ describe('Thana 2 Mbps Lightweight Mode & Offline-First Tests', () => {
   });
 
   // Test 1: Render Lite Mode -> verify MapLibre/Cytoscape are NOT in the DOM
-  it('Test 1: should render Lite Mode without MapLibre, Cytoscape or heavy WebGL canvas', () => {
+  it('Test 1: should render Lite Mode without MapLibre, Cytoscape or heavy WebGL canvas', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify([]), { status: 200, headers: { 'Content-Type': 'application/json' } })
+    );
+
     const { container } = render(
       <MemoryRouter>
         <LightweightDashboard />
@@ -22,7 +26,9 @@ describe('Thana 2 Mbps Lightweight Mode & Offline-First Tests', () => {
     );
 
     // Verify presence of Thana Lite title and tables
-    expect(screen.getByText(/THANA LITE TERMINAL/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/THANA LITE TERMINAL/i)).toBeInTheDocument();
+    });
     expect(screen.getByTestId('lite-most-wanted-table')).toBeInTheDocument();
     expect(screen.getByTestId('lite-alerts-table')).toBeInTheDocument();
     expect(screen.getByTestId('lite-firs-table')).toBeInTheDocument();

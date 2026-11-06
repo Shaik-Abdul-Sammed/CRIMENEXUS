@@ -524,7 +524,7 @@ export function DashboardPage() {
                   key={item.id}
                   className="p-4 rounded-xl border border-border bg-background/60 space-y-2 hover:border-primary/40 transition-colors"
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
                     <span className="font-semibold text-sm text-foreground flex items-center gap-2">
                       <AlertTriangle className="h-4 w-4 text-amber-400" />
                       {item.title}

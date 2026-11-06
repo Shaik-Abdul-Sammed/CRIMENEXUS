@@ -1,3 +1,4 @@
+import os
 import resource
 import logging
 from typing import Dict, Any
@@ -10,6 +11,10 @@ from app.ml_service.semantic_search import get_mo_semantic_search_engine
 from app.ml_service.rag_engine import get_rag_engine
 
 logger = logging.getLogger("crimenexus.ml.registry")
+
+MODELS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models")
+FIR_NER_MODEL_PATH = os.path.join(MODELS_DIR, "fir_ner_model")
+ISOLATION_FOREST_PATH = os.path.join(MODELS_DIR, "isolation_forest.pkl")
 
 MODEL_VERSIONS: Dict[str, str] = {
     "ocr_engine": "v1.0.0",
@@ -37,62 +42,122 @@ class MLModelRegistry:
         logger.info("[MLOps] Initializing and warming up CRIMENEXUS Production ML Pipeline...")
 
         # 1. OCR Engine
-        tesseract_ok = check_tesseract_availability()
-        self.models_status["ocr_engine"] = {
-            "name": "Tesseract-OCR",
-            "status": "READY" if tesseract_ok else "UNAVAILABLE",
-            "type": "Optical Character Recognition (Scanned FIR/PDF)"
-        }
+        try:
+            tesseract_ok = check_tesseract_availability()
+            self.models_status["ocr_engine"] = {
+                "name": "Tesseract-OCR",
+                "status": "READY" if tesseract_ok else "UNAVAILABLE",
+                "type": "Optical Character Recognition (Scanned FIR/PDF)"
+            }
+        except Exception as ocr_err:
+            logger.warning("[MLOps] OCR Engine check failed: %s", ocr_err)
+            self.models_status["ocr_engine"] = {
+                "name": "Tesseract-OCR",
+                "status": "UNAVAILABLE",
+                "type": "Optical Character Recognition (Scanned FIR/PDF)"
+            }
 
-        # 2. Named Entity Recognizer
-        ner = get_ner_pipeline()
-        self.models_status["ner_model"] = {
-            "name": "PoliceFIRNamedEntityRecognizer",
-            "version": ner.version,
-            "status": "READY",
-            "supported_entities": ["SUSPECT", "VICTIM", "LOCATION", "VEHICLE", "LEGAL_SECTION", "PHONE"]
-        }
+        # 2. Named Entity Recognizer (spaCy fir_ner_model with rule-based fallback)
+        spacy_ner_loaded = False
+        try:
+            if os.path.exists(FIR_NER_MODEL_PATH):
+                try:
+                    import spacy
+                    _ = spacy.load(FIR_NER_MODEL_PATH)
+                    spacy_ner_loaded = True
+                    logger.info("[MLOps] Trained spaCy FIR NER model successfully verified from %s", FIR_NER_MODEL_PATH)
+                except Exception as spacy_err:
+                    logger.warning("[MLOps] spaCy model at %s could not be loaded (%s). Falling back to rule-based NER engine.", FIR_NER_MODEL_PATH, spacy_err)
+            else:
+                logger.warning("[MLOps] Trained spaCy FIR NER model directory not found at %s. Falling back to rule-based NER engine.", FIR_NER_MODEL_PATH)
+        except Exception as ner_err:
+            logger.warning("[MLOps] NER verification error: %s. Using rule-based fallback.", ner_err)
 
-        # 3. Isolation Forest Anomaly Detector
-        anomaly_det = get_anomaly_detector()
-        self.models_status["financial_anomaly_detector"] = {
-            "name": "FinancialSmurfingAnomalyDetector",
-            "version": anomaly_det.version,
-            "status": "READY",
-            "algorithm": "IsolationForest(n_estimators=100, contamination=0.10)"
-        }
+        try:
+            ner = get_ner_pipeline()
+            self.models_status["ner_model"] = {
+                "name": "PoliceFIRNamedEntityRecognizer",
+                "version": ner.version,
+                "status": "READY",
+                "engine": "spaCy-Trained-FIR-NER" if spacy_ner_loaded else "RULE_BASED_FALLBACK",
+                "supported_entities": ["SUSPECT", "VICTIM", "LOCATION", "VEHICLE", "LEGAL_SECTION", "PHONE"]
+            }
+        except Exception as exc:
+            logger.error("[MLOps] Failed to initialize NER pipeline: %s", exc)
+            self.models_status["ner_model"] = {"name": "PoliceFIRNamedEntityRecognizer", "status": "ERROR"}
+
+        # 3. Isolation Forest Anomaly Detector (joblib isolation_forest.pkl with baseline fallback)
+        joblib_loaded = False
+        try:
+            if os.path.exists(ISOLATION_FOREST_PATH):
+                try:
+                    import joblib
+                    _ = joblib.load(ISOLATION_FOREST_PATH)
+                    joblib_loaded = True
+                    logger.info("[MLOps] Pre-trained Isolation Forest model successfully verified from %s", ISOLATION_FOREST_PATH)
+                except Exception as j_err:
+                    logger.warning("[MLOps] Failed to load joblib model at %s: %s. Falling back to in-memory baseline.", ISOLATION_FOREST_PATH, j_err)
+            else:
+                logger.warning("[MLOps] Pre-trained Isolation Forest model not found at %s. Falling back to in-memory baseline.", ISOLATION_FOREST_PATH)
+        except Exception as anom_chk_err:
+            logger.warning("[MLOps] Isolation Forest check error: %s. Using baseline.", anom_chk_err)
+
+        try:
+            anomaly_det = get_anomaly_detector()
+            self.models_status["financial_anomaly_detector"] = {
+                "name": "FinancialSmurfingAnomalyDetector",
+                "version": anomaly_det.version,
+                "status": "READY",
+                "model_source": "joblib_serialized" if joblib_loaded else "in_memory_baseline",
+                "algorithm": "IsolationForest(n_estimators=150, contamination=0.20)"
+            }
+        except Exception as exc:
+            logger.error("[MLOps] Failed to initialize Anomaly Detector: %s", exc)
+            self.models_status["financial_anomaly_detector"] = {"name": "FinancialSmurfingAnomalyDetector", "status": "ERROR"}
 
         # 4. Explainable AI Threat Risk Model
-        xai_model = get_risk_model()
-        self.models_status["explainable_risk_model"] = {
-            "name": "ExplainableThreatRiskModel",
-            "version": xai_model.version,
-            "status": "READY",
-            "attribution": "Tree Marginal Shapley Value Decomposition (SHAP)"
-        }
+        try:
+            xai_model = get_risk_model()
+            self.models_status["explainable_risk_model"] = {
+                "name": "ExplainableThreatRiskModel",
+                "version": xai_model.version,
+                "status": "READY",
+                "attribution": "Tree Marginal Shapley Value Decomposition (SHAP)"
+            }
+        except Exception as exc:
+            logger.error("[MLOps] Failed to initialize Threat Risk Model: %s", exc)
+            self.models_status["explainable_risk_model"] = {"name": "ExplainableThreatRiskModel", "status": "ERROR"}
 
         # 5. Modus Operandi Semantic Vector Search
-        mo_search = get_mo_semantic_search_engine()
-        self.models_status["mo_semantic_search"] = {
-            "name": "ModusOperandiSemanticSearchEngine",
-            "version": mo_search.version,
-            "status": "READY",
-            "indexed_cases": len(mo_search.cases),
-            "algorithm": "L2-Normalized TF-IDF with Cosine Similarity"
-        }
+        try:
+            mo_search = get_mo_semantic_search_engine()
+            self.models_status["mo_semantic_search"] = {
+                "name": "ModusOperandiSemanticSearchEngine",
+                "version": mo_search.version,
+                "status": "READY",
+                "indexed_cases": len(mo_search.cases),
+                "algorithm": "L2-Normalized TF-IDF with Cosine Similarity"
+            }
+        except Exception as exc:
+            logger.error("[MLOps] Failed to initialize MO Semantic Search: %s", exc)
+            self.models_status["mo_semantic_search"] = {"name": "ModusOperandiSemanticSearchEngine", "status": "ERROR"}
 
         # 6. RAG Legal Drafting Engine
-        rag_engine = get_rag_engine()
-        self.models_status["rag_draft_engine"] = {
-            "name": "RAGDraftEngine",
-            "version": rag_engine.version,
-            "status": "READY",
-            "statutory_vector_store": "ChromaVectorStore",
-            "target_llm": rag_engine.model_name
-        }
+        try:
+            rag_engine = get_rag_engine()
+            self.models_status["rag_draft_engine"] = {
+                "name": "RAGDraftEngine",
+                "version": rag_engine.version,
+                "status": "READY",
+                "statutory_vector_store": "ChromaVectorStore",
+                "target_llm": rag_engine.model_name
+            }
+        except Exception as exc:
+            logger.error("[MLOps] Failed to initialize RAG Draft Engine: %s", exc)
+            self.models_status["rag_draft_engine"] = {"name": "RAGDraftEngine", "status": "ERROR"}
 
         self.initialized = True
-        logger.info("[MLOps] All 6 CRIMENEXUS ML Models successfully cached in memory.")
+        logger.info("[MLOps] All CRIMENEXUS ML Models initialized and cached in memory.")
         return self.models_status
 
     def get_status(self) -> Dict[str, Any]:

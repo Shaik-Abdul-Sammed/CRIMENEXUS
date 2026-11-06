@@ -53,15 +53,19 @@ def get_neo4j_session() -> Generator[Optional[Session], None, None]:
 
 
 def execute_cypher(query: str, parameters: Optional[dict] = None) -> list:
-    """Helper function to execute a Cypher query with automatic session handling."""
+    """Helper function to execute a Cypher query with automatic session handling and resilient error capture."""
     driver = get_neo4j_driver()
     if driver is None:
         logger.warning("Skipping Cypher execution: Neo4j driver is not connected.")
         return []
 
-    with driver.session() as session:
-        result = session.run(query, parameters or {})
-        return [record.data() for record in result]
+    try:
+        with driver.session() as session:
+            result = session.run(query, parameters or {})
+            return [record.data() for record in result]
+    except Exception as exc:
+        logger.warning("Cypher query execution failed (%s): %s", query[:60].replace("\n", " "), exc)
+        return []
 
 
 def init_neo4j_constraints() -> None:

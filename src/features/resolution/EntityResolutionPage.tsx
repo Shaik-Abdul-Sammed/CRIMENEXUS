@@ -24,6 +24,9 @@ export function EntityResolutionPage() {
   const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
   const [actionType, setActionType] = useState<'CONFIRM' | 'REJECT' | null>(null);
   const [reviewNotes, setReviewNotes] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'CONFIRMED' | 'REJECTED'>('ALL');
+
+  const filteredCandidates = candidates?.filter((c) => statusFilter === 'ALL' || c.status === statusFilter);
 
   const handleActionClick = (id: string, type: 'CONFIRM' | 'REJECT') => {
     setSelectedCandidateId(id);
@@ -78,15 +81,33 @@ export function EntityResolutionPage() {
         </div>
       </div>
 
+      {/* Status Filter Chips */}
+      <div className="flex items-center gap-2 p-3 rounded-xl border border-border bg-card">
+        <span className="text-xs text-muted-foreground mr-1 font-bold">Filter Status:</span>
+        {(['ALL', 'PENDING', 'CONFIRMED', 'REJECTED'] as const).map((status) => (
+          <button
+            key={status}
+            onClick={() => setStatusFilter(status)}
+            className={`px-3 py-1 text-[11px] rounded-md font-semibold transition-colors ${
+              statusFilter === status
+                ? 'bg-primary text-primary-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
+            }`}
+          >
+            {status} ({status === 'ALL' ? candidates?.length || 0 : candidates?.filter((c) => c.status === status).length || 0})
+          </button>
+        ))}
+      </div>
+
       {isLoading ? (
         <div className="p-12 text-center text-xs text-muted-foreground">Scanning candidate duplicate pairs...</div>
-      ) : candidates?.length === 0 ? (
+      ) : !filteredCandidates || filteredCandidates.length === 0 ? (
         <div className="p-12 text-center text-xs text-muted-foreground border border-dashed border-border rounded-xl">
-          No pending duplicate entity candidates found.
+          No duplicate entity candidates found with status &quot;{statusFilter}&quot;.
         </div>
       ) : (
         <div className="space-y-6">
-          {candidates?.map((candidate) => (
+          {filteredCandidates.map((candidate) => (
             <Card
               key={candidate.id}
               className={`border transition-all ${

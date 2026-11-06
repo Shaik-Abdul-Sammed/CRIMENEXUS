@@ -17,15 +17,23 @@ import {
   X,
   CheckCheck,
   Trash2,
+  Palette,
+  Check,
+  Scale,
+  Keyboard,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import { sound } from '../../utils/soundEffects';
-import { useAppStore } from '../../stores/appStore';
+import { useAppStore, FigmaTheme } from '../../stores/appStore';
 import { useAuthStore } from '../../stores/authStore';
 import { useTranslation, SupportedLanguage } from '../../hooks/useTranslation';
 import { UserRole } from '../../types';
 import { Button } from '../ui/Button';
 import { PoliceDemoModal } from './PoliceDemoModal';
 import { OnboardingTour } from '../tour/OnboardingTour';
+import { StatutoryRulesModal } from '../common/StatutoryRulesModal';
+import { KeyboardShortcutsModal } from '../common/KeyboardShortcutsModal';
 
 export function TopNav() {
   const location = useLocation();
@@ -33,6 +41,8 @@ export function TopNav() {
     setGlobalSearchOpen,
     theme,
     toggleTheme,
+    figmaTheme,
+    setFigmaTheme,
     notifications,
     markNotificationAsRead,
     markAllNotificationsAsRead,
@@ -43,11 +53,16 @@ export function TopNav() {
 
   const [notifMenuOpen, setNotifMenuOpen] = useState(false);
   const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
+  const [themeMenuOpen, setThemeMenuOpen] = useState(false);
   const [demoModalOpen, setDemoModalOpen] = useState(false);
   const [tourOpen, setTourOpen] = useState(false);
+  const [statutoryRulesOpen, setStatutoryRulesOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [audioMuted, setAudioMuted] = useState(!sound.isEnabled());
 
   const settingsRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
+  const themeRef = useRef<HTMLDivElement>(null);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -62,6 +77,13 @@ export function TopNav() {
 
   const roles: UserRole[] = ['INVESTIGATOR', 'ANALYST', 'SUPERVISOR', 'ADMIN'];
 
+const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColor: string; badge: string }[] = [
+  { id: 'dark', name: 'Palantir Midnight', icon: '🌙', dotColor: '#3B82F6', badge: 'Command' },
+  { id: 'light', name: 'Daylight Patrol', icon: '☀️', dotColor: '#F59E0B', badge: 'Thana' },
+  { id: 'cyber-matrix', name: 'Cyber Matrix', icon: '⚡', dotColor: '#10B981', badge: 'Forensics' },
+  { id: 'amber-tactical', name: 'Highway Intercept', icon: '🚨', dotColor: '#EF4444', badge: 'Pursuit' },
+];
+
   // Close menus on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -70,6 +92,9 @@ export function TopNav() {
       }
       if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
         setNotifMenuOpen(false);
+      }
+      if (themeRef.current && !themeRef.current.contains(event.target as Node)) {
+        setThemeMenuOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -106,7 +131,7 @@ export function TopNav() {
         <button
           onClick={() => setGlobalSearchOpen(true)}
           className="flex items-center gap-2 h-9 px-3 rounded-lg border border-border bg-background/80 text-xs text-muted-foreground hover:border-primary/50 hover:bg-accent/50 transition-all focus:outline-none"
-          title="Search cases, entities, and evidence (Ctrl+K)"
+          title="Search cases, entities, and evidence (Press /)"
           aria-label="Search cases, entities, and evidence"
         >
           <Search className="h-4 w-4 text-primary" />
@@ -115,6 +140,134 @@ export function TopNav() {
             /
           </kbd>
         </button>
+
+        {/* 15 Statutory Rules & Remand Guard Button */}
+        <button
+          onClick={() => {
+            sound.playClickSound();
+            setStatutoryRulesOpen(true);
+          }}
+          className="flex items-center gap-1.5 h-9 px-2.5 rounded-lg border border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 text-xs font-bold transition-all"
+          title="15 Sovereign Statutory Criminal Rules & Remand Guard (Press S)"
+          aria-label="15 Sovereign Statutory Criminal Rules"
+        >
+          <Scale className="h-4 w-4 text-amber-400" />
+          <span className="hidden lg:inline text-[11px]">15 Rules</span>
+        </button>
+
+        {/* Global Keyboard Shortcuts Hub */}
+        <button
+          onClick={() => {
+            sound.playClickSound();
+            setShortcutsOpen(true);
+          }}
+          className="flex items-center justify-center h-9 w-9 rounded-lg border border-border/80 bg-background/80 text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors"
+          title="Investigating Officer Keyboard Shortcuts (Press ?)"
+          aria-label="Keyboard Shortcuts"
+        >
+          <Keyboard className="h-4 w-4" />
+        </button>
+
+        {/* Tactical Audio Feedback Mute / Unmute Toggle */}
+        <button
+          onClick={() => {
+            const nextState = sound.toggleMute();
+            setAudioMuted(!nextState);
+            if (nextState) sound.playClickSound();
+          }}
+          className={`flex items-center justify-center h-9 w-9 rounded-lg border transition-colors ${
+            audioMuted
+              ? 'border-border/60 text-muted-foreground/50 hover:text-muted-foreground'
+              : 'border-border/80 bg-background/80 text-foreground hover:bg-accent/40'
+          }`}
+          title={audioMuted ? 'Tactical Audio: Muted (Click to Unmute)' : 'Tactical Audio: Enabled (Click to Mute)'}
+          aria-label={audioMuted ? 'Unmute Audio' : 'Mute Audio'}
+        >
+          {audioMuted ? <VolumeX className="h-4 w-4 text-muted-foreground" /> : <Volume2 className="h-4 w-4 text-emerald-400" />}
+        </button>
+
+        {/* Figma Sovereign Theme Switcher */}
+        <div className="relative" ref={themeRef}>
+          <button
+            onClick={() => {
+              sound.playClickSound();
+              setThemeMenuOpen(!themeMenuOpen);
+            }}
+            className={`flex items-center gap-1.5 h-9 px-2.5 rounded-lg border transition-all text-xs font-semibold ${
+              themeMenuOpen
+                ? 'border-primary bg-primary/10 text-primary shadow-sm'
+                : 'border-border/70 bg-background/80 text-foreground hover:border-primary/50 hover:bg-accent/40'
+            }`}
+            title="Switch Figma Sovereign Theme"
+            aria-label="Switch Figma Sovereign Theme"
+          >
+            <Palette className="h-4 w-4 text-primary" />
+            <span className="hidden sm:inline text-[11px] font-medium">
+              {FIGMA_THEME_OPTIONS.find((t) => t.id === figmaTheme)?.icon || '🎨'}{' '}
+              {FIGMA_THEME_OPTIONS.find((t) => t.id === figmaTheme)?.badge || 'Theme'}
+            </span>
+          </button>
+
+          {themeMenuOpen && (
+            <div className="absolute right-0 mt-2 w-64 rounded-xl border border-border bg-card p-3 shadow-2xl z-50 animate-in fade-in zoom-in-95 select-none">
+              <div className="flex items-center justify-between pb-2 border-b border-border mb-2">
+                <div className="flex items-center gap-1.5">
+                  <Palette className="h-3.5 w-3.5 text-primary" />
+                  <span className="text-xs font-bold text-foreground">Figma Sovereign Themes</span>
+                </div>
+                <Link
+                  to="/design-system"
+                  onClick={() => setThemeMenuOpen(false)}
+                  className="text-[10px] text-primary hover:underline font-mono"
+                >
+                  Tokens Guide
+                </Link>
+              </div>
+
+              <div className="space-y-1.5">
+                {FIGMA_THEME_OPTIONS.map((opt) => {
+                  const isActive = figmaTheme === opt.id;
+                  return (
+                    <button
+                      key={opt.id}
+                      onClick={() => {
+                        sound.playClickSound();
+                        setFigmaTheme(opt.id);
+                        setThemeMenuOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs transition-all ${
+                        isActive
+                          ? 'bg-primary text-primary-foreground font-bold shadow-sm'
+                          : 'bg-muted/40 hover:bg-muted text-foreground'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span>{opt.icon}</span>
+                        <div className="text-left">
+                          <div className="leading-tight">{opt.name}</div>
+                          <div
+                            className={`text-[9px] font-mono ${
+                              isActive ? 'text-primary-foreground/80' : 'text-muted-foreground'
+                            }`}
+                          >
+                            {opt.badge} Palette
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className="h-2.5 w-2.5 rounded-full border border-white/20"
+                          style={{ backgroundColor: opt.dotColor }}
+                        />
+                        {isActive && <Check className="h-3.5 w-3.5" />}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Notifications Dropdown */}
         <div className="relative" ref={notifRef}>
@@ -133,12 +286,15 @@ export function TopNav() {
           </button>
 
           {notifMenuOpen && (
-            <div className="absolute right-0 mt-2 w-84 rounded-xl border border-border bg-card p-3 shadow-2xl z-50 animate-in fade-in zoom-in-95">
-              <div className="flex items-center justify-between pb-2 border-b border-border mb-2">
-                <div>
-                  <span className="text-xs font-bold text-foreground">Intelligence Alerts</span>
-                  <span className="text-[10px] text-muted-foreground ml-1.5 font-mono">
-                    ({unreadCount} unread / {notifications.length} total)
+            <div className="absolute right-0 mt-2 w-96 rounded-2xl border border-border/80 bg-slate-900/95 backdrop-blur-md p-4 shadow-2xl z-50 animate-in fade-in zoom-in-95 select-none">
+              <div className="flex items-center justify-between pb-3 border-b border-border/60 mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+                  <span className="text-xs font-black text-white uppercase tracking-wider">
+                    Police Telemetry & Statutory Alerts
+                  </span>
+                  <span className="text-[10px] text-muted-foreground font-mono">
+                    ({unreadCount} unread)
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -148,7 +304,7 @@ export function TopNav() {
                         sound.playSuccessChime();
                         markAllNotificationsAsRead();
                       }}
-                      className="text-[10px] text-primary hover:text-primary/80 font-medium flex items-center gap-1 px-1.5 py-0.5 rounded hover:bg-primary/10 transition-colors"
+                      className="text-[10px] text-primary hover:text-primary/80 font-bold flex items-center gap-1 px-2 py-0.5 rounded hover:bg-primary/10 transition-colors"
                       title="Mark all notifications as read"
                     >
                       <CheckCheck className="h-3 w-3" />
@@ -168,37 +324,75 @@ export function TopNav() {
                       <span>Clear</span>
                     </button>
                   )}
+                  <button
+                    onClick={() => {
+                      sound.playClickSound();
+                      setNotifMenuOpen(false);
+                    }}
+                    className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition-colors ml-1"
+                    title="Close notifications"
+                    aria-label="Close notifications"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
                 </div>
               </div>
-              <div className="space-y-2 max-h-64 overflow-y-auto">
+              <div className="space-y-2.5 max-h-80 overflow-y-auto pr-1">
                 {notifications.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-6 font-mono">
-                    No active notifications or alerts
+                  <p className="text-xs text-muted-foreground text-center py-8 font-mono">
+                    No active tripwires or alerts
                   </p>
                 ) : (
-                  notifications.map((n) => (
-                    <div
-                      key={n.id}
-                      onClick={() => {
-                        sound.playClickSound();
-                        markNotificationAsRead(n.id);
-                      }}
-                      className={`p-2 rounded-lg text-xs border transition-colors cursor-pointer ${
-                        n.read
-                          ? 'bg-background/40 border-border/40 text-muted-foreground'
-                          : 'bg-primary/5 border-primary/20 text-foreground font-medium shadow-sm'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between font-semibold mb-0.5">
-                        <span className="flex items-center gap-1">
-                          <AlertTriangle className={`h-3 w-3 ${n.type === 'CRITICAL' ? 'text-rose-400' : 'text-amber-400'}`} />
-                          {n.title}
-                        </span>
-                        <span className="text-[9px] text-muted-foreground">{n.timestamp}</span>
+                  notifications.map((n) => {
+                    const borderColor =
+                      n.type === 'CRITICAL'
+                        ? 'border-l-red-500 bg-red-950/20'
+                        : n.type === 'WARNING'
+                        ? 'border-l-amber-500 bg-amber-950/20'
+                        : n.type === 'SUCCESS'
+                        ? 'border-l-emerald-500 bg-emerald-950/20'
+                        : 'border-l-sky-500 bg-sky-950/20';
+
+                    return (
+                      <div
+                        key={n.id}
+                        onClick={() => {
+                          sound.playClickSound();
+                          markNotificationAsRead(n.id);
+                        }}
+                        className={`p-3 rounded-xl text-xs border border-border/50 border-l-4 transition-all ${borderColor} ${
+                          n.read ? 'opacity-60' : 'shadow-md opacity-100'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <span className="font-extrabold text-foreground text-xs leading-snug">
+                            {n.title}
+                          </span>
+                          <span className="text-[9px] font-mono text-muted-foreground shrink-0 mt-0.5">
+                            {n.timestamp}
+                          </span>
+                        </div>
+                        <p className="text-[11px] leading-relaxed text-slate-300">
+                          {n.message}
+                        </p>
+                        {n.link && (
+                          <div className="mt-2 pt-1.5 border-t border-white/5 flex justify-end">
+                            <Link
+                              to={n.link}
+                              onClick={() => {
+                                setNotifMenuOpen(false);
+                                markNotificationAsRead(n.id);
+                              }}
+                              className="text-[10px] font-bold text-primary hover:text-primary-foreground hover:bg-primary/20 px-2 py-0.5 rounded transition-all inline-flex items-center gap-1"
+                            >
+                              <span>Inspect Lead</span>
+                              <ChevronRight className="h-3 w-3" />
+                            </Link>
+                          </div>
+                        )}
                       </div>
-                      <p className="text-[11px] leading-tight text-muted-foreground">{n.message}</p>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </div>
@@ -300,6 +494,32 @@ export function TopNav() {
                 </div>
               </div>
 
+              {/* Figma Theme Selector */}
+              <div>
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
+                  Figma Sovereign Theme
+                </label>
+                <div className="grid grid-cols-2 gap-1">
+                  {FIGMA_THEME_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.id}
+                      onClick={() => {
+                        sound.playClickSound();
+                        setFigmaTheme(opt.id);
+                      }}
+                      className={`flex items-center gap-1.5 px-2 py-1.5 text-[11px] rounded-md transition-colors ${
+                        figmaTheme === opt.id
+                          ? 'bg-primary text-primary-foreground font-bold'
+                          : 'bg-muted/50 hover:bg-muted text-muted-foreground'
+                      }`}
+                    >
+                      <span>{opt.icon}</span>
+                      <span className="truncate">{opt.name.split(' ')[0]}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {/* Interactive Features (Tour & Demo) */}
               <div className="pt-2 border-t border-border flex items-center gap-2">
                 <button
@@ -325,9 +545,13 @@ export function TopNav() {
                 </button>
 
                 <button
-                  onClick={toggleTheme}
+                  onClick={() => {
+                    sound.playClickSound();
+                    toggleTheme();
+                  }}
                   className="p-2 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  title="Toggle Theme"
+                  title="Toggle Light/Dark"
+                  aria-label="Toggle Light/Dark"
                 >
                   {theme === 'dark' ? (
                     <Sun className="h-3.5 w-3.5 text-amber-400" />
@@ -340,18 +564,19 @@ export function TopNav() {
           )}
         </div>
 
-        {/* User Profile & Logout */}
-        <div className="flex items-center gap-2 pl-1 border-l border-border/60">
+        {/* User Status Badge & Logout (No repeated name/role; full profile is in Sidebar) */}
+        <div className="flex items-center gap-2 pl-2 border-l border-border/60">
           <div className="flex items-center gap-2">
+            <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-[11px] font-semibold text-emerald-400 font-mono tracking-wide">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              GRID ACTIVE
+            </span>
             <img
               src={currentUser?.avatar}
               alt={currentUser?.name || 'User'}
               className="h-8 w-8 rounded-full object-cover border border-primary/30"
+              title={`${currentUser?.name} (${activeRole})`}
             />
-            <div className="hidden lg:flex flex-col text-left">
-              <span className="text-xs font-bold text-foreground leading-none">{currentUser?.name}</span>
-              <span className="text-[10px] text-muted-foreground mt-0.5">{activeRole}</span>
-            </div>
           </div>
           <Button
             variant="ghost"
@@ -371,6 +596,18 @@ export function TopNav() {
 
       {/* Investigating Officer Interactive Onboarding Tour */}
       <OnboardingTour isOpen={tourOpen} onClose={() => setTourOpen(false)} />
+
+      {/* 15 Statutory Criminal Rules & Remand Guard Modal */}
+      <StatutoryRulesModal
+        isOpen={statutoryRulesOpen}
+        onClose={() => setStatutoryRulesOpen(false)}
+      />
+
+      {/* Global Keyboard Shortcuts Modal */}
+      <KeyboardShortcutsModal
+        isOpen={shortcutsOpen}
+        onClose={() => setShortcutsOpen(false)}
+      />
     </header>
   );
 }

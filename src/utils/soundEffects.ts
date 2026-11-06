@@ -16,13 +16,50 @@ class SoundController {
       }
     }
     if (this.ctx && this.ctx.state === 'suspended') {
-      this.ctx.resume();
+      void this.ctx.resume().catch(() => {});
     }
     return this.ctx;
   }
 
   public setEnabled(enabled: boolean) {
     this.enabled = enabled;
+  }
+
+  public isEnabled(): boolean {
+    return this.enabled;
+  }
+
+  public toggleMute(): boolean {
+    this.enabled = !this.enabled;
+    return this.enabled;
+  }
+
+  /** Warning sound for compliance violation or hash mismatch */
+  public playWarningChime() {
+    if (!this.enabled) return;
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    try {
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(320, now);
+      osc.frequency.setValueAtTime(240, now + 0.1);
+
+      gain.gain.setValueAtTime(0.04, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.25);
+    } catch {
+      // Graceful fallback
+    }
   }
 
   /** Subtle tactical radar ping (e.g., map waypoint / distance measurement) */

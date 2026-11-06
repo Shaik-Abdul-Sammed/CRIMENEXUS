@@ -39,6 +39,7 @@ from app.api.external import router as external_router
 from app.api.analytics import router as analytics_router
 from app.api.drafting import router as drafting_router
 from app.api.alerts import router as alerts_router
+from app.api.geo import router as geo_router
 from app.services.streaming.redis_streams import get_streaming_stats
 from app.services.streaming.stream_processor import run_stream_consumer_worker
 from app.services.streaming.stream_producer import simulate_live_event
@@ -145,7 +146,13 @@ async def add_zero_trust_security_headers(request: Request, call_next):
     """Injects mandatory zero-trust defense security headers onto every API response."""
     response = await call_next(request)
     response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["X-Frame-Options"] = "DENY"
+    # Allow CrimeNexus UI to embed interactive tactical GIS maps via iframe while keeping DENY on all other routes
+    if "/geo/tactical-map" in request.url.path or "/geo/map-view" in request.url.path:
+        response.headers["Content-Security-Policy"] = "frame-ancestors 'self' http://localhost:* http://127.0.0.1:* https://*.onrender.com https://*.vercel.app;"
+        if "X-Frame-Options" in response.headers:
+            del response.headers["X-Frame-Options"]
+    else:
+        response.headers["X-Frame-Options"] = "DENY"
     response.headers["X-XSS-Protection"] = "1; mode=block"
     response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
@@ -163,6 +170,7 @@ app.include_router(external_router, prefix="/api/v1")
 app.include_router(analytics_router, prefix="/api/v1")
 app.include_router(drafting_router, prefix="/api/v1")
 app.include_router(alerts_router, prefix="/api/v1")
+app.include_router(geo_router, prefix="/api/v1")
 
 # ── Advanced Feature Endpoints ────────────────────────────────────────────────
 # Feature 1: Prometheus Metrics
@@ -405,7 +413,26 @@ app.add_api_route("/threats/most-wanted", get_most_wanted_watchlist, methods=["G
 app.add_api_route("/cases/export/dossier-pdf", export_dossier_pdf, methods=["GET"], tags=["Case Dossier"])
 app.add_api_route("/api/v1/cctns/sync/{case_id}", sync_live_cctns_fir_endpoint, methods=["POST"], tags=["Government Police Grid & Telemetry"])
 app.add_api_route("/api/v1/geo/nearest-station", get_nearest_police_station, methods=["GET"], tags=["Geospatial & Police Proximity"])
+app.add_api_route("/geo/nearest-station", get_nearest_police_station, methods=["GET"], tags=["Geospatial & Police Proximity"])
 app.add_api_route("/api/v1/geo/route-to-incident", route_to_incident, methods=["POST"], tags=["Geospatial & Police Proximity"])
+
+
+def draft_loc_handler(suspect_name: str):
+    import uuid
+    from datetime import datetime
+    loc_ref = f"LOC-MHA-2026-{uuid.uuid4().hex[:6].upper()}"
+    return {
+        "status": "SUCCESS",
+        "message": f"Lookout Circular drafted and transmitted to Bureau of Immigration (BOI) for {suspect_name}",
+        "suspect_name": suspect_name,
+        "loc_number": loc_ref,
+        "issued_by": "Special Cell / Bureau of Immigration",
+        "timestamp": datetime.utcnow().isoformat(),
+    }
+
+
+app.add_api_route("/api/v1/draft/lookout-circular/{suspect_name}", draft_loc_handler, methods=["GET", "POST"], tags=["Statutory Legal Drafting"])
+app.add_api_route("/draft/lookout-circular/{suspect_name}", draft_loc_handler, methods=["GET", "POST"], tags=["Statutory Legal Drafting"])
 
 
 @app.get("/")

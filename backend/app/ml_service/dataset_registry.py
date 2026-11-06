@@ -431,7 +431,8 @@ def _build_osm_police_stations_df() -> pd.DataFrame:
         ("Delhi", "DELHI_SOUTH", "Hauz Khas Police Station", 28.5482, 77.2045),
         ("Uttar Pradesh", "NOIDA", "Noida Sector 20 Police Station", 28.5830, 77.3320),
         ("Uttar Pradesh", "NOIDA", "Noida Sector 62 Police Post", 28.6280, 77.3649),
-        ("Uttar Pradesh", "NOIDA", "Yamuna Expressway KM 48 Checkpoint PS", 28.1402, 77.5510),
+        ("Uttar Pradesh", "JEWAR_NOIDA", "Jewar Police Station (Yamuna Expressway Jurisdiction)", 28.1285, 77.5562),
+        ("Uttar Pradesh", "JEWAR_NOIDA", "Rabupura Police Station", 28.2435, 77.6020),
         ("Haryana", "GURUGRAM", "Gurugram DLF Phase 1 Police Station", 28.4720, 77.0890),
         ("Haryana", "GURUGRAM", "Cyber Hub Police Post Gurugram", 28.4950, 77.0895),
 

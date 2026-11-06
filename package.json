@@ -4,8 +4,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "start": "./start.sh",
-    "dev:all": "./start.sh",
+    "start": "bash run.sh",
+    "dev:all": "bash run.sh",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { Clock, AlertOctagon, Scale, CheckCircle2, RefreshCw } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
@@ -58,14 +59,22 @@ export function RemandDeadlinesWidget() {
   ]);
 
   const [loading, setLoading] = useState(false);
+  const isOfflineRef = useRef<boolean>(false);
+  const consecutiveFailuresRef = useRef<number>(0);
 
   const fetchCustodyData = async () => {
+    // If backend is offline, back off and poll only every ~30s
+    if (isOfflineRef.current && consecutiveFailuresRef.current % 3 !== 0) {
+      consecutiveFailuresRef.current++;
+      return;
+    }
+
     setLoading(true);
     try {
       const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
       const [sumRes, actRes] = await Promise.all([
-        axios.get(`${baseURL}/legal/custody/summary`, { timeout: 10000 }),
-        axios.get(`${baseURL}/legal/custody/active`, { timeout: 10000 }),
+        axios.get(`${baseURL}/legal/custody/summary`, { timeout: 3000 }),
+        axios.get(`${baseURL}/legal/custody/active`, { timeout: 3000 }),
       ]);
       if (sumRes.data) setSummary(sumRes.data);
       if (actRes.data && Array.isArray(actRes.data)) {
@@ -73,7 +82,11 @@ export function RemandDeadlinesWidget() {
           setActiveCustodies(actRes.data);
         }
       }
+      isOfflineRef.current = false;
+      consecutiveFailuresRef.current = 0;
     } catch {
+      isOfflineRef.current = true;
+      consecutiveFailuresRef.current++;
       // Resilient fallback values preserved
     } finally {
       setLoading(false);
@@ -106,7 +119,7 @@ export function RemandDeadlinesWidget() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {summary.magistrate_production_due_today > 0 && (
             <Badge className="bg-red-500/20 text-red-400 border border-red-500/40 text-xs px-2 py-0.5">
               <AlertOctagon className="h-3 w-3 mr-1" />
@@ -186,10 +199,19 @@ export function RemandDeadlinesWidget() {
                     </div>
                   </div>
 
-                  <div>
+                  <div className="flex items-center gap-1.5 shrink-0">
                     <span className={`px-2 py-1 text-[10px] font-bold rounded border uppercase ${badgeColor}`}>
                       {isRed ? 'URGENT: DUE TODAY' : isYellow ? '7-DAY WARNING' : 'COMPLIANT'}
                     </span>
+                    {isRed && (
+                      <Link
+                        to={`/drafting?case=${encodeURIComponent(c.case_id)}&suspect=${encodeURIComponent(c.suspect_name)}`}
+                        className="px-2 py-1 text-[10px] font-bold rounded bg-red-600 hover:bg-red-700 text-white transition-colors"
+                        title="Draft Remand Application for Judicial Magistrate"
+                      >
+                        Draft Remand
+                      </Link>
+                    )}
                   </div>
                 </div>
               );

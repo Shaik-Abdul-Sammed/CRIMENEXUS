@@ -153,7 +153,10 @@ backend/.venv/
 **/venv/
 **/.venv/
 __pycache__/
+**/__pycache__/
 *.py[cod]
+*.pyc
+*.pyo
 *$py.class
 *.egg-info/
 .pytest_cache/
@@ -164,6 +167,12 @@ test-results/
 frontend/node_modules
 frontend/node_modules/
 .vitest/
+
+# ML Model checkpoints & Large Binary artifacts
+backend/app/ml_service/models/*.pkl
+backend/app/ml_service/models/*.csv
+backend/app/ml_service/models/fir_training_data.json
+backend/app/ml_service/models/transaction_training_data.json
 
 # Test Coverage & Profiling
 .coverage

@@ -3,7 +3,8 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
+  :root,
+  .theme-palantir {
     --background: 222 47% 11%;
     --foreground: 210 40% 98%;
 
@@ -35,7 +36,8 @@
     --radius: 0.5rem;
   }
 
-  .light {
+  .light,
+  .theme-daylight {
     --background: 210 40% 98%;
     --foreground: 222 47% 11%;
 
@@ -64,6 +66,66 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
   }
+
+  .theme-cyber-matrix {
+    --background: 160 84% 3%;
+    --foreground: 150 40% 95%;
+
+    --card: 165 50% 6%;
+    --card-foreground: 150 40% 98%;
+
+    --popover: 165 50% 6%;
+    --popover-foreground: 150 40% 98%;
+
+    --primary: 158 64% 52%;
+    --primary-foreground: 160 84% 3%;
+
+    --secondary: 165 35% 12%;
+    --secondary-foreground: 150 40% 95%;
+
+    --muted: 165 30% 12%;
+    --muted-foreground: 155 20% 65%;
+
+    --accent: 165 40% 16%;
+    --accent-foreground: 150 40% 98%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 165 35% 18%;
+    --input: 165 35% 18%;
+    --ring: 158 64% 52%;
+  }
+
+  .theme-amber-tactical {
+    --background: 30 20% 5%;
+    --foreground: 45 40% 95%;
+
+    --card: 30 25% 9%;
+    --card-foreground: 45 40% 98%;
+
+    --popover: 30 25% 9%;
+    --popover-foreground: 45 40% 98%;
+
+    --primary: 38 92% 50%;
+    --primary-foreground: 30 20% 5%;
+
+    --secondary: 35 25% 15%;
+    --secondary-foreground: 45 40% 95%;
+
+    --muted: 35 20% 15%;
+    --muted-foreground: 40 20% 65%;
+
+    --accent: 35 30% 20%;
+    --accent-foreground: 45 40% 98%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 35 25% 22%;
+    --input: 35 25% 22%;
+    --ring: 38 92% 50%;
+  }
 }
 
 /* Custom Scrollbar */
@@ -86,4 +148,77 @@
   background: rgba(15, 23, 42, 0.75);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ACCESSIBILITY FOCUS VISIBLE SYSTEM */
+:focus-visible {
+  outline: 2px solid #f59e0b !important;
+  outline-offset: 2px !important;
+}
+
+/* OVERFLOW AND BREAKAGE PREVENTION UTILITIES */
+.table-container-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+
+.hash-break {
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
+
+/* SAFE MODAL BODY SCROLL */
+.modal-body-scroll {
+  max-height: calc(85vh - 120px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* COURT ADMISSIBLE PRINT STYLES */
+@media print {
+  /* Hide non-printable navigation, sidebar, floating tools and action buttons */
+  header,
+  nav,
+  aside,
+  button:not(.printable-btn),
+  .no-print,
+  #top-nav,
+  #app-sidebar,
+  .toast-container {
+    display: none !important;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+  }
+
+  .card,
+  .glass-panel,
+  div {
+    box-shadow: none !important;
+    background: transparent !important;
+    color: #000000 !important;
+    border-color: #cbd5e1 !important;
+  }
+
+  /* Prevent page-break inside table rows and cards */
+  tr,
+  .page-break-avoid {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  th, td {
+    border: 1px solid #94a3b8 !important;
+    padding: 6px !important;
+    color: #000000 !important;
+  }
 }

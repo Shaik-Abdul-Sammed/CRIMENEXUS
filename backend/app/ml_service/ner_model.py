@@ -1,3 +1,4 @@
+import os
 import re
 import logging
 from typing import Dict, Any, List
@@ -31,6 +32,17 @@ class PoliceFIRNamedEntityRecognizer:
 
     def __init__(self):
         self.version = "1.2.0-police-in"
+        self.spacy_nlp = None
+        self.model_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models", "fir_ner_model")
+        if os.path.exists(self.model_dir):
+            try:
+                import spacy
+                self.spacy_nlp = spacy.load(self.model_dir)
+                logger.info("PoliceFIRNamedEntityRecognizer loaded trained spaCy model from %s", self.model_dir)
+            except Exception as exc:
+                logger.warning("Could not load spaCy model from %s: %s. Using rule-based fallback.", self.model_dir, exc)
+        else:
+            logger.warning("spaCy FIR NER model directory (%s) not found on startup. Using rule-based fallback.", self.model_dir)
         logger.info("PoliceFIRNamedEntityRecognizer initialized (version: %s)", self.version)
 
     def extract_entities(self, text: str) -> Dict[str, List[Dict[str, Any]]]:

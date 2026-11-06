@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Activity, Zap, Landmark, Phone, Car, FileText } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
@@ -25,15 +25,27 @@ export function LiveIngestionWidget() {
     last_event_time: new Date().toISOString(),
   });
   const [simulating, setSimulating] = useState(false);
+  const isOfflineRef = useRef<boolean>(false);
+  const consecutiveFailuresRef = useRef<number>(0);
 
   const fetchStats = async () => {
+    // If backend is offline, back off and poll only every ~30s to prevent spamming failed requests
+    if (isOfflineRef.current && consecutiveFailuresRef.current % 6 !== 0) {
+      consecutiveFailuresRef.current++;
+      return;
+    }
+
     try {
       const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
-      const res = await axios.get(`${baseURL}/streaming/stats`, { timeout: 10000 });
+      const res = await axios.get(`${baseURL}/streaming/stats`, { timeout: 3000 });
       if (res.data) {
         setStats(res.data);
+        isOfflineRef.current = false;
+        consecutiveFailuresRef.current = 0;
       }
     } catch {
+      isOfflineRef.current = true;
+      consecutiveFailuresRef.current++;
       // Keep resilient fallback stats
     }
   };

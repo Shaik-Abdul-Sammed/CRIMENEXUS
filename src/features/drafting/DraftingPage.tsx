@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import {
   FileText,
@@ -28,19 +29,89 @@ interface DraftMetaInfo {
   [key: string]: unknown;
 }
 
+export const PRO_FIR_SCENARIOS = [
+  {
+    id: 'CYBER_HAWALA',
+    title: 'Cyber Financial Fraud & Hawala Syndicate',
+    shortName: 'Cyber Fraud & Mule',
+    statute: 'Sec 318(4), 111 BNS • Sec 66D IT Act • PMLA 3/4',
+    badge: 'Financial Forensics',
+    color: '#3B82F6',
+    complainant: 'Rajiv Mehrotra (Accounts Head, Technocrat Solutions Ltd.)',
+    station: 'Cyber Crime Police Station, Sector 20, Noida',
+    io: 'Inspector Rajesh Varma (Cyber Investigation Cell)',
+    narrative: 'On 28-Oct-2026, complainant reported unauthorized cyber fund smurfing. Suspect Rajan Verma operating vehicle TS 09 AB 1234 coordinated 14 structured deposits of ₹49,000 each (totaling ₹6,86,000) within 48 hours across mule accounts in HDFC Bank Karol Bagh. Digital forensics confirmed funds funneled through telegram cyber bots and immediate ATM withdrawals across Noida Sector 62. Electronic evidence sealed under Section 63 BSA.',
+  },
+  {
+    id: 'HIGHWAY_DACOITY',
+    title: 'Armed Highway Dacoity & Vehicle Extortion',
+    shortName: 'Armed Dacoity',
+    statute: 'Sec 310(2), 308(2), 111 BNS • Arms Act 25/27',
+    badge: 'Armed Inter-State',
+    color: '#EF4444',
+    complainant: 'Manish Rawat (Driver, Inter-State Logistics Freight)',
+    station: 'Yamuna Expressway KM 48 Checkpoint PS',
+    io: 'Sub-Inspector Ankit Sharma',
+    narrative: 'On 01-Nov-2026 at 02:30 AM at KM 48 Yamuna Expressway, five armed individuals in a Black Mahindra Scorpio bearing forged plate TS 09 AB 1234 intercepted complainant freight carrier. Accused brandished country-made firearms (.315 bore), physically assaulted cleaner, and looted ₹4,20,000 freight payment cash. ANPR optical cameras captured suspect vehicle getaway heading towards Mathura. Firearm shell casings preserved.',
+  },
+  {
+    id: 'COMMERCIAL_NARCOTICS',
+    title: 'Inter-State Commercial Narcotics Cartel & Hawala',
+    shortName: 'Commercial NDPS',
+    statute: 'Sec 21(c), 29 NDPS Act, 1985 • Sec 111 BNS',
+    badge: 'Organized Cartel',
+    color: '#10B981',
+    complainant: 'Sub-Inspector K.P. Singh (Anti-Narcotics Task Force)',
+    station: 'Special Cell Police Station, Lodhi Colony, Delhi',
+    io: 'ACP Surender Kumar',
+    narrative: 'During tactical vehicle naka checking at NH-48 toll, secret informant intelligence intercepted a modified carrier vehicle. Search yielded 1.4 kg commercial contraband concealed in hidden false cavity under passenger floorboard. Driver confessed to transporting consignments for inter-state cartel led by Rajan Verma. Intercepted telecom chats confirm encrypted VoIP coordination and token code handover ("₹10 currency serial ending 9812").',
+  },
+  {
+    id: 'OBD_VEHICLE_THEFT',
+    title: 'High-Tech OBD Vehicle Theft with Cloned FASTag',
+    shortName: 'OBD Auto Theft',
+    statute: 'Sec 303(2), 336(3) BNS • Motor Vehicles Act 192',
+    badge: 'Auto-Theft Syndicate',
+    color: '#F59E0B',
+    complainant: 'Dr. Sunita Kapoor (Resident, Sector 62, Noida)',
+    station: 'Police Station Sector 58, Gautam Buddha Nagar',
+    io: 'Sub-Inspector Vikram Singh',
+    narrative: 'On 02-Nov-2026 between 03:00 to 03:45 AM, complainant high-end SUV was stolen from residential parking without physical glass breakage. Society CCTV footage shows two masked suspects using an electronic radio frequency jammer and OBD-II port hacking scanner to bypass engine immobilizer. Suspects cloned victim FASTag RFID with a forged tag to cross toll plazas undetected.',
+  },
+  {
+    id: 'KIDNAPPING_EXTORTION',
+    title: 'Kidnapping for Ransom & VoIP Extortion',
+    shortName: 'Kidnapping Ransom',
+    statute: 'Sec 140(2), 308(4) BNS • Sec 25 Telegraph Act',
+    badge: 'Heinous Violent Crime',
+    color: '#A855F7',
+    complainant: 'Harish Chawla (Industrialist, Okhla Industrial Area)',
+    station: 'Crime Branch Police Station, Sunlight Colony, Delhi',
+    io: 'Inspector Pradeep Rathore',
+    narrative: 'On 03-Nov-2026 at 19:15 hrs, 22-year-old student abducted near Sector 62 metro station while returning home. Complainant received multiple extortion VoIP voice calls from virtual masked numbers demanding ₹50,00,000 ransom under threat of death. Cellular tower dump triangulated burner device co-location in Mayur Vihar corridor. Voice biometrics wiretap matched enrolled audio voiceprint of syndicate operative.',
+  },
+];
+
 export function DraftingPage() {
   const toast = useToast();
-  const [activeTab, setActiveTab] = useState<TabType>('FIR');
+  const [searchParams] = useSearchParams();
+  const initialCase = searchParams.get('case') || 'FIR-2026-DEL-8902';
+  const initialSuspect = searchParams.get('suspect') || 'Rajan (Hawala Mastermind)';
+
+  const [activeTab, setActiveTab] = useState<TabType>(
+    searchParams.get('case') ? 'CHARGE_SHEET' : 'FIR'
+  );
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [selectedScenarioId, setSelectedScenarioId] = useState<string>('CYBER_HAWALA');
 
   // Form inputs
   const [firNarrative, setFirNarrative] = useState(
     'On 28-Oct-2026, complainant reported unauthorized smurfing transactions. Suspect Rajan operating vehicle TS 09 AB 1234 transacted structured funds under 50,000 threshold across mule accounts in Karol Bagh.'
   );
-  const [chargeSheetCaseId, setChargeSheetCaseId] = useState('FIR-2026-DEL-8902');
-  const [chargeSheetAccused, setChargeSheetAccused] = useState('Rajan (Hawala Mastermind)');
+  const [chargeSheetCaseId, setChargeSheetCaseId] = useState(initialCase);
+  const [chargeSheetAccused, setChargeSheetAccused] = useState(initialSuspect);
   const [bankAccount, setBankAccount] = useState('ACC-HDFC-908122');
   const [bankIfsc, setBankIfsc] = useState('HDFC0001244');
   const [bankName, setBankName] = useState('HDFC Bank Ltd.');
@@ -242,20 +313,60 @@ CASE/ACCUSED: ${activeTab === 'BANK_NOTICE' ? bankAccount : locSuspect}
             </CardHeader>
             <CardContent className="p-4 space-y-4">
               {activeTab === 'FIR' && (
-                <div className="space-y-2">
-                  <label className="text-xs font-semibold text-foreground">
-                    Police Complaint / Ingestion Narrative
-                  </label>
-                  <textarea
-                    rows={6}
-                    value={firNarrative}
-                    onChange={(e) => setFirNarrative(e.target.value)}
-                    className="w-full p-3 rounded-lg border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary leading-relaxed font-mono"
-                    placeholder="Enter incident facts, suspect details, bank accounts, or vehicle numbers..."
-                  />
-                  <p className="text-[11px] text-muted-foreground">
-                    ChromaDB RAG retrieves relevant IPC / BNS sections and formats Section 173 BNSS FIR.
-                  </p>
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                        <Sparkles className="h-3.5 w-3.5 text-primary" />
+                        <span>Select Statutory Scenario (Pro Presets)</span>
+                      </label>
+                      <span className="text-[10px] text-muted-foreground font-mono">5 Domains Available</span>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 mb-3">
+                      {PRO_FIR_SCENARIOS.map((sc) => {
+                        const isSelected = selectedScenarioId === sc.id;
+                        return (
+                          <button
+                            key={sc.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedScenarioId(sc.id);
+                              setFirNarrative(sc.narrative);
+                            }}
+                            className={`p-2 rounded-lg border text-left transition-all ${
+                              isSelected
+                                ? 'border-primary bg-primary/15 shadow-sm ring-1 ring-primary/40'
+                                : 'border-border bg-background hover:border-primary/40 text-muted-foreground'
+                            }`}
+                          >
+                            <span className="text-[11px] font-bold text-foreground block truncate">
+                              {sc.shortName}
+                            </span>
+                            <span className="text-[9px] font-mono text-primary block truncate">
+                              {sc.badge}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-foreground">
+                      Police Complaint & Investigation Narrative
+                    </label>
+                    <textarea
+                      rows={6}
+                      value={firNarrative}
+                      onChange={(e) => setFirNarrative(e.target.value)}
+                      className="w-full p-3 rounded-lg border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary leading-relaxed font-mono"
+                      placeholder="Enter incident facts, suspect details, bank accounts, or vehicle numbers..."
+                    />
+                    <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                      <span>RAG retrieves statutory BNS, IT Act & PMLA enactments</span>
+                      <span className="font-mono text-[10px] text-emerald-400">Section 173 BNSS Certified</span>
+                    </div>
+                  </div>
                 </div>
               )}
 

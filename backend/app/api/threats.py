@@ -185,7 +185,7 @@ def get_entity_risk_score(identifier: str) -> Dict[str, Any]:
             "risk_score": 85,
             "overall_threat_score": 85,
             "risk_level": "CRITICAL",
-            "explanation": "Model fallback due to missing data",
+            "explanation": "Heuristic fallback used due to missing model data",
             "factors": {
                 "financial_score": 88.0,
                 "telecom_score": 82.0,

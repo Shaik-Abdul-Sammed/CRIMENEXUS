@@ -16,6 +16,9 @@ import {
   Smartphone,
   Share2,
   AlertTriangle,
+  Download,
+  Copy,
+  Check,
 } from 'lucide-react';
 import { useEntities, useResolutionCandidates } from '../../hooks/useIntelligenceApi';
 import { EntityType } from '../../types';
@@ -24,13 +27,54 @@ import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { getRiskColorClass } from '../../utils/formatters';
+import { sound } from '../../utils/soundEffects';
+import { useToast } from '../../components/ui/Toast';
 
 export function EntitiesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('ALL');
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
+  const toast = useToast();
   const { data: entities, isLoading } = useEntities('ALL', typeFilter);
   const { data: candidates } = useResolutionCandidates();
+
+  const handleCopyValue = (text: string, id: string) => {
+    sound.playClickSound();
+    navigator.clipboard.writeText(text);
+    setCopiedKey(id);
+    toast.success(`Copied: ${text}`, 'Entity Attribute Copied');
+    setTimeout(() => setCopiedKey(null), 2000);
+  };
+
+  const handleExportCsv = () => {
+    sound.playClickSound();
+    if (!filtered || filtered.length === 0) {
+      toast.warning('No entities to export under current filter.', 'Export Skipped');
+      return;
+    }
+
+    const headers = ['Entity ID', 'Name', 'Type', 'Risk Level', 'Review Status', 'Confidence', 'Attributes'];
+    const rows = filtered.map((e) => [
+      `"${e.id}"`,
+      `"${e.name.replace(/"/g, '""')}"`,
+      `"${e.type}"`,
+      `"${e.riskLevel}"`,
+      `"${e.reviewStatus}"`,
+      `"${(e.confidence * 100).toFixed(0)}%"`,
+      `"${Object.entries(e.attributes).map(([k, v]) => `${k}:${v}`).join('; ').replace(/"/g, '""')}"`,
+    ]);
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `CRIMENEXUS_Entities_Manifest_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success(`Exported ${filtered.length} entities to CSV manifest.`, 'CSV Export Ready');
+  };
 
   const getEntityIcon = (type: EntityType) => {
     switch (type) {
@@ -77,11 +121,21 @@ export function EntitiesPage() {
             Structured entities cataloged across investigations with confidence scores and verification status.
           </p>
         </div>
-        <Link to="/entity-resolution">
-          <Button variant="outline" icon={<AlertTriangle className="h-4 w-4 text-amber-400" />}>
-            Duplicate Candidate Resolution ({candidates?.filter((c) => c.status === 'PENDING').length || 0})
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={handleExportCsv}
+            icon={<Download className="h-4 w-4 text-emerald-400" />}
+            title="Download CSV manifest of all filtered entities"
+          >
+            Export Directory CSV
           </Button>
-        </Link>
+          <Link to="/entity-resolution">
+            <Button variant="outline" icon={<AlertTriangle className="h-4 w-4 text-amber-400" />}>
+              Resolution ({candidates?.filter((c) => c.status === 'PENDING').length || 0})
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Filter Bar */}
@@ -125,9 +179,27 @@ export function EntitiesPage() {
       {/* Entity Cards Grid */}
       {isLoading ? (
         <div className="p-12 text-center text-xs text-muted-foreground">Loading entity catalog...</div>
+      ) : !filtered || filtered.length === 0 ? (
+        <div className="p-12 text-center rounded-xl border border-dashed border-border bg-card/40 space-y-3">
+          <Users2 className="h-10 w-10 text-muted-foreground/60 mx-auto" />
+          <h3 className="text-sm font-bold text-foreground">No Entities Found</h3>
+          <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+            No entities matched your search query &quot;{searchTerm}&quot; or type filter &quot;{typeFilter}&quot;.
+          </p>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              setSearchTerm('');
+              setTypeFilter('ALL');
+            }}
+          >
+            Clear Filters
+          </Button>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered?.map((item) => (
+          {filtered.map((item) => (
             <Card key={item.id} className="flex flex-col justify-between hover:border-primary/50 transition-all">
               <CardHeader className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -144,12 +216,35 @@ export function EntitiesPage() {
 
               <CardContent className="space-y-3 flex-1 text-xs">
                 <div className="p-3 rounded-lg bg-background/60 border border-border/50 space-y-1.5 text-[11px]">
-                  {Object.entries(item.attributes).map(([k, v]) => (
-                    <div key={k} className="flex justify-between border-b border-border/40 pb-1 last:border-0 last:pb-0">
-                      <span className="text-muted-foreground capitalize">{k}:</span>
-                      <span className="font-semibold text-foreground truncate max-w-[140px]">{String(v)}</span>
-                    </div>
-                  ))}
+                  {Object.entries(item.attributes).map(([k, v]) => {
+                    const strVal = String(v);
+                    const copyId = `${item.id}-${k}`;
+                    return (
+                      <div key={k} className="flex justify-between items-center border-b border-border/40 pb-1 last:border-0 last:pb-0">
+                        <span className="text-muted-foreground capitalize shrink-0 mr-2">{k}:</span>
+                        <div className="flex items-center gap-1 min-w-0">
+                          <span
+                            className="font-semibold text-foreground truncate max-w-[150px] font-mono select-all"
+                            title={strVal}
+                          >
+                            {strVal}
+                          </span>
+                          <button
+                            onClick={() => handleCopyValue(strVal, copyId)}
+                            className="text-muted-foreground hover:text-foreground p-0.5 rounded transition-colors shrink-0"
+                            title="Copy full attribute value"
+                            aria-label={`Copy ${k}`}
+                          >
+                            {copiedKey === copyId ? (
+                              <Check className="h-3 w-3 text-emerald-400" />
+                            ) : (
+                              <Copy className="h-3 w-3" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1">
