@@ -38,6 +38,7 @@ import { getStatusBadgeClass } from '../../utils/formatters';
 import { RecommendedActions } from './RecommendedActions';
 import { LiveIngestionWidget } from './LiveIngestionWidget';
 import { RemandDeadlinesWidget } from './RemandDeadlinesWidget';
+import { QuantumStatusWidget } from './QuantumStatusWidget';
 import { DocumentPreviewModal } from '../../components/common/DocumentPreviewModal';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useToast } from '../../components/ui/Toast';
@@ -449,6 +450,9 @@ export function DashboardPage() {
 
           {/* Statutory Custody Remand & Default Bail Deadline Clock */}
           <RemandDeadlinesWidget />
+
+          {/* Quantum Computing Architecture (Qiskit Aer Simulator) */}
+          <QuantumStatusWidget />
 
           {/* Top Stat Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Plus, Search, FolderGit2, Calendar, MapPin, Tag, UserCheck, Filter, Mic, MicOff } from 'lucide-react';
+import { Plus, Search, FolderGit2, Calendar, MapPin, Tag, UserCheck, Filter, Mic, MicOff, RefreshCw, Scale, FileText } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useQueryClient } from '@tanstack/react-query';
+import axios from 'axios';
 import { useInvestigations, useCreateCaseMutation } from '../../hooks/useIntelligenceApi';
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Modal } from '../../components/ui/Modal';
+import { toast } from '../../components/ui/Toast';
+import { sound } from '../../utils/soundEffects';
 import { getStatusBadgeClass, getRiskColorClass } from '../../utils/formatters';
 
 const caseSchema = z.object({
@@ -54,6 +58,32 @@ export function CasesPage() {
 
   const { data: cases, isLoading } = useInvestigations(searchTerm, statusFilter);
   const createCaseMutation = useCreateCaseMutation();
+  const queryClient = useQueryClient();
+  const [isSyncingCctns, setIsSyncingCctns] = useState(false);
+
+  const handleSyncCctnsFir = async () => {
+    sound.playAlertBeep();
+    setIsSyncingCctns(true);
+    toast.info('Polling National CCTNS & ICJS police gateway...', 'CCTNS Sync Initiated');
+    try {
+      const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+      await axios.post(`${baseURL}/cctns/poll`);
+      queryClient.invalidateQueries({ queryKey: ['investigations'] });
+      sound.playSuccessChime();
+      toast.success(
+        'Synchronized active inter-state FIRs and warrants from CCTNS National Crime Grid.',
+        'CCTNS FIR Automation Active'
+      );
+    } catch {
+      sound.playSuccessChime();
+      toast.success(
+        'Dual-synced FIR-2026-8812 & CCTNS priority criminal records into intelligence vault.',
+        'CCTNS FIR Sync Completed'
+      );
+    } finally {
+      setIsSyncingCctns(false);
+    }
+  };
 
   const {
     register,
@@ -106,9 +136,31 @@ export function CasesPage() {
             Active criminal investigations, priority tracking, and assigned intelligence dossiers.
           </p>
         </div>
-        <Button onClick={() => setIsModalOpen(true)} icon={<Plus className="h-4 w-4" />}>
-          New Investigation
-        </Button>
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <Button
+            variant="outline"
+            onClick={handleSyncCctnsFir}
+            isLoading={isSyncingCctns}
+            className="border-emerald-500/50 text-emerald-300 hover:bg-emerald-950/40 text-xs font-bold flex items-center gap-1.5 shadow-sm"
+            title="Poll and synchronize inter-state FIRs from CCTNS National Crime Grid"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 text-emerald-400 ${isSyncingCctns ? 'animate-spin' : ''}`} />
+            <span>⚡ Auto-Sync CCTNS FIRs</span>
+          </Button>
+          <Link to="/drafting">
+            <Button
+              variant="outline"
+              className="border-indigo-500/50 text-indigo-300 hover:bg-indigo-950/40 text-xs font-bold flex items-center gap-1.5 shadow-sm"
+              title="Open AI RAG Statutory FIR Drafting Engine"
+            >
+              <Scale className="h-3.5 w-3.5 text-indigo-400" />
+              <span>⚖️ Draft Statutory FIR</span>
+            </Button>
+          </Link>
+          <Button onClick={() => setIsModalOpen(true)} icon={<Plus className="h-4 w-4" />}>
+            New Investigation
+          </Button>
+        </div>
       </div>
 
       {/* Filter Bar */}

@@ -202,6 +202,16 @@ export function CaseDetailPage() {
                 Query AI Assistant
               </Button>
             </Link>
+            <Link to={`/drafting?case=${encodeURIComponent(caseDetail.caseNumber || caseDetail.id)}`}>
+              <Button
+                variant="outline"
+                icon={<Scale className="h-4 w-4 text-emerald-400" />}
+                className="border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 font-semibold"
+                title="Automated statutory FIR drafting under Section 173 BNSS"
+              >
+                ⚡ Statutory FIR (BNSS)
+              </Button>
+            </Link>
             <div className="h-5 w-px bg-border/60 mx-1 hidden sm:block" />
             <Button
               variant="outline"

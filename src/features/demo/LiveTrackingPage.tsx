@@ -2311,7 +2311,7 @@ export function LiveTrackingPage() {
                         type="text"
                         value={typedLocationQuery}
                         onChange={(e) => handleLocationSearch(e.target.value)}
-                        placeholder="Type city, RGUKT, address, or lat,lon..."
+                        placeholder="Type Indian city, campus, station, or lat,lon (India Only)..."
                         className="w-full pl-8 pr-7 py-1 rounded bg-slate-950 border border-emerald-500/40 text-[11px] text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                         autoFocus
                       />

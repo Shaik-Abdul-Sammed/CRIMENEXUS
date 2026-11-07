@@ -326,3 +326,22 @@ In adherence to strict engineering integrity and transparent government procurem
 * **License:** MIT Open Source License
 * **Repository:** [https://github.com/Shaik-Abdul-Sammed/CRIMENEXUS](https://github.com/Shaik-Abdul-Sammed/CRIMENEXUS)
 * **Author:** CRIMENEXUS Engineering Core (Lead: Shaik Abdul Sammed)
+
+---
+
+## ⚛️ Quantum Computing Architecture (Future Upgrade)
+
+**"Quantum Doesn't Overchange"** — CRIMENEXUS uses a **Hybrid Quantum-Classical Architecture**. 
+
+We do not rely on Quantum Computers for day-to-day operations. Instead, the classical backend (FastAPI + Neo4j) handles 99% of the workload. Only the most complex, NP-Hard problems (like multi-vehicle intercept routing) are offloaded to a Quantum Simulator.
+
+### The Hybrid Workflow:
+1. **Classical Layer:** Handles user auth, FIR parsing, database queries, and UI rendering.
+2. **Quantum Layer (Optional):** Uses Qiskit to run QAOA (Quantum Approximate Optimization Algorithm) for route optimization.
+3. **Graceful Fallback:** If the Quantum Simulator is offline, the system automatically falls back to classical OSRM routing. The police officer never experiences a delay.
+
+### Why Not D-Wave?
+We use **Gate-Based Quantum Computing** (IBM/Google style) rather than Quantum Annealing (D-Wave) because Gate-Based systems allow for future integration of **Quantum Machine Learning (QML)** and **Quantum Natural Language Processing (QNLP)**.
+
+### Post-Quantum Security (PQC)
+To ensure our Section 63 BSA WORM Audit Logs survive the "Quantum Threat" (where Shor's algorithm breaks RSA/SHA-256), CRIMENEXUS is architecturally ready to migrate to Lattice-based Post-Quantum Cryptography (PQC) standards (NIST FIPS 204).

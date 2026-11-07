@@ -223,4 +223,8 @@ build/
 *.hprof
 *.heapsnapshot
 
+# Quantum Simulator Artifacts & Qiskit Cache
+*.qasm.tmp
+.qiskit/
+
 

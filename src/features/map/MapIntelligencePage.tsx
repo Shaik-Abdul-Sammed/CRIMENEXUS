@@ -286,8 +286,8 @@ export function MapIntelligencePage() {
             layout: { 'line-join': 'round', 'line-cap': 'round' },
             paint: {
               'line-color': '#00e5ff',
-              'line-width': 14,
-              'line-opacity': 0.5,
+              'line-width': ['interpolate', ['linear'], ['zoom'], 4, 10, 10, 16, 15, 22],
+              'line-opacity': 0.55,
             },
           });
         }
@@ -301,8 +301,8 @@ export function MapIntelligencePage() {
             layout: { 'line-join': 'round', 'line-cap': 'round' },
             paint: {
               'line-color': '#020617',
-              'line-width': 8.5,
-              'line-opacity': 0.95,
+              'line-width': ['interpolate', ['linear'], ['zoom'], 4, 6.5, 10, 10, 15, 14],
+              'line-opacity': 0.98,
             },
           });
         }
@@ -316,7 +316,7 @@ export function MapIntelligencePage() {
             layout: { 'line-join': 'round', 'line-cap': 'round' },
             paint: {
               'line-color': '#00e5ff',
-              'line-width': 5.5,
+              'line-width': ['interpolate', ['linear'], ['zoom'], 4, 4, 10, 6.5, 15, 9],
               'line-dasharray': [2, 2],
             },
           });
@@ -967,6 +967,9 @@ export function MapIntelligencePage() {
           }
         ]);
       });
+
+    // Auto-calculate tactical road intercept from nearest jurisdictional police station (Jewar PS) on launch
+    fetchInterceptRoute(28.1402, 77.5510);
   }, []);
 
   // 2. Trajectory, Intercept, Measurement & Crime Density Heatmap Synchronization
@@ -1184,9 +1187,9 @@ export function MapIntelligencePage() {
     }
   };
 
-  // 3. Initialize MapLibre GL Map Instance (Single Clean Lifecycle)
+  // 3. Initialize MapLibre GL Map Instance (Single Clean Lifecycle - Never destroyed)
   useEffect(() => {
-    if (!mapContainerRef.current || mapEngine !== 'maplibre') return;
+    if (!mapContainerRef.current) return;
 
     const map = new maplibregl.Map({
       container: mapContainerRef.current,
@@ -1218,54 +1221,28 @@ export function MapIntelligencePage() {
     const safeAddConnectingRoute = (targetMap: maplibregl.Map) => {
       try {
         if (!targetMap.getStyle()) return;
-        const layers = ['route', 'route-backing', 'route-glow'];
-        layers.forEach((lyr) => {
-          if (targetMap.getLayer(lyr)) {
-            try { targetMap.removeLayer(lyr); } catch {}
-          }
-        });
-        if (targetMap.getSource('route')) {
-          try { targetMap.removeSource('route'); } catch {}
-        }
-        targetMap.addSource('route', {
-          type: 'geojson',
-          data: {
-            type: 'Feature',
-            properties: { name: 'Thief to Police Intercept Corridor' },
-            geometry: {
-              type: 'LineString',
-              coordinates: [
-                [77.5510, 28.1402], // Active Wanted Suspect (V. Malhotra @ Yamuna Expressway Toll KM 48)
-                [77.5562, 28.1285], // Jewar Police Station (Yamuna Expressway Jurisdiction)
-              ],
-            },
-          },
-        });
-        targetMap.addLayer({
-          id: 'route-glow',
-          type: 'line',
-          source: 'route',
-          layout: { 'line-join': 'round', 'line-cap': 'round' },
-          paint: { 'line-color': '#10b981', 'line-width': 12, 'line-opacity': 0.35 },
-        });
-        targetMap.addLayer({
-          id: 'route-backing',
-          type: 'line',
-          source: 'route',
-          layout: { 'line-join': 'round', 'line-cap': 'round' },
-          paint: {
-            'line-color': '#022c22',
-            'line-width': 8,
-            'line-opacity': 0.95,
-          },
-        });
-        targetMap.addLayer({
-          id: 'route',
-          type: 'line',
-          source: 'route',
-          layout: { 'line-join': 'round', 'line-cap': 'round' },
-          paint: { 'line-color': '#34d399', 'line-width': 5, 'line-dasharray': [0.01, 2.0] },
-        });
+        const initialRoute: InterceptRouteInfo = {
+          distance_km: 2.32,
+          duration_minutes: 5.0,
+          police_station: 'Jewar Police Station (Yamuna PS)',
+          summary: 'Fastest police intercept route from Jewar Police Station: 2.32 km (~5.0 mins)',
+          coordinates: [
+            [77.5562, 28.1285],
+            [77.5574, 28.1265],
+            [77.5592, 28.1282],
+            [77.5601, 28.1306],
+            [77.5582, 28.1360],
+            [77.5555, 28.1387],
+            [77.5510, 28.1402],
+          ],
+        };
+        setInterceptRoute(initialRoute);
+        renderInterceptRoute(
+          targetMap,
+          initialRoute,
+          [77.5510, 28.1402],
+          [77.5562, 28.1285]
+        );
       } catch (err) {
         console.warn('Connecting route safe guard:', err);
       }
@@ -1338,6 +1315,13 @@ export function MapIntelligencePage() {
       map.remove();
       mapRef.current = null;
     };
+  }, []);
+
+  // Resize MapLibre when switching back from Python mode
+  useEffect(() => {
+    if (mapEngine === 'maplibre' && mapRef.current) {
+      setTimeout(() => mapRef.current?.resize(), 50);
+    }
   }, [mapEngine]);
 
   // Smoothly pan/center when active case coordinates shift without destroying MapLibre instance
@@ -2122,7 +2106,7 @@ export function MapIntelligencePage() {
                 type="text"
                 value={typedLocationQuery}
                 onChange={(e) => handleLocationSearchInput(e.target.value)}
-                placeholder="Type location, city, landmark, RGUKT, or coordinates (e.g. Tirupati, Jewar, 13.6288, 79.4192)..."
+                placeholder="Search any Indian city, district, campus, police station, or coordinates (India Only)..."
                 className="w-full pl-9 pr-8 py-2 rounded-lg bg-slate-900 border border-indigo-500/50 text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-sans"
                 autoFocus
               />
@@ -2350,56 +2334,57 @@ export function MapIntelligencePage() {
               </div>
             )}
 
-            {mapEngine === 'python' ? (
-              <div className="w-full h-full relative flex flex-col">
-                <div className="p-2 px-3 bg-slate-900 border-b border-slate-800 flex items-center justify-between text-xs z-10">
-                  <div className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <span className="font-bold text-slate-200">🐍 Python Folium & Leaflet GIS Engine</span>
-                    <span className="text-[10px] text-muted-foreground hidden sm:inline">(Backend GIS Service on :8000)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => {
-                        sound.playClickSound();
-                        setMapEngine('maplibre');
-                      }}
-                      className="px-2 py-0.5 rounded text-[11px] font-bold bg-blue-600/30 text-blue-300 border border-blue-500/50 hover:bg-blue-600/50 transition-colors"
-                      title="Switch to Client-Side MapLibre Renderer"
-                    >
-                      ⚡ Switch to MapLibre Client Mode
-                    </button>
-                  </div>
+            {/* Python Folium & Leaflet GIS Container (Kept in DOM to prevent tearing) */}
+            <div className={`w-full h-full relative flex flex-col ${mapEngine === 'python' ? 'flex' : 'hidden'}`}>
+              <div className="p-2 px-3 bg-slate-900 border-b border-slate-800 flex items-center justify-between text-xs z-10 shrink-0">
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="font-bold text-slate-200">🐍 Python Folium & Leaflet GIS Engine</span>
+                  <span className="text-[10px] text-muted-foreground hidden sm:inline">(Backend GIS Service on :8000)</span>
                 </div>
-                <div className="flex-1 w-full h-full relative">
-                  <iframe
-                    src={`/api/v1/geo/tactical-map?case_id=${encodeURIComponent(activeCaseId || 'CASE-2026-8812')}&lat=${dynamicCenter[1]}&lon=${dynamicCenter[0]}`}
-                    className="w-full h-full border-0"
-                    title="Python Tactical GIS Map (Folium & Leaflet Engine)"
-                  />
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      sound.playClickSound();
+                      setMapEngine('maplibre');
+                      setTimeout(() => mapRef.current?.resize(), 50);
+                    }}
+                    className="px-2 py-0.5 rounded text-[11px] font-bold bg-blue-600/30 text-blue-300 border border-blue-500/50 hover:bg-blue-600/50 transition-colors"
+                    title="Switch to Client-Side MapLibre Renderer"
+                  >
+                    ⚡ Switch to MapLibre Client Mode
+                  </button>
                 </div>
               </div>
-            ) : (
-              <>
-                {isLoading && (
-                  <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-950/80 text-xs text-slate-400" role="status" aria-live="polite">
-                    Initializing MapLibre GL JS spatial renderer...
-                  </div>
-                )}
-                <ErrorBoundary
-                  fallbackTitle="Spatial Map View Error"
-                  fallbackMessage="MapLibre GL JS spatial renderer encountered a WebGL error. Click below to reload."
-                >
-                  <div
-                    ref={mapContainerRef}
-                    role="region"
-                    aria-label="Interactive MapLibre Spatial Telemetry Map"
-                    tabIndex={0}
-                    className="w-full h-full focus:ring-2 focus:ring-primary focus:outline-none"
-                  />
-                </ErrorBoundary>
-              </>
-            )}
+              <div className="flex-1 w-full h-full min-h-[460px] relative">
+                <iframe
+                  src={`/api/v1/geo/tactical-map?case_id=${encodeURIComponent(activeCaseId || 'CASE-2026-8812')}&lat=${dynamicCenter[1]}&lon=${dynamicCenter[0]}`}
+                  className="w-full h-full border-0 absolute inset-0"
+                  title="Python Tactical GIS Map (Folium & Leaflet Engine)"
+                />
+              </div>
+            </div>
+
+            {/* MapLibre GL JS Native Spatial Container (PERSISTED IN DOM - Never destroyed on engine toggle) */}
+            <div className={`w-full h-full relative ${mapEngine === 'maplibre' ? 'block' : 'hidden'}`}>
+              {isLoading && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-950/80 text-xs text-slate-400" role="status" aria-live="polite">
+                  Initializing MapLibre GL JS spatial renderer...
+                </div>
+              )}
+              <ErrorBoundary
+                fallbackTitle="Spatial Map View Error"
+                fallbackMessage="MapLibre GL JS spatial renderer encountered a WebGL error. Click below to reload."
+              >
+                <div
+                  ref={mapContainerRef}
+                  role="region"
+                  aria-label="Interactive MapLibre Spatial Telemetry Map"
+                  tabIndex={0}
+                  className="w-full h-full focus:ring-2 focus:ring-primary focus:outline-none"
+                />
+              </ErrorBoundary>
+            </div>
 
             {/* Feature 4: Active Geofence Targets Overlay - Compact Bottom-Right Placement */}
             {geofenceActive && (

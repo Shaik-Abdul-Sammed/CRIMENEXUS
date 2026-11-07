@@ -40,6 +40,8 @@ from app.api.analytics import router as analytics_router
 from app.api.drafting import router as drafting_router
 from app.api.alerts import router as alerts_router
 from app.api.geo import router as geo_router
+from app.api.quantum import router as quantum_router
+from app.api.fusion import router as fusion_router
 from app.services.streaming.redis_streams import get_streaming_stats
 from app.services.streaming.stream_processor import run_stream_consumer_worker
 from app.services.streaming.stream_producer import simulate_live_event
@@ -171,6 +173,8 @@ app.include_router(analytics_router, prefix="/api/v1")
 app.include_router(drafting_router, prefix="/api/v1")
 app.include_router(alerts_router, prefix="/api/v1")
 app.include_router(geo_router, prefix="/api/v1")
+app.include_router(quantum_router, prefix="/api/v1")
+app.include_router(fusion_router, prefix="/api/v1")
 
 # ── Advanced Feature Endpoints ────────────────────────────────────────────────
 # Feature 1: Prometheus Metrics
