@@ -211,26 +211,43 @@ def generate_tactical_leaflet_html(
     /* Quick Action Controls */
     .quick-controls {{
       position: absolute;
-      top: 14px;
-      right: 14px;
+      bottom: 16px;
+      right: 64px;
       z-index: 1000;
       display: flex;
-      gap: 8px;
+      align-items: center;
+      gap: 6px;
+      background: rgba(11, 15, 25, 0.95);
+      backdrop-filter: blur(8px);
+      padding: 5px 8px;
+      border-radius: 8px;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
     }}
     .quick-btn {{
       background: rgba(15, 23, 42, 0.9);
       color: #38bdf8;
       border: 1px solid rgba(56, 189, 248, 0.3);
-      padding: 6px 12px;
+      padding: 5px 9px;
       border-radius: 6px;
       font-size: 11px;
       font-weight: 600;
       cursor: pointer;
+      white-space: nowrap;
       transition: all 0.2s;
     }}
     .quick-btn:hover {{
       background: #0284c7;
       color: #ffffff;
+    }}
+    /* Offset Leaflet Controls to prevent any collision with React basemap switcher */
+    .leaflet-top.leaflet-right {{
+      top: 58px !important;
+      right: 14px !important;
+    }}
+    .leaflet-bottom.leaflet-right {{
+      bottom: 14px !important;
+      right: 14px !important;
     }}
     .custom-div-icon {{
       background: transparent;
@@ -281,10 +298,10 @@ def generate_tactical_leaflet_html(
     <button class="quick-btn" onclick="toggleRoute()">🛣️ Trail</button>
     <button class="quick-btn" onclick="calculateNearest()">🚓 Intercept</button>
     <button class="quick-btn" onclick="toggleHeatmap()">🔥 Heatmap</button>
-    <button class="quick-btn" onclick="document.getElementById('quick-controls-box').style.display='none'; document.getElementById('controls-restore-btn').style.display='block';" title="Close Controls Bar" style="padding: 6px 8px; color: #94a3b8;">✕</button>
+    <button class="quick-btn" onclick="document.getElementById('quick-controls-box').style.display='none'; document.getElementById('controls-restore-btn').style.display='block';" title="Close Controls Bar" style="padding: 4px 8px; color: #94a3b8;">✕</button>
   </div>
-  <button id="controls-restore-btn" onclick="document.getElementById('quick-controls-box').style.display='flex'; this.style.display='none';" style="display: none; position: absolute; top: 14px; right: 14px; z-index: 1000; background: rgba(15, 23, 42, 0.9); border: 1px solid #38bdf8; color: #38bdf8; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">
-    ⚙️ Controls
+  <button id="controls-restore-btn" onclick="document.getElementById('quick-controls-box').style.display='flex'; this.style.display='none';" style="display: none; position: absolute; bottom: 16px; right: 64px; z-index: 1000; background: rgba(15, 23, 42, 0.95); border: 1px solid #38bdf8; color: #38bdf8; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.5);">
+    ⚙️ Simulation Controls
   </button>
 
   <!-- Tactical Legend with Close / Restore -->
@@ -610,6 +627,45 @@ def generate_tactical_leaflet_html(
         `)
         .openOn(map);
     }}
+
+    // Keyboard Arrow Controls for Tactical Map Pan & Pursuit Stepping
+    window.addEventListener('keydown', function(e) {{
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+      const PAN_PX = 120;
+      switch (e.key) {{
+        case 'ArrowUp':
+          e.preventDefault();
+          map.panBy([0, -PAN_PX], {{ animate: true, duration: 0.25 }});
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          map.panBy([0, PAN_PX], {{ animate: true, duration: 0.25 }});
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          currentWpIndex = Math.max(0, currentWpIndex - 2);
+          stepMotion();
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          stepMotion();
+          break;
+        case ' ':
+          e.preventDefault();
+          toggleMotion();
+          break;
+        case '+':
+        case '=':
+          e.preventDefault();
+          map.zoomIn();
+          break;
+        case '-':
+        case '_':
+          e.preventDefault();
+          map.zoomOut();
+          break;
+      }}
+    }});
   </script>
 </body>
 </html>

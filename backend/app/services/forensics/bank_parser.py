@@ -81,11 +81,11 @@ def parse_bank_statement_csv(file_content: str, account_holder_name: str, accoun
     total_credits = 0.0
 
     for row in reader:
-        date_str = sanitize_csv_cell(row.get("date") or row.get("txn_date") or row.get("value_date") or datetime.utcnow().strftime("%Y-%m-%d"))
-        narration = sanitize_csv_cell(row.get("narration") or row.get("description") or row.get("remarks") or "")
+        date_str = sanitize_csv_cell(row.get("date") or row.get("txn_date") or row.get("value_date") or row.get("timestamp") or datetime.utcnow().strftime("%Y-%m-%d"))
+        narration = sanitize_csv_cell(row.get("narration") or row.get("description") or row.get("remarks") or row.get("flagged_anomaly") or "")
         withdrawal_val = row.get("withdrawal") or row.get("debit") or row.get("amount_debited")
         deposit_val = row.get("deposit") or row.get("credit") or row.get("amount_credited")
-        raw_amount = row.get("amount") or row.get("txn_amount")
+        raw_amount = row.get("amount") or row.get("txn_amount") or row.get("amount_inr") or row.get("amt")
         txn_type = (row.get("type") or row.get("txn_type") or "").upper().strip()
 
         if raw_amount and not withdrawal_val and not deposit_val:
@@ -112,18 +112,18 @@ def parse_bank_statement_csv(file_content: str, account_holder_name: str, accoun
             total_credits += amount
 
         parsed_info = parse_narration_string(narration)
-        tx_id = parsed_info["reference_number"] or f"TX-{uuid.uuid4().hex[:8].upper()}"
+        tx_id = row.get("transaction_id") or parsed_info["reference_number"] or f"TX-{uuid.uuid4().hex[:8].upper()}"
 
         # Smurfing detection: Multiple transactions between 45,000 and 49,999 to dodge 50k reporting
-        is_smurfing = 45000 <= amount < 50000
+        is_smurfing = 45000 <= amount < 50000 or "SMURFING" in narration.upper()
         if is_smurfing:
             smurfing_counter += 1
 
         is_suspicious = is_smurfing or amount >= 1000000 or parsed_info["mode"] == "HAWALA_SUSPECT"
 
-        sender_acc = account_number if is_debit else f"ACC-{uuid.uuid4().hex[:6].upper()}"
+        sender_acc = row.get("source_account") or (account_number if is_debit else f"ACC-{uuid.uuid4().hex[:6].upper()}")
         sender_name = account_holder_name if is_debit else parsed_info["beneficiary"]
-        receiver_acc = f"ACC-{uuid.uuid4().hex[:6].upper()}" if is_debit else account_number
+        receiver_acc = row.get("beneficiary_account") or (f"ACC-{uuid.uuid4().hex[:6].upper()}" if is_debit else account_number)
         receiver_name = parsed_info["beneficiary"] if is_debit else account_holder_name
 
         existing_tx = db.query(BankTransaction).filter(BankTransaction.transaction_id == tx_id).first()

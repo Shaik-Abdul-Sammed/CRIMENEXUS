@@ -123,7 +123,15 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
         return;
       }
 
-      // Do not trigger hotkeys if user is actively typing in a form or input
+      // Ctrl+K or Cmd+K: Universal Search & Command Palette
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        sound.playClickSound();
+        setGlobalSearchOpen(true);
+        return;
+      }
+
+      // Do not trigger single-key hotkeys if user is actively typing in a form or input
       if (isInput) return;
       if (e.ctrlKey || e.metaKey || e.altKey) return;
 
@@ -151,6 +159,10 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
         e.preventDefault();
         sound.playClickSound();
         navigate('/evidence');
+      } else if (e.key.toLowerCase() === 'd') {
+        e.preventDefault();
+        sound.playClickSound();
+        navigate('/dashboard');
       } else if (e.key.toLowerCase() === 's') {
         e.preventDefault();
         sound.playClickSound();

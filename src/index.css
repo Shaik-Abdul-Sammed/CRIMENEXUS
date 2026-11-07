@@ -222,3 +222,24 @@
     color: #000000 !important;
   }
 }
+
+/* Onboarding Tour Target Button Spotlight Illumination - Universal Multi-Theme */
+.tour-highlighted-element {
+  position: relative !important;
+  z-index: 10001 !important;
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 0 30px hsl(var(--primary) / 0.85), inset 0 0 0 2px hsl(var(--primary-foreground) / 0.6) !important;
+  transform: scale(1.02);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.tour-highlighted-element * {
+  color: hsl(var(--primary-foreground)) !important;
+  fill: hsl(var(--primary-foreground)) !important;
+  opacity: 1 !important;
+  font-weight: 700 !important;
+  text-shadow: none !important;
+}
+

@@ -61,18 +61,20 @@ export function CasesPage() {
     reset,
     setValue,
     getValues,
+    watch,
     formState: { errors },
   } = useForm<CaseFormData>({
     resolver: zodResolver(caseSchema),
     defaultValues: {
       priority: 'HIGH',
+      description: '',
     },
   });
 
   const { isListening, toggleListening } = useSpeechRecognition({
     onTranscript: (spoken) => {
       const current = getValues('description') || '';
-      setValue('description', current ? `${current} ${spoken}` : spoken, { shouldValidate: true });
+      setValue('description', current ? `${current} ${spoken}` : spoken, { shouldValidate: true, shouldDirty: true });
     },
   });
 
@@ -241,6 +243,8 @@ export function CasesPage() {
             <textarea
               rows={3}
               {...register('description')}
+              value={watch('description') || ''}
+              onChange={(e) => setValue('description', e.target.value, { shouldValidate: true, shouldDirty: true })}
               placeholder="Background context, scope of crime, or click Voice Dictate to speak..."
               className="w-full rounded-md border border-input bg-background p-2.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
             />

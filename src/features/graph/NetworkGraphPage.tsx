@@ -315,16 +315,16 @@ export function NetworkGraphPage() {
         name: 'cose',
         animate: 'end',
         animationDuration: 400,
-        nodeRepulsion: () => 8000 * scale,
-        idealEdgeLength: () => 180 * scale,
-        edgeElasticity: () => 60 / scale,
+        nodeRepulsion: () => 16000 * scale,
+        idealEdgeLength: () => 140 * scale,
+        edgeElasticity: () => 50 / scale,
         padding: 60,
         randomize: false,
-        componentSpacing: 120 * scale,
-        nodeOverlap: 10,
-        gravity: 0.25 / scale,
+        componentSpacing: 150 * scale,
+        nodeOverlap: 40,
+        gravity: 0.2 / scale,
         nestingFactor: 1.2,
-        numIter: 500,
+        numIter: 600,
       } as cytoscape.LayoutOptions;
     }
     return {
@@ -377,7 +377,7 @@ export function NetworkGraphPage() {
     hideDisconnectedRef.current = next;
 
     if (cyRef.current) {
-      const orphans = cyRef.current.nodes('.orphan-node');
+      const orphans = cyRef.current.elements('.orphan-node, .orphan-edge, .peripheral-fragment');
       orphans.style('display', next ? 'none' : 'element');
 
       // Re-run layout on visible elements so connected syndicate centers cleanly
@@ -386,9 +386,9 @@ export function NetworkGraphPage() {
       cyRef.current.animate({ fit: { eles: visibleEles, padding: 60 }, duration: 600 });
 
       if (next) {
-        toast.info(`Filtered out ${disconnectedCount} isolated/unconnected nodes. Centered on active syndicate.`, 'Topology Cleaned');
+        toast.info(`Filtered out ${disconnectedCount} isolated/peripheral nodes. Centered on active syndicate.`, 'Topology Cleaned');
       } else {
-        toast.info(`Restored all ${disconnectedCount} isolated nodes to view.`, 'Full Topology');
+        toast.info(`Restored all ${disconnectedCount} isolated/peripheral nodes to view.`, 'Full Topology');
       }
     }
   };
@@ -453,20 +453,52 @@ export function NetworkGraphPage() {
   useEffect(() => {
     if (!containerRef.current || !graphData?.nodes || !graphData?.edges) return;
 
-    // Identify connected nodes vs orphan/disconnected nodes
-    const connectedNodeIds = new Set<string>();
-    (graphData.edges || []).forEach((e) => {
-      connectedNodeIds.add(e.sourceEntityId);
-      connectedNodeIds.add(e.targetEntityId);
-    });
-
-    let disconnectedNum = 0;
+    // Build adjacency list to calculate connected components
+    const adj = new Map<string, Set<string>>();
     (graphData.nodes || []).forEach((n) => {
-      if (!connectedNodeIds.has(n.id)) {
-        disconnectedNum++;
+      if (n.id) adj.set(n.id, new Set<string>());
+    });
+    (graphData.edges || []).forEach((e) => {
+      if (adj.has(e.sourceEntityId) && adj.has(e.targetEntityId)) {
+        adj.get(e.sourceEntityId)!.add(e.targetEntityId);
+        adj.get(e.targetEntityId)!.add(e.sourceEntityId);
       }
     });
-    setDisconnectedCount(disconnectedNum);
+
+    // BFS to identify disjoint graph components
+    const visited = new Set<string>();
+    const components: string[][] = [];
+    adj.forEach((_, nodeId) => {
+      if (!visited.has(nodeId)) {
+        const comp: string[] = [];
+        const queue: string[] = [nodeId];
+        visited.add(nodeId);
+        while (queue.length > 0) {
+          const curr = queue.shift()!;
+          comp.push(curr);
+          const neighbors = adj.get(curr) || new Set<string>();
+          neighbors.forEach((nbr) => {
+            if (!visited.has(nbr)) {
+              visited.add(nbr);
+              queue.push(nbr);
+            }
+          });
+        }
+        components.push(comp);
+      }
+    });
+
+    // Identify peripheral / isolated fragments:
+    // Core syndicate components are large clusters (size >= 4 or containing primary targets).
+    // Disconnected pairs, triads, and singletons (size <= 3) are classified as peripheral fragments.
+    const peripheralNodeIds = new Set<string>();
+    components.forEach((comp) => {
+      if (comp.length <= 3) {
+        comp.forEach((id) => peripheralNodeIds.add(id));
+      }
+    });
+
+    setDisconnectedCount(peripheralNodeIds.size);
 
     // Deduplication: Map nodes by unique ID
     const nodeMap = new Map<string, any>();
@@ -480,21 +512,22 @@ export function NetworkGraphPage() {
         else if (n.type === 'LOCATION') clusterId = 5;
         else if (n.type === 'CRYPTO_WALLET' || n.type === 'ORGANIZATION') clusterId = 6;
 
-        const isConnected = connectedNodeIds.has(n.id);
+        const isPeripheral = peripheralNodeIds.has(n.id);
         const classes = [
           communityClusteringActive ? 'cluster-active' : '',
-          !isConnected ? 'orphan-node' : '',
+          isPeripheral ? 'orphan-node peripheral-fragment' : '',
         ].filter(Boolean).join(' ');
 
         nodeMap.set(n.id, {
           data: {
             id: n.id,
             label: n.name,
+            name: n.name,
             type: n.type,
             riskLevel: n.riskLevel,
             confidence: n.confidence,
             cluster: (n as any).cluster || clusterId,
-            isConnected,
+            isConnected: !isPeripheral,
             raw: n,
           },
           classes,
@@ -507,6 +540,7 @@ export function NetworkGraphPage() {
     (graphData.edges || []).forEach((e) => {
       const edgeKey = e.id || `${e.sourceEntityId}->${e.targetEntityId}:${e.type}`;
       if (nodeMap.has(e.sourceEntityId) && nodeMap.has(e.targetEntityId) && !edgeMap.has(edgeKey)) {
+        const isPeripheralEdge = peripheralNodeIds.has(e.sourceEntityId) || peripheralNodeIds.has(e.targetEntityId);
         edgeMap.set(edgeKey, {
           data: {
             id: edgeKey,
@@ -516,6 +550,7 @@ export function NetworkGraphPage() {
             confidence: e.confidenceScore,
             raw: e,
           },
+          classes: isPeripheralEdge ? 'orphan-edge peripheral-fragment' : '',
         });
       }
     });
@@ -565,7 +600,7 @@ export function NetworkGraphPage() {
           },
         },
         {
-          selector: '.orphan-node',
+          selector: '.orphan-node, .orphan-edge, .peripheral-fragment',
           style: {
             display: hideDisconnectedRef.current ? 'none' : 'element',
           },
@@ -884,15 +919,17 @@ export function NetworkGraphPage() {
     applyLabelMode(labelModeRef.current);
 
     cy.ready(() => {
-      // Hide isolated nodes by default
-      cy.nodes().filter((node) => node.degree() === 0).style('display', 'none');
+      // Hide peripheral fragments and orphan singletons by default in Clean View
+      if (hideDisconnectedRef.current) {
+        cy.elements('.orphan-node, .orphan-edge, .peripheral-fragment').style('display', 'none');
+      }
       const visibleEles = cy.elements().filter((ele) => ele.style('display') !== 'none');
+      visibleEles.layout(getLayoutOptions(selectedLayout)).run();
       cy.fit(visibleEles.length > 0 ? visibleEles : cy.elements(), 60); // Re-center on connected syndicate
     });
 
-    // Enforce Clean View immediately on initial graph initialization (Hides 71 orphan nodes and centers syndicate)
     if (hideDisconnectedRef.current) {
-      cy.nodes('.orphan-node').style('display', 'none');
+      cy.elements('.orphan-node, .orphan-edge, .peripheral-fragment').style('display', 'none');
       const visibleEles = cy.elements().filter((ele) => ele.style('display') !== 'none');
       visibleEles.layout(getLayoutOptions(selectedLayout)).run();
       cy.animate({ fit: { eles: visibleEles.length > 0 ? visibleEles : cy.elements(), padding: 60 }, duration: 400 });
@@ -1004,13 +1041,14 @@ export function NetworkGraphPage() {
     
     // Respect hideDisconnected filter
     cy.nodes().forEach((n) => {
-      const isOrphan = !n.data('isConnected');
+      const isOrphan = !n.data('isConnected') || n.hasClass('orphan-node') || n.hasClass('peripheral-fragment');
       n.style('display', hideDisconnectedRef.current && isOrphan ? 'none' : 'element');
     });
     cy.edges().forEach((e) => {
+      const isOrphan = e.hasClass('orphan-edge') || e.hasClass('peripheral-fragment');
       const sourceVisible = e.source().style('display') !== 'none';
       const targetVisible = e.target().style('display') !== 'none';
-      e.style('display', sourceVisible && targetVisible ? 'element' : 'none');
+      e.style('display', hideDisconnectedRef.current && isOrphan ? 'none' : (sourceVisible && targetVisible ? 'element' : 'none'));
     });
 
     setSelectedEntityTypeFilter('ALL');
@@ -1525,7 +1563,7 @@ export function NetworkGraphPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5 font-bold text-sky-400 text-[11px]">
                     <Info className="h-3.5 w-3.5 shrink-0" />
-                    <span>{disconnectedCount} Unconnected Singletons Displayed</span>
+                    <span>{disconnectedCount} Peripheral / Isolated Nodes Displayed</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <button
@@ -1548,7 +1586,7 @@ export function NetworkGraphPage() {
                   </div>
                 </div>
                 <p className="text-[10px] text-slate-300 leading-snug">
-                  These {disconnectedCount} nodes are registered case entities (secondary SIMs, witnesses, unlinked accounts) with 0 active edges in this docket.
+                  These {disconnectedCount} nodes are peripheral fragments (secondary SIM pairs, isolated test accounts, singletons) disconnected from the main crime syndicate.
                 </p>
               </div>
             )}

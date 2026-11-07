@@ -82,11 +82,23 @@ interface OnboardingTourProps {
 export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
   const [currentStepIdx, setCurrentStepIdx] = useState(0);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
+  const { theme } = useAppStore();
+  const isLight = theme === 'light';
 
   const step = TOUR_STEPS[currentStepIdx];
 
+  const clearTargetHighlights = useCallback(() => {
+    if (typeof document !== 'undefined') {
+      document.querySelectorAll('.tour-highlighted-element').forEach((el) => {
+        el.classList.remove('tour-highlighted-element');
+      });
+    }
+  }, []);
+
   const updateTargetPosition = useCallback(() => {
     try {
+      clearTargetHighlights();
+
       if (!step) {
         setTargetRect(null);
         return;
@@ -99,6 +111,7 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         const rect = el.getBoundingClientRect();
         if (rect.width > 10 && rect.height > 10) {
+          el.classList.add('tour-highlighted-element');
           setTargetRect(rect);
           return;
         }
@@ -107,7 +120,7 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
     } catch {
       setTargetRect(null);
     }
-  }, [step]);
+  }, [step, clearTargetHighlights]);
 
   useEffect(() => {
     if (isOpen) {
@@ -118,28 +131,34 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
       return () => {
         window.removeEventListener('resize', handleResize);
         window.removeEventListener('scroll', handleResize, true);
+        clearTargetHighlights();
       };
+    } else {
+      clearTargetHighlights();
     }
-  }, [isOpen, currentStepIdx, updateTargetPosition]);
+  }, [isOpen, currentStepIdx, updateTargetPosition, clearTargetHighlights]);
 
   const handleComplete = useCallback(() => {
+    clearTargetHighlights();
     localStorage.setItem('crimenexus_tour_seen', 'true');
     onClose();
-  }, [onClose]);
+  }, [clearTargetHighlights, onClose]);
 
   const handleNext = useCallback(() => {
+    clearTargetHighlights();
     if (currentStepIdx < TOUR_STEPS.length - 1) {
       setCurrentStepIdx((prev) => prev + 1);
     } else {
       handleComplete();
     }
-  }, [currentStepIdx, handleComplete]);
+  }, [currentStepIdx, handleComplete, clearTargetHighlights]);
 
   const handlePrev = useCallback(() => {
+    clearTargetHighlights();
     if (currentStepIdx > 0) {
       setCurrentStepIdx((prev) => prev - 1);
     }
-  }, [currentStepIdx]);
+  }, [currentStepIdx, clearTargetHighlights]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -157,6 +176,30 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, handleComplete, handleNext, handlePrev]);
 
+  const dialogStyle = React.useMemo<React.CSSProperties>(() => {
+    if (!targetRect || typeof window === 'undefined') {
+      return {
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+      };
+    }
+    // If target is in the sidebar (left side of screen)
+    if (targetRect.left < 360) {
+      const topPos = Math.max(24, Math.min(window.innerHeight - 480, targetRect.top - 20));
+      const leftPos = Math.min(window.innerWidth - 540, targetRect.right + 28);
+      return {
+        top: `${topPos}px`,
+        left: `${leftPos}px`,
+      };
+    }
+    return {
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+    };
+  }, [targetRect]);
+
   if (!isOpen) return null;
 
   const tourContent = (
@@ -166,28 +209,62 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
       aria-modal="true"
       aria-label="Investigating Officer Onboarding Tour"
     >
-      {/* Dark semi-transparent backdrop */}
-      <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity duration-300"
+      {/* SVG Spotlight Cutout Mask - Leaves target element crystal clear without dark blur */}
+      <svg
+        className="fixed inset-0 w-full h-full pointer-events-auto"
         onClick={handleComplete}
-      />
+        style={{ width: '100vw', height: '100vh' }}
+      >
+        <defs>
+          <mask id="tour-spotlight-mask">
+            <rect x="0" y="0" width="100%" height="100%" fill="white" />
+            {targetRect && (
+              <rect
+                x={targetRect.left - 6}
+                y={targetRect.top - 6}
+                width={targetRect.width + 12}
+                height={targetRect.height + 12}
+                rx="10"
+                ry="10"
+                fill="black"
+              />
+            )}
+          </mask>
+        </defs>
+        <rect
+          x="0"
+          y="0"
+          width="100%"
+          height="100%"
+          fill={isLight ? 'rgba(15, 23, 42, 0.55)' : 'rgba(3, 7, 18, 0.8)'}
+          mask="url(#tour-spotlight-mask)"
+        />
+      </svg>
 
-      {/* Target Element Highlight Box */}
+      {/* Target Element Highlight Box with Glowing Perimeter */}
       {targetRect && targetRect.width > 10 && targetRect.height > 10 && (
         <div
-          className="absolute border-2 border-primary rounded-xl pointer-events-none transition-all duration-300 shadow-[0_0_35px_rgba(59,130,246,0.8)] animate-pulse"
+          className="absolute border-2 border-primary rounded-xl pointer-events-none transition-all duration-300 shadow-[0_0_35px_rgba(59,130,246,0.85)] z-[10002]"
           style={{
             top: targetRect.top - 6,
             left: targetRect.left - 6,
             width: targetRect.width + 12,
             height: targetRect.height + 12,
           }}
-        />
+        >
+          <div className="absolute -top-3.5 left-3 bg-primary text-primary-foreground text-[10px] font-black px-2.5 py-0.5 rounded-full shadow-lg uppercase tracking-wider flex items-center gap-1.5 whitespace-nowrap">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground animate-ping" />
+            ACTIVE STEP {currentStepIdx + 1}: {step.title}
+          </div>
+        </div>
       )}
 
-      {/* Tour Dialog Card */}
-      <div className="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
-        <div className="relative w-full max-w-lg bg-card text-card-foreground border-2 border-primary/60 rounded-2xl shadow-2xl p-6 pointer-events-auto backdrop-blur-md animate-in fade-in zoom-in-95 duration-200">
+      {/* Tour Dialog Card with Smart Viewport Positioning */}
+      <div
+        className="absolute z-[10003] pointer-events-none transition-all duration-300"
+        style={dialogStyle}
+      >
+        <div className="relative w-full max-w-lg bg-card/95 text-card-foreground border-2 border-primary/70 rounded-2xl shadow-2xl p-6 pointer-events-auto backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200">
           {/* Header */}
           <div className="flex items-center justify-between pb-3 border-b border-border/70">
             <div className="flex items-center gap-2 text-primary font-bold text-sm tracking-wide">
@@ -210,7 +287,7 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
               Step {currentStepIdx + 1} of {TOUR_STEPS.length}
             </span>
             <span className="text-[11px] text-muted-foreground font-semibold flex items-center gap-1">
-              <Zap className="h-3 w-3 text-amber-400" />
+              <Zap className="h-3 w-3 text-primary" />
               {step.policeRole}
             </span>
           </div>
@@ -225,12 +302,12 @@ export function OnboardingTour({ isOpen, onClose }: OnboardingTourProps) {
             </p>
           </div>
 
-          {/* Workload Reduction Alert */}
-          <div className="mt-4 p-3 rounded-xl border border-emerald-500/30 bg-emerald-950/20 text-emerald-300 text-xs flex items-start gap-2.5">
-            <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
+          {/* Workload Reduction Alert - Universal Multi-Theme Contrast */}
+          <div className="mt-4 p-3 rounded-xl border border-primary/30 bg-primary/10 text-foreground text-xs flex items-start gap-2.5">
+            <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold text-white">Police Workload Reduction: </span>
-              {step.workloadReduction}
+              <span className="font-bold text-foreground">Police Workload Reduction: </span>
+              <span className="text-muted-foreground">{step.workloadReduction}</span>
             </div>
           </div>
 

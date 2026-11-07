@@ -47,6 +47,8 @@ export function useSpeechRecognition({ onTranscript }: { onTranscript?: (text: s
   const [transcript, setTranscript] = useState('');
   const [isSupported, setIsSupported] = useState(false);
   const recognitionRef = useRef<ISpeechRecognitionInstance | null>(null);
+  const onTranscriptRef = useRef(onTranscript);
+  onTranscriptRef.current = onTranscript;
 
   useEffect(() => {
     const speechWin = window as unknown as IWindowWithSpeech;
@@ -65,9 +67,7 @@ export function useSpeechRecognition({ onTranscript }: { onTranscript?: (text: s
           currentTranscript += event.results[i][0].transcript;
         }
         setTranscript(currentTranscript);
-        if (onTranscript) {
-          onTranscript(currentTranscript);
-        }
+        onTranscriptRef.current?.(currentTranscript);
       };
 
       recognition.onerror = (event: ISpeechRecognitionErrorEvent) => {
@@ -85,9 +85,7 @@ export function useSpeechRecognition({ onTranscript }: { onTranscript?: (text: s
           const sampleSpoken =
             'Accused Rajan was observed handing over ₹45,000 cash at Jewar checkpost near vehicle DL-01-AB-1234 to accomplice on motorcycle.';
           setTranscript(sampleSpoken);
-          if (onTranscript) {
-            onTranscript(sampleSpoken);
-          }
+          onTranscriptRef.current?.(sampleSpoken);
         }
       };
 
@@ -109,7 +107,7 @@ export function useSpeechRecognition({ onTranscript }: { onTranscript?: (text: s
         }
       }
     };
-  }, [onTranscript]);
+  }, []);
 
   const startListening = useCallback(() => {
     if (!recognitionRef.current) {
@@ -118,9 +116,9 @@ export function useSpeechRecognition({ onTranscript }: { onTranscript?: (text: s
       setTimeout(() => {
         const sampleSpoken = 'Accused Rajan was observed handing over 45,000 cash at Karol Bagh checkpost near Toyota Fortuner TS 09 AB 1234.';
         setTranscript(sampleSpoken);
-        if (onTranscript) onTranscript(sampleSpoken);
+        onTranscriptRef.current?.(sampleSpoken);
         setIsListening(false);
-      }, 1200);
+      }, 800);
       return;
     }
     try {
@@ -132,10 +130,10 @@ export function useSpeechRecognition({ onTranscript }: { onTranscript?: (text: s
       const sampleSpoken =
         'Accused Rajan was observed handing over ₹45,000 cash at Jewar checkpost near vehicle DL-01-AB-1234 to accomplice on motorcycle.';
       setTranscript(sampleSpoken);
-      if (onTranscript) onTranscript(sampleSpoken);
+      onTranscriptRef.current?.(sampleSpoken);
       setIsListening(false);
     }
-  }, [onTranscript]);
+  }, []);
 
   const stopListening = useCallback(() => {
     if (recognitionRef.current) {
