@@ -56,6 +56,7 @@ import {
   FileSpreadsheet,
   Share2,
   Upload,
+  PhoneCall,
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
@@ -65,6 +66,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { DocumentPreviewModal } from '../../components/common/DocumentPreviewModal';
 import { ForensicClueReplayModal } from '../forensics/ForensicClueReplayModal';
 import { FileExportPreviewModal } from '../../components/common/FileExportPreviewModal';
+import { NearestThanaDispatchModal } from '../../components/common/NearestThanaDispatchModal';
 import { useToast } from '../../components/ui/Toast';
 
 // Predefined getaway route coordinates [lon, lat] through Delhi/Noida
@@ -599,6 +601,7 @@ export function LiveTrackingPage() {
     initY: 20,
   });
   const [csvExportPreviewOpen, setCsvExportPreviewOpen] = useState<boolean>(false);
+  const [thanaDispatchModalOpen, setThanaDispatchModalOpen] = useState<boolean>(false);
 
   const getPursuitCsvPayload = () => {
     return (
@@ -2497,6 +2500,19 @@ export function LiveTrackingPage() {
                       <span className="font-bold text-emerald-400">{nearestStation.etaMins} mins</span>
                     </div>
                   </div>
+
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      sound.playClickSound();
+                      setThanaDispatchModalOpen(true);
+                    }}
+                    className="w-full mt-2 h-7 text-[10px] font-black bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-700 hover:to-amber-700 text-white shadow-md shadow-red-600/30 flex items-center justify-center gap-1.5"
+                    title="Open Emergency Hotline and Flash VT Dispatch to Nearest Thana"
+                  >
+                    <PhoneCall className="h-3 w-3" />
+                    <span>🚨 Alert Nearest Thana ({nearestStation.name.replace(' Police Station', '')})</span>
+                  </Button>
                 </div>
 
                 {/* Intercept Action & Status */}
@@ -3298,6 +3314,19 @@ export function LiveTrackingPage() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2 pt-1">
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    sound.playClickSound();
+                    setThanaDispatchModalOpen(true);
+                  }}
+                  className="bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs flex items-center gap-1.5 shadow-md shadow-red-600/30 animate-pulse"
+                  title="Contact the nearest police station to the fleeing suspect and trigger flash intercept order"
+                >
+                  <PhoneCall className="h-3.5 w-3.5" />
+                  <span>Contact Nearest Thana & Intercept</span>
+                </Button>
+
                 <Button
                   size="sm"
                   onClick={() => {
@@ -4560,6 +4589,17 @@ export function LiveTrackingPage() {
         subtitle="Live GPS breadcrumbs, speed velocity readings, and corridor checkpoint coordinates under Section 63 BSA"
         rawContent={getPursuitCsvPayload()}
         expectedHash="7f83b1657ff1fc53b9275bf9754168e3314051a89c31be4d8f57f4955b939103"
+      />
+
+      {/* NEAREST POLICE STATION CONTACT & FLASH INTERCEPT DIRECTIVE MODAL */}
+      <NearestThanaDispatchModal
+        isOpen={thanaDispatchModalOpen}
+        onClose={() => setThanaDispatchModalOpen(false)}
+        suspectName={trackedSuspect}
+        vehicleNumber={trackedPlate}
+        suspectSpeed={80}
+        currentCorridor="Yamuna Expressway (KM 42 Marker)"
+        caseNumber="CASE-2026-8812 / FIR-8812"
       />
     </div>
   );

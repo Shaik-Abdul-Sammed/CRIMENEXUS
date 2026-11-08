@@ -32,6 +32,8 @@ const LightweightDashboard = React.lazy(() => import('./features/lightweight/Lig
 const LiveTrackingPage = React.lazy(() => import('./features/demo/LiveTrackingPage').then((m) => ({ default: m.LiveTrackingPage })));
 const EscapeSimulationPage = React.lazy(() => import('./features/demo/EscapeSimulationPage').then((m) => ({ default: m.EscapeSimulationPage })));
 const DigitalFootprintPage = React.lazy(() => import('./features/demo/DigitalFootprintPage').then((m) => ({ default: m.DigitalFootprintPage })));
+const TechnicalRoadmapPage = React.lazy(() => import('./features/roadmap/TechnicalRoadmapPage').then((m) => ({ default: m.TechnicalRoadmapPage })));
+const RailwayVerificationPage = React.lazy(() => import('./features/railway/RailwayVerificationPage').then((m) => ({ default: m.RailwayVerificationPage })));
 const NotFoundPage = React.lazy(() => import('./features/error/NotFoundPage').then((m) => ({ default: m.NotFoundPage })));
 
 const LazyRouteFallback = (
@@ -100,6 +102,11 @@ export function App() {
                 <Route path="/reports" element={<ReportsPage />} />
                 <Route path="/audit-logs" element={<AuditLogsPage />} />
                 <Route path="/design-system" element={<DesignSystemPage />} />
+                <Route path="/roadmap" element={<TechnicalRoadmapPage />} />
+                <Route path="/technical-specs" element={<Navigate to="/roadmap" replace />} />
+                <Route path="/railway-verification" element={<RailwayVerificationPage />} />
+                <Route path="/railway" element={<Navigate to="/railway-verification" replace />} />
+                <Route path="/tc-verification" element={<Navigate to="/railway-verification" replace />} />
                 <Route path="/about" element={<AboutPlatformPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
               </Route>

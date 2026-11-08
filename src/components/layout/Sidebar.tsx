@@ -25,6 +25,7 @@ import {
   Camera,
   Compass,
   Layers,
+  Train,
 } from 'lucide-react';
 import { useAppStore } from '../../stores/appStore';
 import { useAuthStore } from '../../stores/authStore';
@@ -89,10 +90,12 @@ export function Sidebar() {
     { label: t('nav.map'), path: '/map', icon: MapPin, id: 'sidebar-map' },
     { label: 'Escape Simulation', path: '/escape-demo', icon: Compass, badge: 'TRACE', id: 'sidebar-escape-demo' },
     { label: 'Data Lake (96 Feeds)', path: '/digital-footprint', icon: Layers, badge: '96 IOT', id: 'sidebar-data-lake' },
+    { label: 'Railway TC Aadhaar Face', path: '/railway-verification', icon: Train, badge: 'UIDAI', id: 'sidebar-railway' },
     { label: 'Live Tracking (Demo)', path: '/live-tracking', icon: Navigation, badge: 'LIVE', id: 'sidebar-live-tracking' },
     { label: 'Forensic Clues & Telecast', path: '/forensics', icon: Camera, badge: 'BSA', id: 'sidebar-forensics' },
     { label: t('nav.aiAssistant'), path: '/ai-assistant', icon: Bot, badge: 'RAG', id: 'sidebar-assistant' },
     { label: t('nav.legalDrafting'), path: '/drafting', icon: Scale, badge: 'AUTO', id: 'sidebar-drafting' },
+    { label: '100 Specs Roadmap', path: '/roadmap', icon: Compass, badge: '96 NEW', id: 'sidebar-roadmap' },
     { label: t('nav.reports'), path: '/reports', icon: FileText, id: 'sidebar-reports' },
     { label: '32 Features & Benchmark', path: '/about', icon: Sparkles, badge: '32 DEMO', id: 'sidebar-about' },
     { label: t('nav.auditLogs'), path: '/audit-logs', icon: History, minRole: 'ANALYST', id: 'sidebar-audit-logs' },

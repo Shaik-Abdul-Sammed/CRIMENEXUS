@@ -23,6 +23,7 @@ import {
   Keyboard,
   Volume2,
   VolumeX,
+  Train,
 } from 'lucide-react';
 import { sound } from '../../utils/soundEffects';
 import { useAppStore, FigmaTheme } from '../../stores/appStore';
@@ -270,6 +271,30 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           <span className="hidden xl:inline text-[11px]">Features Hub</span>
           <span className="px-1 py-0.2 rounded-full bg-cyan-400/20 text-cyan-300 text-[9px] font-mono font-extrabold">10</span>
         </button>
+
+        {/* Indian Railways TC Aadhaar Face Verification Terminal Button */}
+        <Link
+          to="/railway-verification"
+          className="hidden md:flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg border border-sky-500/40 bg-sky-950/50 hover:bg-sky-900/50 text-sky-300 text-xs font-bold transition-all shadow-sm shrink-0"
+          title="Indian Railways TC Biometric Aadhaar Face Verification & CCTNS Watchlist Terminal"
+          aria-label="Railway TC Verification"
+        >
+          <Train className="h-3.5 w-3.5 text-sky-400 shrink-0" />
+          <span className="hidden 2xl:inline text-[11px]">Railway Face</span>
+          <span className="px-1 py-0.2 rounded-full bg-sky-400/20 text-sky-300 text-[9px] font-mono font-bold">TC</span>
+        </Link>
+
+        {/* 100 Technical Specifications Roadmap Button */}
+        <Link
+          to="/roadmap"
+          className="hidden lg:flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg border border-amber-500/40 bg-amber-950/40 hover:bg-amber-900/40 text-amber-300 text-xs font-bold transition-all shadow-sm shrink-0"
+          title="100 Sovereign Technical Specifications & Next 96 Engineering Roadmap"
+          aria-label="100 Specs Roadmap"
+        >
+          <Compass className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+          <span className="hidden 2xl:inline text-[11px]">100 Specs Roadmap</span>
+          <span className="px-1 py-0.2 rounded-full bg-amber-400/20 text-amber-300 text-[9px] font-mono font-bold">96 NEW</span>
+        </Link>
 
         {/* 15 Statutory Rules & Remand Guard Button */}
         <button

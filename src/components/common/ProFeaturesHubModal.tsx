@@ -27,7 +27,7 @@ import { sound } from '../../utils/soundEffects';
 interface ProFeaturesHubModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialTab?: 'FEATURES' | 'GLOBAL_IMPACT';
+  initialTab?: 'FEATURES' | 'GLOBAL_IMPACT' | 'ROADMAP';
 }
 
 interface FeatureItem {
@@ -47,7 +47,7 @@ interface FeatureItem {
 export function ProFeaturesHubModal({ isOpen, onClose, initialTab = 'FEATURES' }: ProFeaturesHubModalProps) {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
-  const [activeTab, setActiveTab] = useState<'FEATURES' | 'GLOBAL_IMPACT'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'FEATURES' | 'GLOBAL_IMPACT' | 'ROADMAP'>(initialTab);
 
   if (!isOpen) return null;
 
@@ -288,7 +288,21 @@ export function ProFeaturesHubModal({ isOpen, onClose, initialTab = 'FEATURES' }
               }`}
             >
               <Globe className="h-3.5 w-3.5 text-emerald-400" />
-              <span>International Precedents (NYPD, London, Interpol)</span>
+              <span>International Precedents</span>
+            </button>
+            <button
+              onClick={() => {
+                sound.playClickSound();
+                setActiveTab('ROADMAP');
+              }}
+              className={`px-3 py-2 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 ${
+                activeTab === 'ROADMAP'
+                  ? 'border-amber-400 text-amber-400'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Compass className="h-3.5 w-3.5 text-amber-400" />
+              <span>Next 96 Technicals Roadmap</span>
             </button>
           </div>
 
@@ -469,6 +483,90 @@ export function ProFeaturesHubModal({ isOpen, onClose, initialTab = 'FEATURES' }
                   <p className="text-xs text-emerald-400">
                     <strong>Documented Impact:</strong> 62% reduction in unlicensed moneylending syndicates and achieved an unprecedented 84% 24-hour clearance rate for physical offenses.
                   </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'ROADMAP' && (
+            <div className="space-y-4">
+              <div className="p-4 rounded-xl border border-amber-500/40 bg-gradient-to-r from-amber-950/30 via-slate-900 to-slate-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h3 className="font-extrabold text-sm sm:text-base text-white flex items-center gap-2">
+                    <Compass className="h-4 w-4 text-amber-400" />
+                    <span>Sovereign Roadmap: Next 96 Technical Specifications</span>
+                  </h3>
+                  <p className="text-xs text-slate-300 mt-1">
+                    Exhaustive multi-phase engineering architecture scaling CRIMENEXUS from 10 live production models to all 100 claimed forensic and quantum capabilities.
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    sound.playClickSound();
+                    onClose();
+                    navigate('/roadmap');
+                  }}
+                  className="bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-xs shrink-0 flex items-center gap-1.5 shadow-md shadow-amber-500/20"
+                >
+                  <span>Open Full 100 Specs Workspace</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                {/* Phase 2 */}
+                <div className="p-3.5 rounded-xl border border-blue-500/30 bg-slate-950/80 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Badge variant="outline" className="border-blue-500/50 text-blue-400 text-[9px] font-mono">
+                      PHASE 2 (Q1-Q2 2027)
+                    </Badge>
+                    <span className="text-[10px] text-muted-foreground font-mono">25 Engines</span>
+                  </div>
+                  <h4 className="font-bold text-white text-xs">Post-Quantum Cryptography & Neural Diarization</h4>
+                  <ul className="text-[11px] text-slate-300 space-y-1 list-disc list-inside">
+                    <li>NIST FIPS 203 ML-KEM Kyber-1024 Quantum Key Exchange</li>
+                    <li>NIST FIPS 204 ML-DSA Dilithium-5 Digital Signatures</li>
+                    <li>Qiskit Gate-Level QAOA Quantum Patrol Intercept</li>
+                    <li>Whisper Large-v3 Multilingual Wiretap Diarization</li>
+                    <li>UIDAI FaceRD AI Biometric Railway TC Verification</li>
+                  </ul>
+                </div>
+
+                {/* Phase 3 */}
+                <div className="p-3.5 rounded-xl border border-amber-500/30 bg-slate-950/80 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Badge variant="outline" className="border-amber-500/50 text-amber-400 text-[9px] font-mono">
+                      PHASE 3 (Q3-Q4 2027)
+                    </Badge>
+                    <span className="text-[10px] text-muted-foreground font-mono">35 Engines</span>
+                  </div>
+                  <h4 className="font-bold text-white text-xs">Zero-Knowledge Biometrics & Automated Charge-Sheets</h4>
+                  <ul className="text-[11px] text-slate-300 space-y-1 list-disc list-inside">
+                    <li>zk-SNARKs Privacy Minutiae Vault (DPDP Act compliant)</li>
+                    <li>BNS 2023 Sec 193 Automated Final Charge-Sheet Synthesis</li>
+                    <li>Hardware TPM 2.0 Enclave Sealing on Mobile Terminals</li>
+                    <li>SS7/Diameter Cellular Handover & IMSI-Swap Listener</li>
+                    <li>Smart Meter NILM Disaggregation for Safehouse Detection</li>
+                  </ul>
+                </div>
+
+                {/* Phase 4 */}
+                <div className="p-3.5 rounded-xl border border-purple-500/30 bg-slate-950/80 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Badge variant="outline" className="border-purple-500/50 text-purple-400 text-[9px] font-mono">
+                      PHASE 4 (2028 NATIONAL)
+                    </Badge>
+                    <span className="text-[10px] text-muted-foreground font-mono">36 Engines</span>
+                  </div>
+                  <h4 className="font-bold text-white text-xs">Orbital Satellite Radar & National e-Courts Anchor</h4>
+                  <ul className="text-[11px] text-slate-300 space-y-1 list-disc list-inside">
+                    <li>ISRO RISAT Synthetic Aperture Radar (SAR) Vehicle Wake</li>
+                    <li>Indian Railways PRS 2.4M Ticket Stream Correlation</li>
+                    <li>Offline e-Courts Judicial Consortium Blockchain Anchor</li>
+                    <li>5G/SatCom Autonomous Drone Swarm Mesh (OLSRv2)</li>
+                    <li>Section 180 BNSS Judicial Contradiction AI Matrix</li>
+                  </ul>
                 </div>
               </div>
             </div>
