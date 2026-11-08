@@ -205,9 +205,9 @@ def get_smart_meter_anomalies():
         "anomalies": [
             {
                 "meter_id": "SM-NOIDA-9811",
-                "locality": "Sector 62, Noida (Target Safehouse)",
-                "lat": 28.6280,
-                "lon": 77.3649,
+                "locality": "Sector 62 Safehouse Hideout, Noida",
+                "lat": 28.6355,
+                "lon": 77.3720,
                 "baseline_kwh": 0.38,
                 "current_kwh": 4.82,
                 "spike_percentage": 420.5,

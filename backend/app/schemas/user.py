@@ -1,5 +1,11 @@
 from typing import Optional
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, ConfigDict
+
+try:
+    import email_validator  # noqa: F401
+    from pydantic import EmailStr
+except (ImportError, Exception):
+    EmailStr = str  # Resilient fallback type for environments without email-validator
 
 
 class UserCreate(BaseModel):

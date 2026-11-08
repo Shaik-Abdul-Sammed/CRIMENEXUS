@@ -215,22 +215,23 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
   }, [navigate, setGlobalSearchOpen]);
 
   return (
-    <header className="sticky top-0 z-20 flex h-16 w-full items-center justify-between border-b border-border bg-card/90 px-4 md:px-6 backdrop-blur-md">
-      {/* Left: Breadcrumbs */}
-      <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0">
-        <Link to="/dashboard" className="hover:text-foreground font-medium transition-colors shrink-0">
-          Home
+    <header className="sticky top-0 z-20 flex h-16 w-full items-center justify-between border-b border-border bg-card/95 px-3 sm:px-4 md:px-6 backdrop-blur-md overflow-x-hidden">
+      {/* Left: Responsive Breadcrumbs with overflow protection */}
+      <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-muted-foreground min-w-0 max-w-[28%] md:max-w-[35%] lg:max-w-[40%] overflow-hidden">
+        <Link to="/dashboard" className="hover:text-foreground font-semibold transition-colors shrink-0 flex items-center gap-1">
+          <span>Home</span>
         </Link>
         {breadcrumbs.map((b, idx) => (
           <React.Fragment key={b.url}>
             <ChevronRight className="h-3 w-3 text-border shrink-0" />
             <Link
               to={b.url}
-              className={`truncate ${
+              className={`truncate max-w-[120px] md:max-w-[180px] ${
                 idx === breadcrumbs.length - 1
-                  ? 'font-semibold text-foreground'
+                  ? 'font-bold text-foreground'
                   : 'hover:text-foreground transition-colors'
               }`}
+              title={b.name}
             >
               {b.name}
             </Link>
@@ -238,66 +239,18 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
         ))}
       </div>
 
-      {/* Right: Consolidated Tools & Actions */}
-      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-        {/* Accessibility Tools (Sunlight High Contrast & Font Sizer A-/A+) */}
-        <AccessibilityBar />
-
-        {/* What's New v2.4 Release Notes Trigger */}
-        <button
-          onClick={() => {
-            sound.playClickSound();
-            setWhatsNewOpen(true);
-          }}
-          className="flex items-center gap-1.5 h-9 px-2.5 rounded-lg border border-primary/40 bg-primary/10 text-primary hover:bg-primary/20 text-xs font-bold transition-all"
-          title="What's New in CRIMENEXUS v2.4 (Changelog)"
-        >
-          <Sparkles className="h-3.5 w-3.5 text-primary" />
-          <span className="hidden xl:inline text-[11px]">v2.4 Updates</span>
-        </button>
-
-        {/* One-Click Language Switcher (EN | हि | म) */}
-        <div className="hidden xl:flex items-center rounded-lg border border-border/70 bg-background/80 p-0.5 text-[11px] font-bold">
-          {(['en', 'hi', 'mr'] as SupportedLanguage[]).map((lang) => (
-            <button
-              key={lang}
-              onClick={() => {
-                sound.playClickSound();
-                setLanguage(lang);
-              }}
-              className={`px-2 py-0.5 rounded transition-colors ${
-                language === lang ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
-              }`}
-              title={`Switch to ${lang.toUpperCase()}`}
-            >
-              {lang === 'en' ? 'EN' : lang === 'hi' ? 'हि' : 'म'}
-            </button>
-          ))}
-        </div>
-
-        {/* Panic Lock Button */}
-        <button
-          onClick={() => {
-            sound.playWarningBeep();
-            setIsPanicLocked(true);
-          }}
-          className="flex items-center justify-center h-9 w-9 rounded-lg border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:border-red-500 transition-colors shadow-sm"
-          title="Panic Lock: Instantly conceal classified evidence & lock screen (Ctrl+Alt+L)"
-          aria-label="Panic Lock Screen"
-        >
-          <Lock className="h-4 w-4" />
-        </button>
-
+      {/* Right: Consolidated Tools & Actions (Responsive & Overflow Protected) */}
+      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 max-w-[72%] md:max-w-[65%] lg:max-w-[60%] justify-end">
         {/* Quick Search Trigger (Modal Launcher) */}
         <button
           onClick={() => setGlobalSearchOpen(true)}
-          className="flex items-center gap-2 h-9 px-3 rounded-lg border border-border bg-background/80 text-xs text-muted-foreground hover:border-primary/50 hover:bg-accent/50 transition-all focus:outline-none"
+          className="flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg border border-border bg-background/80 text-xs text-muted-foreground hover:border-primary/50 hover:bg-accent/50 transition-all focus:outline-none shrink-0"
           title="Search cases, entities, and evidence (Press /)"
           aria-label="Search cases, entities, and evidence"
         >
-          <Search className="h-4 w-4 text-primary" />
-          <span className="hidden md:inline">{t('actions.search')}</span>
-          <kbd className="hidden md:inline-flex h-5 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+          <Search className="h-3.5 w-3.5 text-primary shrink-0" />
+          <span className="hidden lg:inline text-[11px] truncate">{t('actions.search')}</span>
+          <kbd className="hidden lg:inline-flex h-4 select-none items-center gap-0.5 rounded border border-border bg-muted px-1 font-mono text-[9px] font-medium text-muted-foreground">
             /
           </kbd>
         </button>
@@ -308,13 +261,13 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
             sound.playClickSound();
             setFeaturesHubOpen(true);
           }}
-          className="flex items-center gap-1.5 h-9 px-2.5 rounded-lg border border-cyan-500/50 bg-gradient-to-r from-cyan-950/80 to-blue-950/80 text-cyan-300 hover:from-cyan-900/80 hover:to-blue-900/80 text-xs font-bold transition-all shadow-md shadow-cyan-950/50"
+          className="flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg border border-cyan-500/50 bg-gradient-to-r from-cyan-950/80 to-blue-950/80 text-cyan-300 hover:from-cyan-900/80 hover:to-blue-900/80 text-xs font-bold transition-all shadow-sm shrink-0"
           title="CRIMENEXUS 10 Core Pro Features & Capabilities Hub"
           aria-label="Features Showcase"
         >
-          <Sparkles className="h-4 w-4 text-cyan-400 animate-pulse" />
-          <span className="hidden sm:inline text-[11px]">Features Hub</span>
-          <span className="px-1 py-0.2 rounded-full bg-cyan-400/20 text-cyan-300 text-[9px] font-mono font-extrabold hidden md:inline">10</span>
+          <Sparkles className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
+          <span className="hidden xl:inline text-[11px]">Features Hub</span>
+          <span className="px-1 py-0.2 rounded-full bg-cyan-400/20 text-cyan-300 text-[9px] font-mono font-extrabold">10</span>
         </button>
 
         {/* 15 Statutory Rules & Remand Guard Button */}
@@ -323,12 +276,12 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
             sound.playClickSound();
             setStatutoryRulesOpen(true);
           }}
-          className="flex items-center gap-1.5 h-9 px-2.5 rounded-lg border border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 text-xs font-bold transition-all"
+          className="flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2 rounded-lg border border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 text-xs font-bold transition-all shrink-0"
           title="15 Sovereign Statutory Criminal Rules & Remand Guard (Press S)"
           aria-label="15 Sovereign Statutory Criminal Rules"
         >
-          <Scale className="h-4 w-4 text-amber-400" />
-          <span className="hidden lg:inline text-[11px]">15 Rules</span>
+          <Scale className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+          <span className="hidden 2xl:inline text-[11px]">15 Rules</span>
         </button>
 
         {/* Global Keyboard Shortcuts Hub */}
@@ -337,11 +290,11 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
             sound.playClickSound();
             setShortcutsOpen(true);
           }}
-          className="flex items-center justify-center h-9 w-9 rounded-lg border border-border/80 bg-background/80 text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors"
+          className="hidden sm:flex items-center justify-center h-8 sm:h-9 w-8 sm:w-9 rounded-lg border border-border/80 bg-background/80 text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors shrink-0"
           title="Investigating Officer Keyboard Shortcuts (Press ?)"
           aria-label="Keyboard Shortcuts"
         >
-          <Keyboard className="h-4 w-4" />
+          <Keyboard className="h-3.5 w-3.5" />
         </button>
 
         {/* Tactical Audio Feedback Mute / Unmute Toggle */}
@@ -351,7 +304,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
             setAudioMuted(!nextState);
             if (nextState) sound.playClickSound();
           }}
-          className={`flex items-center justify-center h-9 w-9 rounded-lg border transition-colors ${
+          className={`flex items-center justify-center h-8 sm:h-9 w-8 sm:w-9 rounded-lg border transition-colors shrink-0 ${
             audioMuted
               ? 'border-border/60 text-muted-foreground/50 hover:text-muted-foreground'
               : 'border-border/80 bg-background/80 text-foreground hover:bg-accent/40'
@@ -359,7 +312,20 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           title={audioMuted ? 'Tactical Audio: Muted (Click to Unmute)' : 'Tactical Audio: Enabled (Click to Mute)'}
           aria-label={audioMuted ? 'Unmute Audio' : 'Mute Audio'}
         >
-          {audioMuted ? <VolumeX className="h-4 w-4 text-muted-foreground" /> : <Volume2 className="h-4 w-4 text-emerald-400" />}
+          {audioMuted ? <VolumeX className="h-3.5 w-3.5 text-muted-foreground" /> : <Volume2 className="h-3.5 w-3.5 text-emerald-400" />}
+        </button>
+
+        {/* Panic Lock Button */}
+        <button
+          onClick={() => {
+            sound.playWarningBeep();
+            setIsPanicLocked(true);
+          }}
+          className="flex items-center justify-center h-8 sm:h-9 w-8 sm:w-9 rounded-lg border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:border-red-500 transition-colors shadow-sm shrink-0"
+          title="Panic Lock: Instantly conceal classified evidence & lock screen (Ctrl+Alt+L)"
+          aria-label="Panic Lock Screen"
+        >
+          <Lock className="h-3.5 w-3.5" />
         </button>
 
         {/* Figma Sovereign Theme Switcher */}
@@ -588,8 +554,8 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           )}
         </div>
 
-        {/* Consolidated Settings & Tools Dropdown (Gear Icon) */}
-        <div className="relative" ref={settingsRef}>
+        {/* Consolidated System Hub & Preferences (Gear Icon) */}
+        <div className="relative shrink-0" ref={settingsRef}>
           <button
             onClick={() => setSettingsMenuOpen(!settingsMenuOpen)}
             className={`p-2 rounded-lg transition-colors border ${
@@ -597,24 +563,49 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
                 ? 'bg-primary/10 border-primary text-primary'
                 : 'border-border/60 text-muted-foreground hover:text-foreground hover:bg-accent'
             }`}
-            title="System Settings, Language, Mode, & Tour"
-            aria-label="System Settings, Language, Mode, & Tour"
+            title="System Preferences, Themes, Languages, & Tools"
+            aria-label="System Preferences, Themes, Languages, & Tools"
           >
             <SettingsIcon className="h-4 w-4" />
           </button>
 
           {settingsMenuOpen && (
-            <div className="absolute right-0 mt-2 w-72 rounded-xl border border-border bg-card p-3 shadow-2xl z-[100] space-y-3 animate-in fade-in zoom-in-95">
+            <div className="absolute right-0 mt-2 w-72 sm:w-80 rounded-xl border border-border bg-card p-3 shadow-2xl z-[100] space-y-3 animate-in fade-in zoom-in-95 max-h-[85vh] overflow-y-auto">
               <div className="flex items-center justify-between border-b border-border pb-2">
                 <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
                   <SettingsIcon className="h-3.5 w-3.5 text-primary" />
-                  System Preferences
+                  Tactical Preferences
                 </span>
                 <button
                   onClick={() => setSettingsMenuOpen(false)}
-                  className="text-muted-foreground hover:text-foreground"
+                  className="text-muted-foreground hover:text-foreground p-1"
                 >
                   <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+
+              {/* High Contrast / Sunlight Toggle */}
+              <div>
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
+                  Field Accessibility
+                </label>
+                <AccessibilityBar />
+              </div>
+
+              {/* What's New & Updates Button */}
+              <div>
+                <button
+                  onClick={() => {
+                    setSettingsMenuOpen(false);
+                    setWhatsNewOpen(true);
+                  }}
+                  className="w-full flex items-center justify-between h-9 px-2.5 rounded-lg border border-primary/40 bg-primary/10 text-xs font-bold text-primary hover:bg-primary/20 transition-all"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <Sparkles className="h-3.5 w-3.5 text-primary" />
+                    What's New in v2.4 (Changelog)
+                  </span>
+                  <ChevronRight className="h-3 w-3 text-primary" />
                 </button>
               </div>
 

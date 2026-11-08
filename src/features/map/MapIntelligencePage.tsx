@@ -321,9 +321,9 @@ export function MapIntelligencePage() {
   }>>([
     {
       meter_id: 'SM-NOIDA-9811',
-      location_name: 'Sector 62 Safehouse, Noida',
-      latitude: 28.6280,
-      longitude: 77.3649,
+      location_name: 'Sector 62 Safehouse Hideout, Noida',
+      latitude: 28.6355,
+      longitude: 77.3720,
       surge_percentage: 420.5,
       baseline_kwh: 0.38,
       current_kwh: 4.82,
@@ -1147,9 +1147,9 @@ export function MapIntelligencePage() {
         setSmartMeterAnomalies([
           {
             meter_id: 'SM-NOIDA-9811',
-            location_name: 'Sector 62 Safehouse, Noida',
-            latitude: 28.6280,
-            longitude: 77.3649,
+            location_name: 'Sector 62 Safehouse Hideout, Noida',
+            latitude: 28.6355,
+            longitude: 77.3720,
             surge_percentage: 420.5,
             baseline_kwh: 0.38,
             current_kwh: 4.82,
@@ -1782,14 +1782,14 @@ export function MapIntelligencePage() {
         });
     }
 
-    // Plot Correlated Timeline Waypoint Markers
+    // Plot Correlated Timeline Waypoint Markers (Criminal sightings in RED with CRIM-01 ID)
     timelineWaypoints.forEach((wp, idx) => {
-      const isLatestTargetHit = idx === timelineWaypoints.length - 1 || wp.location_name.includes('KM 48');
+      const isCriminalSighting = wp.type === 'ANPR_SIGHTING' || wp.entity.includes('TS 09') || wp.location_name.includes('KM 48') || idx === timelineWaypoints.length - 1;
       const el = document.createElement('div');
 
-      if (isLatestTargetHit) {
-        el.className = 'wanted-vehicle-pulsing-marker cursor-pointer transition-transform hover:scale-110';
-        el.title = `WANTED SUSPECT: CRIM-01 • Vikram Malhotra (${wp.entity}) @ ${wp.location_name}`;
+      if (isCriminalSighting) {
+        el.className = 'wanted-vehicle-pulsing-marker cursor-pointer transition-transform hover:scale-110 z-20';
+        el.title = `CRIMINAL SIGHTING: [CRIM-01] • Vikram Malhotra (${wp.entity}) @ ${wp.location_name}`;
         el.innerHTML = `
           <div style="position: relative; display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 4px 14px rgba(220,38,38,0.95));">
             <div style="background: linear-gradient(135deg, #991b1b, #ef4444); border: 2px solid #f87171; border-radius: 18px; padding: 4px 9px 4px 5px; display: flex; align-items: center; gap: 6px; box-shadow: 0 0 24px rgba(239,68,68,0.95); white-space: nowrap;">
@@ -1810,8 +1810,8 @@ export function MapIntelligencePage() {
           </div>
         `;
       } else {
-        el.className = 'timeline-marker flex items-center justify-center h-8 w-8 rounded-full border-2 border-cyan-400 font-extrabold text-[11px] text-white cursor-pointer shadow-xl transition-transform hover:scale-125';
-        el.style.backgroundColor = wp.type === 'ANPR_SIGHTING' ? '#9333ea' : '#d97706';
+        el.className = 'timeline-marker flex items-center justify-center h-8 w-8 rounded-full border-2 border-amber-400 font-extrabold text-[11px] text-white cursor-pointer shadow-xl transition-transform hover:scale-125';
+        el.style.backgroundColor = '#d97706';
         el.innerText = `${idx + 1}`;
       }
 
@@ -1831,7 +1831,7 @@ export function MapIntelligencePage() {
           metadata: {
             details: wp.details,
             stepOrder: `${idx + 1} of ${timelineWaypoints.length}`,
-            source: wp.type === 'ANPR_SIGHTING' ? 'CCTNS / VAHAN ANPR' : 'Telecom Multi-Carrier CDR'
+            source: wp.type === 'ANPR_SIGHTING' ? 'CCTNS / VAHAN ANPR (Criminal Vehicle Track)' : 'Telecom Multi-Carrier CDR (Suspect Ping)'
           }
         });
         map.flyTo({ center: [wp.longitude, wp.latitude], zoom: 13, duration: 800 });
@@ -1842,6 +1842,60 @@ export function MapIntelligencePage() {
         .addTo(map);
       markersRef.current.push(marker);
     });
+
+    // Primary Active Criminal Target Pin (Guaranteed Red Marker with CRIM-01 ID at Yamuna Toll KM 48)
+    const crimLat = 28.1402;
+    const crimLon = 77.5510;
+    const crimEl = document.createElement('div');
+    crimEl.className = 'wanted-criminal-primary-marker cursor-pointer transition-transform hover:scale-110 z-30';
+    crimEl.title = 'ACTIVE TARGET: [CRIM-01] Vikram Malhotra (Black Scorpio TS 09 AB 1234)';
+    crimEl.innerHTML = `
+      <div style="position: relative; display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 4px 16px rgba(220,38,38,0.95));">
+        <div style="background: linear-gradient(135deg, #991b1b, #ef4444); border: 2px solid #f87171; border-radius: 18px; padding: 4px 10px 4px 6px; display: flex; align-items: center; gap: 6px; box-shadow: 0 0 24px rgba(239,68,68,0.95); white-space: nowrap;">
+          <span style="background: #450a0a; color: #ffffff; font-family: monospace; font-weight: 900; font-size: 11px; padding: 2px 6px; border-radius: 8px; border: 1.5px solid #fca5a5;">CRIM-01</span>
+          <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150" alt="Vikram Malhotra" style="width: 24px; height: 24px; border-radius: 9999px; object-fit: cover; border: 2px solid #ffffff;" />
+          <div style="text-align: left; line-height: 1.15;">
+            <div style="font-size: 10.5px; font-weight: 900; color: #ffffff;">🚨 V. MALHOTRA (CRIMINAL)</div>
+            <div style="font-size: 8.5px; color: #fecaca; font-family: monospace; font-weight: 700;">WANTED • TS 09 AB 1234 (118 km/h)</div>
+          </div>
+        </div>
+        <div style="width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid #dc2626;"></div>
+        <div style="position: relative; width: 32px; height: 32px; margin-top: -3px; display: flex; align-items: center; justify-content: center;">
+          <div style="position: absolute; width: 32px; height: 32px; border-radius: 9999px; background-color: rgba(239,68,68,0.55); animation: ping 1.2s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+          <div style="position: absolute; width: 20px; height: 20px; border-radius: 9999px; background-color: #dc2626; border: 2px solid #ffffff; box-shadow: 0 0 14px #ef4444; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: bold;">
+            🚨
+          </div>
+        </div>
+      </div>
+    `;
+    crimEl.addEventListener('click', () => {
+      setSelectedLocation({
+        id: 'crim-01',
+        title: '[CRIM-01] Wanted Suspect: Vikram Malhotra',
+        locationType: 'VEHICLE_DETECTION',
+        entityType: 'PERSON',
+        latitude: crimLat,
+        longitude: crimLon,
+        address: 'Yamuna Expressway Toll KM 48 Checkpoint',
+        timestamp: new Date().toISOString(),
+        caseId: 'CASE-2026-8812',
+        entityName: 'Vikram Malhotra @ Vicky (Scorpio TS 09 AB 1234)',
+        metadata: {
+          criminalId: 'CRIM-01',
+          alias: 'Vicky Syndicate Leader',
+          charges: 'Hawala Layering (PMLA), Extortion (Sec 111 BNS)',
+          vehicle: 'Mahindra Scorpio (TS 09 AB 1234)',
+          speed: '118 km/h heading Southbound',
+          lastSeen: 'Yamuna Expressway Toll KM 48',
+          warrantStatus: 'Non-Bailable Warrant Active',
+        },
+      });
+      map.flyTo({ center: [crimLon, crimLat], zoom: 14.5, duration: 800 });
+    });
+    const crimMarker = new maplibregl.Marker({ element: crimEl })
+      .setLngLat([crimLon, crimLat])
+      .addTo(map);
+    markersRef.current.push(crimMarker);
 
     // Plot Predictive Crime Hotspots
     if (showHotspots && forecastData?.high_risk_zones) {
@@ -2384,9 +2438,9 @@ export function MapIntelligencePage() {
                   title: '⚡ Smart Meter Anomaly: SM-NOIDA-9811',
                   locationType: 'CRIME_SCENE',
                   entityType: 'LOCATION',
-                  latitude: 28.6280,
-                  longitude: 77.3649,
-                  address: 'Sector 62 Safehouse, Noida',
+                  latitude: 28.6355,
+                  longitude: 77.3720,
+                  address: 'Sector 62 Safehouse Hideout, Noida',
                   timestamp: new Date().toISOString(),
                   caseId: 'IOT-GRID-MONITOR',
                   entityName: 'Critical Safehouse Surge: +420.5% (4.82 kWh)',
@@ -2400,8 +2454,12 @@ export function MapIntelligencePage() {
                   },
                 });
                 if (mapRef.current) {
-                  mapRef.current.flyTo({ center: [77.3649, 28.6280], zoom: 14.5, duration: 850 });
+                  mapRef.current.flyTo({ center: [77.3720, 28.6355], zoom: 14.5, duration: 850 });
                 }
+                toast.success(
+                  '⚡ Smart Meter Grid Online: Sector 62 Safehouse power surge (+420.5%) detected and pinpointed.',
+                  'IoT Grid Telemetry'
+                );
               }
             }}
             className={`flex items-center gap-1.5 text-xs font-bold border transition-all ${

@@ -19,11 +19,9 @@ class ModusOperandiSemanticSearchEngine:
         self.version = "2.0.0-neural-mo"
         self.transformer_model = None
         self.transformer_loaded = False
-        
-        # Primary Engine: Neural Transformers
-        self._init_transformer_engine()
+        self._init_attempted = False
 
-        # Fallback Engine: TF-IDF Vectorizer
+        # Resilient Fallback Engine: High-dimensional TF-IDF Vectorizer
         self.vectorizer = TfidfVectorizer(
             ngram_range=(1, 2),
             sublinear_tf=True,
@@ -37,7 +35,10 @@ class ModusOperandiSemanticSearchEngine:
         self._seed_historical_corpus()
 
     def _init_transformer_engine(self):
-        """Attempts to load sentence-transformers/all-MiniLM-L6-v2 as primary neural embedder."""
+        """Attempts to load sentence-transformers/all-MiniLM-L6-v2 as primary neural embedder lazily."""
+        if self._init_attempted:
+            return self.transformer_model
+        self._init_attempted = True
         try:
             from sentence_transformers import SentenceTransformer
             self.transformer_model = SentenceTransformer("all-MiniLM-L6-v2")
@@ -50,6 +51,7 @@ class ModusOperandiSemanticSearchEngine:
             )
             self.transformer_model = None
             self.transformer_loaded = False
+        return self.transformer_model
 
     def _get_embedding_engine(self) -> str:
         """Returns the active embedding engine identifier."""
