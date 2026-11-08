@@ -84,12 +84,18 @@ export function EntityDetailModal({
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-[99999] overflow-y-auto bg-black/85 backdrop-blur-md animate-in fade-in duration-200"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl border-2 border-red-500/50 bg-slate-950 shadow-2xl shadow-red-950/50 text-foreground scrollbar-thin my-auto">
+      <div
+        className="min-h-full flex justify-center p-2 sm:p-4 md:p-6"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
+      >
+        <div className="relative w-full my-auto max-w-3xl max-h-[92vh] overflow-y-auto rounded-2xl border-2 border-red-500/50 bg-slate-950 shadow-2xl shadow-red-950/50 text-foreground scrollbar-thin">
         {/* Header Ribbon */}
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border/80 bg-slate-900/95 px-6 py-4 backdrop-blur-md">
           <div className="flex items-center gap-3">
@@ -288,7 +294,8 @@ export function EntityDetailModal({
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 
   return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent;
 }

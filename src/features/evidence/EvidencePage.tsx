@@ -899,7 +899,7 @@ export function EvidencePage() {
         /* Section 63 BSA Cryptographic Hash Ledger Table View */
         <div className="rounded-xl border border-border bg-card overflow-hidden shadow-lg animate-in fade-in duration-150">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse" aria-label="Section 63 BSA Digital Evidence Cryptographic Hash Ledger">
+            <table className="w-full text-left text-xs border-collapse min-w-[1050px]" aria-label="Section 63 BSA Digital Evidence Cryptographic Hash Ledger">
               <thead className="sticky top-0 bg-background z-10 shadow-sm">
                 <tr className="border-b border-border/80 bg-muted/70 text-muted-foreground font-semibold">
                   <th className="p-3 w-36 font-mono" aria-sort="none" scope="col">Exhibit / Ref</th>
@@ -1273,12 +1273,18 @@ export function EvidencePage() {
       {/* Forensic Ingestion & Tripwire Verification Modal */}
       {ingestionResultModalOpen && currentIngestionResult && typeof document !== 'undefined' && createPortal(
         <div
-          className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200"
+          className="fixed inset-0 z-[99999] overflow-y-auto bg-black/85 backdrop-blur-md animate-in fade-in duration-200"
           onClick={(e) => {
             if (e.target === e.currentTarget) setIngestionResultModalOpen(false);
           }}
         >
-          <div className="relative w-full max-w-2xl bg-card border border-primary/50 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] my-auto">
+          <div
+            className="min-h-full flex justify-center p-2 sm:p-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setIngestionResultModalOpen(false);
+            }}
+          >
+            <div className="relative w-full my-auto max-w-2xl bg-card border border-primary/50 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
             {/* Header */}
             <div className="p-4 sm:p-5 border-b border-border bg-gradient-to-r from-card via-card/95 to-primary/10 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -1561,7 +1567,8 @@ export function EvidencePage() {
               </Button>
             </div>
           </div>
-        </div>,
+        </div>
+      </div>,
         document.body
       )}
     </div>

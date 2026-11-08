@@ -175,7 +175,7 @@ export function CasesPage() {
             icon={<Search className="h-4 w-4" />}
           />
         </div>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
           <Filter className="h-4 w-4 text-muted-foreground" />
           <span className="text-xs font-semibold text-muted-foreground">Status:</span>
           {['ALL', 'UNDER_INVESTIGATION', 'OPEN', 'COLD_CASE', 'CLOSED'].map((st) => (

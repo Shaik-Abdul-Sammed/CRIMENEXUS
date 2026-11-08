@@ -1013,8 +1013,8 @@ export function DigitalFootprintPage() {
             <div className="text-xs font-bold text-slate-300 uppercase tracking-wider font-mono">
               Exhibit Schedule under Section 63 BSA, 2023 (Admissible Electronic Evidence)
             </div>
-            <div className="rounded-lg border border-slate-800 overflow-hidden text-xs">
-              <table className="w-full text-left font-mono">
+            <div className="rounded-lg border border-slate-800 overflow-x-auto text-xs">
+              <table className="w-full text-left font-mono min-w-[500px]">
                 <thead className="bg-slate-900 text-slate-400 text-[11px] border-b border-slate-800">
                   <tr>
                     <th className="p-2">Exhibit</th>

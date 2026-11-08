@@ -271,7 +271,7 @@ export function ForensicClueReplayModal({
       }}
     >
       <div
-        className="min-h-full flex items-center justify-center p-3 sm:p-5"
+        className="min-h-full flex justify-center p-2 sm:p-4 md:p-6"
         onClick={(e) => {
           if (e.target === e.currentTarget) {
             sound.playClickSound();
@@ -279,7 +279,7 @@ export function ForensicClueReplayModal({
           }
         }}
       >
-        <div className="relative w-full max-w-6xl max-h-[90vh] flex flex-col rounded-2xl border-2 border-primary/50 bg-slate-900 shadow-2xl overflow-hidden text-slate-100">
+        <div className="relative w-full my-auto max-w-6xl max-h-[92vh] flex flex-col rounded-2xl border-2 border-primary/50 bg-slate-900 shadow-2xl overflow-hidden text-slate-100">
           {/* Modal Header */}
           <div className="p-4 px-6 border-b border-border/80 bg-slate-950 flex flex-wrap items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-3">
@@ -722,7 +722,7 @@ export function ForensicClueReplayModal({
 
                 {/* Proof Modality Table */}
                 <div className="overflow-x-auto rounded-xl border border-slate-800">
-                  <table className="w-full text-xs text-left">
+                  <table className="w-full text-xs text-left min-w-[650px]">
                     <thead className="bg-slate-900 text-slate-300 font-bold uppercase text-[10px] border-b border-slate-800">
                       <tr>
                         <th className="p-3">Evidence Modality</th>

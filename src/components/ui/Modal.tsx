@@ -70,7 +70,7 @@ export function Modal({
       }}
     >
       <div
-        className="min-h-full flex items-center justify-center p-3 sm:p-5"
+        className="min-h-full flex justify-center p-2 sm:p-4 md:p-6"
         onClick={(e) => {
           if (e.target === e.currentTarget) onClose();
         }}
@@ -78,7 +78,7 @@ export function Modal({
         <div
           ref={modalRef}
           className={cn(
-            'relative w-full rounded-xl border border-border bg-card text-card-foreground shadow-2xl overflow-hidden focus:outline-none flex flex-col max-h-[90vh]',
+            'relative w-full my-auto rounded-xl border border-border bg-card text-card-foreground shadow-2xl overflow-hidden focus:outline-none flex flex-col max-h-[92vh]',
             maxWidth || sizeClasses[size],
             className
           )}

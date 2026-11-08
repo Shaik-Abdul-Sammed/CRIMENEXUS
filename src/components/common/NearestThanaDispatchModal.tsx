@@ -300,12 +300,12 @@ Digital Signature Token: SEC-63-BSA-JWR-VT-ACK-9921
       aria-labelledby="thana-dispatch-title"
     >
       <div
-        className="min-h-full flex items-center justify-center p-3 sm:p-5"
+        className="min-h-full flex justify-center p-2 sm:p-4 md:p-6"
         onClick={(e) => {
           if (e.target === e.currentTarget) onClose();
         }}
       >
-        <div className="relative w-full max-w-5xl rounded-2xl bg-slate-900 border-2 border-red-500/50 shadow-2xl overflow-hidden flex flex-col max-h-[92vh] text-slate-100">
+        <div className="relative w-full my-auto max-w-5xl rounded-2xl bg-slate-900 border-2 border-red-500/50 shadow-2xl overflow-hidden flex flex-col max-h-[92vh] text-slate-100">
           {/* Header */}
           <div className="p-4 sm:p-5 border-b border-border/80 bg-slate-950 flex flex-wrap items-center justify-between gap-3 shrink-0">
             <div className="flex items-center gap-3">

@@ -219,7 +219,7 @@ export function ProFeaturesHubModal({ isOpen, onClose, initialTab = 'FEATURES' }
       }}
     >
       <div
-        className="min-h-full flex items-center justify-center p-3 sm:p-6"
+        className="min-h-full flex justify-center p-2 sm:p-4 md:p-6"
         onClick={(e) => {
           if (e.target === e.currentTarget) {
             sound.playClickSound();
@@ -227,7 +227,7 @@ export function ProFeaturesHubModal({ isOpen, onClose, initialTab = 'FEATURES' }
           }
         }}
       >
-        <div className="relative w-full max-w-5xl bg-slate-900 border border-primary/50 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="relative w-full my-auto max-w-5xl bg-slate-900 border border-primary/50 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
           {/* Header */}
           <div className="p-4 sm:p-5 border-b border-border/80 bg-slate-950 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">

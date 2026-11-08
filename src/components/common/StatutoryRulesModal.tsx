@@ -95,7 +95,7 @@ export const StatutoryRulesModal: React.FC<StatutoryRulesModalProps> = ({
       }}
     >
       <div
-        className="min-h-full flex items-center justify-center p-3 sm:p-5"
+        className="min-h-full flex justify-center p-2 sm:p-4 md:p-6"
         onClick={(e) => {
           if (e.target === e.currentTarget) {
             sound.playClickSound();
@@ -103,7 +103,7 @@ export const StatutoryRulesModal: React.FC<StatutoryRulesModalProps> = ({
           }
         }}
       >
-        <div className="relative w-full max-w-5xl rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+        <div className="relative w-full my-auto max-w-5xl rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
         {/* Header */}
         <div className="shrink-0 flex items-center justify-between p-4 sm:p-5 border-b border-slate-800 bg-slate-950/60">
           <div className="flex items-center gap-3">

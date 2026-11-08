@@ -187,12 +187,12 @@ export function FileExportPreviewModal({
       aria-labelledby="file-export-preview-title"
     >
       <div
-        className="min-h-full flex items-center justify-center p-3 sm:p-4 md:p-6"
+        className="min-h-full flex justify-center p-2 sm:p-4 md:p-6"
         onClick={(e) => {
           if (e.target === e.currentTarget) onClose();
         }}
       >
-        <div className="relative w-full max-w-4xl max-h-[90vh] flex flex-col rounded-2xl border border-primary/40 bg-card shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 text-foreground">
+        <div className="relative w-full my-auto max-w-4xl max-h-[92vh] flex flex-col rounded-2xl border border-primary/40 bg-card shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 text-foreground">
           {/* Header Bar */}
           <div className="flex items-center justify-between p-4 border-b border-border bg-gradient-to-r from-card via-card to-primary/5 shrink-0">
           <div className="flex items-center gap-3 min-w-0">
@@ -333,7 +333,7 @@ export function FileExportPreviewModal({
               {fileType === 'csv' && (
                 <div className="rounded-xl border border-border overflow-hidden bg-card shadow-sm">
                   <div className="overflow-x-auto max-h-[50vh]">
-                    <table className="w-full text-left text-xs border-collapse">
+                    <table className="w-full text-left text-xs border-collapse min-w-[500px]">
                       <thead className="sticky top-0 bg-muted/90 text-foreground font-bold uppercase tracking-wider text-[10px] border-b border-border shadow-sm z-10 backdrop-blur-sm">
                         <tr>
                           <th className="p-2.5 pl-3 w-12 text-muted-foreground font-mono">#</th>
@@ -425,8 +425,8 @@ export function FileExportPreviewModal({
                       Archive Package contains {archiveManifest.length} authenticated exhibits sealed with Section 63 BSA SHA-256 signatures.
                     </span>
                   </div>
-                  <div className="rounded-xl border border-border overflow-hidden bg-card">
-                    <table className="w-full text-left text-xs">
+                  <div className="rounded-xl border border-border overflow-x-auto bg-card">
+                    <table className="w-full text-left text-xs min-w-[600px]">
                       <thead className="bg-muted/80 text-foreground font-bold uppercase text-[10px] border-b border-border">
                         <tr>
                           <th className="p-2.5 pl-3">File Name</th>

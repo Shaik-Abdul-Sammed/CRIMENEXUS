@@ -217,9 +217,9 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
 
   return (
     <>
-      <header className="sticky top-0 z-50 flex h-16 w-full items-center justify-between border-b border-border bg-card/98 px-3 sm:px-4 md:px-6 shadow-sm">
+      <header className="sticky top-0 z-50 flex h-16 w-full max-w-full items-center justify-between border-b border-border bg-card/98 px-2.5 sm:px-4 md:px-6 shadow-sm overflow-hidden">
       {/* Left: Responsive Breadcrumbs with overflow protection */}
-      <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-muted-foreground min-w-0 shrink overflow-hidden">
+      <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-muted-foreground min-w-0 shrink overflow-hidden max-w-[28%] sm:max-w-[35%] md:max-w-[45%]">
         <Link to="/dashboard" className="hover:text-foreground font-semibold transition-colors shrink-0 flex items-center gap-1">
           <span>Home</span>
         </Link>
@@ -228,7 +228,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
             <ChevronRight className="h-3 w-3 text-border shrink-0" />
             <Link
               to={b.url}
-              className={`truncate max-w-[120px] md:max-w-[180px] ${
+              className={`truncate max-w-[80px] sm:max-w-[120px] md:max-w-[160px] ${
                 idx === breadcrumbs.length - 1
                   ? 'font-bold text-foreground'
                   : 'hover:text-foreground transition-colors'
@@ -242,7 +242,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
       </div>
 
       {/* Right: Consolidated Tools & Actions (Responsive & Overflow Protected) */}
-      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 justify-end">
+      <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 justify-end min-w-0">
         {/* Quick Search Trigger (Modal Launcher) */}
         <button
           onClick={() => setGlobalSearchOpen(true)}
@@ -275,7 +275,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
         {/* Indian Railways TC Aadhaar Face Verification Terminal Button */}
         <Link
           to="/railway-verification"
-          className="hidden md:flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg border border-sky-500/40 bg-sky-950/50 hover:bg-sky-900/50 text-sky-300 text-xs font-bold transition-all shadow-sm shrink-0"
+          className="hidden xl:flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg border border-sky-500/40 bg-sky-950/50 hover:bg-sky-900/50 text-sky-300 text-xs font-bold transition-all shadow-sm shrink-0"
           title="Indian Railways TC Biometric Aadhaar Face Verification & CCTNS Watchlist Terminal"
           aria-label="Railway TC Verification"
         >
@@ -287,12 +287,12 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
         {/* 100 Technical Specifications Roadmap Button */}
         <Link
           to="/roadmap"
-          className="hidden lg:flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg border border-amber-500/40 bg-amber-950/40 hover:bg-amber-900/40 text-amber-300 text-xs font-bold transition-all shadow-sm shrink-0"
+          className="hidden xl:flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg border border-amber-500/40 bg-amber-950/40 hover:bg-amber-900/40 text-amber-300 text-xs font-bold transition-all shadow-sm shrink-0"
           title="100 Sovereign Technical Specifications & Next 96 Engineering Roadmap"
           aria-label="100 Specs Roadmap"
         >
           <Compass className="h-3.5 w-3.5 text-amber-400 shrink-0" />
-          <span className="hidden 2xl:inline text-[11px]">100 Specs Roadmap</span>
+          <span className="hidden 2xl:inline text-[11px]">100 Specs</span>
           <span className="px-1 py-0.2 rounded-full bg-amber-400/20 text-amber-300 text-[9px] font-mono font-bold">96 NEW</span>
         </Link>
 
@@ -302,7 +302,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
             sound.playClickSound();
             setStatutoryRulesOpen(true);
           }}
-          className="flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2 rounded-lg border border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 text-xs font-bold transition-all shrink-0"
+          className="hidden 2xl:flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2 rounded-lg border border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 text-xs font-bold transition-all shrink-0"
           title="15 Sovereign Statutory Criminal Rules & Remand Guard (Press S)"
           aria-label="15 Sovereign Statutory Criminal Rules"
         >
@@ -370,14 +370,14 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
             aria-label="Switch Figma Sovereign Theme"
           >
             <Palette className="h-4 w-4 text-primary" />
-            <span className="hidden sm:inline text-[11px] font-medium">
+            <span className="hidden xl:inline text-[11px] font-medium">
               {FIGMA_THEME_OPTIONS.find((t) => t.id === figmaTheme)?.icon || '🎨'}{' '}
               {FIGMA_THEME_OPTIONS.find((t) => t.id === figmaTheme)?.badge || 'Theme'}
             </span>
           </button>
 
           {themeMenuOpen && (
-            <div className="absolute right-0 mt-2 w-64 rounded-xl border border-border bg-card p-3 shadow-2xl z-[100] animate-in fade-in zoom-in-95 select-none">
+            <div className="absolute right-0 mt-2 w-64 max-w-[calc(100vw-2rem)] rounded-xl border border-border bg-card p-3 shadow-2xl z-[100] animate-in fade-in zoom-in-95 select-none">
               <div className="flex items-center justify-between pb-2 border-b border-border mb-2">
                 <div className="flex items-center gap-1.5">
                   <Palette className="h-3.5 w-3.5 text-primary" />
@@ -467,7 +467,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           </button>
 
           {notifMenuOpen && (
-            <div className="absolute right-0 mt-2 w-96 rounded-2xl border border-border/80 bg-slate-900/95 backdrop-blur-md p-4 shadow-2xl z-[100] animate-in fade-in zoom-in-95 select-none">
+            <div className="absolute right-0 mt-2 w-[92vw] max-w-sm sm:w-96 rounded-2xl border border-border/80 bg-slate-900/95 backdrop-blur-md p-4 shadow-2xl z-[100] animate-in fade-in zoom-in-95 select-none">
               <div className="flex items-center justify-between pb-3 border-b border-border/60 mb-3">
                 <div className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
@@ -596,7 +596,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           </button>
 
           {settingsMenuOpen && (
-            <div className="absolute right-0 mt-2 w-72 sm:w-80 rounded-xl border border-border bg-card p-3 shadow-2xl z-[100] space-y-3 animate-in fade-in zoom-in-95 max-h-[85vh] overflow-y-auto">
+            <div className="absolute right-0 mt-2 w-[90vw] max-w-xs sm:w-80 rounded-xl border border-border bg-card p-3 shadow-2xl z-[100] space-y-3 animate-in fade-in zoom-in-95 max-h-[85vh] overflow-y-auto">
               <div className="flex items-center justify-between border-b border-border pb-2">
                 <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
                   <SettingsIcon className="h-3.5 w-3.5 text-primary" />

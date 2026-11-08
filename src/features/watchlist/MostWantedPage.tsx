@@ -802,12 +802,18 @@ export function MostWantedPage() {
       {/* Statutory Look-Out Circular (LOC) Preview & Confirmation Modal */}
       {locConfirmSuspect && typeof document !== 'undefined' && createPortal(
         <div
-          className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200"
+          className="fixed inset-0 z-[99999] overflow-y-auto bg-slate-950/85 backdrop-blur-md animate-in fade-in duration-200"
           onClick={(e) => {
             if (e.target === e.currentTarget) setLocConfirmSuspect(null);
           }}
         >
-          <div className="w-full max-w-xl rounded-2xl border-2 border-red-500/50 bg-slate-900 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 my-auto">
+          <div
+            className="min-h-full flex justify-center p-2 sm:p-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setLocConfirmSuspect(null);
+            }}
+          >
+            <div className="w-full my-auto max-w-xl rounded-2xl border-2 border-red-500/50 bg-slate-900 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
             {/* Modal Header */}
             <div className="bg-gradient-to-r from-red-950/80 via-red-900/40 to-slate-900 p-5 border-b border-red-500/30 flex items-start justify-between">
               <div className="space-y-1">
@@ -917,6 +923,7 @@ export function MostWantedPage() {
                 <span>Confirm & Issue LOC</span>
               </Button>
             </div>
+          </div>
           </div>
         </div>,
         document.body

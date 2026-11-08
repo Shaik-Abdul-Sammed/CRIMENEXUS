@@ -261,12 +261,18 @@ export function AIAssistantPage() {
       {/* PHASE 4: Interactive Evidence Source Viewer Modal */}
       {selectedFindingForSources && typeof document !== 'undefined' && createPortal(
         <div
-          className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
+          className="fixed inset-0 z-[99999] overflow-y-auto bg-black/85 backdrop-blur-md animate-in fade-in duration-200"
           onClick={(e) => {
             if (e.target === e.currentTarget) setSelectedFindingForSources(null);
           }}
         >
-          <div className="relative w-full max-w-3xl bg-slate-900 border border-primary/40 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] my-auto">
+          <div
+            className="min-h-full flex justify-center p-2 sm:p-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setSelectedFindingForSources(null);
+            }}
+          >
+            <div className="relative w-full my-auto max-w-3xl bg-slate-900 border border-primary/40 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
             <div className="p-4 border-b border-border/80 bg-slate-950 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="p-1.5 rounded-lg bg-primary/20 text-primary border border-primary/40">
@@ -377,7 +383,8 @@ export function AIAssistantPage() {
               </div>
             </div>
           </div>
-        </div>,
+        </div>
+      </div>,
         document.body
       )}
     </div>

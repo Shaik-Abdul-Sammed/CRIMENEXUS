@@ -84,7 +84,7 @@ export const KeyboardShortcutsModal: React.FC<KeyboardShortcutsModalProps> = ({
       }}
     >
       <div
-        className="min-h-full flex items-center justify-center p-3 sm:p-5"
+        className="min-h-full flex justify-center p-2 sm:p-4 md:p-6"
         onClick={(e) => {
           if (e.target === e.currentTarget) {
             sound.playClickSound();
@@ -92,7 +92,7 @@ export const KeyboardShortcutsModal: React.FC<KeyboardShortcutsModalProps> = ({
           }
         }}
       >
-        <div className="relative w-full max-w-xl max-h-[88vh] rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="relative w-full my-auto max-w-xl max-h-[90vh] rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="shrink-0 flex items-center justify-between p-4 sm:p-5 border-b border-slate-800 bg-slate-950/80">
           <div className="flex items-center gap-3">

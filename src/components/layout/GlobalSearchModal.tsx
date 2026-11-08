@@ -77,12 +77,12 @@ export function GlobalSearchModal() {
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[99999] flex items-start justify-center pt-20 p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-150"
+      className="fixed inset-0 z-[99999] overflow-y-auto bg-black/80 backdrop-blur-md animate-in fade-in duration-150 p-3 sm:p-6"
       onClick={(e) => {
         if (e.target === e.currentTarget) setGlobalSearchOpen(false);
       }}
     >
-      <div className="relative w-full max-w-2xl rounded-xl border border-border bg-card shadow-2xl overflow-hidden my-auto">
+      <div className="relative w-full max-w-2xl rounded-xl border border-border bg-card shadow-2xl overflow-hidden mx-auto mt-12 sm:mt-16">
         {/* Search Header */}
         <div className="flex items-center px-4 border-b border-border bg-background/50">
           <Search className="h-5 w-5 text-primary shrink-0 mr-3" />

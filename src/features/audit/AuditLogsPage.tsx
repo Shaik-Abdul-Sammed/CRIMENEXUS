@@ -122,7 +122,8 @@ export function AuditLogsPage() {
               <p>No audit events match your filter &quot;{filterText}&quot;.</p>
             </div>
           ) : (
-            <table className="w-full text-left text-xs">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs min-w-[800px]">
               <thead className="bg-muted/50 border-b border-border text-muted-foreground uppercase text-[10px] font-bold tracking-wider">
                 <tr>
                   <th className="p-3.5">Timestamp</th>
@@ -171,7 +172,8 @@ export function AuditLogsPage() {
                 ))}
               </tbody>
             </table>
-          )}
+          </div>
+        )}
         </CardContent>
       </Card>
 

@@ -3226,7 +3226,7 @@ export function LiveTrackingPage() {
 
             <div className="border border-border/80 rounded-xl overflow-hidden bg-background/40">
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
+                <table className="w-full text-left text-xs min-w-[750px]">
                   <thead className="bg-muted/60 text-muted-foreground text-[10px] uppercase font-bold border-b border-border">
                     <tr>
                       <th className="p-2.5">Point</th>
@@ -3373,8 +3373,19 @@ export function LiveTrackingPage() {
 
       {/* 32 SOVEREIGN DEMO FEATURES MODAL / DRAWER (SOLVES REQUEST: "add 32 features to this live demo page") */}
       {featuresModalOpen && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="relative w-full max-w-5xl max-h-[90vh] bg-slate-900 border border-emerald-500/40 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+        <div
+          className="fixed inset-0 z-[99999] overflow-y-auto bg-black/85 backdrop-blur-md animate-in fade-in duration-200"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setFeaturesModalOpen(false);
+          }}
+        >
+          <div
+            className="min-h-full flex justify-center p-2 sm:p-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setFeaturesModalOpen(false);
+            }}
+          >
+            <div className="relative w-full my-auto max-w-5xl max-h-[92vh] bg-slate-900 border border-emerald-500/40 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
             {/* Header */}
             <div className="p-5 border-b border-emerald-500/30 bg-emerald-950/30 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -3551,14 +3562,26 @@ export function LiveTrackingPage() {
               </Button>
             </div>
           </div>
-        </div>,
-        document.body
+        </div>
+      </div>,
+      document.body
       )}
 
       {/* APPREHENSION SUCCESS & STATUTORY CUSTODY SEALING MODAL */}
       {apprehensionModalOpen && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-[999999] isolate flex items-center justify-center p-3 sm:p-4 bg-slate-950/95 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="relative w-full max-w-4xl max-h-[90vh] bg-slate-900 border-2 border-emerald-500/60 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+        <div
+          className="fixed inset-0 z-[999999] isolate overflow-y-auto bg-slate-950/95 backdrop-blur-md animate-in fade-in duration-200"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setApprehensionModalOpen(false);
+          }}
+        >
+          <div
+            className="min-h-full flex justify-center p-2 sm:p-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setApprehensionModalOpen(false);
+            }}
+          >
+            <div className="relative w-full my-auto max-w-4xl max-h-[92vh] bg-slate-900 border-2 border-emerald-500/60 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
             {/* Header */}
             <div className="p-4 border-b border-emerald-500/40 bg-gradient-to-r from-emerald-950/80 via-slate-900 to-emerald-950/80 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -3882,14 +3905,26 @@ export function LiveTrackingPage() {
               </div>
             </div>
           </div>
-        </div>,
-        document.body
+        </div>
+      </div>,
+      document.body
       )}
 
       {/* COMPREHENSIVE OPERATIONAL GUIDE: HOW CRIMINAL DATA IS COLLECTED & USED */}
       {workflowModalOpen && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="relative w-full max-w-5xl max-h-[92vh] bg-slate-900 border border-indigo-500/50 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+        <div
+          className="fixed inset-0 z-[99999] overflow-y-auto bg-black/85 backdrop-blur-md animate-in fade-in duration-200"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setWorkflowModalOpen(false);
+          }}
+        >
+          <div
+            className="min-h-full flex justify-center p-2 sm:p-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setWorkflowModalOpen(false);
+            }}
+          >
+            <div className="relative w-full my-auto max-w-5xl max-h-[92vh] bg-slate-900 border border-indigo-500/50 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
             {/* Header */}
             <div className="p-5 border-b border-indigo-500/30 bg-gradient-to-r from-indigo-950/70 via-slate-900 to-indigo-950/70 flex items-center justify-between">
               <div className="flex items-center gap-3.5">
@@ -4259,8 +4294,9 @@ export function LiveTrackingPage() {
               </div>
             </div>
           </div>
-        </div>,
-        document.body
+        </div>
+      </div>,
+      document.body
       )}
 
       {/* FORENSIC CLUES & SCENARIO RETELECAST MODAL */}
@@ -4274,7 +4310,7 @@ export function LiveTrackingPage() {
       {/* FIELD EVIDENCE SEIZURE & INSTANT SECTION 63 BSA CRYPTOGRAPHIC SEALING MODAL */}
       {fieldUploadModalOpen && typeof document !== 'undefined' && createPortal(
         <div
-          className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200"
+          className="fixed inset-0 z-[99999] overflow-y-auto bg-black/85 backdrop-blur-md animate-in fade-in duration-200"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setFieldUploadModalOpen(false);
@@ -4282,7 +4318,16 @@ export function LiveTrackingPage() {
             }
           }}
         >
-          <div className="relative w-full max-w-2xl bg-card border border-primary/50 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] my-auto">
+          <div
+            className="min-h-full flex justify-center p-2 sm:p-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setFieldUploadModalOpen(false);
+                setFieldSealedExhibit(null);
+              }
+            }}
+          >
+            <div className="relative w-full my-auto max-w-2xl bg-card border border-primary/50 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
             {/* Header */}
             <div className="p-4 sm:p-5 border-b border-border bg-gradient-to-r from-card via-card/95 to-primary/10 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -4545,8 +4590,9 @@ export function LiveTrackingPage() {
               </Button>
             </div>
           </div>
-        </div>,
-        document.body
+        </div>
+      </div>,
+      document.body
       )}
 
       {/* FULL DOCUMENT PREVIEW MODAL FOR SECTION 63 BSA CERTIFICATE & COURT REMAND DOSSIER */}

@@ -219,32 +219,34 @@ export function LightweightDashboard() {
             <h2 className="font-bold text-rose-400 text-xs sm:text-sm">MOST WANTED // HIGH FLIGHT RISK SYNDICATE</h2>
             <span className="text-[10px] text-slate-400 font-bold">SEC 82 CrPC // LOC ACTIVE</span>
           </div>
-          <table data-testid="lite-most-wanted-table" className="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr className="border-b border-slate-800 text-slate-400 text-[11px]">
-                <th className="py-1">#</th>
-                <th className="py-1">NAME</th>
-                <th className="py-1">ROLE</th>
-                <th className="py-1">SCORE</th>
-                <th className="py-1">STATUS</th>
-              </tr>
-            </thead>
-            <tbody>
-              {mostWanted.map((mw, i) => (
-                <tr key={i} className="border-b border-slate-800/50 hover:bg-slate-800/30">
-                  <td className="py-1.5 font-bold text-amber-400">{mw.rank || i + 1}</td>
-                  <td className="py-1.5 font-semibold text-white">{mw.name}</td>
-                  <td className="py-1.5 text-slate-300">{mw.role}</td>
-                  <td className="py-1.5 text-rose-400 font-bold">{((mw.risk_score || 0.85) * 100).toFixed(0)}%</td>
-                  <td className="py-1.5">
-                    <span className="bg-rose-950 border border-rose-700 text-rose-300 px-1 py-0.5 rounded text-[10px]">
-                      {mw.status || 'ACTIVE'}
-                    </span>
-                  </td>
+          <div className="overflow-x-auto">
+            <table data-testid="lite-most-wanted-table" className="w-full text-left text-xs border-collapse min-w-[400px]">
+              <thead>
+                <tr className="border-b border-slate-800 text-slate-400 text-[11px]">
+                  <th className="py-1">#</th>
+                  <th className="py-1">NAME</th>
+                  <th className="py-1">ROLE</th>
+                  <th className="py-1">SCORE</th>
+                  <th className="py-1">STATUS</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {mostWanted.map((mw, i) => (
+                  <tr key={i} className="border-b border-slate-800/50 hover:bg-slate-800/30">
+                    <td className="py-1.5 font-bold text-amber-400">{mw.rank || i + 1}</td>
+                    <td className="py-1.5 font-semibold text-white">{mw.name}</td>
+                    <td className="py-1.5 text-slate-300">{mw.role}</td>
+                    <td className="py-1.5 text-rose-400 font-bold">{((mw.risk_score || 0.85) * 100).toFixed(0)}%</td>
+                    <td className="py-1.5">
+                      <span className="bg-rose-950 border border-rose-700 text-rose-300 px-1 py-0.5 rounded text-[10px]">
+                        {mw.status || 'ACTIVE'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* Financial Smurfing Tripwires */}
@@ -253,30 +255,32 @@ export function LightweightDashboard() {
             <h2 className="font-bold text-amber-400 text-xs sm:text-sm">FINANCIAL TRIPWIRE // SMURFING DETECTIONS</h2>
             <span className="text-[10px] text-slate-400 font-bold">SEC 102 CrPC FREEZE CANDIDATES</span>
           </div>
-          <table data-testid="lite-alerts-table" className="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr className="border-b border-slate-800 text-slate-400 text-[11px]">
-                <th className="py-1">BENEFICIARY ACCOUNT</th>
-                <th className="py-1">SENDERS</th>
-                <th className="py-1">TOTAL (INR)</th>
-                <th className="py-1">STATUS</th>
-              </tr>
-            </thead>
-            <tbody>
-              {alerts.map((al) => (
-                <tr key={al.id} className="border-b border-slate-800/50 hover:bg-slate-800/30">
-                  <td className="py-1.5 font-semibold text-cyan-300">{al.beneficiary}</td>
-                  <td className="py-1.5 text-slate-300">{al.senders_count} mules</td>
-                  <td className="py-1.5 font-bold text-amber-300">₹{al.total_amount.toLocaleString('en-IN')}</td>
-                  <td className="py-1.5">
-                    <span className="bg-amber-950 border border-amber-600 text-amber-300 px-1 py-0.5 rounded text-[10px]">
-                      {al.severity}
-                    </span>
-                  </td>
+          <div className="overflow-x-auto">
+            <table data-testid="lite-alerts-table" className="w-full text-left text-xs border-collapse min-w-[380px]">
+              <thead>
+                <tr className="border-b border-slate-800 text-slate-400 text-[11px]">
+                  <th className="py-1">BENEFICIARY ACCOUNT</th>
+                  <th className="py-1">SENDERS</th>
+                  <th className="py-1">TOTAL (INR)</th>
+                  <th className="py-1">STATUS</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {alerts.map((al) => (
+                  <tr key={al.id} className="border-b border-slate-800/50 hover:bg-slate-800/30">
+                    <td className="py-1.5 font-semibold text-cyan-300">{al.beneficiary}</td>
+                    <td className="py-1.5 text-slate-300">{al.senders_count} mules</td>
+                    <td className="py-1.5 font-bold text-amber-300">₹{al.total_amount.toLocaleString('en-IN')}</td>
+                    <td className="py-1.5">
+                      <span className="bg-amber-950 border border-amber-600 text-amber-300 px-1 py-0.5 rounded text-[10px]">
+                        {al.severity}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* Recent FIRs */}
@@ -285,7 +289,8 @@ export function LightweightDashboard() {
             <h2 className="font-bold text-cyan-400 text-xs sm:text-sm">REGISTERED FIRST INFORMATION REPORTS (CCTNS GRID)</h2>
             <span className="text-[10px] text-slate-400 font-bold">STATION LOGS</span>
           </div>
-          <table data-testid="lite-firs-table" className="w-full text-left text-xs border-collapse">
+          <div className="overflow-x-auto">
+            <table data-testid="lite-firs-table" className="w-full text-left text-xs border-collapse min-w-[500px]">
             <thead>
               <tr className="border-b border-slate-800 text-slate-400 text-[11px]">
                 <th className="py-1">CASE NUMBER</th>
@@ -312,6 +317,7 @@ export function LightweightDashboard() {
             </tbody>
           </table>
         </div>
+      </div>
       </div>
     </div>
   );

@@ -549,7 +549,7 @@ export function TechnicalRoadmapPage() {
 
         <div className="flex flex-wrap items-center gap-2">
           {/* Domain Filter */}
-          <div className="flex items-center gap-1 text-xs">
+          <div className="flex flex-wrap items-center gap-1 text-xs">
             <span className="text-[10px] font-bold text-muted-foreground uppercase mr-1">Domain:</span>
             {['ALL', 'AI_ML', 'CRYPTOGRAPHY', 'INTERCEPT', 'SURVEILLANCE_IOT', 'LEGAL_COMPLIANCE'].map((dom) => (
               <button
@@ -570,7 +570,7 @@ export function TechnicalRoadmapPage() {
           </div>
 
           {/* Phase Filter */}
-          <div className="flex items-center gap-1 text-xs pl-2 border-l border-border/60">
+          <div className="flex flex-wrap items-center gap-1 text-xs pl-2 border-l border-border/60">
             <span className="text-[10px] font-bold text-muted-foreground uppercase mr-1">Phase:</span>
             {['ALL', 'PHASE_1_LIVE', 'PHASE_2_Q1_2027', 'PHASE_3_Q3_2027', 'PHASE_4_2028'].map((ph) => (
               <button

@@ -1343,7 +1343,7 @@ export function AboutPlatformPage() {
             </h3>
 
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
+              <table className="w-full text-left text-xs border-collapse min-w-[700px]">
                 <thead>
                   <tr className="border-b border-border bg-slate-900/60 text-slate-200">
                     <th className="p-3 font-bold uppercase tracking-wider text-[11px]">Investigation Workflow</th>
@@ -1709,7 +1709,7 @@ export function AboutPlatformPage() {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
+              <table className="w-full text-left text-xs border-collapse min-w-[700px]">
                 <thead>
                   <tr className="border-b border-border bg-slate-900/60 text-slate-200">
                     <th className="p-3.5 font-bold uppercase tracking-wider text-[11px]">Operational Capability</th>

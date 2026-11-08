@@ -81,7 +81,7 @@ export function SettingsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0 overflow-x-auto">
-              <table className="w-full text-left text-xs">
+              <table className="w-full text-left text-xs min-w-[550px]">
                 <thead className="bg-muted/50 border-b border-border text-muted-foreground uppercase text-[10px] font-bold">
                   <tr>
                     <th className="p-3">Workspace Module</th>

@@ -36,8 +36,8 @@ export function PanicLockModal({ isLocked, onUnlock }: PanicLockModalProps) {
 
   const modalContent = (
     <div className="fixed inset-0 z-[999999] bg-slate-950/98 backdrop-blur-2xl overflow-y-auto select-none animate-in fade-in duration-150">
-      <div className="min-h-full flex items-center justify-center p-4 sm:p-6 text-center">
-        <div className="max-w-md w-full p-6 sm:p-8 rounded-2xl border-2 border-red-500/60 bg-slate-900/90 shadow-2xl shadow-red-950/80 space-y-6">
+      <div className="min-h-full flex justify-center p-3 sm:p-6 text-center">
+        <div className="max-w-md w-full my-auto p-6 sm:p-8 rounded-2xl border-2 border-red-500/60 bg-slate-900/90 shadow-2xl shadow-red-950/80 space-y-6">
         <div className="flex flex-col items-center gap-3">
           <div className="p-4 rounded-full bg-red-500/20 text-red-400 border border-red-500/40 animate-pulse">
             <Lock className="h-10 w-10 text-red-400" />
