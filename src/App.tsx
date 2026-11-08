@@ -6,6 +6,7 @@ import { ProtectedRoute } from './features/auth/ProtectedRoute';
 import { LoginPage } from './features/auth/LoginPage';
 import { SkeletonLoader } from './components/common/SkeletonLoader';
 import { ToastProvider } from './components/ui/Toast';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 
 // Lazy-loaded routes for optimal bundle code-splitting and rapid FCP
 const DashboardPage = React.lazy(() => import('./features/dashboard/DashboardPage').then((m) => ({ default: m.DashboardPage })));
@@ -53,8 +54,9 @@ export function App() {
     <QueryClientProvider client={queryClient}>
       <ToastProvider>
         <BrowserRouter>
-          <React.Suspense fallback={LazyRouteFallback}>
-            <Routes>
+          <ErrorBoundary>
+            <React.Suspense fallback={LazyRouteFallback}>
+              <Routes>
               {/* Public Auth & Ultra-Low Bandwidth Thana Lite Mode */}
               <Route path="/login" element={<LoginPage />} />
               <Route path="/lite" element={<LightweightDashboard />} />
@@ -99,7 +101,8 @@ export function App() {
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </React.Suspense>
-        </BrowserRouter>
+        </ErrorBoundary>
+      </BrowserRouter>
       </ToastProvider>
     </QueryClientProvider>
   );

@@ -834,7 +834,20 @@ export function DashboardPage() {
                   <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2">{c.description}</p>
                   <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/40 text-[10px] text-muted-foreground">
                     <span>{c.locationName}</span>
-                    <span>{c.entityCount} Entities • {c.evidenceCount} Evidence</span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        sound.playClickSound();
+                        setPreviewModalOpen(true);
+                      }}
+                      className="text-primary hover:underline font-bold flex items-center gap-1 z-10"
+                      title="Preview Statutory Dossier"
+                    >
+                      <Eye className="h-3 w-3" />
+                      <span>Preview</span>
+                    </button>
                   </div>
                 </Link>
               ))}

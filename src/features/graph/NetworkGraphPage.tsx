@@ -391,20 +391,36 @@ export function NetworkGraphPage() {
   }, [graphData]);
 
   const speakText = (text: string) => {
-    if (!('speechSynthesis' in window)) return;
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
     try {
       window.speechSynthesis.cancel();
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      }
       sound.playRadarPing();
       const clean = text.replace(/[#*`_~]/g, ' ');
       const utterance = new SpeechSynthesisUtterance(clean);
+      const voices = window.speechSynthesis.getVoices();
+      if (voices.length > 0) {
+        const preferredVoice =
+          voices.find((v) => v.lang === 'en-IN') ||
+          voices.find((v) => v.lang.startsWith('en') && !v.localService) ||
+          voices.find((v) => v.lang.startsWith('en')) ||
+          voices[0];
+        if (preferredVoice) utterance.voice = preferredVoice;
+      }
+      utterance.lang = 'en-IN';
       utterance.rate = 1.0;
       utterance.pitch = 1.0;
+      utterance.volume = 1.0;
       utterance.onend = () => setIsSpeaking(false);
       utterance.onerror = () => setIsSpeaking(false);
       setIsSpeaking(true);
+      window.speechSynthesis.resume();
       window.speechSynthesis.speak(utterance);
     } catch (err) {
       console.warn('Speech synthesis error:', err);
+      setIsSpeaking(false);
     }
   };
 
@@ -452,17 +468,19 @@ export function NetworkGraphPage() {
       return {
         name: 'cose',
         animate: 'end',
-        animationDuration: 400,
-        nodeRepulsion: () => 16000 * scale,
-        idealEdgeLength: () => 140 * scale,
-        edgeElasticity: () => 50 / scale,
-        padding: 60,
+        animationDuration: 500,
+        nodeRepulsion: () => 9500 * scale,
+        idealEdgeLength: () => 110 * scale,
+        edgeElasticity: () => 120 / scale,
+        padding: 50,
         randomize: false,
-        componentSpacing: 150 * scale,
-        nodeOverlap: 40,
-        gravity: 0.2 / scale,
-        nestingFactor: 1.2,
-        numIter: 600,
+        componentSpacing: 60 * scale,
+        nodeOverlap: 25,
+        gravity: 1.4 / scale,
+        nestingFactor: 1.5,
+        numIter: 800,
+        initialTemp: 250,
+        coolingFactor: 0.95,
       } as cytoscape.LayoutOptions;
     }
     return {

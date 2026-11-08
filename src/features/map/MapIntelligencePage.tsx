@@ -26,6 +26,7 @@ import {
   Car,
   Crosshair,
   Search,
+  Eye,
 } from 'lucide-react';
 import { useMapLocations } from '../../hooks/useIntelligenceApi';
 import { MapLocation } from '../../types';
@@ -317,7 +318,38 @@ export function MapIntelligencePage() {
     baseline_kwh: number;
     current_kwh: number;
     flag: string;
-  }>>([]);
+  }>>([
+    {
+      meter_id: 'SM-NOIDA-9811',
+      location_name: 'Sector 62 Safehouse, Noida',
+      latitude: 28.6280,
+      longitude: 77.3649,
+      surge_percentage: 420.5,
+      baseline_kwh: 0.38,
+      current_kwh: 4.82,
+      flag: 'CRITICAL_UNOCCUPIED_SURGE',
+    },
+    {
+      meter_id: 'SM-DELHI-1044',
+      location_name: 'Connaught Place Commercial Substation',
+      latitude: 28.6328,
+      longitude: 77.2197,
+      surge_percentage: 310.2,
+      baseline_kwh: 1.10,
+      current_kwh: 4.51,
+      flag: 'HIGH_ANOMALY',
+    },
+    {
+      meter_id: 'SM-KB-5502',
+      location_name: 'Karol Bagh Residential Grid',
+      latitude: 28.6517,
+      longitude: 77.1906,
+      surge_percentage: 285.0,
+      baseline_kwh: 0.72,
+      current_kwh: 2.77,
+      flag: 'MODERATE_SURGE',
+    },
+  ]);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [isLegendOpen, setIsLegendOpen] = useState<boolean>(false);
   const [isLocatingUser, setIsLocatingUser] = useState<boolean>(false);
@@ -1760,12 +1792,12 @@ export function MapIntelligencePage() {
         el.title = `WANTED SUSPECT: CRIM-01 • Vikram Malhotra (${wp.entity}) @ ${wp.location_name}`;
         el.innerHTML = `
           <div style="position: relative; display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 4px 14px rgba(220,38,38,0.95));">
-            <div style="background: linear-gradient(135deg, #7f1d1d, #dc2626); border: 2px solid #ef4444; border-radius: 18px; padding: 3px 8px 3px 4px; display: flex; align-items: center; gap: 6px; box-shadow: 0 0 20px rgba(239,68,68,0.9); white-space: nowrap;">
-              <span style="background: #450a0a; color: #fca5a5; font-family: monospace; font-weight: 900; font-size: 10px; padding: 1px 5px; border-radius: 8px; border: 1px solid #ef4444;">CRIM-01</span>
+            <div style="background: linear-gradient(135deg, #991b1b, #ef4444); border: 2px solid #f87171; border-radius: 18px; padding: 4px 9px 4px 5px; display: flex; align-items: center; gap: 6px; box-shadow: 0 0 24px rgba(239,68,68,0.95); white-space: nowrap;">
+              <span style="background: #450a0a; color: #ffffff; font-family: monospace; font-weight: 900; font-size: 11px; padding: 2px 6px; border-radius: 8px; border: 1.5px solid #fca5a5;">CRIM-01</span>
               <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150" alt="Vikram Malhotra" style="width: 24px; height: 24px; border-radius: 9999px; object-fit: cover; border: 2px solid #ffffff;" />
-              <div style="text-align: left; line-height: 1.1;">
-                <div style="font-size: 10px; font-weight: 900; color: #ffffff;">🚨 Vikram Malhotra</div>
-                <div style="font-size: 7.5px; color: #fecaca; font-family: monospace;">WANTED • ${wp.entity}</div>
+              <div style="text-align: left; line-height: 1.15;">
+                <div style="font-size: 10.5px; font-weight: 900; color: #ffffff;">🚨 V. MALHOTRA (CRIMINAL)</div>
+                <div style="font-size: 8px; color: #fecaca; font-family: monospace; font-weight: 700;">WANTED • ${wp.entity}</div>
               </div>
             </div>
             <div style="width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid #dc2626;"></div>
@@ -1865,12 +1897,12 @@ export function MapIntelligencePage() {
         el.title = `POLICE STATION [${policeId}]: ${cleanStationName} • Officer: ${officerName} (${callsign})`;
         el.innerHTML = `
           <div style="position: relative; display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 4px 14px rgba(2,132,199,0.85));">
-            <div style="background: linear-gradient(135deg, #0284c7, #0369a1); border: 2px solid #38bdf8; border-radius: 18px; padding: 3px 8px 3px 4px; display: flex; align-items: center; gap: 6px; box-shadow: 0 0 16px rgba(56,189,248,0.7); white-space: nowrap;">
-              <span style="background: #082f49; color: #38bdf8; font-family: monospace; font-weight: 900; font-size: 10px; padding: 1px 5px; border-radius: 8px; border: 1px solid #38bdf8;">${policeId}</span>
+            <div style="background: linear-gradient(135deg, #0369a1, #0284c7); border: 2px solid #38bdf8; border-radius: 18px; padding: 4px 9px 4px 5px; display: flex; align-items: center; gap: 6px; box-shadow: 0 0 20px rgba(56,189,248,0.85); white-space: nowrap;">
+              <span style="background: #082f49; color: #ffffff; font-family: monospace; font-weight: 900; font-size: 11px; padding: 2px 6px; border-radius: 8px; border: 1.5px solid #38bdf8;">${policeId}</span>
               <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150" alt="${officerName}" style="width: 22px; height: 22px; border-radius: 9999px; object-fit: cover; border: 2px solid #ffffff;" />
-              <div style="text-align: left; line-height: 1.1;">
-                <div style="font-size: 9.5px; font-weight: 800; color: #ffffff;">👮 ${cleanStationName}</div>
-                <div style="font-size: 7.5px; color: #bae6fd; font-family: monospace;">${officerName} • ${callsign}</div>
+              <div style="text-align: left; line-height: 1.15;">
+                <div style="font-size: 10px; font-weight: 900; color: #ffffff;">👮 ${cleanStationName}</div>
+                <div style="font-size: 8px; color: #bae6fd; font-family: monospace; font-weight: 600;">${officerName} (${callsign})</div>
               </div>
             </div>
             <div style="width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid #0284c7;"></div>
@@ -2345,10 +2377,31 @@ export function MapIntelligencePage() {
               if (mapEngine === 'python') setMapEngine('maplibre');
               const next = !showSmartMeters;
               setShowSmartMeters(next);
-              if (next && mapRef.current) {
+              if (next) {
                 sound.playRadarPing();
-                toast.info('Smart Meter IoT Grid Anomaly Layer: High-voltage safehouse power spikes highlighted (+420% Surge at Sector 62 Safehouse).', 'IoT Grid Stream Active');
-                mapRef.current.flyTo({ center: [77.3649, 28.6280], zoom: 14, duration: 850 });
+                setSelectedLocation({
+                  id: 'SM-NOIDA-9811',
+                  title: '⚡ Smart Meter Anomaly: SM-NOIDA-9811',
+                  locationType: 'CRIME_SCENE',
+                  entityType: 'LOCATION',
+                  latitude: 28.6280,
+                  longitude: 77.3649,
+                  address: 'Sector 62 Safehouse, Noida',
+                  timestamp: new Date().toISOString(),
+                  caseId: 'IOT-GRID-MONITOR',
+                  entityName: 'Critical Safehouse Surge: +420.5% (4.82 kWh)',
+                  metadata: {
+                    meterId: 'SM-NOIDA-9811',
+                    currentKwh: '4.82 kWh',
+                    baselineKwh: '0.38 kWh',
+                    surgeRate: '+420.5%',
+                    flag: 'CRITICAL_UNOCCUPIED_SURGE',
+                    inference: 'High-voltage safehouse power spike reveals physical hideout of fugitive Vikram Malhotra.',
+                  },
+                });
+                if (mapRef.current) {
+                  mapRef.current.flyTo({ center: [77.3649, 28.6280], zoom: 14.5, duration: 850 });
+                }
               }
             }}
             className={`flex items-center gap-1.5 text-xs font-bold border transition-all ${
@@ -3372,7 +3425,6 @@ export function MapIntelligencePage() {
                       onClick={() => {
                         sound.playClickSound();
                         setInterceptRoute(null);
-                        toast.info('Cleared tactical intercept route vector.', 'Vector Cleared');
                       }}
                       title="Clear Intercept Route Vector"
                       aria-label="Clear Intercept Route Vector"
@@ -3381,6 +3433,21 @@ export function MapIntelligencePage() {
                     </Button>
                   )}
                 </div>
+
+                {/* Instant Tactical Dossier Preview Button */}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full text-xs font-bold border-indigo-500/50 text-indigo-300 hover:bg-indigo-950/40 flex items-center justify-center gap-1.5 h-8"
+                  onClick={() => {
+                    sound.playClickSound();
+                    setPreviewModalOpen(true);
+                  }}
+                  title="Preview Court-Ready Police Department Deployment Dossier"
+                >
+                  <Eye className="h-3.5 w-3.5 text-indigo-400" />
+                  <span>Preview Tactical Dossier PDF</span>
+                </Button>
               </CardContent>
             </Card>
           ) : (
