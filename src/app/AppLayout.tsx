@@ -6,6 +6,7 @@ import { TopNav } from '../components/layout/TopNav';
 import { GlobalSearchModal } from '../components/layout/GlobalSearchModal';
 import { PageTransition } from '../components/common/PageTransition';
 import { BackToTopButton } from '../components/common/BackToTopButton';
+import { ErrorBoundary } from '../components/common/ErrorBoundary';
 
 export function AppLayout() {
   const location = useLocation();
@@ -28,13 +29,18 @@ export function AppLayout() {
         {/* Top Header */}
         <TopNav />
 
-        {/* Dynamic Page Workspace View */}
+        {/* Dynamic Page Workspace View with Contained Error Boundary */}
         <main id="main-content" tabIndex={-1} className="flex-1 overflow-y-auto p-6 focus:outline-none">
-          <AnimatePresence mode="wait">
-            <PageTransition key={location.pathname}>
-              <Outlet />
-            </PageTransition>
-          </AnimatePresence>
+          <ErrorBoundary
+            fallbackTitle="Workspace Module Rendering Error"
+            fallbackMessage="An error occurred in this interactive view. Sidebar navigation, emergency dispatch, and command functions remain active."
+          >
+            <AnimatePresence mode="wait">
+              <PageTransition key={location.pathname}>
+                <Outlet />
+              </PageTransition>
+            </AnimatePresence>
+          </ErrorBoundary>
         </main>
       </div>
 

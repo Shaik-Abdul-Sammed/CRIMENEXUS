@@ -49,8 +49,6 @@ export function ProFeaturesHubModal({ isOpen, onClose, initialTab = 'FEATURES' }
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [activeTab, setActiveTab] = useState<'FEATURES' | 'GLOBAL_IMPACT' | 'ROADMAP'>(initialTab);
 
-  if (!isOpen) return null;
-
   const features: FeatureItem[] = [
     {
       id: 'feat-escape',
@@ -207,6 +205,8 @@ export function ProFeaturesHubModal({ isOpen, onClose, initialTab = 'FEATURES' }
       };
     }
   }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
 
   const modalContent = (
     <div
