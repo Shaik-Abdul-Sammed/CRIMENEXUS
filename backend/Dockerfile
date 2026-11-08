@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     libffi-dev \
     libssl-dev \
+    libcairo2-dev \
     cmake \
     pkg-config \
     curl \
@@ -32,6 +33,7 @@ WORKDIR /app
 # Install minimal runtime shared libraries only
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
+    libcairo2 \
     curl \
     ffmpeg \
     tesseract-ocr \

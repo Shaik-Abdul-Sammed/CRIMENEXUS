@@ -629,41 +629,44 @@ def generate_tactical_leaflet_html(
     }}
 
     // Keyboard Arrow Controls for Tactical Map Pan & Pursuit Stepping
-    window.addEventListener('keydown', function(e) {{
-      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+    function handleTacticalKey(key) {{
       const PAN_PX = 120;
-      switch (e.key) {{
+      switch (key) {{
         case 'ArrowUp':
-          e.preventDefault();
           map.panBy([0, -PAN_PX], {{ animate: true, duration: 0.25 }});
           break;
         case 'ArrowDown':
-          e.preventDefault();
           map.panBy([0, PAN_PX], {{ animate: true, duration: 0.25 }});
           break;
         case 'ArrowLeft':
-          e.preventDefault();
           currentWpIndex = Math.max(0, currentWpIndex - 2);
           stepMotion();
           break;
         case 'ArrowRight':
-          e.preventDefault();
           stepMotion();
           break;
         case ' ':
-          e.preventDefault();
           toggleMotion();
           break;
         case '+':
         case '=':
-          e.preventDefault();
           map.zoomIn();
           break;
         case '-':
         case '_':
-          e.preventDefault();
           map.zoomOut();
           break;
+      }}
+    }}
+
+    window.addEventListener('keydown', function(e) {{
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+      handleTacticalKey(e.key);
+    }});
+
+    window.addEventListener('message', function(e) {{
+      if (e.data && e.data.type === 'KEYDOWN') {{
+        handleTacticalKey(e.data.key);
       }}
     }});
   </script>

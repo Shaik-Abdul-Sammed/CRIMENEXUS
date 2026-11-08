@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, AlertTriangle, AlertCircle, Info, X } from 'lucide-react';
 
@@ -12,6 +12,27 @@ export interface ToastMessage {
   type?: ToastType;
   duration?: number;
 }
+
+type ToastListener = (toast: Omit<ToastMessage, 'id'>) => void;
+let toastListeners: ToastListener[] = [];
+
+export const toast = {
+  show: (t: Omit<ToastMessage, 'id'>) => {
+    toastListeners.forEach((listener) => listener(t));
+  },
+  success: (message: string, title?: string) => {
+    toast.show({ message, title, type: 'success' });
+  },
+  error: (message: string, title?: string) => {
+    toast.show({ message, title, type: 'error' });
+  },
+  warning: (message: string, title?: string) => {
+    toast.show({ message, title, type: 'warning' });
+  },
+  info: (message: string, title?: string) => {
+    toast.show({ message, title, type: 'info' });
+  },
+};
 
 interface ToastContextValue {
   showToast: (toast: Omit<ToastMessage, 'id'>) => void;
@@ -45,6 +66,13 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const error = useCallback((message: string, title?: string) => showToast({ message, title, type: 'error' }), [showToast]);
   const warning = useCallback((message: string, title?: string) => showToast({ message, title, type: 'warning' }), [showToast]);
   const info = useCallback((message: string, title?: string) => showToast({ message, title, type: 'info' }), [showToast]);
+
+  useEffect(() => {
+    toastListeners.push(showToast);
+    return () => {
+      toastListeners = toastListeners.filter((l) => l !== showToast);
+    };
+  }, [showToast]);
 
   return (
     <ToastContext.Provider value={{ showToast, success, error, warning, info }}>

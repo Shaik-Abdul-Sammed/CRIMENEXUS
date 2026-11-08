@@ -1600,6 +1600,13 @@ export function LiveTrackingPage() {
 
       const PAN_DELTA = 120;
 
+      if (mapStyleType === 'python') {
+        const ifr = document.querySelector('iframe[title="Python Tactical GIS Map"]') as HTMLIFrameElement | null;
+        if (ifr && ifr.contentWindow) {
+          ifr.contentWindow.postMessage({ type: 'KEYDOWN', key: e.key }, '*');
+        }
+      }
+
       switch (e.key) {
         case 'ArrowRight':
           e.preventDefault();

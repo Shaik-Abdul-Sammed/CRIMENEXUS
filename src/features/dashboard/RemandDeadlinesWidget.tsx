@@ -170,7 +170,7 @@ export function RemandDeadlinesWidget() {
                   key={c.id}
                   className={`p-3 rounded-lg border transition-all flex items-center justify-between ${
                     isRed
-                      ? 'border-red-500/50 bg-red-950/20'
+                      ? 'border-red-500/80 bg-red-950/40 animate-pulse shadow-md shadow-red-900/30'
                       : isYellow
                       ? 'border-amber-500/40 bg-amber-950/10'
                       : 'border-border bg-background/50'

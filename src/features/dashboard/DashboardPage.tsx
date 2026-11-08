@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   FolderGit2,
@@ -20,6 +20,12 @@ import {
   ShieldCheck,
   FileText,
   Clock,
+  Calendar,
+  ChevronDown,
+  ChevronUp,
+  Activity,
+  Radio,
+  PlusCircle,
 } from 'lucide-react';
 import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import {
@@ -39,6 +45,9 @@ import { RecommendedActions } from './RecommendedActions';
 import { LiveIngestionWidget } from './LiveIngestionWidget';
 import { RemandDeadlinesWidget } from './RemandDeadlinesWidget';
 import { QuantumStatusWidget } from './QuantumStatusWidget';
+import { TacticalCommandHUD } from './TacticalCommandHUD';
+import { FairnessBiasWidget } from './FairnessBiasWidget';
+import { TacticalScenariosModal } from './TacticalScenariosModal';
 import { DocumentPreviewModal } from '../../components/common/DocumentPreviewModal';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useToast } from '../../components/ui/Toast';
@@ -112,7 +121,10 @@ export function DashboardPage() {
     account: 'ACC-HDFC-908122'
   });
 
+  const smurfingFetchedRef = useRef(false);
   useEffect(() => {
+    if (smurfingFetchedRef.current) return;
+    smurfingFetchedRef.current = true;
     const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
     axios
       .get(`${baseURL}/analytics/smurfing`, { timeout: 10000 })
@@ -149,6 +161,25 @@ export function DashboardPage() {
 
   const [downloadingDossier, setDownloadingDossier] = useState(false);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [scenariosModalOpen, setScenariosModalOpen] = useState(false);
+  const [dateRange, setDateRange] = useState<'TODAY' | 'WEEK' | 'MONTH'>('WEEK');
+  const [lastSyncTime, setLastSyncTime] = useState<string>('Just now');
+  const [isSimulatingEvent, setIsSimulatingEvent] = useState<boolean>(false);
+  const [isIngestionCollapsed, setIsIngestionCollapsed] = useState<boolean>(false);
+
+  const handleSimulateLiveEvent = () => {
+    setIsSimulatingEvent(true);
+    sound.playAlertBeep();
+    toast.warning(
+      'ANPR OPTICAL HIT: TS 09 AB 1234 (Black Mahindra Scorpio) detected at Yamuna Expressway KM 48 at 118 km/h. Cross-referenced with Airtel Tower CDR #DL-TWR-8812.',
+      'Live Telemetry Event Injected'
+    );
+    setLastSyncTime('Just now');
+    setTimeout(() => {
+      setIsSimulatingEvent(false);
+      sound.playSuccessChime();
+    }, 1200);
+  };
 
   // Show/Hide Dashboard Toggle State
   const [showDashboard, setShowDashboard] = useState(true);
@@ -296,7 +327,53 @@ export function DashboardPage() {
             Active Syndicate Investigation: {activeCase?.title || 'Operation Shadow Vault'} ({activeCase?.caseNumber || 'FIR-2026-CRIME-890'})
           </p>
         </div>
-        <div className="flex items-center gap-2.5 shrink-0 flex-wrap sm:flex-nowrap">
+        <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+          {/* Date Range Global Filter */}
+          <div className="flex items-center rounded-lg border border-border bg-background/80 p-0.5 text-xs">
+            {(['TODAY', 'WEEK', 'MONTH'] as const).map((r) => (
+              <button
+                key={r}
+                onClick={() => {
+                  sound.playClickSound();
+                  setDateRange(r);
+                  toast.info(`Dashboard intelligence filtered to: ${r === 'TODAY' ? 'Today' : r === 'WEEK' ? 'This Week' : 'This Month'}.`, 'Date Filter');
+                }}
+                className={`px-2.5 py-1 rounded text-[11px] font-bold transition-all ${
+                  dateRange === r
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {r === 'TODAY' ? 'Today' : r === 'WEEK' ? 'This Week' : 'This Month'}
+              </button>
+            ))}
+          </div>
+
+          {/* Operation Shatter Criminal Escape Demo Button */}
+          <Link to="/escape-demo">
+            <Button
+              size="sm"
+              className="bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs flex items-center gap-1.5 whitespace-nowrap shrink-0 shadow-lg shadow-red-900/40 animate-pulse border border-red-400"
+              title="Run interactive Operation Shatter Criminal Escape Simulation"
+            >
+              <ShieldAlert className="h-4 w-4" />
+              <span>🚨 Run Criminal Escape Simulation</span>
+            </Button>
+          </Link>
+
+          {/* Simulate Event Button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSimulateLiveEvent}
+            disabled={isSimulatingEvent}
+            className="border-rose-500/40 bg-rose-500/10 text-rose-300 hover:bg-rose-500/20 font-bold text-xs flex items-center gap-1.5 whitespace-nowrap shrink-0 shadow-sm"
+            title="Inject real-time mock ANPR / CDR hit into live dashboard telemetry"
+          >
+            <Radio className={`h-3.5 w-3.5 text-rose-400 ${isSimulatingEvent ? 'animate-ping' : ''}`} />
+            <span>{isSimulatingEvent ? 'Injecting Telemetry...' : 'Simulate Event'}</span>
+          </Button>
+
           <Button
             id="tour-toggle-dashboard-btn"
             variant="outline"
@@ -329,6 +406,20 @@ export function DashboardPage() {
           >
             <Eye className="h-4 w-4 shrink-0 text-primary" />
             <span className="whitespace-nowrap">{t('dashboard.previewDossier')}</span>
+          </Button>
+
+          <Button
+            id="tour-scenarios-btn"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              sound.playWarningBeep();
+              setScenariosModalOpen(true);
+            }}
+            className="border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 font-bold text-xs flex items-center gap-1.5 whitespace-nowrap shrink-0 shadow-sm"
+          >
+            <Sparkles className="h-4 w-4 shrink-0 text-amber-400" />
+            <span className="whitespace-nowrap">Tactical Scenarios (1-3)</span>
           </Button>
 
           <Button
@@ -445,8 +536,41 @@ export function DashboardPage() {
 
       {showDashboard ? (
         <>
-          {/* Live Real-Time Ingestion Streaming Pipeline Widget */}
-          <LiveIngestionWidget />
+          {/* Multi-Stream Tactical Command HUD (ANPR, CDR Azimuth, High-Priority Alerts, Link Predictions & Voice 'Brief Me') */}
+          <TacticalCommandHUD />
+
+          {/* Fairness & Demographic Equity Bias Dashboard Widget */}
+          <FairnessBiasWidget />
+
+          {/* Live Real-Time Ingestion Streaming Pipeline Widget with Collapse Arrow */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-[11px] font-bold text-muted-foreground flex items-center gap-1.5 uppercase font-mono tracking-wider">
+                <Radio className="h-3.5 w-3.5 text-cyan-400 animate-pulse" /> Live Real-Time Telemetry Ingestion Pipeline
+              </span>
+              <button
+                onClick={() => {
+                  sound.playClickSound();
+                  setIsIngestionCollapsed((prev) => !prev);
+                }}
+                className="text-xs font-medium text-muted-foreground hover:text-foreground flex items-center gap-1 px-2 py-0.5 rounded hover:bg-muted/40 transition-colors"
+                title={isIngestionCollapsed ? 'Expand live ingestion widget' : 'Collapse live ingestion widget'}
+              >
+                {isIngestionCollapsed ? (
+                  <>
+                    <ChevronDown className="h-3.5 w-3.5" />
+                    <span>Expand</span>
+                  </>
+                ) : (
+                  <>
+                    <ChevronUp className="h-3.5 w-3.5" />
+                    <span>Collapse</span>
+                  </>
+                )}
+              </button>
+            </div>
+            {!isIngestionCollapsed && <LiveIngestionWidget />}
+          </div>
 
           {/* Statutory Custody Remand & Default Bail Deadline Clock */}
           <RemandDeadlinesWidget />
@@ -454,74 +578,136 @@ export function DashboardPage() {
           {/* Quantum Computing Architecture (Qiskit Aer Simulator) */}
           <QuantumStatusWidget />
 
-          {/* Top Stat Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="hover:border-primary/40 transition-all">
-          <CardContent className="p-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                {t('dashboard.activeCases')}
-              </p>
-              <h3 className="text-2xl font-extrabold text-foreground mt-1">
-                {activeCases} <span className="text-xs font-normal text-muted-foreground">/ {totalCases} Total</span>
-              </h3>
-              <p className="text-[11px] text-emerald-400 mt-1 font-medium flex items-center gap-1">
-                <ArrowUpRight className="h-3 w-3" /> 2 High Priority Operations
-              </p>
+          {/* Timestamp & Filter Status Header */}
+          <div className="flex items-center justify-between text-[11px] text-muted-foreground font-mono px-1">
+            <div className="flex items-center gap-2">
+              <Activity className="h-3.5 w-3.5 text-primary" />
+              <span>SYNDICATE RADAR METRICS ({dateRange})</span>
             </div>
-            <div className="p-3 rounded-xl bg-primary/10 text-primary border border-primary/20">
-              <FolderGit2 className="h-6 w-6" />
+            <div className="flex items-center gap-1.5 text-emerald-400">
+              <Clock className="h-3.5 w-3.5" />
+              <span>Last Synced: {lastSyncTime}</span>
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        <Card className="hover:border-emerald-500/40 transition-all">
-          <CardContent className="p-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                {t('dashboard.evidenceVault')}
+          {/* Zero-State Onboarding if empty */}
+          {totalCases === 0 ? (
+            <div className="p-8 rounded-2xl border-2 border-dashed border-border text-center space-y-3 bg-card/40">
+              <FolderGit2 className="h-10 w-10 text-muted-foreground mx-auto" />
+              <h3 className="text-base font-bold text-foreground">No Investigations Registered</h3>
+              <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                No active FIR or case dossiers found in your jurisdiction. Ingest an FIR to generate syndicate graphs and automated charge sheets.
               </p>
-              <h3 className="text-2xl font-extrabold text-foreground mt-1">{totalEvidence}</h3>
-              <p className="text-[11px] text-emerald-400 mt-1 font-medium">100% Cryptographically Hashed</p>
+              <Link to="/cases">
+                <Button size="sm" className="bg-primary text-white font-bold gap-1.5">
+                  <PlusCircle className="h-4 w-4" />
+                  <span>Register First FIR</span>
+                </Button>
+              </Link>
             </div>
-            <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              <FileCheck2 className="h-6 w-6" />
-            </div>
-          </CardContent>
-        </Card>
+          ) : (
+            /* Top Stat Metrics with Clickable Navigation & Trend Sparklines */
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Link to="/cases" className="block group">
+                <Card className="hover:border-primary/60 transition-all cursor-pointer h-full border-l-4 border-l-primary group-hover:shadow-lg group-hover:shadow-primary/10">
+                  <CardContent className="p-5 flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider group-hover:text-primary transition-colors">
+                        {t('dashboard.activeCases')}
+                      </p>
+                      <h3 className="text-2xl font-extrabold text-foreground mt-1">
+                        {activeCases} <span className="text-xs font-normal text-muted-foreground">/ {totalCases} Total</span>
+                      </h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[11px] text-emerald-400 font-medium flex items-center gap-0.5">
+                          <ArrowUpRight className="h-3 w-3" /> +12%
+                        </span>
+                        {/* Sparkline Trend */}
+                        <svg className="w-14 h-4 text-emerald-400 stroke-current fill-none stroke-[2]">
+                          <polyline points="0,12 8,10 16,14 24,8 32,10 40,4 48,2" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-xl bg-primary/10 text-primary border border-primary/20 group-hover:bg-primary group-hover:text-white transition-all">
+                      <FolderGit2 className="h-6 w-6" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
 
-        <Card className="hover:border-blue-500/40 transition-all">
-          <CardContent className="p-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                {t('dashboard.entitiesExtracted')}
-              </p>
-              <h3 className="text-2xl font-extrabold text-foreground mt-1">{totalEntities}</h3>
-              <p className="text-[11px] text-amber-400 mt-1 font-medium flex items-center gap-1">
-                <GitMerge className="h-3 w-3" /> {pendingDuplicates} Pending Merge Review
-              </p>
-            </div>
-            <div className="p-3 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
-              <Users2 className="h-6 w-6" />
-            </div>
-          </CardContent>
-        </Card>
+              <Link to="/evidence" className="block group">
+                <Card className="hover:border-emerald-500/60 transition-all cursor-pointer h-full border-l-4 border-l-emerald-500 group-hover:shadow-lg group-hover:shadow-emerald-950/20">
+                  <CardContent className="p-5 flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider group-hover:text-emerald-400 transition-colors">
+                        {t('dashboard.evidenceVault')}
+                      </p>
+                      <h3 className="text-2xl font-extrabold text-foreground mt-1">{totalEvidence}</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[11px] text-emerald-400 font-medium flex items-center gap-0.5">
+                          100% WORM Hashed
+                        </span>
+                        <svg className="w-14 h-4 text-emerald-400 stroke-current fill-none stroke-[2]">
+                          <polyline points="0,14 10,12 20,8 30,10 40,6 48,3" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 group-hover:bg-emerald-500 group-hover:text-white transition-all">
+                      <FileCheck2 className="h-6 w-6" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
 
-        <Card className="hover:border-purple-500/40 transition-all">
-          <CardContent className="p-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                {t('dashboard.networkLinks')}
-              </p>
-              <h3 className="text-2xl font-extrabold text-foreground mt-1">{totalRelationships}</h3>
-              <p className="text-[11px] text-purple-400 mt-1 font-medium">Cytoscape Graph Ready</p>
+              <Link to="/entities" className="block group">
+                <Card className="hover:border-blue-500/60 transition-all cursor-pointer h-full border-l-4 border-l-blue-500 group-hover:shadow-lg group-hover:shadow-blue-950/20">
+                  <CardContent className="p-5 flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider group-hover:text-blue-400 transition-colors">
+                        {t('dashboard.entitiesExtracted')}
+                      </p>
+                      <h3 className="text-2xl font-extrabold text-foreground mt-1">{totalEntities}</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[11px] text-amber-400 font-medium flex items-center gap-1">
+                          <GitMerge className="h-3 w-3" /> {pendingDuplicates} Review
+                        </span>
+                        <svg className="w-14 h-4 text-amber-400 stroke-current fill-none stroke-[2]">
+                          <polyline points="0,6 10,8 20,4 30,7 40,3 48,5" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 group-hover:bg-blue-500 group-hover:text-white transition-all">
+                      <Users2 className="h-6 w-6" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+
+              <Link to="/network-graph" className="block group">
+                <Card className="hover:border-purple-500/60 transition-all cursor-pointer h-full border-l-4 border-l-purple-500 group-hover:shadow-lg group-hover:shadow-purple-950/20">
+                  <CardContent className="p-5 flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider group-hover:text-purple-400 transition-colors">
+                        {t('dashboard.networkLinks')}
+                      </p>
+                      <h3 className="text-2xl font-extrabold text-foreground mt-1">{totalRelationships}</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[11px] text-purple-400 font-medium">
+                          Cytoscape Graph
+                        </span>
+                        <svg className="w-14 h-4 text-purple-400 stroke-current fill-none stroke-[2]">
+                          <polyline points="0,10 12,6 24,11 36,4 48,2" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 group-hover:bg-purple-500 group-hover:text-white transition-all">
+                      <Network className="h-6 w-6" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
             </div>
-            <div className="p-3 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
-              <Network className="h-6 w-6" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          )}
 
       {/* Actionable Directives & Priority Orders */}
       <RecommendedActions />
@@ -706,14 +892,14 @@ export function DashboardPage() {
         size="lg"
       >
         <div className="space-y-4">
-          <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs flex items-start gap-2.5">
-            <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
+          <div className="p-3 rounded-lg bg-red-950/40 border border-red-500/50 text-red-200 text-xs flex items-start gap-2.5">
+            <AlertTriangle className="h-4 w-4 text-red-400 shrink-0 mt-0.5 animate-pulse" />
             <div>
-              <p className="font-bold text-amber-300 uppercase tracking-wide">
-                STATUTORY LEGAL MANDATE • SECTION 102 CrPC / SECTION 106 BNSS / SECTION 5 PMLA
+              <p className="font-extrabold text-red-400 uppercase tracking-wide text-xs">
+                WARNING: You are about to issue a statutory freeze under Section 106 BNSS. Do you confirm?
               </p>
-              <p className="mt-0.5 text-amber-200/80 leading-relaxed">
-                Confirming this action transmits an encrypted debit freeze order directly to HDFC Bank Nodal Operations and creates an authenticated record on the CCTNS / FIU-IND inter-agency gateway.
+              <p className="mt-0.5 text-red-200/90 leading-relaxed text-[11px]">
+                Confirming this action transmits an encrypted statutory debit freeze directive directly to HDFC Bank Nodal Operations and enters an authenticated audit record on the CCTNS / FIU-IND inter-agency gateway.
               </p>
             </div>
           </div>
@@ -816,6 +1002,12 @@ export function DashboardPage() {
           crimeType: 'Organized Hawala Smurfing & Extortion Syndicate',
           hash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855f41029c7d413b8',
         }}
+      />
+
+      {/* Tactical Multi-Stream Law-Enforcement Scenario Simulation Console */}
+      <TacticalScenariosModal
+        isOpen={scenariosModalOpen}
+        onClose={() => setScenariosModalOpen(false)}
       />
     </div>
   );

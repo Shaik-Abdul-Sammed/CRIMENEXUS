@@ -187,6 +187,13 @@ export interface MapLocation {
   metadata?: Record<string, string>;
 }
 
+export interface RetrievedChunk {
+  id: string;
+  text: string;
+  score: number;
+  metadata?: Record<string, any>;
+}
+
 export interface AIFinding {
   id: string;
   caseId: string;
@@ -199,6 +206,8 @@ export interface AIFinding {
   category: 'NETWORK_CLUSTER' | 'SUSPICIOUS_TRANSACTION' | 'PATTERN_MATCH' | 'CO_LOCATION' | 'ANOMALY';
   riskLevel: RiskLevel;
   queryText?: string;
+  status?: 'success' | 'insufficient_data';
+  retrievedChunks?: RetrievedChunk[];
 }
 
 export type ReportType =

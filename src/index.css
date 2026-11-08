@@ -223,6 +223,15 @@
   }
 }
 
+/* High Contrast Mode for Field Officers in Harsh Sunlight */
+.high-contrast {
+  filter: contrast(130%) brightness(105%) !important;
+}
+
+.high-contrast * {
+  border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
 /* Onboarding Tour Target Button Spotlight Illumination - Universal Multi-Theme */
 .tour-highlighted-element {
   position: relative !important;

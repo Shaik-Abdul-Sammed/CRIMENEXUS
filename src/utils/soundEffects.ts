@@ -62,6 +62,11 @@ class SoundController {
     }
   }
 
+  /** Warning beep alias or tone for system warnings and alert triggers */
+  public playWarningBeep() {
+    this.playWarningChime();
+  }
+
   /** Subtle tactical radar ping (e.g., map waypoint / distance measurement) */
   public playRadarPing() {
     if (!this.enabled) return;

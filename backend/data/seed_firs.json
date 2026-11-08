@@ -1,0 +1,247 @@
+[
+  {
+    "id": "FIR-2026-DEL-0101",
+    "title": "State vs. Hawala Smurfing Ring (Karol Bagh Conduit)",
+    "text": "Complainant FIU reported rapid structuring of funds under ₹50,000 threshold into HDFC account 908122 across 18 transactions within 48 hours. Primary kingpin Rajan @ Ghost directed proceeds to cold crypto wallets.",
+    "metadata": {
+      "case_id": "CASE-2026-8812",
+      "crime_type": "FINANCIAL_SMURFING_HAWALA",
+      "sections": ["Section 111 BNS", "Section 318 BNS", "PMLA Sec 3"],
+      "station": "Cyber Crime PS Central Delhi",
+      "suspect": "Rajan @ Ghost",
+      "account": "HDFC 908122",
+      "vehicle": "TS 09 AB 1234"
+    }
+  },
+  {
+    "id": "FIR-2026-NOI-0102",
+    "title": "State vs. Fake Electricity Bill APK Phishing Syndicate",
+    "text": "Cyber extortion racket operating from Sector 62 Noida sent deceptive disconnection SMS prompting victims to download QuickSupport APK. Threat actors harvested SMS OTPs and siphoned ₹4.2 Lakhs to mule accounts.",
+    "metadata": {
+      "case_id": "CASE-2026-9043",
+      "crime_type": "CYBER_FRAUD_PHISHING",
+      "sections": ["Section 66D IT Act", "Section 318 BNS"],
+      "station": "Cyber Crime Police Station Noida Sector 20",
+      "suspect": "Amit Bansal",
+      "phone": "+91 91234 56789"
+    }
+  },
+  {
+    "id": "FIR-2026-YAM-0103",
+    "title": "State vs. Yamuna Expressway Highway Robbery Gang",
+    "text": "Black Mahindra Scorpio bearing registration TS 09 AB 1234 intercepted at Yamuna Expressway Toll KM 48 checkpoint traveling southbound at 118 km/h following armed carjacking near Pari Chowk Greater Noida.",
+    "metadata": {
+      "case_id": "CASE-2026-8812",
+      "crime_type": "ARMED_HIGHWAY_ROBBERY",
+      "sections": ["Section 310 BNS", "Section 25 Arms Act"],
+      "station": "Jewar Police Station Yamuna Expressway",
+      "suspect": "Vikram Malhotra @ Vicky",
+      "vehicle": "TS 09 AB 1234"
+    }
+  },
+  {
+    "id": "FIR-2026-GUR-0104",
+    "title": "State vs. Corporate Extortion and VoIP Threat Ring",
+    "text": "Industrialist received encrypted WhatsApp VoIP calls threatening bodily harm unless ₹50,00,000 protection money was deposited to dummy account in Gurugram Cyber Hub corridor.",
+    "metadata": {
+      "case_id": "CASE-2026-8812",
+      "crime_type": "EXTORTION_ORGANIZED_CRIME",
+      "sections": ["Section 308 BNS", "Section 61(2) BNS"],
+      "station": "Cyber Hub Police Post Gurugram",
+      "suspect": "Rajan @ Ghost",
+      "phone": "+91 98111 22334"
+    }
+  },
+  {
+    "id": "FIR-2026-DEL-0105",
+    "title": "State vs. Shell Entity Money Laundering (Apex Trading)",
+    "text": "Ministry of Corporate Affairs ROC audit revealed front firm Apex Trading registered with dummy directors in Connaught Place funneled extortion cash into overseas wire transfers.",
+    "metadata": {
+      "case_id": "CASE-2026-9043",
+      "crime_type": "SHELL_COMPANY_LAUNDERING",
+      "sections": ["Section 111 BNS", "Section 420 IPC"],
+      "station": "Connaught Place Police Station New Delhi",
+      "entity": "Apex Trading"
+    }
+  },
+  {
+    "id": "FIR-2026-NOI-0106",
+    "title": "State vs. SIM Box Interconnect Bypass Cartel",
+    "text": "Unauthorized VoIP GSM gateway SIM box installation seized in Rabupura housing 64 active burner SIM cards routing grey international calls to evade lawful interception monitors.",
+    "metadata": {
+      "case_id": "CASE-2026-8812",
+      "crime_type": "TELECOM_INTERCONNECT_BYPASS",
+      "sections": ["Section 4/20 Indian Telegraph Act", "Section 66 IT Act"],
+      "station": "Rabupura Police Post Greater Noida",
+      "hardware": "64-Port GSM Gateway"
+    }
+  },
+  {
+    "id": "FIR-2026-DEL-0107",
+    "title": "State vs. Cloned FASTag Highway Smuggling Racket",
+    "text": "Syndicate cloned NHAI FASTag RFIDs across 12 commercial vehicles allowing stolen cargo carriers to bypass toll surveillance checkpoints undetected between Delhi and Agra.",
+    "metadata": {
+      "case_id": "CASE-2026-9110",
+      "crime_type": "FASTAG_CLONING_FRAUD",
+      "sections": ["Section 318 BNS", "Section 66 IT Act"],
+      "station": "Parliament Street Police Station New Delhi",
+      "equipment": "RFID Writer"
+    }
+  },
+  {
+    "id": "FIR-2026-NOI-0108",
+    "title": "State vs. High-Voltage Safehouse Narcotics Lab",
+    "text": "Smart meter IoT surveillance flagged anomalous +420% energy draw in basement safehouse Sector 62 Noida. Raid uncovered automated climate-controlled synthetic narcotics drying facility.",
+    "metadata": {
+      "case_id": "CASE-2026-9214",
+      "crime_type": "NARCOTICS_SYNTHESIS",
+      "sections": ["Section 21 NDPS Act", "Section 111 BNS"],
+      "station": "Noida Sector 62 Police Post",
+      "anomaly": "+420% Electricity Surge"
+    }
+  },
+  {
+    "id": "FIR-2026-DEL-0109",
+    "title": "State vs. Fake Police Digital Arrest Extortion Syndicate",
+    "text": "Victim subjected to 72-hour coercive video confinement by fraudsters impersonating CBI/ED officers on Skype demanding immediate RTGS transfer of ₹28 Lakhs into clearance account.",
+    "metadata": {
+      "case_id": "CASE-2026-9320",
+      "crime_type": "DIGITAL_ARREST_EXTORTION",
+      "sections": ["Section 204 BNS (Personating Public Servant)", "Section 308 BNS"],
+      "station": "Cyber Crime PS South District Hauz Khas",
+      "tool": "Skype Video Impersonation"
+    }
+  },
+  {
+    "id": "FIR-2026-YAM-0110",
+    "title": "State vs. Hit and Run Highway Evading Patrol",
+    "text": "Unregistered dumper struck patrol motorcycle near Jewar interchange and accelerated southbound toward Mathura border. Optical ANPR camera telemetry captured license shard fragments.",
+    "metadata": {
+      "case_id": "CASE-2026-9401",
+      "crime_type": "VEHICULAR_HIT_AND_RUN",
+      "sections": ["Section 106(2) BNS", "Section 281 BNS"],
+      "station": "Jewar Police Station Yamuna Expressway",
+      "speed": "124 km/h"
+    }
+  },
+  {
+    "id": "FIR-2026-GUR-0111",
+    "title": "State vs. Instant Loan App Chinese Coercion Ring",
+    "text": "Micro-lending mobile application extracted contact lists and camera photos without consent, blackmailing borrower using morphed photographs and demanding extortionate weekly interest.",
+    "metadata": {
+      "case_id": "CASE-2026-9488",
+      "crime_type": "PREDATORY_LOAN_BLACKMAIL",
+      "sections": ["Section 67 IT Act", "Section 308 BNS", "Section 351 BNS"],
+      "station": "Cyber Crime Police Station Gurugram",
+      "platform": "CashQuick APK"
+    }
+  },
+  {
+    "id": "FIR-2026-NOI-0112",
+    "title": "State vs. Cryptocurrency Cold Wallet Money Laundering",
+    "text": "On-chain forensic investigation tracked 14.5 ETH and 50,000 USDT transferred through privacy mixers to cold hardware wallet 0x71C765...89A2 after cash deposits in western UP thanas.",
+    "metadata": {
+      "case_id": "CASE-2026-8812",
+      "crime_type": "CRYPTO_LAUNDERING",
+      "sections": ["Section 111 BNS", "PMLA Sec 3"],
+      "station": "Noida Sector 20 Police Station",
+      "wallet": "0x71C765...89A2"
+    }
+  },
+  {
+    "id": "FIR-2026-DEL-0113",
+    "title": "State vs. Fake Job Portal Human Trafficking Conduit",
+    "text": "Fraudulent overseas recruitment agency operating in Karol Bagh luring IT graduates on tourist visas to cyber scam compounds in Southeast Asia under forced labor conditions.",
+    "metadata": {
+      "case_id": "CASE-2026-9550",
+      "crime_type": "HUMAN_TRAFFICKING_CYBER_SCAM",
+      "sections": ["Section 143 BNS (Trafficking of Persons)", "Section 318 BNS"],
+      "station": "Central District Cyber Cell New Delhi",
+      "agency": "Global Overseas Placements"
+    }
+  },
+  {
+    "id": "FIR-2026-YAM-0114",
+    "title": "State vs. Highway Fuel Pilferage and Adulteration Gang",
+    "text": "Organized gang tapped underground petroleum pipeline near Dankaur junction, diverting high-speed diesel into disguised milk tanker trucks under cover of night fog.",
+    "metadata": {
+      "case_id": "CASE-2026-9602",
+      "crime_type": "PIPELINE_THEFT_ADULTERATION",
+      "sections": ["Section 303(2) BNS", "Essential Commodities Act Sec 7"],
+      "station": "Rabupura Police Post Greater Noida",
+      "tanker": "UP 16 BT 9922"
+    }
+  },
+  {
+    "id": "FIR-2026-DEL-0115",
+    "title": "State vs. Bank Insider Mule Account Opening Conspiracy",
+    "text": "Assistant branch manager conspired with hawala agents to open 45 non-compliant current accounts using forged electricity utility bills and fabricated Rent Agreements.",
+    "metadata": {
+      "case_id": "CASE-2026-8812",
+      "crime_type": "BANK_INSIDER_CONSPIRACY",
+      "sections": ["Section 336 BNS (Forgery)", "Section 318 BNS", "Sec 61(2) BNS"],
+      "station": "Parliament Street Police Station New Delhi",
+      "bank": "Private Sector Bank CP Branch"
+    }
+  },
+  {
+    "id": "FIR-2026-GUR-0116",
+    "title": "State vs. Stolen Luxury Vehicle VIN Tampering Syndicate",
+    "text": "Underground chop shop operating near Manesar dismantled stolen SUVs, replacing chassis numbers with total-loss scrap vehicle documentation for resale in northeastern states.",
+    "metadata": {
+      "case_id": "CASE-2026-9712",
+      "crime_type": "VEHICLE_CHASSIS_TAMPERING",
+      "sections": ["Section 317 BNS (Stolen Property)", "Section 338 BNS"],
+      "station": "Cyber Hub Police Post Gurugram",
+      "seizure": "5 Fortuner / Scorpio chassis"
+    }
+  },
+  {
+    "id": "FIR-2026-NOI-0117",
+    "title": "State vs. Telecom Tower Lithium Battery Theft Ring",
+    "text": "Technicians colluded with regional scrap cartel to steal 120 high-capacity lithium-ion backup power batteries from cell towers causing critical telecommunications blackout along expressway.",
+    "metadata": {
+      "case_id": "CASE-2026-9780",
+      "crime_type": "INFRASTRUCTURE_SABOTAGE_THEFT",
+      "sections": ["Section 303 BNS", "Section 25 Indian Telegraph Act"],
+      "station": "Noida Sector 62 Police Post",
+      "asset": "Tower Batteries"
+    }
+  },
+  {
+    "id": "FIR-2026-DEL-0118",
+    "title": "State vs. Fake Sovereign Bond Securities Cheating",
+    "text": "Investment syndicate printed counterfeit Reserve Bank of India institutional certificates defrauding senior citizens of retirement savings with promises of 24% sovereign yields.",
+    "metadata": {
+      "case_id": "CASE-2026-9844",
+      "crime_type": "SECURITIES_COUNTERFEITING",
+      "sections": ["Section 337 BNS", "Section 318 BNS"],
+      "station": "Connaught Place Police Station New Delhi",
+      "total_fraud": "₹3.8 Crore"
+    }
+  },
+  {
+    "id": "FIR-2026-YAM-0119",
+    "title": "State vs. Illegal Arms Trafficking Corridor Conduit",
+    "text": "Inter-state weapons shipment intercepted at Yamuna Expressway Toll KM 48 checkpoint concealed within false bottom floor of commercial transport bus heading to Meerut.",
+    "metadata": {
+      "case_id": "CASE-2026-9901",
+      "crime_type": "ARMS_TRAFFICKING",
+      "sections": ["Section 25(1A) Arms Act", "Section 111 BNS"],
+      "station": "Jewar Police Station Yamuna Expressway",
+      "contraband": "8 semi-automatic pistols"
+    }
+  },
+  {
+    "id": "FIR-2026-DEL-0120",
+    "title": "State vs. AI Deepfake CEO Voice Wire Fraud Syndicate",
+    "text": "Multi-national financial firm CFO manipulated into approving urgent ₹65,00,000 vendor disbursement following real-time synthetic voice clone call mimicking company Group Chairman.",
+    "metadata": {
+      "case_id": "CASE-2026-9999",
+      "crime_type": "DEEPFAKE_VOICE_WIRE_FRAUD",
+      "sections": ["Section 66D IT Act", "Section 318 BNS", "Section 336 BNS"],
+      "station": "Central District Cyber Cell New Delhi",
+      "technology": "Generative AI Voice Clone"
+    }
+  }
+]

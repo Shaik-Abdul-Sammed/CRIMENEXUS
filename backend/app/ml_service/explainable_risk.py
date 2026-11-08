@@ -1,3 +1,5 @@
+import os
+os.environ.setdefault("MPLBACKEND", "Agg")
 import time
 import logging
 from typing import Dict, Any, Optional

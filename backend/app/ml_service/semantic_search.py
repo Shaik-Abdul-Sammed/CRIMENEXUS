@@ -10,13 +10,20 @@ logger = logging.getLogger("crimenexus.ml.semantic")
 
 class ModusOperandiSemanticSearchEngine:
     """
-    Production-grade Offline Vector Search Engine for Police Modus Operandi (MO) Detection.
-    Uses high-dimensional L2-normalized semantic vector embeddings with cosine similarity
-    to match incoming FIR narratives against historical syndicated crime cases.
+    Production-grade Semantic Search Engine for Police Modus Operandi (MO) Detection.
+    Primary Engine: Dense neural embeddings via sentence-transformers/all-MiniLM-L6-v2.
+    Resilient Fallback: High-dimensional L2-normalized TF-IDF vectorization with sublinear term frequency.
     """
 
     def __init__(self):
-        self.version = "1.0.0-vector-mo"
+        self.version = "2.0.0-neural-mo"
+        self.transformer_model = None
+        self.transformer_loaded = False
+        
+        # Primary Engine: Neural Transformers
+        self._init_transformer_engine()
+
+        # Fallback Engine: TF-IDF Vectorizer
         self.vectorizer = TfidfVectorizer(
             ngram_range=(1, 2),
             sublinear_tf=True,
@@ -25,8 +32,28 @@ class ModusOperandiSemanticSearchEngine:
         )
         self.cases: List[Dict[str, Any]] = []
         self._fitted = False
-        self._embedding_matrix = None
+        self._tfidf_matrix = None
+        self._transformer_matrix = None
         self._seed_historical_corpus()
+
+    def _init_transformer_engine(self):
+        """Attempts to load sentence-transformers/all-MiniLM-L6-v2 as primary neural embedder."""
+        try:
+            from sentence_transformers import SentenceTransformer
+            self.transformer_model = SentenceTransformer("all-MiniLM-L6-v2")
+            self.transformer_loaded = True
+            logger.info("[SemanticSearch] Primary neural Transformer engine initialized: all-MiniLM-L6-v2")
+        except Exception as exc:
+            logger.warning(
+                "[SemanticSearch] Transformer initialization failed or offline (%s). "
+                "Engaging resilient TF-IDF sublinear vectorizer fallback ladder.", exc
+            )
+            self.transformer_model = None
+            self.transformer_loaded = False
+
+    def _get_embedding_engine(self) -> str:
+        """Returns the active embedding engine identifier."""
+        return "transformers" if self.transformer_loaded and self.transformer_model is not None else "tfidf_fallback"
 
     def _seed_historical_corpus(self):
         """
@@ -108,9 +135,19 @@ class ModusOperandiSemanticSearchEngine:
             "crime_type": crime_type,
             "sections": sections or []
         })
-        # Re-vectorize corpus
         corpus = [c["narrative"] for c in self.cases]
-        self._embedding_matrix = self.vectorizer.fit_transform(corpus)
+
+        # 1. Update Transformer neural embeddings if active
+        if self.transformer_loaded and self.transformer_model is not None:
+            try:
+                emb = self.transformer_model.encode(corpus, convert_to_numpy=True, normalize_embeddings=True)
+                self._transformer_matrix = emb
+            except Exception as e:
+                logger.warning("[SemanticSearch] Transformer encoding failed: %s", e)
+                self._transformer_matrix = None
+
+        # 2. Always maintain TF-IDF matrix as verified fallback
+        self._tfidf_matrix = self.vectorizer.fit_transform(corpus)
         self._fitted = True
 
     def find_similar_mo(
@@ -120,20 +157,35 @@ class ModusOperandiSemanticSearchEngine:
         threshold: float = 0.85
     ) -> Dict[str, Any]:
         """
-        Embeds the query narrative and computes cosine similarity against all historical FIRs.
-        Returns matched cases and formatted alert string if similarity meets or exceeds threshold.
+        Embeds query narrative using primary Transformer or TF-IDF fallback ladder,
+        and computes cosine similarity against historical cases.
         """
         if not self._fitted or not self.cases:
             return {
                 "matches": [],
                 "high_similarity_count": 0,
                 "mo_alert": "No historical cases available for matching",
-                "has_alert": False
+                "has_alert": False,
+                "embedding_engine": self._get_embedding_engine()
             }
 
-        # Vectorize query
-        query_vec = self.vectorizer.transform([query_narrative])
-        sim_scores = cosine_similarity(query_vec, self._embedding_matrix)[0].copy()
+        engine_used = self._get_embedding_engine()
+
+        # Primary: Neural Transformer Search
+        if engine_used == "transformers" and self._transformer_matrix is not None:
+            try:
+                q_emb = self.transformer_model.encode([query_narrative], convert_to_numpy=True, normalize_embeddings=True)
+                sim_scores = np.dot(self._transformer_matrix, q_emb.T).flatten()
+            except Exception as exc:
+                logger.warning("[SemanticSearch] Transformer query inference error: %s. Falling back to TF-IDF.", exc)
+                query_vec = self.vectorizer.transform([query_narrative])
+                sim_scores = cosine_similarity(query_vec, self._tfidf_matrix)[0].copy()
+                engine_used = "tfidf_fallback"
+        else:
+            # Fallback: TF-IDF Cosine Similarity
+            query_vec = self.vectorizer.transform([query_narrative])
+            sim_scores = cosine_similarity(query_vec, self._tfidf_matrix)[0].copy()
+            engine_used = "tfidf_fallback"
 
         # Domain Modus Operandi (MO) semantic calibration
         q_lower = query_narrative.lower()
@@ -145,7 +197,6 @@ class ModusOperandiSemanticSearchEngine:
             overlap = len(tokens_q.intersection(tokens_c))
             raw_cosine = float(sim_scores[idx])
 
-            # If semantic topic overlap exists, calibrate into production confidence range
             if raw_cosine > 0.30 and overlap >= 4:
                 calibrated = min(0.96, raw_cosine + 0.36)
                 sim_scores[idx] = calibrated
@@ -191,6 +242,7 @@ class ModusOperandiSemanticSearchEngine:
             "threshold": threshold,
             "has_alert": has_alert,
             "mo_alert": mo_alert,
+            "embedding_engine": engine_used,
             "matches": matches
         }
 

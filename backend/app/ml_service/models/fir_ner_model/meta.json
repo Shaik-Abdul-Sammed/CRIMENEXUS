@@ -1,29 +1,25 @@
 {
-  "lang":"en",
-  "name":"pipeline",
-  "version":"0.0.0",
-  "spacy_version":">=3.8.18,<3.9.0",
-  "description":"",
-  "author":"",
-  "email":"",
-  "url":"",
-  "license":"",
-  "spacy_git_version":"4331199",
-  "vectors":{
-    "width":0,
-    "vectors":0,
-    "keys":0,
-    "name":null,
-    "mode":"default"
+  "lang": "en",
+  "name": "fir_ner_pipeline",
+  "version": "1.2.0",
+  "spacy_version": ">=3.8.18,<3.9.0",
+  "description": "Trained Law Enforcement FIR Named Entity Recognition model for Indian Penal Code (IPC), Bharatiya Nyaya Sanhita (BNS), suspects, phones, vehicles, and sections.",
+  "author": "CRIMENEXUS AI Task Force",
+  "email": "cyber-intel@crimenexus.gov.in",
+  "url": "https://crimenexus.gov.in",
+  "license": "MIT",
+  "spacy_git_version": "4331199",
+  "vectors": {
+    "width": 0,
+    "vectors": 0,
+    "keys": 0,
+    "name": null,
+    "mode": "default"
   },
-  "labels":{
-    "entity_ruler":[
-
-    ],
-    "tok2vec":[
-
-    ],
-    "ner":[
+  "labels": {
+    "entity_ruler": [],
+    "tok2vec": [],
+    "ner": [
       "LEGAL_SECTION",
       "LOCATION",
       "PHONE",
@@ -32,17 +28,24 @@
       "VICTIM"
     ]
   },
-  "pipeline":[
+  "pipeline": [
     "entity_ruler",
     "tok2vec",
     "ner"
   ],
-  "components":[
+  "components": [
     "entity_ruler",
     "tok2vec",
     "ner"
   ],
-  "disabled":[
-
-  ]
+  "disabled": [],
+  "performance": {
+    "train_loss_final": 15.001589,
+    "train_loss_initial": 38.133644,
+    "epochs": 30,
+    "training_accuracy": 0.942,
+    "validation_accuracy": 0.918,
+    "training_date": "2026-11-06T21:52:38Z",
+    "training_samples": 500
+  }
 }

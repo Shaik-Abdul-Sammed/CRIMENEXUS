@@ -23,12 +23,16 @@ import {
   Navigation,
   Sparkles,
   Camera,
+  Compass,
+  Layers,
 } from 'lucide-react';
 import { useAppStore } from '../../stores/appStore';
 import { useAuthStore } from '../../stores/authStore';
 import { useInvestigations } from '../../hooks/useIntelligenceApi';
 import { useTranslation } from '../../hooks/useTranslation';
 import { cn } from '../../utils/cn';
+import { ProFeaturesHubModal } from '../common/ProFeaturesHubModal';
+import { sound } from '../../utils/soundEffects';
 
 export function Sidebar() {
   const location = useLocation();
@@ -37,6 +41,7 @@ export function Sidebar() {
   const { currentUser, activeRole } = useAuthStore();
   const { data: cases } = useInvestigations();
   const { t } = useTranslation();
+  const [featuresModalOpen, setFeaturesModalOpen] = React.useState(false);
 
   const handleCaseChange = (newCaseId: string) => {
     setActiveCaseId(newCaseId);
@@ -82,6 +87,8 @@ export function Sidebar() {
     { label: t('nav.graph'), path: '/network-graph', icon: Network, hero: true, id: 'sidebar-graph' },
     { label: t('nav.timeline'), path: '/timeline', icon: Clock, id: 'sidebar-timeline' },
     { label: t('nav.map'), path: '/map', icon: MapPin, id: 'sidebar-map' },
+    { label: 'Escape Simulation', path: '/escape-demo', icon: Compass, badge: 'TRACE', id: 'sidebar-escape-demo' },
+    { label: 'Data Lake (96 Feeds)', path: '/digital-footprint', icon: Layers, badge: '96 IOT', id: 'sidebar-data-lake' },
     { label: 'Live Tracking (Demo)', path: '/live-tracking', icon: Navigation, badge: 'LIVE', id: 'sidebar-live-tracking' },
     { label: 'Forensic Clues & Telecast', path: '/forensics', icon: Camera, badge: 'BSA', id: 'sidebar-forensics' },
     { label: t('nav.aiAssistant'), path: '/ai-assistant', icon: Bot, badge: 'RAG', id: 'sidebar-assistant' },
@@ -175,6 +182,34 @@ export function Sidebar() {
 
       {/* Navigation Links Scrollable Wrapper */}
       <div className="flex-1 overflow-y-auto px-2 py-3 space-y-1 scrollbar-thin scrollbar-thumb-border">
+        {sidebarOpen ? (
+          <button
+            onClick={() => {
+              sound.playClickSound();
+              setFeaturesModalOpen(true);
+            }}
+            className="w-full mb-2 p-2 rounded-lg bg-gradient-to-r from-amber-500/20 via-primary/20 to-cyan-500/20 border border-amber-500/40 text-amber-300 hover:text-white flex items-center justify-between text-xs font-bold transition-all shadow-sm"
+          >
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-amber-400 animate-pulse" />
+              <span>Features Hub (10)</span>
+            </div>
+            <span className="px-1.5 py-0.2 rounded-full bg-amber-500/30 text-amber-300 text-[9px] font-mono">
+              ALL
+            </span>
+          </button>
+        ) : (
+          <button
+            onClick={() => {
+              sound.playClickSound();
+              setFeaturesModalOpen(true);
+            }}
+            className="w-full mb-2 p-2 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 flex justify-center hover:bg-amber-500/30"
+            title="CRIMENEXUS 10 Core Features Hub"
+          >
+            <Sparkles className="h-4 w-4 text-amber-400 animate-pulse" />
+          </button>
+        )}
         <nav className="space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -222,11 +257,20 @@ export function Sidebar() {
       {sidebarOpen ? (
         <div className="p-3 border-t border-border/60 bg-background/40 space-y-2 shrink-0">
           <div className="flex items-center gap-3 p-2.5 rounded-lg border border-border/50 bg-card">
-            <img
-              src={currentUser?.avatar}
-              alt={currentUser?.name}
-              className="h-9 w-9 rounded-full object-cover border border-primary/30 shrink-0"
-            />
+            {currentUser?.avatar ? (
+              <img
+                src={currentUser.avatar}
+                alt={currentUser.name}
+                onError={(e) => {
+                  (e.target as HTMLElement).style.display = 'none';
+                }}
+                className="h-9 w-9 rounded-full object-cover border border-primary/30 shrink-0"
+              />
+            ) : (
+              <div className="h-9 w-9 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-xs font-bold text-primary shrink-0">
+                {currentUser?.name?.slice(0, 2).toUpperCase() || 'IO'}
+              </div>
+            )}
             <div className="flex flex-col min-w-0 flex-1">
               <span className="text-xs font-bold text-foreground truncate" title={currentUser?.name}>
                 {currentUser?.name}
@@ -245,18 +289,39 @@ export function Sidebar() {
             <ShieldCheck className="h-3 w-3 text-emerald-400 shrink-0" />
             <span>{t('sidebar.complianceNotice')}</span>
           </div>
+          <div className="flex items-center justify-between px-1 text-[9px] font-mono text-muted-foreground/80">
+            <span>CRIMENEXUS Intel</span>
+            <span className="px-1.5 py-0.2 rounded bg-primary/20 text-primary font-bold border border-primary/30">
+              v2.4 (Sec 63 BSA)
+            </span>
+          </div>
         </div>
       ) : (
         <div className="p-3 border-t border-border flex flex-col items-center gap-2 shrink-0">
-          <img
-            src={currentUser?.avatar}
-            alt={currentUser?.name}
-            className="h-7 w-7 rounded-full object-cover border border-primary/30"
-            title={`${currentUser?.name} (${activeRole})`}
-          />
+          {currentUser?.avatar ? (
+            <img
+              src={currentUser.avatar}
+              alt={currentUser.name}
+              onError={(e) => {
+                (e.target as HTMLElement).style.display = 'none';
+              }}
+              className="h-7 w-7 rounded-full object-cover border border-primary/30"
+              title={`${currentUser?.name} (${activeRole})`}
+            />
+          ) : (
+            <div className="h-7 w-7 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-[10px] font-bold text-primary">
+              {currentUser?.name?.slice(0, 2).toUpperCase() || 'IO'}
+            </div>
+          )}
+          <span className="text-[9px] font-mono font-bold text-primary">v2.4</span>
           <span className="h-2 w-2 rounded-full bg-emerald-500" title="Connected" />
         </div>
       )}
+
+      <ProFeaturesHubModal
+        isOpen={featuresModalOpen}
+        onClose={() => setFeaturesModalOpen(false)}
+      />
     </aside>
   );
 }

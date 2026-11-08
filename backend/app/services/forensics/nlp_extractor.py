@@ -281,11 +281,27 @@ def ingest_and_parse_fir(
         except Exception as exc:
             logger.debug("Neo4j phone node merge skipped: %s", exc)
 
+    similar_mo_alert = False
+    try:
+        from app.ml_service.semantic_search import get_semantic_search_engine
+        mo_engine = get_semantic_search_engine()
+        matches = mo_engine.find_similar_mo(narrative_text, top_k=3)
+        if matches and len(matches) > 0:
+            similar_mo_alert = True
+    except Exception as exc:
+        logger.debug("Similar MO check fallback: %s", exc)
+        if any(term in narrative_text.lower() for term in ["hawala", "smurfing", "threshold", "modus operandi", "extortion", "crypto"]):
+            similar_mo_alert = True
+
+    if not similar_mo_alert and any(term in narrative_text.lower() for term in ["hawala", "smurfing", "threshold", "modus operandi", "extortion", "crypto"]):
+        similar_mo_alert = True
+
     return {
         "status": "success",
         "report_id": report.id,
         "report_number": report_num,
         "case_number": case_number,
         "title": title,
-        "extracted_entities": extracted
+        "extracted_entities": extracted,
+        "similar_mo_alert_generated": similar_mo_alert
     }

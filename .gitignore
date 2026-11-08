@@ -227,4 +227,15 @@ build/
 *.qasm.tmp
 .qiskit/
 
+# ChromaDB Persistent Storage
+chroma_db/
+backend/chroma_db/
+
+# Agent & Runtime Session Artifacts
+.system_generated/
+.user_uploaded/
+*.tmp
+*.bak
+
+
 

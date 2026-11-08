@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Users2,
@@ -19,13 +19,16 @@ import {
   Download,
   Copy,
   Check,
+  X,
+  ArrowUpDown,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { useEntities, useResolutionCandidates } from '../../hooks/useIntelligenceApi';
 import { EntityType } from '../../types';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
 import { getRiskColorClass } from '../../utils/formatters';
 import { sound } from '../../utils/soundEffects';
 import { useToast } from '../../components/ui/Toast';
@@ -34,6 +37,10 @@ export function EntitiesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('ALL');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<'name' | 'risk' | 'confidence'>('risk');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(12);
 
   const toast = useToast();
   const { data: entities, isLoading } = useEntities('ALL', typeFilter);
@@ -45,6 +52,21 @@ export function EntitiesPage() {
     setCopiedKey(id);
     toast.success(`Copied: ${text}`, 'Entity Attribute Copied');
     setTimeout(() => setCopiedKey(null), 2000);
+  };
+
+  const highlightMatch = (text: string, term: string) => {
+    if (!term.trim()) return text;
+    const regex = new RegExp(`(${term.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')})`, 'gi');
+    const parts = text.split(regex);
+    return parts.map((part, i) =>
+      part.toLowerCase() === term.toLowerCase() ? (
+        <mark key={i} className="bg-amber-400/90 text-slate-950 font-black px-1 rounded">
+          {part}
+        </mark>
+      ) : (
+        part
+      )
+    );
   };
 
   const handleExportCsv = () => {
@@ -104,9 +126,35 @@ export function EntitiesPage() {
     }
   };
 
-  const filtered = entities?.filter((e) =>
-    e.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const riskWeight: Record<string, number> = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1 };
+
+  const filteredAndSorted = useMemo(() => {
+    let list = (entities || []).filter((e) =>
+      e.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    list.sort((a, b) => {
+      let comparison = 0;
+      if (sortBy === 'name') {
+        comparison = a.name.localeCompare(b.name);
+      } else if (sortBy === 'risk') {
+        comparison = (riskWeight[b.riskLevel] || 0) - (riskWeight[a.riskLevel] || 0);
+      } else if (sortBy === 'confidence') {
+        comparison = b.confidence - a.confidence;
+      }
+      return sortOrder === 'asc' ? -comparison : comparison;
+    });
+
+    return list;
+  }, [entities, searchTerm, sortBy, sortOrder]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredAndSorted.length / rowsPerPage));
+  const paginated = useMemo(() => {
+    const start = (currentPage - 1) * rowsPerPage;
+    return filteredAndSorted.slice(start, start + rowsPerPage);
+  }, [filteredAndSorted, currentPage, rowsPerPage]);
+
+  const filtered = filteredAndSorted;
 
   return (
     <div className="space-y-6">
@@ -138,15 +186,72 @@ export function EntitiesPage() {
         </div>
       </div>
 
-      {/* Filter Bar */}
+      {/* Filter Bar with Search, Clear 'X', Sort & Rows Per Page */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-4 rounded-xl border border-border bg-card">
-        <div className="w-full md:w-80">
-          <Input
-            placeholder="Search entity name, phone, vehicle registration..."
+        <div className="relative w-full md:w-80">
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search entity name, phone, vehicle..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            icon={<Search className="h-4 w-4" />}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="w-full pl-9 pr-8 py-2 rounded-lg bg-background border border-border text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary font-sans"
           />
+          {searchTerm && (
+            <button
+              onClick={() => {
+                setSearchTerm('');
+                setCurrentPage(1);
+              }}
+              className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground p-0.5"
+              title="Clear search"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+
+        {/* Sort & Rows Per Page Controls */}
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <ArrowUpDown className="h-3.5 w-3.5 text-primary" />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="bg-background border border-border rounded-md px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+            >
+              <option value="risk">Sort by Risk Level</option>
+              <option value="name">Sort by Name</option>
+              <option value="confidence">Sort by Confidence</option>
+            </select>
+            <button
+              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+              className="px-2 py-1 rounded bg-background border border-border text-xs font-bold hover:bg-muted"
+              title="Toggle Ascending/Descending"
+            >
+              {sortOrder.toUpperCase()}
+            </button>
+          </div>
+
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <span>Show:</span>
+            <select
+              value={rowsPerPage}
+              onChange={(e) => {
+                setRowsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+              className="bg-background border border-border rounded-md px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+            >
+              <option value={6}>6</option>
+              <option value={12}>12</option>
+              <option value={24}>24</option>
+              <option value={48}>48</option>
+            </select>
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5 w-full md:w-auto">
@@ -163,7 +268,10 @@ export function EntitiesPage() {
           ].map((t) => (
             <button
               key={t}
-              onClick={() => setTypeFilter(t)}
+              onClick={() => {
+                setTypeFilter(t);
+                setCurrentPage(1);
+              }}
               className={`px-2.5 py-1 text-[11px] rounded-md border font-medium transition-colors ${
                 typeFilter === t
                   ? 'bg-primary text-primary-foreground border-primary'
@@ -179,7 +287,7 @@ export function EntitiesPage() {
       {/* Entity Cards Grid */}
       {isLoading ? (
         <div className="p-12 text-center text-xs text-muted-foreground">Loading entity catalog...</div>
-      ) : !filtered || filtered.length === 0 ? (
+      ) : !paginated || paginated.length === 0 ? (
         <div className="p-12 text-center rounded-xl border border-dashed border-border bg-card/40 space-y-3">
           <Users2 className="h-10 w-10 text-muted-foreground/60 mx-auto" />
           <h3 className="text-sm font-bold text-foreground">No Entities Found</h3>
@@ -192,79 +300,127 @@ export function EntitiesPage() {
             onClick={() => {
               setSearchTerm('');
               setTypeFilter('ALL');
+              setCurrentPage(1);
             }}
           >
             Clear Filters
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map((item) => (
-            <Card key={item.id} className="flex flex-col justify-between hover:border-primary/50 transition-all">
-              <CardHeader className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-xs text-primary flex items-center gap-1.5">
-                    {getEntityIcon(item.type)}
-                    {item.type}
-                  </span>
-                  <span className={`text-[10px] px-2 py-0.5 rounded border font-bold ${getRiskColorClass(item.riskLevel)}`}>
-                    {item.riskLevel}
-                  </span>
-                </div>
-                <CardTitle className="text-base line-clamp-1">{item.name}</CardTitle>
-              </CardHeader>
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {paginated.map((item) => (
+              <Card key={item.id} className="flex flex-col justify-between hover:border-primary/50 transition-all">
+                <CardHeader className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-xs text-primary flex items-center gap-1.5">
+                      {getEntityIcon(item.type)}
+                      {item.type}
+                    </span>
+                    <span className={`text-[10px] px-2 py-0.5 rounded border font-bold ${getRiskColorClass(item.riskLevel)}`}>
+                      {item.riskLevel}
+                    </span>
+                  </div>
+                  <CardTitle className="text-base line-clamp-1">{highlightMatch(item.name, searchTerm)}</CardTitle>
+                </CardHeader>
 
-              <CardContent className="space-y-3 flex-1 text-xs">
-                <div className="p-3 rounded-lg bg-background/60 border border-border/50 space-y-1.5 text-[11px]">
-                  {Object.entries(item.attributes).map(([k, v]) => {
-                    const strVal = String(v);
-                    const copyId = `${item.id}-${k}`;
-                    return (
-                      <div key={k} className="flex justify-between items-center border-b border-border/40 pb-1 last:border-0 last:pb-0">
-                        <span className="text-muted-foreground capitalize shrink-0 mr-2">{k}:</span>
-                        <div className="flex items-center gap-1 min-w-0">
-                          <span
-                            className="font-semibold text-foreground truncate max-w-[150px] font-mono select-all"
-                            title={strVal}
-                          >
-                            {strVal}
-                          </span>
-                          <button
-                            onClick={() => handleCopyValue(strVal, copyId)}
-                            className="text-muted-foreground hover:text-foreground p-0.5 rounded transition-colors shrink-0"
-                            title="Copy full attribute value"
-                            aria-label={`Copy ${k}`}
-                          >
-                            {copiedKey === copyId ? (
-                              <Check className="h-3 w-3 text-emerald-400" />
-                            ) : (
-                              <Copy className="h-3 w-3" />
-                            )}
-                          </button>
+                <CardContent className="space-y-3 flex-1 text-xs">
+                  <div className="p-3 rounded-lg bg-background/60 border border-border/50 space-y-1.5 text-[11px]">
+                    {Object.entries(item.attributes).map(([k, v]) => {
+                      const strVal = String(v);
+                      const copyId = `${item.id}-${k}`;
+                      return (
+                        <div key={k} className="flex justify-between items-center border-b border-border/40 pb-1 last:border-0 last:pb-0">
+                          <span className="text-muted-foreground capitalize shrink-0 mr-2">{k}:</span>
+                          <div className="flex items-center gap-1 min-w-0">
+                            <span
+                              className="font-semibold text-foreground truncate max-w-[150px] font-mono select-all"
+                              title={strVal}
+                            >
+                              {strVal}
+                            </span>
+                            <button
+                              onClick={() => handleCopyValue(strVal, copyId)}
+                              className="text-muted-foreground hover:text-foreground p-0.5 rounded transition-colors shrink-0"
+                              title="Copy full attribute value"
+                              aria-label={`Copy ${k}`}
+                            >
+                              {copiedKey === copyId ? (
+                                <Check className="h-3 w-3 text-emerald-400" />
+                              ) : (
+                                <Copy className="h-3 w-3" />
+                              )}
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
 
-                <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1">
-                  <span>Confidence Score:</span>
-                  <span className="font-bold text-foreground">{(item.confidence * 100).toFixed(0)}%</span>
-                </div>
-              </CardContent>
+                  <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1">
+                    <span>Confidence Score:</span>
+                    <span className="font-bold text-foreground">{(item.confidence * 100).toFixed(0)}%</span>
+                  </div>
+                </CardContent>
 
-              <div className="p-4 pt-0 border-t border-border/40 mt-3 flex items-center justify-between">
-                <Badge variant={item.reviewStatus === 'VERIFIED' ? 'success' : 'warning'}>
-                  {item.reviewStatus}
-                </Badge>
-                <Link to={`/entities/${item.id}`}>
-                  <Button size="sm" variant="outline">
-                    Inspect Entity &rarr;
-                  </Button>
-                </Link>
+                <div className="p-4 pt-0 border-t border-border/40 mt-3 flex items-center justify-between">
+                  <Badge variant={item.reviewStatus === 'VERIFIED' ? 'success' : 'warning'}>
+                    {item.reviewStatus}
+                  </Badge>
+                  <Link to={`/entities/${item.id}`}>
+                    <Button size="sm" variant="outline">
+                      Inspect Entity &rarr;
+                    </Button>
+                  </Link>
+                </div>
+              </Card>
+            ))}
+          </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-3 rounded-xl border border-border bg-card text-xs">
+              <span className="text-muted-foreground">
+                Showing {Math.min(filteredAndSorted.length, (currentPage - 1) * rowsPerPage + 1)} to{' '}
+                {Math.min(filteredAndSorted.length, currentPage * rowsPerPage)} of {filteredAndSorted.length} entries
+              </span>
+              <div className="flex items-center gap-1">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="h-8 px-2 flex items-center gap-1"
+                >
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                  <span>Previous</span>
+                </Button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pg) => (
+                  <button
+                    key={pg}
+                    onClick={() => setCurrentPage(pg)}
+                    className={`h-8 w-8 rounded-lg font-bold transition-colors ${
+                      currentPage === pg
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'text-muted-foreground hover:bg-muted'
+                    }`}
+                  >
+                    {pg}
+                  </button>
+                ))}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="h-8 px-2 flex items-center gap-1"
+                >
+                  <span>Next</span>
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Button>
               </div>
-            </Card>
-          ))}
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -23,6 +23,19 @@ logger = logging.getLogger("crimenexus.api.analytics")
 router = APIRouter(prefix="/analytics", tags=["Forensic Analytics & Tripwires"])
 
 
+@router.post("/anomaly/evaluate", summary="Evaluate transactions for smurfing/structuring anomalies")
+def evaluate_transactions_anomaly(payload: Dict[str, Any]):
+    detector = get_anomaly_detector()
+    beneficiary = payload.get("beneficiary_account", "ACC-MULE-01")
+    txs = payload.get("transactions", [])
+    eval_result = detector.evaluate_account_transactions(beneficiary, txs)
+    return {
+        "status": "SUCCESS",
+        "model_used": eval_result.get("model_used", "isolation_forest"),
+        "evaluation": eval_result
+    }
+
+
 @router.get("/smurfing", summary="Detect structuring/smurfing deposits under ₹50k to same beneficiary within 48h")
 def detect_smurfing(
     db: Session = Depends(get_db),

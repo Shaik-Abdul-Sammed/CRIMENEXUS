@@ -12,10 +12,13 @@ export function GlobalSearchModal() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Listen for global '/' shortcut
+  // Listen for global '/' or 'Ctrl+K' / 'Cmd+K' shortcut
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) {
+      if (
+        ((e.key === 'k' || e.key === 'K') && (e.ctrlKey || e.metaKey)) ||
+        (e.key === '/' && !['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName))
+      ) {
         e.preventDefault();
         setGlobalSearchOpen(true);
       } else if (e.key === 'Escape') {
@@ -72,7 +75,7 @@ export function GlobalSearchModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-[100] flex items-start justify-center pt-20 p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-150">
       <div className="relative w-full max-w-2xl rounded-xl border border-border bg-card shadow-2xl overflow-hidden">
         {/* Search Header */}
         <div className="flex items-center px-4 border-b border-border bg-background/50">
@@ -82,7 +85,14 @@ export function GlobalSearchModal() {
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && results.length > 0) {
+                e.preventDefault();
+                handleSelect(results[0].url);
+              }
+            }}
             placeholder="Search cases, suspects, phones, vehicle numbers, evidence..."
+            aria-label="Search cases, suspects, phones, and evidence"
             className="w-full h-14 bg-transparent text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
           />
           {query && (

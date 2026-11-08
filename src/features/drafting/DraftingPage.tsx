@@ -13,6 +13,9 @@ import {
   FileCheck2,
   RefreshCw,
   Eye,
+  Mic,
+  MicOff,
+  AlertCircle,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
@@ -99,17 +102,62 @@ export function DraftingPage() {
   const initialSuspect = searchParams.get('suspect') || 'Rajan (Hawala Mastermind)';
 
   const [activeTab, setActiveTab] = useState<TabType>(
-    searchParams.get('case') ? 'CHARGE_SHEET' : 'FIR'
+    (searchParams.get('tab') as TabType) || 'FIR'
   );
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
   const [selectedScenarioId, setSelectedScenarioId] = useState<string>('CYBER_HAWALA');
+  const [isListening, setIsListening] = useState<boolean>(false);
+
+  const toggleVoiceDictation = () => {
+    if (typeof window === 'undefined') return;
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast.warning(
+        'Speech recognition not supported in this browser. Please use Chrome.',
+        'Voice Dictation'
+      );
+      return;
+    }
+
+    if (isListening) {
+      setIsListening(false);
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-IN';
+      recognition.onstart = () => {
+        setIsListening(true);
+        toast.info('Listening... Dictate incident facts into microphone.', 'Voice-to-Text Active');
+      };
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setFirNarrative((prev) => (prev ? `${prev} ${transcript}` : transcript));
+        setIsListening(false);
+        toast.success('Dictation transcribed into FIR narrative.', 'Transcribed');
+      };
+      recognition.onerror = () => setIsListening(false);
+      recognition.onend = () => setIsListening(false);
+      recognition.start();
+    } catch (e) {
+      setIsListening(false);
+    }
+  };
 
   // Form inputs
-  const [firNarrative, setFirNarrative] = useState(
-    'On 28-Oct-2026, complainant reported unauthorized smurfing transactions. Suspect Rajan operating vehicle TS 09 AB 1234 transacted structured funds under 50,000 threshold across mule accounts in Karol Bagh.'
-  );
+  const [firNarrative, setFirNarrative] = useState(() => {
+    const caseParam = searchParams.get('case');
+    if (caseParam) {
+      return `On active investigation into Case / FIR ${caseParam}, complainant reported unauthorized organized syndicate operations. Suspect Rajan operating vehicle TS 09 AB 1234 coordinated structured financial movements across inter-state corridors. Automated ANPR optical sighting confirmed suspect vehicle getaway at Yamuna Expressway Toll KM 48. Evidence sealed under Section 63 BSA for formal registration under Section 173 BNSS.`;
+    }
+    return 'On 28-Oct-2026, complainant reported unauthorized smurfing transactions. Suspect Rajan operating vehicle TS 09 AB 1234 transacted structured funds under 50,000 threshold across mule accounts in Karol Bagh.';
+  });
   const [chargeSheetCaseId, setChargeSheetCaseId] = useState(initialCase);
   const [chargeSheetAccused, setChargeSheetAccused] = useState(initialSuspect);
   const [bankAccount, setBankAccount] = useState('ACC-HDFC-908122');
@@ -352,16 +400,51 @@ CASE/ACCUSED: ${activeTab === 'BANK_NOTICE' ? bankAccount : locSuspect}
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-foreground">
-                      Police Complaint & Investigation Narrative
-                    </label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                        <span>Police Complaint & Investigation Narrative</span>
+                        <span className="text-red-400">*</span>
+                      </label>
+                      <button
+                        type="button"
+                        onClick={toggleVoiceDictation}
+                        className={`px-2 py-0.5 rounded text-[11px] font-bold flex items-center gap-1 transition-all ${
+                          isListening
+                            ? 'bg-red-500 text-white animate-pulse shadow-sm'
+                            : 'bg-primary/10 text-primary border border-primary/30 hover:bg-primary/20'
+                        }`}
+                        title="Voice-to-Text Dictation (Web Speech API)"
+                      >
+                        {isListening ? (
+                          <>
+                            <MicOff className="h-3 w-3 animate-ping" />
+                            <span>Stop Mic</span>
+                          </>
+                        ) : (
+                          <>
+                            <Mic className="h-3 w-3" />
+                            <span>Dictate (Mic)</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
                     <textarea
                       rows={6}
                       value={firNarrative}
                       onChange={(e) => setFirNarrative(e.target.value)}
-                      className="w-full p-3 rounded-lg border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary leading-relaxed font-mono"
+                      className={`w-full p-3 rounded-lg border bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 leading-relaxed font-mono transition-colors ${
+                        !firNarrative.trim()
+                          ? 'border-red-500/80 focus:ring-red-500 bg-red-950/10'
+                          : 'border-border focus:ring-primary'
+                      }`}
                       placeholder="Enter incident facts, suspect details, bank accounts, or vehicle numbers..."
                     />
+                    {!firNarrative.trim() && (
+                      <p className="text-[10px] text-red-400 flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" />
+                        <span>Investigation narrative is mandatory to synthesize formal FIR.</span>
+                      </p>
+                    )}
                     <div className="flex items-center justify-between text-[11px] text-muted-foreground">
                       <span>RAG retrieves statutory BNS, IT Act & PMLA enactments</span>
                       <span className="font-mono text-[10px] text-emerald-400">Section 173 BNSS Certified</span>

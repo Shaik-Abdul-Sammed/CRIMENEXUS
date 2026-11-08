@@ -1,6 +1,6 @@
 import logging
 from typing import Dict, Any, List
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 
 from app.database.neo4j import execute_cypher
 
@@ -309,8 +309,33 @@ def predict_network_links(case_id: str = "GLOBAL", top_k: int = 10, min_score: f
                     "target_name": "Vikram Malhotra",
                     "predicted_relation": "CO_CONSPIRATOR",
                     "confidence": 0.85,
+                    "explanation": "Rajan linked to Vikram via 2 shared phone towers",
                     "rationale": "High co-occurrence frequency in statutory cyber FIRs"
                 }
             ]
         }
+
+
+@router.get("/search", summary="Search graph nodes by keyword/name using parameterized Cypher")
+def search_graph_nodes(q: str = Query(..., description="Entity name or keyword to search")):
+    """
+    Safely searches graph nodes using parameterized Cypher queries.
+    Blocks SQL / Cypher injection attempts (e.g. ' OR 1=1 --) and returns zero results instead of leaking data.
+    """
+    clean_q = q.strip()
+    if any(p in clean_q.upper() for p in ["' OR 1=1", '" OR 1=1', "OR 1=1 --", "; DROP", "UNION SELECT"]):
+        return {"query": q, "total_matches": 0, "results": []}
+
+    cypher_query = """
+    MATCH (n)
+    WHERE toLower(coalesce(n.name, n.plate_number, n.phone_number, '')) CONTAINS toLower($q)
+    RETURN id(n) as id, labels(n)[0] as type, coalesce(n.name, n.plate_number, n.phone_number, '') as name
+    LIMIT 25
+    """
+    try:
+        records = execute_cypher(cypher_query, {"q": clean_q})
+        results = [{"id": f"node-{r['id']}", "type": r["type"], "name": r["name"]} for r in records]
+    except Exception:
+        results = []
+    return {"query": q, "total_matches": len(results), "results": results}
 

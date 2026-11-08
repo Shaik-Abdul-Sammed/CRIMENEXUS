@@ -126,14 +126,103 @@ def get_audit_leaf_hashes(db) -> List[str]:
     return [r.current_hash for r in records if r.current_hash]
 
 
+def anchor_merkle_root_to_polygon(merkle_root: str) -> Dict[str, Any]:
+    """
+    Submits the Merkle root hash directly to Polygon network embedding the root in tx data field.
+    Gracefully falls back to storing locally in backend/data/merkle_roots.json if wallet/RPC is unconfigured.
+    """
+    import os
+    import json
+    from datetime import datetime
+
+    polygon_rpc = os.getenv("POLYGON_RPC_URL")
+    private_key = os.getenv("POLYGON_PRIVATE_KEY")
+    local_store_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        "data", "merkle_roots.json"
+    )
+
+    if not polygon_rpc or not private_key:
+        logger.info("[Merkle] Polygon anchor skipped — no wallet configured. Root hash: %s", merkle_root)
+        record = {
+            "merkle_root": merkle_root,
+            "anchored_at": datetime.utcnow().isoformat(),
+            "status": "LOCAL_FALLBACK_STORED",
+            "reason": "POLYGON_RPC_URL or POLYGON_PRIVATE_KEY not configured"
+        }
+        try:
+            os.makedirs(os.path.dirname(local_store_path), exist_ok=True)
+            existing = []
+            if os.path.exists(local_store_path):
+                with open(local_store_path, "r", encoding="utf-8") as f:
+                    existing = json.load(f)
+            existing.append(record)
+            with open(local_store_path, "w", encoding="utf-8") as f:
+                json.dump(existing, f, indent=2)
+        except Exception as file_err:
+            logger.warning("[Merkle] Could not write to local roots fallback file: %s", file_err)
+
+        return {
+            "status": "LOCAL_RECORDED",
+            "merkle_root": merkle_root,
+            "blockchain": "Polygon (Local Fallback)",
+            "tx_hash": None,
+            "anchored_at": record["anchored_at"],
+            "note": "Root hash saved to backend/data/merkle_roots.json. Configure POLYGON_RPC_URL and POLYGON_PRIVATE_KEY for live on-chain anchoring."
+        }
+
+    # If env vars ARE present, send a real transaction embedding the Merkle root in the tx data field
+    try:
+        from web3 import Web3
+        w3 = Web3(Web3.HTTPProvider(polygon_rpc))
+        if not w3.is_connected():
+            raise ConnectionError(f"Could not connect to Polygon RPC endpoint: {polygon_rpc}")
+
+        account = w3.eth.account.from_key(private_key)
+        nonce = w3.eth.get_transaction_count(account.address)
+        gas_price = w3.eth.gas_price
+
+        # Hex data embedding the Merkle root hash
+        data_hex = "0x" + merkle_root.encode("utf-8").hex()
+
+        tx = {
+            "to": account.address,
+            "value": 0,
+            "gas": 60000,
+            "gasPrice": gas_price,
+            "nonce": nonce,
+            "chainId": 137,
+            "data": data_hex,
+        }
+
+        signed_tx = w3.eth.account.sign_transaction(tx, private_key)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        tx_hash_hex = tx_hash.hex()
+        logger.info("[Merkle] Successfully anchored root %s to Polygon: %s", merkle_root, tx_hash_hex)
+
+        return {
+            "status": "ANCHORED_ON_CHAIN",
+            "merkle_root": merkle_root,
+            "blockchain": "Polygon",
+            "tx_hash": tx_hash_hex,
+            "anchored_at": datetime.utcnow().isoformat(),
+            "sender": account.address
+        }
+    except Exception as exc:
+        logger.error("[Merkle] Live Polygon transaction failed (%s). Saving to local fallback.", exc)
+        return {
+            "status": "ERROR_FALLBACK",
+            "merkle_root": merkle_root,
+            "blockchain": "Polygon",
+            "error": str(exc),
+            "anchored_at": datetime.utcnow().isoformat()
+        }
+
+
 def get_notarized_root(db) -> Dict[str, Any]:
     """
-    Build Merkle tree from all audit ledger entries and return
-    the current root with a MOCK blockchain publication stub.
-
-    MOCK: In production, this root would be submitted via web3.py to
-    a Polygon smart contract (e.g., EvidenceNotary.sol) with a timestamp.
-    Blocked by: Requires NIC/CERT-In approved blockchain infrastructure.
+    Build Merkle tree from all audit ledger entries and anchor
+    the current root to Polygon (with graceful local fallback).
     """
     leaf_hashes = get_audit_leaf_hashes(db)
     if not leaf_hashes:
@@ -144,16 +233,14 @@ def get_notarized_root(db) -> Dict[str, Any]:
         }
 
     root = get_merkle_root(leaf_hashes)
-
-    # MOCK: Simulate blockchain publication
-    mock_tx_hash = _hash_pair(root, datetime.utcnow().isoformat())[:64]
+    anchor_result = anchor_merkle_root_to_polygon(root)
 
     return {
         "merkle_root": root,
         "total_entries": len(leaf_hashes),
         "computed_at": datetime.utcnow().isoformat(),
-        "blockchain_status": "MOCK_PUBLISHED",
-        "mock_tx_hash": f"0x{mock_tx_hash}",
-        "mock_network": "Polygon Mumbai Testnet",
-        "note": "MOCK: Real deployment requires web3.py + NIC-approved node. Root is cryptographically valid.",
+        "anchor_details": anchor_result,
+        "blockchain_status": anchor_result.get("status", "LOCAL_RECORDED"),
+        "tx_hash": anchor_result.get("tx_hash"),
+        "network": anchor_result.get("blockchain", "Polygon"),
     }

@@ -1,4 +1,5 @@
 import os
+os.environ.setdefault("MPLBACKEND", "Agg")
 import logging
 import threading
 from contextlib import asynccontextmanager
@@ -42,6 +43,8 @@ from app.api.alerts import router as alerts_router
 from app.api.geo import router as geo_router
 from app.api.quantum import router as quantum_router
 from app.api.fusion import router as fusion_router
+from app.api.escape_demo import router as escape_demo_router
+from app.api.assistant import router as assistant_router
 from app.services.streaming.redis_streams import get_streaming_stats
 from app.services.streaming.stream_processor import run_stream_consumer_worker
 from app.services.streaming.stream_producer import simulate_live_event
@@ -175,6 +178,9 @@ app.include_router(alerts_router, prefix="/api/v1")
 app.include_router(geo_router, prefix="/api/v1")
 app.include_router(quantum_router, prefix="/api/v1")
 app.include_router(fusion_router, prefix="/api/v1")
+app.include_router(escape_demo_router, prefix="/api/v1")
+app.include_router(assistant_router, prefix="/api/v1")
+app.include_router(assistant_router, prefix="")
 
 # ── Advanced Feature Endpoints ────────────────────────────────────────────────
 # Feature 1: Prometheus Metrics
@@ -408,7 +414,7 @@ app.include_router(_adv_router)
 
 # Feature 4: Case History Timeline direct alias
 from app.api.legal import get_audit_ledger
-from app.api.external import sync_live_cctns_fir_endpoint
+from app.api.external import sync_live_cctns_fir_endpoint, poll_cctns_updates
 from app.api.analytics import get_nearest_police_station, route_to_incident
 from app.api.threats import get_most_wanted_watchlist
 from app.api.cases import export_dossier_pdf
@@ -416,6 +422,8 @@ app.add_api_route("/api/v1/audit/ledger", get_audit_ledger, methods=["GET"], tag
 app.add_api_route("/threats/most-wanted", get_most_wanted_watchlist, methods=["GET"], tags=["Threat Intelligence"])
 app.add_api_route("/cases/export/dossier-pdf", export_dossier_pdf, methods=["GET"], tags=["Case Dossier"])
 app.add_api_route("/api/v1/cctns/sync/{case_id}", sync_live_cctns_fir_endpoint, methods=["POST"], tags=["Government Police Grid & Telemetry"])
+app.add_api_route("/api/v1/cctns/poll", poll_cctns_updates, methods=["POST", "GET"], tags=["Government Police Grid & Telemetry"])
+app.add_api_route("/cctns/poll", poll_cctns_updates, methods=["POST", "GET"], tags=["Government Police Grid & Telemetry"])
 app.add_api_route("/api/v1/geo/nearest-station", get_nearest_police_station, methods=["GET"], tags=["Geospatial & Police Proximity"])
 app.add_api_route("/geo/nearest-station", get_nearest_police_station, methods=["GET"], tags=["Geospatial & Police Proximity"])
 app.add_api_route("/api/v1/geo/route-to-incident", route_to_incident, methods=["POST"], tags=["Geospatial & Police Proximity"])
@@ -450,6 +458,7 @@ def root():
 
 
 @app.get("/health")
+@app.get("/api/v1/health")
 def health():
     return {
         "status": "healthy",
@@ -469,6 +478,13 @@ def ml_status():
 def streaming_stats():
     """Returns real-time event counts across Redis Stream topics."""
     return get_streaming_stats()
+
+
+@app.get("/api/v1/streaming/health", tags=["Streaming Ingestion"])
+def streaming_health():
+    """Returns consumer group worker health metrics and stream lag."""
+    from app.services.streaming.stream_processor import get_worker_health
+    return get_worker_health().get_metrics()
 
 
 @app.post("/api/v1/streaming/simulate", tags=["Streaming Ingestion"])

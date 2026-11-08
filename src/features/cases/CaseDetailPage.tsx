@@ -19,6 +19,7 @@ import {
   AlertTriangle,
   Scale,
   Shield,
+  FileText,
 } from 'lucide-react';
 import cytoscape from 'cytoscape';
 import { useInvestigationDetail, useCaseEvidence, useEntities, useNetworkGraph } from '../../hooks/useIntelligenceApi';
@@ -29,8 +30,11 @@ import { getStatusBadgeClass, getRiskColorClass } from '../../utils/formatters';
 import { VisualCaseTimeline } from '../../components/cases/VisualCaseTimeline';
 import { WitnessSummarizerModal } from '../../components/cases/WitnessSummarizerModal';
 import { DocumentPreviewModal } from '../../components/common/DocumentPreviewModal';
+import { useToast } from '../../components/ui/Toast';
+import { sound } from '../../utils/soundEffects';
 
 export function CaseDetailPage() {
+  const toast = useToast();
   const { id = 'case-101' } = useParams<{ id: string }>();
   const { data: caseDetail, isLoading } = useInvestigationDetail(id);
   const { data: evidence } = useCaseEvidence(id);
@@ -40,6 +44,8 @@ export function CaseDetailPage() {
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'TIMELINE' | 'EVIDENCE' | 'ENTITIES' | 'GRAPH'>('OVERVIEW');
   const [downloadingBundle, setDownloadingBundle] = useState(false);
   const [previewManifestOpen, setPreviewManifestOpen] = useState(false);
+  const [previewDossierOpen, setPreviewDossierOpen] = useState(false);
+  const [assignedIO, setAssignedIO] = useState<string>('Inspector Rajesh Sharma (Cyber Cell)');
 
   const cyInstanceRef = React.useRef<cytoscape.Core | null>(null);
   const embeddedGraphContainerRef = React.useRef<HTMLDivElement>(null);
@@ -202,7 +208,7 @@ export function CaseDetailPage() {
                 Query AI Assistant
               </Button>
             </Link>
-            <Link to={`/drafting?case=${encodeURIComponent(caseDetail.caseNumber || caseDetail.id)}`}>
+            <Link to={`/drafting?case=${encodeURIComponent(caseDetail.caseNumber || caseDetail.id)}&tab=FIR`}>
               <Button
                 variant="outline"
                 icon={<Scale className="h-4 w-4 text-emerald-400" />}
@@ -215,11 +221,23 @@ export function CaseDetailPage() {
             <div className="h-5 w-px bg-border/60 mx-1 hidden sm:block" />
             <Button
               variant="outline"
+              onClick={() => {
+                sound.playClickSound();
+                setPreviewDossierOpen(true);
+              }}
+              className="border-indigo-500/40 text-indigo-300 hover:bg-indigo-500/10 flex items-center gap-1.5 font-semibold"
+              title="Preview Official Police Department Deployment Dossier (PDF & Formatted)"
+            >
+              <Eye className="h-4 w-4 text-indigo-400" />
+              <span>Preview Dossier PDF</span>
+            </Button>
+            <Button
+              variant="outline"
               onClick={() => setPreviewManifestOpen(true)}
               className="border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 flex items-center gap-1.5 font-semibold"
               title="Preview Evidence Bundle Manifest & Hashes"
             >
-              <Eye className="h-4 w-4 text-emerald-400" />
+              <FileText className="h-4 w-4 text-emerald-400" />
               <span>Preview Bundle</span>
             </Button>
             <Button
@@ -355,8 +373,22 @@ export function CaseDetailPage() {
                     <span className="text-sm font-semibold text-foreground break-words">{caseDetail.locationName}</span>
                   </div>
                   <div className="min-w-0">
-                    <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">Lead Investigator</span>
-                    <span className="text-sm font-semibold text-foreground break-words">{caseDetail.assignedUserName}</span>
+                    <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">Lead Investigator (Assign IO)</span>
+                    <select
+                      value={assignedIO}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setAssignedIO(val);
+                        sound.playClickSound();
+                        toast.success(`Case assigned to ${val}. CCTNS roster updated.`, 'IO Assigned');
+                      }}
+                      className="mt-1 w-full bg-slate-900 border border-border/80 text-foreground text-xs font-semibold rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+                    >
+                      <option value="Inspector Rajesh Sharma (Cyber Cell)">Inspector Rajesh Sharma (Cyber Cell)</option>
+                      <option value="ACP Surender Kumar (Special Cell)">ACP Surender Kumar (Special Cell)</option>
+                      <option value="Sub-Inspector Ankit Sharma (PCR-04)">Sub-Inspector Ankit Sharma (PCR-04)</option>
+                      <option value="Inspector Pradeep Rathore (Crime Branch)">Inspector Pradeep Rathore (Crime Branch)</option>
+                    </select>
                   </div>
                   <div className="min-w-0">
                     <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">Date Registered</span>
@@ -470,7 +502,12 @@ export function CaseDetailPage() {
               {entities.map((ent) => (
                 <Card key={ent.id} className="p-5 space-y-3 hover:border-primary/50 transition-colors shadow-md border-border/70">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-foreground">{ent.name}</span>
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="h-8 w-8 rounded-full bg-primary/20 text-primary border border-primary/30 flex items-center justify-center font-bold text-xs uppercase shrink-0">
+                        {ent.name.slice(0, 2)}
+                      </div>
+                      <span className="text-sm font-bold text-foreground truncate">{ent.name}</span>
+                    </div>
                     <Badge variant={ent.reviewStatus === 'VERIFIED' ? 'success' : 'warning'}>
                       {ent.type}
                     </Badge>
@@ -601,6 +638,26 @@ Any alteration of encrypted zip contents will invalidate the cryptographic hash.
             suspectName: 'Identified Syndicate Co-Conspirators',
             crimeType: 'Forensic Evidence Manifest',
             hash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+          }}
+        />
+      )}
+
+      {/* Official Police Department Deployment Dossier Preview Modal */}
+      {caseDetail && (
+        <DocumentPreviewModal
+          isOpen={previewDossierOpen}
+          onClose={() => setPreviewDossierOpen(false)}
+          title={`Deployment Dossier: ${caseDetail.caseNumber}`}
+          subtitle={`Investigation: ${caseDetail.title} • Statutory Compliance under BSA Section 63`}
+          documentType="court_dossier"
+          caseNumber={caseDetail.caseNumber}
+          pdfUrl="/CRIMENEXUS_Police_Department_Deployment_Dossier.pdf"
+          metadata={{
+            ioName: caseDetail.assignedUserName || 'Inspector V. K. Sharma',
+            policeStation: caseDetail.locationName || 'Cyber Crime Police Station',
+            crimeType: caseDetail.crimeType || 'Syndicate Investigation',
+            suspectName: caseDetail.title,
+            jurisdiction: caseDetail.locationName || 'Delhi NCR',
           }}
         />
       )}

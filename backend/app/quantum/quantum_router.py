@@ -104,6 +104,7 @@ class QuantumInterceptOptimizer:
         return {
             "status": "SUCCESS",
             "quantum_mode": False,
+            "engine": "classical_fallback",
             "routing_engine": "Classical-Haversine-Fallback (Qiskit Offline)",
             "selected_station": best_classical["name"],
             "station_coordinates": [best_classical["lat"], best_classical["lon"]],

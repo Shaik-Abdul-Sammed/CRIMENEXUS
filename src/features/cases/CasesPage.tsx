@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Plus, Search, FolderGit2, Calendar, MapPin, Tag, UserCheck, Filter, Mic, MicOff, RefreshCw, Scale, FileText } from 'lucide-react';
+import { Plus, Search, FolderGit2, Calendar, MapPin, Tag, UserCheck, Filter, Mic, MicOff, RefreshCw, Scale, FileText, Eye } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -12,6 +12,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Ca
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Modal } from '../../components/ui/Modal';
+import { DocumentPreviewModal } from '../../components/common/DocumentPreviewModal';
 import { toast } from '../../components/ui/Toast';
 import { sound } from '../../utils/soundEffects';
 import { getStatusBadgeClass, getRiskColorClass } from '../../utils/formatters';
@@ -32,6 +33,7 @@ export function CasesPage() {
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || 'ALL');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [previewCase, setPreviewCase] = useState<any | null>(null);
 
   const updateSearch = (value: string) => {
     setSearchTerm(value);
@@ -141,7 +143,7 @@ export function CasesPage() {
             variant="outline"
             onClick={handleSyncCctnsFir}
             isLoading={isSyncingCctns}
-            className="border-emerald-500/50 text-emerald-300 hover:bg-emerald-950/40 text-xs font-bold flex items-center gap-1.5 shadow-sm"
+            className="border-emerald-500/50 text-emerald-300 hover:bg-emerald-950/40 text-xs font-bold flex items-center gap-1.5 shadow-sm whitespace-nowrap"
             title="Poll and synchronize inter-state FIRs from CCTNS National Crime Grid"
           >
             <RefreshCw className={`h-3.5 w-3.5 text-emerald-400 ${isSyncingCctns ? 'animate-spin' : ''}`} />
@@ -150,14 +152,14 @@ export function CasesPage() {
           <Link to="/drafting">
             <Button
               variant="outline"
-              className="border-indigo-500/50 text-indigo-300 hover:bg-indigo-950/40 text-xs font-bold flex items-center gap-1.5 shadow-sm"
+              className="border-indigo-500/50 text-indigo-300 hover:bg-indigo-950/40 text-xs font-bold flex items-center gap-1.5 shadow-sm whitespace-nowrap"
               title="Open AI RAG Statutory FIR Drafting Engine"
             >
               <Scale className="h-3.5 w-3.5 text-indigo-400" />
               <span>⚖️ Draft Statutory FIR</span>
             </Button>
           </Link>
-          <Button onClick={() => setIsModalOpen(true)} icon={<Plus className="h-4 w-4" />}>
+          <Button onClick={() => setIsModalOpen(true)} icon={<Plus className="h-4 w-4" />} className="whitespace-nowrap">
             New Investigation
           </Button>
         </div>
@@ -196,8 +198,23 @@ export function CasesPage() {
       {isLoading ? (
         <div className="p-12 text-center text-xs text-muted-foreground">Loading target cases...</div>
       ) : cases?.length === 0 ? (
-        <div className="p-12 text-center text-xs text-muted-foreground border border-dashed border-border rounded-xl">
-          No matching investigations found.
+        <div className="p-12 text-center space-y-3 border border-dashed border-border/80 rounded-xl bg-card/40">
+          <FolderGit2 className="h-8 w-8 text-muted-foreground/60 mx-auto" />
+          <p className="text-sm font-bold text-foreground">No cases match your filters.</p>
+          <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+            Try adjusting your search query or reset status filters to view active investigations.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              updateSearch('');
+              updateStatus('ALL');
+            }}
+            className="text-xs font-semibold"
+          >
+            Clear Filters
+          </Button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -248,15 +265,40 @@ export function CasesPage() {
                 </div>
               </CardContent>
 
-              <div className="p-4 pt-0 border-t border-border/40 mt-4 flex items-center justify-between">
+              <div className="p-4 pt-0 border-t border-border/40 mt-4 flex items-center justify-between flex-wrap gap-2">
                 <span className={`text-[10px] px-2 py-0.5 rounded border font-bold ${getRiskColorClass(c.priority)}`}>
                   Priority: {c.priority}
                 </span>
-                <Link to={`/cases/${c.id}`}>
-                  <Button size="sm" variant="outline">
-                    Workspace &rarr;
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      sound.playClickSound();
+                      setPreviewCase(c);
+                    }}
+                    className="border-indigo-500/40 text-indigo-300 hover:bg-indigo-950/40 text-xs py-1 px-2.5 font-bold flex items-center gap-1"
+                    title="Preview Statutory Dossier & Case Intelligence"
+                  >
+                    <Eye className="h-3.5 w-3.5 text-indigo-400" />
+                    <span>Preview Dossier</span>
                   </Button>
-                </Link>
+                  <Link to={`/drafting?case=${encodeURIComponent(c.caseNumber)}&tab=FIR`}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-emerald-500/40 text-emerald-300 hover:bg-emerald-950/40 text-xs py-1 px-2.5 font-bold"
+                      title="Auto-Draft Statutory FIR under Section 173 BNSS"
+                    >
+                      ⚡ Draft FIR
+                    </Button>
+                  </Link>
+                  <Link to={`/cases/${c.id}`}>
+                    <Button size="sm" variant="outline">
+                      Workspace &rarr;
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </Card>
           ))}
@@ -329,12 +371,36 @@ export function CasesPage() {
             <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" isLoading={createCaseMutation.isPending}>
+            <Button
+              type="submit"
+              isLoading={createCaseMutation.isPending}
+              disabled={createCaseMutation.isPending || !watch('title')?.trim() || !watch('description')?.trim()}
+            >
               Create Investigation
             </Button>
           </div>
         </form>
       </Modal>
+
+      {/* Interactive Case Intelligence Dossier Preview Modal */}
+      {previewCase && (
+        <DocumentPreviewModal
+          isOpen={!!previewCase}
+          onClose={() => setPreviewCase(null)}
+          title={`Investigation Dossier: ${previewCase.caseNumber}`}
+          subtitle={`Case Brief: ${previewCase.title} • Jurisdiction: ${previewCase.locationName}`}
+          documentType="court_dossier"
+          caseNumber={previewCase.caseNumber}
+          pdfUrl="/CRIMENEXUS_Police_Department_Deployment_Dossier.pdf"
+          metadata={{
+            ioName: previewCase.assignedUserName || 'Inspector V. K. Sharma (Special Cell)',
+            policeStation: previewCase.locationName || 'Cyber Crime Police Station',
+            crimeType: previewCase.crimeType || 'Organized Syndicate Operation',
+            suspectName: previewCase.description?.split('.')[0] || 'Suspect Syndicate',
+            jurisdiction: previewCase.locationName || 'Delhi NCR & Yamuna Expressway Corridor',
+          }}
+        />
+      )}
     </div>
   );
 }

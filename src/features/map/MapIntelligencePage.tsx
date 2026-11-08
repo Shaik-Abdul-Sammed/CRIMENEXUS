@@ -77,15 +77,114 @@ interface InterceptRouteInfo {
 }
 
 const OSM_POLICE_STATIONS = [
-  { name: 'Jewar Police Station (Yamuna Expressway Jurisdiction)', latitude: 28.1285, longitude: 77.5562, district: 'JEWAR_NOIDA' },
-  { name: 'Rabupura Police Station', latitude: 28.2435, longitude: 77.6020, district: 'JEWAR_NOIDA' },
-  { name: 'Noida Sector 20 Police Station', latitude: 28.5830, longitude: 77.3320, district: 'NOIDA' },
-  { name: 'Noida Sector 62 Police Post', latitude: 28.6280, longitude: 77.3649, district: 'NOIDA' },
-  { name: 'Connaught Place Police Station', latitude: 28.6328, longitude: 77.2197, district: 'DELHI_CENTRAL' },
-  { name: 'Parliament Street Police Station', latitude: 28.6231, longitude: 77.2140, district: 'DELHI_CENTRAL' },
-  { name: 'Hauz Khas Police Station', latitude: 28.5482, longitude: 77.2045, district: 'DELHI_SOUTH' },
-  { name: 'Cyber Hub Police Post Gurugram', latitude: 28.4950, longitude: 77.0895, district: 'GURUGRAM' },
-  { name: 'Mathura Highway Toll Police Post', latitude: 27.6520, longitude: 77.6850, district: 'MATHURA_CORRIDOR' },
+  {
+    policeId: 'POL-01',
+    shortName: 'Jewar PS',
+    name: 'Jewar Police Station (Yamuna Expressway Command)',
+    officer: 'Insp. Rajesh Varma',
+    rank: 'Lead Investigating Officer',
+    callsign: 'PCR-04 Interceptor',
+    latitude: 28.1285,
+    longitude: 77.5562,
+    district: 'JEWAR_NOIDA',
+    phone: '+91-120-248901'
+  },
+  {
+    policeId: 'POL-02',
+    shortName: 'Rabupura Post',
+    name: 'Rabupura Police Post (Perimeter Roadblock)',
+    officer: 'SI Devendra Singh',
+    rank: 'Perimeter Check Commander',
+    callsign: 'PCR-09 Roadblock',
+    latitude: 28.2435,
+    longitude: 77.6020,
+    district: 'JEWAR_NOIDA',
+    phone: '+91-120-248902'
+  },
+  {
+    policeId: 'POL-03',
+    shortName: 'Noida Sec 20 PS',
+    name: 'Noida Sector 20 Police Station (Case Origin)',
+    officer: 'ACP Amit Kumar',
+    rank: 'Supervising Investigating Officer',
+    callsign: 'HQ-Mobile-1',
+    latitude: 28.5830,
+    longitude: 77.3320,
+    district: 'NOIDA',
+    phone: '+91-120-252110'
+  },
+  {
+    policeId: 'POL-04',
+    shortName: 'Noida Sec 62 Post',
+    name: 'Noida Sector 62 Police Post',
+    officer: 'SI Sanjay Meena',
+    rank: 'Highway Transit Unit Lead',
+    callsign: 'Patrol-03',
+    latitude: 28.6280,
+    longitude: 77.3649,
+    district: 'NOIDA',
+    phone: '+91-120-252162'
+  },
+  {
+    policeId: 'POL-05',
+    shortName: 'Connaught Place PS',
+    name: 'Connaught Place Police Station',
+    officer: 'SHO Vikramaditya Roy',
+    rank: 'Central District Command Lead',
+    callsign: 'PCR-CP-1',
+    latitude: 28.6328,
+    longitude: 77.2197,
+    district: 'DELHI_CENTRAL',
+    phone: '+91-11-233401'
+  },
+  {
+    policeId: 'POL-06',
+    shortName: 'Parliament St PS',
+    name: 'Parliament Street Police Station',
+    officer: 'ACP Priya Sharma',
+    rank: 'High-Security Transit Lead',
+    callsign: 'PCR-PS-2',
+    latitude: 28.6231,
+    longitude: 77.2140,
+    district: 'DELHI_CENTRAL',
+    phone: '+91-11-233602'
+  },
+  {
+    policeId: 'POL-07',
+    shortName: 'Hauz Khas PS',
+    name: 'Hauz Khas Police Station',
+    officer: 'Insp. Meenakshi Sundaram',
+    rank: 'South Delhi Cyber Lead',
+    callsign: 'PCR-HK-4',
+    latitude: 28.5482,
+    longitude: 77.2045,
+    district: 'DELHI_SOUTH',
+    phone: '+91-11-265103'
+  },
+  {
+    policeId: 'POL-08',
+    shortName: 'Cyber Hub Post',
+    name: 'Cyber Hub Police Post Gurugram',
+    officer: 'Insp. Gurpreet Singh',
+    rank: 'Tech Corridor Interceptor',
+    callsign: 'PCR-GH-1',
+    latitude: 28.4950,
+    longitude: 77.0895,
+    district: 'GURUGRAM',
+    phone: '+91-124-222401'
+  },
+  {
+    policeId: 'POL-09',
+    shortName: 'Mathura Toll Post',
+    name: 'Mathura Highway Toll Police Post',
+    officer: 'SI Raghuvir Yadav',
+    rank: 'Interstate Highway Patrol',
+    callsign: 'PCR-MT-08',
+    latitude: 27.6520,
+    longitude: 77.6850,
+    district: 'MATHURA_CORRIDOR',
+    phone: '+91-565-240108'
+  },
 ];
 
 // 100% Reliable Free Basemap Styles (Zero API keys required - No Black Screens, No Carto Watermarks)
@@ -208,6 +307,17 @@ export function MapIntelligencePage() {
   // 5 New Features State
   const [selectedStyle, setSelectedStyle] = useState<'dark' | 'satellite' | 'streets'>('dark');
   const [showHeatmap, setShowHeatmap] = useState<boolean>(false);
+  const [showSmartMeters, setShowSmartMeters] = useState<boolean>(false);
+  const [smartMeterAnomalies, setSmartMeterAnomalies] = useState<Array<{
+    meter_id: string;
+    location_name: string;
+    latitude: number;
+    longitude: number;
+    surge_percentage: number;
+    baseline_kwh: number;
+    current_kwh: number;
+    flag: string;
+  }>>([]);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [isLegendOpen, setIsLegendOpen] = useState<boolean>(false);
   const [isLocatingUser, setIsLocatingUser] = useState<boolean>(false);
@@ -232,10 +342,14 @@ export function MapIntelligencePage() {
     stationCoords: [number, number]
   ) => {
     if (!targetMap) return;
+    interceptRouteRef.current = route;
 
     const doRender = () => {
       try {
-        if (!targetMap.getStyle()) return;
+        if (!targetMap.isStyleLoaded()) {
+          targetMap.once('styledata', doRender);
+          return;
+        }
 
         const geojsonData: GeoJSON.Feature<GeoJSON.LineString> = {
           type: 'Feature',
@@ -246,25 +360,28 @@ export function MapIntelligencePage() {
           },
         };
 
-        const existingSource = targetMap.getSource('police-intercept-trajectory') as maplibregl.GeoJSONSource | undefined;
+        const sourceId = 'police-intercept-trajectory';
+        const existingSource = targetMap.getSource(sourceId) as maplibregl.GeoJSONSource | undefined;
         if (existingSource && typeof existingSource.setData === 'function') {
           existingSource.setData(geojsonData);
         } else {
-          // Remove old sources if present
-          ['police-intercept-trajectory', 'route-direct-vector', 'route'].forEach((src) => {
-            if (targetMap.getSource(src)) {
-              try { targetMap.removeSource(src); } catch {}
+          // Remove old conflicting layers before adding source
+          ['police-intercept-dashed', 'police-intercept-line', 'police-intercept-glow'].forEach((lyr) => {
+            if (targetMap.getLayer(lyr)) {
+              try { targetMap.removeLayer(lyr); } catch {}
             }
           });
+          if (targetMap.getSource(sourceId)) {
+            try { targetMap.removeSource(sourceId); } catch {}
+          }
 
-          // Add Single Clean GeoJSON Source
-          targetMap.addSource('police-intercept-trajectory', {
+          targetMap.addSource(sourceId, {
             type: 'geojson',
             data: geojsonData,
           });
         }
 
-        // Clean up conflicting route layers
+        // Clean up legacy route layers if present
         [
           'route-direct-vector',
           'route-direct-vector-backing',
@@ -277,57 +394,56 @@ export function MapIntelligencePage() {
           }
         });
 
-        // Ensure Outer Soft Neon Cyan Glow Layer exists
+        // 1. Outer Neon Cyan Glow Layer (Visible across all zoom levels 1 to 20)
         if (!targetMap.getLayer('police-intercept-glow')) {
           targetMap.addLayer({
             id: 'police-intercept-glow',
             type: 'line',
-            source: 'police-intercept-trajectory',
+            source: sourceId,
             layout: { 'line-join': 'round', 'line-cap': 'round' },
             paint: {
               'line-color': '#00e5ff',
-              'line-width': ['interpolate', ['linear'], ['zoom'], 4, 10, 10, 16, 15, 22],
-              'line-opacity': 0.55,
+              'line-width': ['interpolate', ['linear'], ['zoom'], 1, 6, 5, 10, 10, 16, 15, 22],
+              'line-opacity': 0.75,
             },
           });
         }
 
-        // Ensure Solid Dark Backing Casing exists (Ensures 100% Contrast)
+        // 2. High-Contrast Solid Dark Casing (Guarantees 100% Contrast against any basemap)
         if (!targetMap.getLayer('police-intercept-line')) {
           targetMap.addLayer({
             id: 'police-intercept-line',
             type: 'line',
-            source: 'police-intercept-trajectory',
+            source: sourceId,
             layout: { 'line-join': 'round', 'line-cap': 'round' },
             paint: {
               'line-color': '#020617',
-              'line-width': ['interpolate', ['linear'], ['zoom'], 4, 6.5, 10, 10, 15, 14],
+              'line-width': ['interpolate', ['linear'], ['zoom'], 1, 4, 5, 7, 10, 11, 15, 15],
               'line-opacity': 0.98,
             },
           });
         }
 
-        // Ensure Single Crisp Glowing Cyan Dashed Route Line exists
+        // 3. Glowing Vibrant Cyan Dashed Vector Core (Crisp at Pan-India view and street zoom)
         if (!targetMap.getLayer('police-intercept-dashed')) {
           targetMap.addLayer({
             id: 'police-intercept-dashed',
             type: 'line',
-            source: 'police-intercept-trajectory',
+            source: sourceId,
             layout: { 'line-join': 'round', 'line-cap': 'round' },
             paint: {
-              'line-color': '#00e5ff',
-              'line-width': ['interpolate', ['linear'], ['zoom'], 4, 4, 10, 6.5, 15, 9],
-              'line-dasharray': [2, 2],
+              'line-color': '#38bdf8',
+              'line-width': ['interpolate', ['linear'], ['zoom'], 1, 3, 5, 4.5, 10, 7, 15, 10],
+              'line-dasharray': [3, 2],
             },
           });
         }
 
-        // Elevate intercept layers to the very top of the stack so they are never hidden under heatmaps or basemaps
+        // Elevate intercept layers to the very top so they are never hidden under heatmaps
         try { targetMap.moveLayer('police-intercept-glow'); } catch {}
         try { targetMap.moveLayer('police-intercept-line'); } catch {}
         try { targetMap.moveLayer('police-intercept-dashed'); } catch {}
 
-        // Clean up any old floating midpoint pill to prevent overlapping intercept messages
         if (interceptMarkerRef.current) {
           try {
             interceptMarkerRef.current.remove();
@@ -335,7 +451,7 @@ export function MapIntelligencePage() {
           interceptMarkerRef.current = null;
         }
 
-        // 7. Multi-Point Boundary Auto-Fit to Keep Both Vehicles and Route in View
+        // Multi-Point Auto-Fit to frame entire intercept corridor
         const bounds = new maplibregl.LngLatBounds();
         bounds.extend(suspectCoords);
         bounds.extend(stationCoords);
@@ -350,30 +466,39 @@ export function MapIntelligencePage() {
       }
     };
 
-    if (targetMap.getStyle()) {
+    if (targetMap.isStyleLoaded()) {
       doRender();
     } else {
-      targetMap.once('load', doRender);
       targetMap.once('styledata', doRender);
+      targetMap.once('load', doRender);
     }
   };
 
-  const fetchInterceptRoute = (targetLat: number = 28.1402, targetLon: number = 77.5510) => {
+  const fetchInterceptRoute = (
+    targetLat: number = 28.1402,
+    targetLon: number = 77.5510,
+    originStation?: (typeof OSM_POLICE_STATIONS)[0]
+  ) => {
     sound.playAlertBeep();
     if (mapEngine === 'python') setMapEngine('maplibre');
 
-    // Pick closest operational police station with distance >= 0.003 (~300m) to ensure distinct points
-    let closestStation = OSM_POLICE_STATIONS[0];
-    let minDistance = Infinity;
-    OSM_POLICE_STATIONS.forEach((stn) => {
-      const d = Math.hypot(stn.latitude - targetLat, stn.longitude - targetLon);
-      if (d >= 0.003 && d < minDistance) {
-        minDistance = d;
-        closestStation = stn;
-      }
-    });
+    let station = originStation;
+    if (!station) {
+      // Pick closest operational police station with distance >= 0.003 (~300m) to ensure distinct points
+      let minDistance = Infinity;
+      OSM_POLICE_STATIONS.forEach((stn) => {
+        const d = Math.hypot(stn.latitude - targetLat, stn.longitude - targetLon);
+        if (d >= 0.003 && d < minDistance) {
+          minDistance = d;
+          station = stn;
+        }
+      });
+      if (!station) station = OSM_POLICE_STATIONS[0];
+    }
+    const closestStation = station;
+    interceptOriginRef.current = [closestStation.longitude, closestStation.latitude];
 
-    toast.info(`Calculating fastest road intercept from ${closestStation.name} via OSRM...`, 'Intercept Dispatching');
+    // Calculate fastest road intercept from station via OSRM
 
     const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
     axios
@@ -459,7 +584,6 @@ export function MapIntelligencePage() {
     const bounds = new maplibregl.LngLatBounds();
     timelineWaypoints.forEach((wp) => bounds.extend([wp.longitude, wp.latitude]));
     mapRef.current.fitBounds(bounds, { padding: 80, duration: 1100, maxZoom: 14 });
-    toast.info('Framed entire getaway vehicle transit corridor across Yamuna Expressway.', 'Thief Trajectory');
   };
 
   const handleFocusZone = (zone: HighRiskZoneForecast) => {
@@ -611,6 +735,7 @@ export function MapIntelligencePage() {
       coordinates: coords,
     };
 
+    interceptRouteRef.current = fallbackRoute;
     setInterceptRoute(fallbackRoute);
     sound.playSuccessChime();
 
@@ -968,6 +1093,59 @@ export function MapIntelligencePage() {
         ]);
       });
 
+    // Ingest Smart Meter IoT Grid Anomaly Stream for Escape Simulation Detection
+    axios
+      .get(`${baseURL}/escape-demo/smart-meter-anomalies`, { timeout: 8000 })
+      .then((res) => {
+        if (res.data?.anomalies && Array.isArray(res.data.anomalies)) {
+          const mapped = res.data.anomalies.map((a: any) => ({
+            meter_id: a.meter_id || 'SM-UNKNOWN',
+            location_name: a.locality || a.location_name || 'Grid Substation',
+            latitude: Number(a.lat ?? a.latitude ?? 28.6280),
+            longitude: Number(a.lon ?? a.longitude ?? 77.3649),
+            surge_percentage: Number(a.spike_percentage ?? a.surge_percentage ?? 420.5),
+            baseline_kwh: Number(a.baseline_kwh ?? 0.38),
+            current_kwh: Number(a.current_kwh ?? 4.82),
+            flag: a.status ?? a.flag ?? 'CRITICAL_SURGE',
+          }));
+          setSmartMeterAnomalies(mapped);
+        }
+      })
+      .catch(() => {
+        setSmartMeterAnomalies([
+          {
+            meter_id: 'SM-NOIDA-9811',
+            location_name: 'Sector 62 Safehouse, Noida',
+            latitude: 28.6280,
+            longitude: 77.3649,
+            surge_percentage: 420.5,
+            baseline_kwh: 0.38,
+            current_kwh: 4.82,
+            flag: 'CRITICAL_UNOCCUPIED_SURGE',
+          },
+          {
+            meter_id: 'SM-DELHI-1044',
+            location_name: 'Connaught Place Commercial Substation',
+            latitude: 28.6328,
+            longitude: 77.2197,
+            surge_percentage: 310.2,
+            baseline_kwh: 1.10,
+            current_kwh: 4.51,
+            flag: 'HIGH_ANOMALY',
+          },
+          {
+            meter_id: 'SM-KB-5502',
+            location_name: 'Karol Bagh Residential Grid',
+            latitude: 28.6517,
+            longitude: 77.1906,
+            surge_percentage: 285.0,
+            baseline_kwh: 0.72,
+            current_kwh: 2.77,
+            flag: 'MODERATE_SURGE',
+          },
+        ]);
+      });
+
     // Auto-calculate tactical road intercept from nearest jurisdictional police station (Jewar PS) on launch
     fetchInterceptRoute(28.1402, 77.5510);
   }, []);
@@ -1182,6 +1360,105 @@ export function MapIntelligencePage() {
         if (map.getLayer('crime-density-heatmap')) map.removeLayer('crime-density-heatmap');
         if (map.getSource('crime-density-source')) map.removeSource('crime-density-source');
       }
+
+      // --- Smart Meter IoT Grid Anomaly Layer (Pulsating Magenta/Amber Safehouse Rings) ---
+      if (showSmartMeters && smartMeterAnomalies.length > 0) {
+        const smartMeterData: GeoJSON.FeatureCollection = {
+          type: 'FeatureCollection',
+          features: smartMeterAnomalies.map((anom) => ({
+            type: 'Feature',
+            properties: {
+              meter_id: anom.meter_id,
+              location_name: anom.location_name,
+              latitude: anom.latitude,
+              longitude: anom.longitude,
+              surge_percentage: anom.surge_percentage,
+              baseline_kwh: anom.baseline_kwh,
+              current_kwh: anom.current_kwh,
+              flag: anom.flag,
+            },
+            geometry: { type: 'Point', coordinates: [anom.longitude, anom.latitude] },
+          })),
+        };
+
+        const existingMeterSource = map.getSource('smart-meter-source') as maplibregl.GeoJSONSource | undefined;
+        if (existingMeterSource) {
+          existingMeterSource.setData(smartMeterData);
+        } else {
+          map.addSource('smart-meter-source', { type: 'geojson', data: smartMeterData });
+        }
+
+        if (!map.getLayer('smart-meter-glow')) {
+          map.addLayer({
+            id: 'smart-meter-glow',
+            type: 'circle',
+            source: 'smart-meter-source',
+            paint: {
+              'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 20, 10, 38, 14, 55],
+              'circle-color': '#f43f5e',
+              'circle-opacity': 0.35,
+              'circle-blur': 0.4,
+              'circle-stroke-color': '#fda4af',
+              'circle-stroke-width': 2,
+              'circle-stroke-opacity': 0.85,
+            },
+          });
+        }
+
+        if (!map.getLayer('smart-meter-core')) {
+          map.addLayer({
+            id: 'smart-meter-core',
+            type: 'circle',
+            source: 'smart-meter-source',
+            paint: {
+              'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 8, 10, 12, 14, 16],
+              'circle-color': '#ffffff',
+              'circle-stroke-color': '#e11d48',
+              'circle-stroke-width': 3.5,
+              'circle-opacity': 1,
+            },
+          });
+
+          map.on('click', 'smart-meter-core', (e) => {
+            sound.playAlertBeep();
+            const f = e.features?.[0];
+            if (f) {
+              const props = f.properties || {};
+              setSelectedLocation({
+                id: String(props.meter_id || 'SM-01'),
+                title: `⚡ Smart Meter: ${props.meter_id}`,
+                locationType: 'CRIME_SCENE',
+                entityType: 'LOCATION',
+                latitude: Number(props.latitude) || 28.6280,
+                longitude: Number(props.longitude) || 77.3649,
+                address: String(props.location_name || 'Noida Grid Substation'),
+                timestamp: new Date().toISOString(),
+                caseId: 'IOT-GRID-MONITOR',
+                entityName: `Power Spike: +${props.surge_percentage}%`,
+                metadata: {
+                  meterId: props.meter_id,
+                  currentKwh: `${props.current_kwh} kWh`,
+                  baselineKwh: `${props.baseline_kwh} kWh`,
+                  flag: props.flag,
+                  inference: 'Unoccupied safehouse power surge confirms physical presence of fugitive.',
+                },
+              });
+              map.flyTo({ center: [Number(props.longitude) || 77.3649, Number(props.latitude) || 28.6280], zoom: 15, duration: 800 });
+            }
+          });
+        }
+      } else {
+        if (map.getLayer('smart-meter-core')) map.removeLayer('smart-meter-core');
+        if (map.getLayer('smart-meter-glow')) map.removeLayer('smart-meter-glow');
+        if (map.getSource('smart-meter-source')) map.removeSource('smart-meter-source');
+      }
+
+      // Ensure intercept route is ALWAYS on top of heatmaps and basemap layers
+      try {
+        if (map.getLayer('police-intercept-glow')) map.moveLayer('police-intercept-glow');
+        if (map.getLayer('police-intercept-line')) map.moveLayer('police-intercept-line');
+        if (map.getLayer('police-intercept-dashed')) map.moveLayer('police-intercept-dashed');
+      } catch {}
     } catch (err) {
       console.warn('Layer sync warning:', err);
     }
@@ -1264,11 +1541,11 @@ export function MapIntelligencePage() {
     });
 
     map.on('styledata', () => {
-      syncLayersAndHeatmap(map);
-      if (interceptRouteRef.current && interceptRouteRef.current.coordinates.length >= 2) {
-        renderInterceptRoute(map, interceptRouteRef.current, [77.5510, 28.1402], interceptOriginRef.current);
-      } else {
-        safeAddConnectingRoute(map);
+      if (map.isStyleLoaded()) {
+        syncLayersAndHeatmap(map);
+        if (interceptRouteRef.current && interceptRouteRef.current.coordinates.length >= 2) {
+          renderInterceptRoute(map, interceptRouteRef.current, [77.5510, 28.1402], interceptOriginRef.current);
+        }
       }
     });
 
@@ -1294,7 +1571,29 @@ export function MapIntelligencePage() {
       }
     });
 
+    // Keyboard Arrow Keys Panning Accessibility Handler
+    const handleMapKeyDown = (e: KeyboardEvent) => {
+      if (!mapRef.current) return;
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes((document.activeElement?.tagName || ''))) return;
+      const panDelta = 80;
+      if (e.key === 'ArrowUp') {
+        mapRef.current.panBy([0, -panDelta]);
+        e.preventDefault();
+      } else if (e.key === 'ArrowDown') {
+        mapRef.current.panBy([0, panDelta]);
+        e.preventDefault();
+      } else if (e.key === 'ArrowLeft') {
+        mapRef.current.panBy([-panDelta, 0]);
+        e.preventDefault();
+      } else if (e.key === 'ArrowRight') {
+        mapRef.current.panBy([panDelta, 0]);
+        e.preventDefault();
+      }
+    };
+    window.addEventListener('keydown', handleMapKeyDown);
+
     return () => {
+      window.removeEventListener('keydown', handleMapKeyDown);
       resizeObserver.disconnect();
       if (playbackTimerRef.current) {
         clearInterval(playbackTimerRef.current);
@@ -1458,20 +1757,21 @@ export function MapIntelligencePage() {
 
       if (isLatestTargetHit) {
         el.className = 'wanted-vehicle-pulsing-marker cursor-pointer transition-transform hover:scale-110';
-        el.title = `WANTED SUSPECT: Vikram Malhotra (${wp.entity}) @ ${wp.location_name}`;
+        el.title = `WANTED SUSPECT: CRIM-01 • Vikram Malhotra (${wp.entity}) @ ${wp.location_name}`;
         el.innerHTML = `
-          <div style="position: relative; display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 4px 12px rgba(220,38,38,0.9));">
-            <div style="background: linear-gradient(135deg, #7f1d1d, #dc2626); border: 2px solid #ef4444; border-radius: 20px; padding: 2px 8px 2px 3px; display: flex; align-items: center; gap: 6px; box-shadow: 0 0 16px rgba(239,68,68,0.85); white-space: nowrap;">
+          <div style="position: relative; display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 4px 14px rgba(220,38,38,0.95));">
+            <div style="background: linear-gradient(135deg, #7f1d1d, #dc2626); border: 2px solid #ef4444; border-radius: 18px; padding: 3px 8px 3px 4px; display: flex; align-items: center; gap: 6px; box-shadow: 0 0 20px rgba(239,68,68,0.9); white-space: nowrap;">
+              <span style="background: #450a0a; color: #fca5a5; font-family: monospace; font-weight: 900; font-size: 10px; padding: 1px 5px; border-radius: 8px; border: 1px solid #ef4444;">CRIM-01</span>
               <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150" alt="Vikram Malhotra" style="width: 24px; height: 24px; border-radius: 9999px; object-fit: cover; border: 2px solid #ffffff;" />
               <div style="text-align: left; line-height: 1.1;">
-                <div style="font-size: 9.5px; font-weight: 900; color: #ffffff;">🎯 V. MALHOTRA</div>
-                <div style="font-size: 7.5px; color: #fca5a5; font-family: monospace;">WANTED • ${wp.entity}</div>
+                <div style="font-size: 10px; font-weight: 900; color: #ffffff;">🚨 Vikram Malhotra</div>
+                <div style="font-size: 7.5px; color: #fecaca; font-family: monospace;">WANTED • ${wp.entity}</div>
               </div>
             </div>
             <div style="width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid #dc2626;"></div>
-            <div style="position: relative; width: 32px; height: 32px; margin-top: -3px; display: flex; align-items: center; justify-content: center;">
-              <div style="position: absolute; width: 32px; height: 32px; border-radius: 9999px; background-color: rgba(239,68,68,0.45); animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
-              <div style="position: absolute; width: 22px; height: 22px; border-radius: 9999px; background-color: #dc2626; border: 2px solid #ffffff; box-shadow: 0 0 12px #ef4444; display: flex; align-items: center; justify-content: center; color: white; font-size: 11px;">
+            <div style="position: relative; width: 30px; height: 30px; margin-top: -3px; display: flex; align-items: center; justify-content: center;">
+              <div style="position: absolute; width: 30px; height: 30px; border-radius: 9999px; background-color: rgba(239,68,68,0.5); animation: ping 1.2s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+              <div style="position: absolute; width: 20px; height: 20px; border-radius: 9999px; background-color: #dc2626; border: 2px solid #ffffff; box-shadow: 0 0 12px #ef4444; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: bold;">
                 🚨
               </div>
             </div>
@@ -1553,29 +1853,37 @@ export function MapIntelligencePage() {
       });
     }
 
-    // Plot Jurisdictional Police Stations
+    // Plot Jurisdictional Police Stations (Blue Color with Short Police ID)
     if (showPoliceStations) {
       OSM_POLICE_STATIONS.forEach((stn) => {
+        const cleanStationName = (stn as any).shortName || stn.name.split('(')[0].replace('Police Station', 'PS').replace('Police Post', 'Post').trim();
+        const policeId = (stn as any).policeId || 'POL-01';
+        const officerName = (stn as any).officer || 'Insp. Rajesh Varma';
+        const callsign = (stn as any).callsign || 'Patrol Unit';
         const el = document.createElement('div');
         el.className = 'police-station-marker cursor-pointer transition-transform hover:scale-110';
-        el.title = `POLICE STATION: ${stn.name} (${stn.district})`;
+        el.title = `POLICE STATION [${policeId}]: ${cleanStationName} • Officer: ${officerName} (${callsign})`;
         el.innerHTML = `
-          <div style="position: relative; display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 3px 10px rgba(2,132,199,0.8));">
-            <div style="background: linear-gradient(135deg, #0369a1, #0284c7); border: 2px solid #38bdf8; border-radius: 20px; padding: 2px 8px 2px 3px; display: flex; align-items: center; gap: 5px; box-shadow: 0 0 14px rgba(2,132,199,0.7); white-space: nowrap;">
-              <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150" alt="Inspector Rajesh Varma" style="width: 22px; height: 22px; border-radius: 9999px; object-fit: cover; border: 2px solid #ffffff;" />
+          <div style="position: relative; display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 4px 14px rgba(2,132,199,0.85));">
+            <div style="background: linear-gradient(135deg, #0284c7, #0369a1); border: 2px solid #38bdf8; border-radius: 18px; padding: 3px 8px 3px 4px; display: flex; align-items: center; gap: 6px; box-shadow: 0 0 16px rgba(56,189,248,0.7); white-space: nowrap;">
+              <span style="background: #082f49; color: #38bdf8; font-family: monospace; font-weight: 900; font-size: 10px; padding: 1px 5px; border-radius: 8px; border: 1px solid #38bdf8;">${policeId}</span>
+              <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150" alt="${officerName}" style="width: 22px; height: 22px; border-radius: 9999px; object-fit: cover; border: 2px solid #ffffff;" />
               <div style="text-align: left; line-height: 1.1;">
-                <div style="font-size: 9px; font-weight: 800; color: #ffffff;">${stn.name.replace(' Police Station', ' PS')}</div>
-                <div style="font-size: 7px; color: #bae6fd; font-family: monospace;">INSP. R. VARMA • SQUAD</div>
+                <div style="font-size: 9.5px; font-weight: 800; color: #ffffff;">👮 ${cleanStationName}</div>
+                <div style="font-size: 7.5px; color: #bae6fd; font-family: monospace;">${officerName} • ${callsign}</div>
               </div>
             </div>
-            <div style="width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 5px solid #0369a1;"></div>
+            <div style="width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid #0284c7;"></div>
+            <div style="width: 14px; height: 14px; border-radius: 9999px; background: #0284c7; border: 2px solid #ffffff; box-shadow: 0 0 10px #38bdf8; margin-top: -3px; display: flex; align-items: center; justify-content: center; color: white; font-size: 8px;">
+              👮
+            </div>
           </div>
         `;
 
         el.addEventListener('click', () => {
           setSelectedLocation({
-            id: `stn-${stn.name}`,
-            title: stn.name,
+            id: `stn-${policeId}`,
+            title: `[${policeId}] ${stn.name}`,
             locationType: 'CRIME_SCENE',
             entityType: 'LOCATION',
             latitude: stn.latitude,
@@ -1583,14 +1891,18 @@ export function MapIntelligencePage() {
             address: `${stn.name}, Jurisdiction: ${stn.district}`,
             timestamp: new Date().toISOString(),
             caseId: 'JURISDICTION-HQ',
-            entityName: 'OSM Police Facility Node',
+            entityName: `${policeId}: ${cleanStationName} (In-Charge: ${officerName})`,
             metadata: {
               facilityType: 'Jurisdictional Police Station',
+              policeId: policeId,
+              officerInCharge: officerName,
+              rank: (stn as any).rank || 'Investigating Officer',
+              callsign: callsign,
               district: stn.district,
               routingReadiness: 'OSRM Intercept Engine Ready',
             },
           });
-          map.flyTo({ center: [stn.longitude, stn.latitude], zoom: 13, duration: 800 });
+          map.flyTo({ center: [stn.longitude, stn.latitude], zoom: 13.5, duration: 800 });
         });
 
         const marker = new maplibregl.Marker({ element: el })
@@ -1599,18 +1911,81 @@ export function MapIntelligencePage() {
         markersRef.current.push(marker);
       });
     }
-  }, [locations, timelineWaypoints, forecastData, showHotspots, showPoliceStations]);
+
+    // Plot Smart Meter IoT Grid Anomaly Markers (Safehouse Power Spikes)
+    if (showSmartMeters && smartMeterAnomalies && smartMeterAnomalies.length > 0) {
+      smartMeterAnomalies.forEach((meter) => {
+        const el = document.createElement('div');
+        el.className = 'smart-meter-marker cursor-pointer transition-transform hover:scale-125';
+        el.title = `SMART METER ANOMALY: ${meter.meter_id} (+${meter.surge_percentage}% Surge @ ${meter.location_name})`;
+        el.innerHTML = `
+          <div style="position: relative; display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 3px 12px rgba(236,72,153,0.95));">
+            <div style="background: linear-gradient(135deg, #831843, #db2777); border: 2px solid #f472b6; border-radius: 16px; padding: 2px 7px; display: flex; align-items: center; gap: 5px; box-shadow: 0 0 16px rgba(236,72,153,0.85); white-space: nowrap;">
+              <span style="background: #500724; color: #fbcfe8; font-family: monospace; font-weight: 900; font-size: 9.5px; padding: 1px 4px; border-radius: 6px; border: 1px solid #f472b6;">⚡ ${meter.meter_id}</span>
+              <div style="text-align: left; line-height: 1.1;">
+                <div style="font-size: 9px; font-weight: 900; color: #ffffff;">+${meter.surge_percentage}% SURGE</div>
+                <div style="font-size: 7px; color: #fbcfe8; font-family: monospace;">${meter.location_name}</div>
+              </div>
+            </div>
+            <div style="width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 5px solid #db2777;"></div>
+            <div style="position: relative; width: 22px; height: 22px; margin-top: -3px; display: flex; align-items: center; justify-content: center;">
+              <div style="position: absolute; width: 22px; height: 22px; border-radius: 9999px; background-color: rgba(236,72,153,0.45); animation: ping 1.4s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+              <div style="position: absolute; width: 14px; height: 14px; border-radius: 9999px; background-color: #ec4899; border: 2px solid #ffffff; box-shadow: 0 0 10px #f472b6; display: flex; align-items: center; justify-content: center; color: white; font-size: 8px;">
+                ⚡
+              </div>
+            </div>
+          </div>
+        `;
+
+        el.addEventListener('click', () => {
+          setSelectedLocation({
+            id: meter.meter_id,
+            title: `⚡ Smart Meter Anomaly: ${meter.meter_id}`,
+            locationType: 'CRIME_SCENE',
+            entityType: 'LOCATION',
+            latitude: meter.latitude,
+            longitude: meter.longitude,
+            address: meter.location_name,
+            timestamp: new Date().toISOString(),
+            caseId: 'IOT-GRID-MONITOR',
+            entityName: `Power Spike: +${meter.surge_percentage}% (${meter.current_kwh} kWh)`,
+            metadata: {
+              meterId: meter.meter_id,
+              currentKwh: `${meter.current_kwh} kWh`,
+              baselineKwh: `${meter.baseline_kwh} kWh`,
+              surgeRate: `+${meter.surge_percentage}%`,
+              flag: meter.flag,
+              inference: 'Unoccupied safehouse high-voltage surge indicates physical presence of fugitive Vikram Malhotra.',
+            },
+          });
+          map.flyTo({ center: [meter.longitude, meter.latitude], zoom: 14.5, duration: 800 });
+        });
+
+        const marker = new maplibregl.Marker({ element: el })
+          .setLngLat([meter.longitude, meter.latitude])
+          .addTo(map);
+        markersRef.current.push(marker);
+      });
+    }
+  }, [locations, timelineWaypoints, forecastData, showHotspots, showPoliceStations, showSmartMeters, smartMeterAnomalies]);
 
   // 5. Sync Dynamic Trajectory Layers, Intercept Vector & Heatmap on State Changes
   useEffect(() => {
     syncLayersAndHeatmap();
-  }, [showHeatmap, locations, forecastData, timelineWaypoints, interceptRoute, measurePoints]);
+  }, [showHeatmap, showSmartMeters, smartMeterAnomalies, locations, forecastData, timelineWaypoints, interceptRoute, measurePoints]);
 
-  // Switch Map Style dynamically
+  // Switch Map Style dynamically & safely re-link trajectory & intercept vectors
   useEffect(() => {
     if (!mapRef.current) return;
     try {
-      mapRef.current.setStyle(MAP_STYLES[selectedStyle]);
+      const map = mapRef.current;
+      map.setStyle(MAP_STYLES[selectedStyle]);
+      map.once('style.load', () => {
+        syncLayersAndHeatmap(map);
+        if (interceptRouteRef.current && interceptRouteRef.current.coordinates.length >= 2) {
+          renderInterceptRoute(map, interceptRouteRef.current, [77.5510, 28.1402], interceptOriginRef.current);
+        }
+      });
     } catch (err) {
       console.warn('Map style switch error:', err);
     }
@@ -1802,7 +2177,29 @@ export function MapIntelligencePage() {
             <span>{isLocatingUser ? 'Acquiring GPS...' : 'Track My Device (Thief Location)'}</span>
           </Button>
 
-          {/* Feature 2: Crime Heatmap Layer Toggle */}
+          {/* Permanent Action 1: Live GPS Intercept Vector (Always Available Even If Alert Closed) */}
+          <Button
+            size="sm"
+            onClick={handleInterceptFromLiveLocation}
+            className="flex items-center gap-1.5 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-950/40 border border-indigo-400/40"
+            title="Calculate tactical road intercept vector from your live device GPS coordinates"
+          >
+            <Navigation className="h-3.5 w-3.5 text-indigo-200" />
+            <span>📡 Live GPS Intercept</span>
+          </Button>
+
+          {/* Permanent Action 2: Police Intercept Vector (Always Available) */}
+          <Button
+            size="sm"
+            onClick={handleInterceptFromStation}
+            className="flex items-center gap-1.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-950/40 border border-emerald-400/40"
+            title="Calculate tactical road intercept vector from nearest police unit (Jewar PS)"
+          >
+            <Shield className="h-3.5 w-3.5 text-emerald-200" />
+            <span>🚔 Police Intercept</span>
+          </Button>
+
+          {/* Feature 2: Crime Heatmap Layer Toggle - Allocates directly to cluster without toast spam */}
           <Button
             size="sm"
             variant={showHeatmap ? 'primary' : 'outline'}
@@ -1813,14 +2210,18 @@ export function MapIntelligencePage() {
               }
               const next = !showHeatmap;
               setShowHeatmap(next);
-              if (next) {
-                toast.success('Crime Density Spatial Heatmap enabled (KDE Spatial Multi-Point Fusion).', 'Heatmap Active');
-              } else {
-                toast.info('Crime Density Heatmap overlay disabled.', 'Heatmap Disabled');
+              if (next && mapRef.current) {
+                if (locations && locations.length > 0) {
+                  const bounds = new maplibregl.LngLatBounds();
+                  locations.forEach((loc) => bounds.extend([loc.longitude, loc.latitude]));
+                  mapRef.current.fitBounds(bounds, { padding: 90, duration: 900, maxZoom: 13.5 });
+                } else {
+                  mapRef.current.flyTo({ center: [77.3910, 28.5355], zoom: 12, duration: 900 });
+                }
               }
             }}
             className="flex items-center gap-1.5 text-xs font-bold border-rose-500/50 hover:bg-rose-950/30"
-            title="Toggle Crime Density Heatmap Overlay"
+            title="Toggle Crime Density Heatmap Overlay and allocate camera to cluster"
           >
             <Activity className="h-3.5 w-3.5 text-rose-400" />
             <span>{showHeatmap ? 'Heatmap: ON' : 'Crime Heatmap'}</span>
@@ -1837,12 +2238,9 @@ export function MapIntelligencePage() {
               }
               const next = !measureMode;
               setMeasureMode(next);
-              if (next) {
-                toast.info('Distance Measure Tool active: Click Point 1 on the map, then Point 2 to compute distance.', 'Measure Active');
-              } else {
+              if (!next) {
                 setMeasurePoints([]);
                 setMeasuredDistanceKm(null);
-                toast.info('Distance Measure Tool closed.', 'Measure Cleared');
               }
             }}
             className="flex items-center gap-1.5 text-xs font-bold border-emerald-500/50 hover:bg-emerald-950/30"
@@ -1866,9 +2264,9 @@ export function MapIntelligencePage() {
               if (next) {
                 const hits = locations?.length ? Math.min(locations.length, 5) : 3;
                 setGeofenceHits(hits);
-                toast.warning(`Geofence activated: 5 km surveillance perimeter enclosing ${hits} syndicate entities.`, 'Geofence Active');
-              } else {
-                toast.info('Geofence perimeter cleared.', 'Geofence Inactive');
+                if (mapRef.current) {
+                  mapRef.current.flyTo({ center: [77.5510, 28.1402], zoom: 12.2, duration: 800 });
+                }
               }
             }}
             className="flex items-center gap-1.5 text-xs font-bold border-cyan-500/50 hover:bg-cyan-950/30"
@@ -1889,7 +2287,6 @@ export function MapIntelligencePage() {
                 }
                 const newStyle = e.target.value as any;
                 setSelectedStyle(newStyle);
-                toast.info(`Switched basemap to ${newStyle === 'dark' ? 'Dark Matter' : newStyle === 'satellite' ? 'Satellite' : 'Streets'}.`, 'Basemap Changed');
               }}
               className="bg-transparent text-xs text-foreground focus:outline-none font-semibold cursor-pointer"
             >
@@ -1907,9 +2304,13 @@ export function MapIntelligencePage() {
               if (mapEngine === 'python') setMapEngine('maplibre');
               const next = !showPoliceStations;
               setShowPoliceStations(next);
-              toast.info(`Jurisdictional police stations ${next ? 'visible' : 'hidden'}.`, 'Police Grid');
+              if (next && mapRef.current) {
+                // Allocate camera directly to Jewar Police Station
+                mapRef.current.flyTo({ center: [77.5562, 28.1285], zoom: 13.8, duration: 850 });
+              }
             }}
             className="flex items-center gap-1.5 text-xs font-bold border-blue-500/50 hover:bg-blue-950/30"
+            title="Toggle Jurisdictional Police Stations and allocate camera to Jewar PS"
           >
             <Shield className="h-3.5 w-3.5 text-blue-400" />
             <span>{showPoliceStations ? 'Stations: ON' : 'Stations: OFF'}</span>
@@ -1923,12 +2324,42 @@ export function MapIntelligencePage() {
               if (mapEngine === 'python') setMapEngine('maplibre');
               const next = !showHotspots;
               setShowHotspots(next);
-              toast.info(`Predictive crime hotspots ${next ? 'visible' : 'hidden'}.`, 'AI Forecast');
+              if (next && mapRef.current) {
+                // Allocate camera directly to Predictive Hotspots Zone
+                mapRef.current.flyTo({ center: [77.5510, 28.1402], zoom: 12.8, duration: 850 });
+              }
             }}
             className="flex items-center gap-1.5 text-xs font-bold border-amber-500/50 hover:bg-amber-950/30"
+            title="Toggle Predictive Crime Hotspots and allocate camera to high-risk zones"
           >
             <Flame className="h-3.5 w-3.5 text-amber-400" />
             <span>{showHotspots ? 'Hotspots: ON' : 'Hotspots: OFF'}</span>
+          </Button>
+
+          {/* Feature: Smart Meter IoT Grid Anomaly Layer */}
+          <Button
+            size="sm"
+            variant={showSmartMeters ? 'primary' : 'outline'}
+            onClick={() => {
+              sound.playClickSound();
+              if (mapEngine === 'python') setMapEngine('maplibre');
+              const next = !showSmartMeters;
+              setShowSmartMeters(next);
+              if (next && mapRef.current) {
+                sound.playRadarPing();
+                toast.info('Smart Meter IoT Grid Anomaly Layer: High-voltage safehouse power spikes highlighted (+420% Surge at Sector 62 Safehouse).', 'IoT Grid Stream Active');
+                mapRef.current.flyTo({ center: [77.3649, 28.6280], zoom: 14, duration: 850 });
+              }
+            }}
+            className={`flex items-center gap-1.5 text-xs font-bold border transition-all ${
+              showSmartMeters
+                ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-400 shadow-md shadow-rose-900/30'
+                : 'border-rose-500/50 hover:bg-rose-950/30 text-rose-300'
+            }`}
+            title="Toggle Smart Meter IoT Grid Anomaly Layer showing safehouse power surges"
+          >
+            <Activity className="h-3.5 w-3.5 text-rose-400" />
+            <span>{showSmartMeters ? '⚡ Smart Meters: ON' : '⚡ Smart Meters: OFF'}</span>
           </Button>
 
           {/* Feature: Focus Escape Path */}
@@ -1955,6 +2386,25 @@ export function MapIntelligencePage() {
           >
             <Camera className="h-3.5 w-3.5 text-purple-200" />
             <span>Forensic Clues & Telecast</span>
+          </Button>
+
+          {/* Feature: Pan-India Location Search & Select */}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              sound.playClickSound();
+              setIsLocationTypingOpen((prev) => !prev);
+            }}
+            className={`flex items-center gap-1.5 text-xs font-bold border transition-all ${
+              isLocationTypingOpen
+                ? 'border-indigo-400 bg-indigo-600 text-white shadow-md'
+                : 'border-indigo-500/50 hover:bg-indigo-950/30 text-indigo-300'
+            }`}
+            title="Type any city, town, campus, or coordinates in India to calculate live tactical intercept"
+          >
+            <Search className="h-3.5 w-3.5 text-indigo-400" />
+            <span>Type Location</span>
           </Button>
 
           {/* Feature 3: Fullscreen Toggle */}
@@ -1997,55 +2447,97 @@ export function MapIntelligencePage() {
         </div>
       )}
 
-      {/* Feature 10: "Wanted Vehicle" ANPR Real-Time Intercept Alert Header */}
-      {anprAlertOpen && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-2.5 px-3.5 rounded-xl border border-red-500/80 bg-red-950/60 text-red-100 shadow-xl animate-in fade-in duration-300">
-          <div className="flex items-center gap-2.5 min-w-0 flex-1">
-            <div className="p-1.5 rounded-lg bg-red-600 text-white shadow shrink-0 animate-bounce">
-              <BellRing className="h-4 w-4" />
+      {/* Tactical Intercept Dispatch Controller (Full & Minimized states) */}
+      {!anprAlertOpen ? (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 px-3.5 rounded-xl border border-red-500/50 bg-red-950/30 text-slate-100 shadow-md">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className="h-2 w-2 rounded-full bg-red-500 animate-ping shrink-0" />
+            <div className="truncate text-xs">
+              <span className="font-mono text-red-300 font-extrabold uppercase">ANPR ALERT MINIMIZED:</span>
+              <span className="text-white font-bold ml-1.5">TS 09 AB 1234 (Scorpio)</span>
+              <span className="text-slate-400 text-[11px] ml-1.5">• Yamuna Toll KM 48 (118 km/h)</span>
             </div>
-            <div className="min-w-0 flex-1">
+          </div>
+          <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+            <Button
+              size="sm"
+              className="h-7 px-2.5 text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold flex items-center gap-1 shadow-sm"
+              onClick={handleInterceptFromLiveLocation}
+              title="Calculate tactical intercept vector from your live device GPS"
+            >
+              <Navigation className="h-3.5 w-3.5 text-indigo-200" />
+              <span>📡 Live GPS</span>
+            </Button>
+            <Button
+              size="sm"
+              className="h-7 px-2.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1 shadow-sm"
+              onClick={handleInterceptFromStation}
+              title="Calculate tactical road intercept vector from Jewar Police Station"
+            >
+              <Shield className="h-3.5 w-3.5 text-emerald-200" />
+              <span>🚔 Police Intercept</span>
+            </Button>
+            <button
+              onClick={() => {
+                sound.playClickSound();
+                setAnprAlertOpen(true);
+              }}
+              className="text-[11px] text-slate-300 hover:text-white underline font-semibold ml-1 cursor-pointer"
+            >
+              Expand Banner ▾
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 p-3 rounded-xl border border-slate-700/80 bg-slate-900/90 text-slate-100 shadow-md">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="p-1.5 rounded-lg bg-red-600/90 text-white shadow shrink-0">
+              <Radio className="h-4 w-4 animate-pulse" />
+            </div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-[9px] font-mono font-bold tracking-widest text-white uppercase px-1.5 py-0.2 rounded bg-red-600">
-                  ANPR INTERCEPT ALERT
+                <span className="text-[10px] font-mono font-bold tracking-wider text-red-400 uppercase px-2 py-0.5 rounded bg-red-950/80 border border-red-800/60">
+                  ACTIVE PURSUIT TARGET
                 </span>
-                <span className="text-xs font-extrabold text-white truncate">
+                <span className="text-xs font-bold text-white truncate">
                   TS 09 AB 1234 (Black Mahindra Scorpio)
                 </span>
-                <span className="text-[10px] text-red-300 hidden md:inline">
-                  Yamuna Expressway Toll KM 48 • 118 km/h
+                <span className="text-[10px] text-slate-400 hidden md:inline">
+                  • Yamuna Expressway Toll KM 48 (118 km/h)
                 </span>
               </div>
             </div>
           </div>
+
           <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
             <Button
               size="sm"
-              variant="danger"
-              className="h-8 px-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs"
+              variant="outline"
+              className="h-8 px-2.5 text-xs font-bold border-red-500/50 text-red-300 hover:bg-red-950/40"
               onClick={() => {
+                sound.playClickSound();
                 if (mapRef.current) {
-                  mapRef.current.flyTo({ center: [77.5510, 28.1402], zoom: 14, duration: 800 });
+                  mapRef.current.flyTo({ center: [77.5510, 28.1402], zoom: 14.5, duration: 800 });
                 }
               }}
-              title="Zoom to Toll KM 48 camera location"
+              title="Allocate camera directly to Toll KM 48 camera checkpoint"
             >
-              Zoom Toll
+              🎯 Zoom Target
             </Button>
             <Button
               size="sm"
-              className="h-8 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-emerald-600/30 border border-emerald-400/40"
+              className="h-8 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-emerald-950/30 border border-emerald-400/40"
               onClick={handleInterceptFromStation}
-              title="Option 1: Calculate fastest road intercept from nearest jurisdictional police station (Jewar PS)"
+              title="Calculate tactical road intercept vector from Jewar Police Station"
             >
               <Shield className="h-4 w-4 text-emerald-200" />
-              <span>1. Police Station Intercept</span>
+              <span>1. Jewar PS Intercept</span>
             </Button>
             <Button
               size="sm"
-              className="h-8 px-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-indigo-600/30 border border-indigo-400/40"
+              className="h-8 px-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-indigo-950/30 border border-indigo-400/40"
               onClick={handleInterceptFromLiveLocation}
-              title="Option 2: Calculate tactical intercept connection from your live device GPS directly to target"
+              title="Calculate tactical intercept vector from your live device GPS"
             >
               <Navigation className="h-4 w-4 text-indigo-200" />
               <span>2. Live GPS Intercept</span>
@@ -2059,7 +2551,7 @@ export function MapIntelligencePage() {
                   : 'border-cyan-500/50 bg-slate-900/90 text-cyan-300 hover:bg-cyan-950/50'
               }`}
               onClick={startPinpointCalibration}
-              title="Click on the map to place your live location pin anywhere with 100% pinpoint precision"
+              title="Click on the map to set an exact intercept pinpoint"
             >
               <Crosshair className="h-4 w-4" />
               <span>{isCalibratingLocation ? 'Click on Map...' : '3. Pinpoint Location'}</span>
@@ -2076,19 +2568,18 @@ export function MapIntelligencePage() {
                 sound.playClickSound();
                 setIsLocationTypingOpen((prev) => !prev);
               }}
-              title="Type any city, landmark, college, address, or GPS coordinates to select your exact location"
+              title="Search any city, campus, police station, or coordinates"
             >
               <Search className="h-4 w-4 text-indigo-300" />
-              <span>4. Type Location</span>
+              <span>4. Search Location</span>
             </Button>
             <button
               onClick={() => {
                 sound.playClickSound();
                 setAnprAlertOpen(false);
               }}
-              className="p-1 rounded text-red-400 hover:text-white hover:bg-red-900/40 transition-colors ml-1"
-              title="Dismiss alert"
-              aria-label="Dismiss ANPR Alert"
+              className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition-colors ml-1"
+              title="Minimize ANPR alert banner"
             >
               <X className="h-4 w-4" />
             </button>
@@ -2203,6 +2694,135 @@ export function MapIntelligencePage() {
         </div>
       )}
 
+      {/* Dedicated Jurisdictional Entities & Tracked Units Directory: Unit ID ➔ Officer Hierarchy */}
+      <div className="p-3 rounded-xl border border-border/80 bg-card/95 shadow-md space-y-2.5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/40 pb-2">
+          <div className="flex items-center gap-2">
+            <Shield className="h-4 w-4 text-blue-400" />
+            <span className="text-xs font-bold text-foreground tracking-wide uppercase">
+              Tactical Unit & Jurisdictional Registry (Unit ID ➔ Officer In-Charge Hierarchy)
+            </span>
+            <Badge variant="outline" className="text-[10px] text-cyan-400 border-cyan-500/30">
+              9 Police Interceptors (POL-01 to POL-09) • 1 Wanted Target (CRIM-01)
+            </Badge>
+          </div>
+          <span className="text-[10px] text-muted-foreground hidden md:inline">
+            Click 📍 Locate to focus unit, or 🚔 Dispatch to draw tactical intercept vector from that squad
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
+          {/* Target CRIM-01: Vikram Malhotra */}
+          <div className="p-2.5 rounded-lg bg-red-950/40 border-2 border-red-500/60 hover:border-red-400 transition-all flex flex-col justify-between space-y-1.5 shadow-lg shadow-red-950/30">
+            <div className="flex items-start justify-between gap-1">
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span className="bg-red-900 text-red-200 border border-red-500 font-mono font-black text-[9px] px-1.5 py-0.2 rounded">
+                    CRIM-01
+                  </span>
+                  <span className="text-[10px] font-extrabold text-white truncate">Vikram Malhotra</span>
+                </div>
+                <div className="text-[9px] text-red-300 font-mono">Wanted Syndicate Lead</div>
+              </div>
+              <span className="text-sm">🚨</span>
+            </div>
+            <div className="text-[9px] text-slate-300 space-y-0.5">
+              <div className="flex justify-between">
+                <span>Vehicle:</span>
+                <span className="text-white font-mono font-bold">TS 09 AB 1234</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Locus:</span>
+                <span className="text-red-400 font-mono font-semibold">Yamuna KM 48</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Speed:</span>
+                <span className="text-red-300 font-mono font-bold">118 km/h</span>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-6 text-[10px] w-full font-bold text-red-300 border-red-500/50 hover:bg-red-900/40"
+              onClick={() => {
+                sound.playClickSound();
+                if (mapRef.current) {
+                  mapRef.current.flyTo({ center: [77.5510, 28.1402], zoom: 14.5, duration: 800 });
+                }
+              }}
+            >
+              🎯 Lock Target (CRIM-01)
+            </Button>
+          </div>
+
+          {/* Police Station Units: POL-01 to POL-09 */}
+          {OSM_POLICE_STATIONS.map((stn) => (
+            <div
+              key={stn.policeId}
+              className="p-2.5 rounded-lg bg-sky-950/20 border border-sky-500/30 hover:border-sky-400 transition-all flex flex-col justify-between space-y-1.5 shadow-sm"
+            >
+              <div className="flex items-start justify-between gap-1">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <span className="bg-sky-900 text-sky-200 border border-sky-400 font-mono font-black text-[9px] px-1.5 py-0.2 rounded">
+                      {stn.policeId}
+                    </span>
+                    <span className="text-[10px] font-extrabold text-white truncate" title={stn.name}>
+                      {stn.shortName}
+                    </span>
+                  </div>
+                  <div className="text-[9px] text-sky-300 font-sans font-semibold truncate" title={stn.officer}>
+                    👮 {stn.officer}
+                  </div>
+                </div>
+                <span className="text-xs">🚔</span>
+              </div>
+              <div className="text-[9px] text-slate-300 space-y-0.5">
+                <div className="flex justify-between">
+                  <span>Callsign:</span>
+                  <span className="text-emerald-300 font-mono font-bold">{stn.callsign}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Role:</span>
+                  <span className="text-slate-400 truncate max-w-[100px]">{stn.rank}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>District:</span>
+                  <span className="text-sky-300 font-mono text-[8px]">{stn.district}</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-1 pt-0.5">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-6 text-[9px] px-1 font-bold text-sky-300 border-sky-500/40 hover:bg-sky-900/40"
+                  onClick={() => {
+                    sound.playClickSound();
+                    if (mapRef.current) {
+                      mapRef.current.flyTo({ center: [stn.longitude, stn.latitude], zoom: 14.2, duration: 800 });
+                    }
+                  }}
+                  title={`Center map on ${stn.policeId}: ${stn.shortName}`}
+                >
+                  📍 Locate
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-6 text-[9px] px-1 font-bold text-emerald-300 border-emerald-500/40 hover:bg-emerald-900/40"
+                  onClick={() => {
+                    fetchInterceptRoute(28.1402, 77.5510, stn);
+                  }}
+                  title={`Dispatch tactical intercept vector from ${stn.policeId}: ${stn.shortName} (${stn.officer})`}
+                >
+                  🚔 Intercept
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-3 space-y-4">
           <Card className="relative h-[620px] max-h-[calc(100vh-14rem)] min-h-[480px] overflow-hidden border-primary/30 bg-slate-950">
@@ -2302,6 +2922,15 @@ export function MapIntelligencePage() {
                     <span className="bg-cyan-950 text-cyan-300 text-[9px] px-1.5 py-0.2 rounded border border-cyan-500/40">
                       VECTOR LOCKED
                     </span>
+                    {interceptRoute.distance_km > 100 && (
+                      <button
+                        onClick={handleInterceptFromPatrolUnit}
+                        className="px-2 py-0.5 rounded bg-amber-500/30 text-amber-200 border border-amber-400/50 hover:bg-amber-500/40 text-[9px] font-sans font-bold flex items-center gap-1 animate-pulse"
+                        title="You are currently located far from Delhi/NCR. Click to snap tactical interceptor to on-scene squad PCR-04 at Yamuna Expressway (2.6 km)"
+                      >
+                        ⚡ Snap to NCR Squad (2.6 km)
+                      </button>
+                    )}
                   </div>
                   <div className="text-[10px] text-slate-300 truncate mt-0.5">
                     From <strong className="text-white">{interceptRoute.police_station}</strong> ➔ Target Scorpio
@@ -2866,6 +3495,8 @@ export function MapIntelligencePage() {
         onClose={() => setPreviewModalOpen(false)}
         caseNumber={activeCaseId || 'CASE-2026-8812'}
         documentType="court_dossier"
+        pdfUrl="/CRIMENEXUS_Police_Department_Deployment_Dossier.pdf"
+        fileName="CRIMENEXUS_Police_Department_Deployment_Dossier.pdf"
         metadata={{
           courtName: 'Special Police Control Room & Cyber Command',
           jurisdiction: 'Delhi NCR & Yamuna Expressway Corridor',

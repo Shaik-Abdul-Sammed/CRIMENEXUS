@@ -29,6 +29,9 @@ const DesignSystemPage = React.lazy(() => import('./features/design-system/Desig
 const AboutPlatformPage = React.lazy(() => import('./features/about/AboutPlatformPage').then((m) => ({ default: m.AboutPlatformPage })));
 const LightweightDashboard = React.lazy(() => import('./features/lightweight/LightweightDashboard').then((m) => ({ default: m.LightweightDashboard })));
 const LiveTrackingPage = React.lazy(() => import('./features/demo/LiveTrackingPage').then((m) => ({ default: m.LiveTrackingPage })));
+const EscapeSimulationPage = React.lazy(() => import('./features/demo/EscapeSimulationPage').then((m) => ({ default: m.EscapeSimulationPage })));
+const DigitalFootprintPage = React.lazy(() => import('./features/demo/DigitalFootprintPage').then((m) => ({ default: m.DigitalFootprintPage })));
+const NotFoundPage = React.lazy(() => import('./features/error/NotFoundPage').then((m) => ({ default: m.NotFoundPage })));
 
 const LazyRouteFallback = (
   <div className="p-6 space-y-4">
@@ -78,6 +81,9 @@ export function App() {
                 <Route path="/timeline" element={<TimelinePage />} />
                 <Route path="/map" element={<MapIntelligencePage />} />
                 <Route path="/live-tracking" element={<LiveTrackingPage />} />
+                <Route path="/escape-demo" element={<EscapeSimulationPage />} />
+                <Route path="/digital-footprint" element={<DigitalFootprintPage />} />
+                <Route path="/data-lake" element={<Navigate to="/digital-footprint" replace />} />
                 <Route path="/forensics" element={<Navigate to="/live-tracking?tab=forensics" replace />} />
                 <Route path="/most-wanted" element={<MostWantedPage />} />
                 <Route path="/drafting" element={<DraftingPage />} />
@@ -90,7 +96,7 @@ export function App() {
               </Route>
 
               {/* Catch-all fallback */}
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </React.Suspense>
         </BrowserRouter>

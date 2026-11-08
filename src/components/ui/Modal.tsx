@@ -12,6 +12,7 @@ export interface ModalProps {
   children: React.ReactNode;
   className?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
+  maxWidth?: string;
 }
 
 export function Modal({
@@ -22,6 +23,7 @@ export function Modal({
   children,
   className,
   size = 'md',
+  maxWidth,
 }: ModalProps) {
   const modalRef = useFocusTrap<HTMLDivElement>(isOpen);
 
@@ -71,7 +73,7 @@ export function Modal({
         ref={modalRef}
         className={cn(
           'relative w-full rounded-xl border border-border bg-card text-card-foreground shadow-2xl overflow-hidden focus:outline-none',
-          sizeClasses[size],
+          maxWidth || sizeClasses[size],
           className
         )}
         role="dialog"

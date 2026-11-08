@@ -34,6 +34,11 @@ import { PoliceDemoModal } from './PoliceDemoModal';
 import { OnboardingTour } from '../tour/OnboardingTour';
 import { StatutoryRulesModal } from '../common/StatutoryRulesModal';
 import { KeyboardShortcutsModal } from '../common/KeyboardShortcutsModal';
+import { PanicLockModal } from '../common/PanicLockModal';
+import { AccessibilityBar } from '../common/AccessibilityBar';
+import { WhatsNewChangelogModal } from '../common/WhatsNewChangelogModal';
+import { ProFeaturesHubModal } from '../common/ProFeaturesHubModal';
+import { Lock } from 'lucide-react';
 
 export function TopNav() {
   const location = useLocation();
@@ -60,6 +65,41 @@ export function TopNav() {
   const [statutoryRulesOpen, setStatutoryRulesOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [audioMuted, setAudioMuted] = useState(!sound.isEnabled());
+  const [isPanicLocked, setIsPanicLocked] = useState(false);
+  const [isServerOnline, setIsServerOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [whatsNewOpen, setWhatsNewOpen] = useState(false);
+  const [featuresHubOpen, setFeaturesHubOpen] = useState(false);
+
+  useEffect(() => {
+    const handleOnline = () => setIsServerOnline(true);
+    const handleOffline = () => setIsServerOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // Global Panic Lock hotkey (Ctrl+Alt+L)
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.altKey && (e.key === 'l' || e.key === 'L')) {
+        e.preventDefault();
+        sound.playWarningBeep();
+        setIsPanicLocked((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    // Periodic server health ping (critical for rural Thana 2 Mbps BSNL connections)
+    const interval = setInterval(() => {
+      fetch('/api/v1/ml/status', { method: 'GET' })
+        .then(() => setIsServerOnline(true))
+        .catch(() => setIsServerOnline(navigator.onLine));
+    }, 20000);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('keydown', handleKeyDown);
+      clearInterval(interval);
+    };
+  }, []);
 
   const settingsRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
@@ -200,6 +240,54 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
 
       {/* Right: Consolidated Tools & Actions */}
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        {/* Accessibility Tools (Sunlight High Contrast & Font Sizer A-/A+) */}
+        <AccessibilityBar />
+
+        {/* What's New v2.4 Release Notes Trigger */}
+        <button
+          onClick={() => {
+            sound.playClickSound();
+            setWhatsNewOpen(true);
+          }}
+          className="flex items-center gap-1.5 h-9 px-2.5 rounded-lg border border-primary/40 bg-primary/10 text-primary hover:bg-primary/20 text-xs font-bold transition-all"
+          title="What's New in CRIMENEXUS v2.4 (Changelog)"
+        >
+          <Sparkles className="h-3.5 w-3.5 text-primary" />
+          <span className="hidden xl:inline text-[11px]">v2.4 Updates</span>
+        </button>
+
+        {/* One-Click Language Switcher (EN | हि | म) */}
+        <div className="hidden xl:flex items-center rounded-lg border border-border/70 bg-background/80 p-0.5 text-[11px] font-bold">
+          {(['en', 'hi', 'mr'] as SupportedLanguage[]).map((lang) => (
+            <button
+              key={lang}
+              onClick={() => {
+                sound.playClickSound();
+                setLanguage(lang);
+              }}
+              className={`px-2 py-0.5 rounded transition-colors ${
+                language === lang ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+              }`}
+              title={`Switch to ${lang.toUpperCase()}`}
+            >
+              {lang === 'en' ? 'EN' : lang === 'hi' ? 'हि' : 'म'}
+            </button>
+          ))}
+        </div>
+
+        {/* Panic Lock Button */}
+        <button
+          onClick={() => {
+            sound.playWarningBeep();
+            setIsPanicLocked(true);
+          }}
+          className="flex items-center justify-center h-9 w-9 rounded-lg border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:border-red-500 transition-colors shadow-sm"
+          title="Panic Lock: Instantly conceal classified evidence & lock screen (Ctrl+Alt+L)"
+          aria-label="Panic Lock Screen"
+        >
+          <Lock className="h-4 w-4" />
+        </button>
+
         {/* Quick Search Trigger (Modal Launcher) */}
         <button
           onClick={() => setGlobalSearchOpen(true)}
@@ -212,6 +300,21 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           <kbd className="hidden md:inline-flex h-5 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
             /
           </kbd>
+        </button>
+
+        {/* 10 Pro Features Hub Button */}
+        <button
+          onClick={() => {
+            sound.playClickSound();
+            setFeaturesHubOpen(true);
+          }}
+          className="flex items-center gap-1.5 h-9 px-2.5 rounded-lg border border-cyan-500/50 bg-gradient-to-r from-cyan-950/80 to-blue-950/80 text-cyan-300 hover:from-cyan-900/80 hover:to-blue-900/80 text-xs font-bold transition-all shadow-md shadow-cyan-950/50"
+          title="CRIMENEXUS 10 Core Pro Features & Capabilities Hub"
+          aria-label="Features Showcase"
+        >
+          <Sparkles className="h-4 w-4 text-cyan-400 animate-pulse" />
+          <span className="hidden sm:inline text-[11px]">Features Hub</span>
+          <span className="px-1 py-0.2 rounded-full bg-cyan-400/20 text-cyan-300 text-[9px] font-mono font-extrabold hidden md:inline">10</span>
         </button>
 
         {/* 15 Statutory Rules & Remand Guard Button */}
@@ -282,7 +385,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           </button>
 
           {themeMenuOpen && (
-            <div className="absolute right-0 mt-2 w-64 rounded-xl border border-border bg-card p-3 shadow-2xl z-50 animate-in fade-in zoom-in-95 select-none">
+            <div className="absolute right-0 mt-2 w-64 rounded-xl border border-border bg-card p-3 shadow-2xl z-[100] animate-in fade-in zoom-in-95 select-none">
               <div className="flex items-center justify-between pb-2 border-b border-border mb-2">
                 <div className="flex items-center gap-1.5">
                   <Palette className="h-3.5 w-3.5 text-primary" />
@@ -372,7 +475,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           </button>
 
           {notifMenuOpen && (
-            <div className="absolute right-0 mt-2 w-96 rounded-2xl border border-border/80 bg-slate-900/95 backdrop-blur-md p-4 shadow-2xl z-50 animate-in fade-in zoom-in-95 select-none">
+            <div className="absolute right-0 mt-2 w-96 rounded-2xl border border-border/80 bg-slate-900/95 backdrop-blur-md p-4 shadow-2xl z-[100] animate-in fade-in zoom-in-95 select-none">
               <div className="flex items-center justify-between pb-3 border-b border-border/60 mb-3">
                 <div className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
@@ -501,7 +604,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           </button>
 
           {settingsMenuOpen && (
-            <div className="absolute right-0 mt-2 w-72 rounded-xl border border-border bg-card p-3 shadow-2xl z-50 space-y-3 animate-in fade-in zoom-in-95">
+            <div className="absolute right-0 mt-2 w-72 rounded-xl border border-border bg-card p-3 shadow-2xl z-[100] space-y-3 animate-in fade-in zoom-in-95">
               <div className="flex items-center justify-between border-b border-border pb-2">
                 <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
                   <SettingsIcon className="h-3.5 w-3.5 text-primary" />
@@ -653,9 +756,24 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
         {/* User Status Badge & Logout (No repeated name/role; full profile is in Sidebar) */}
         <div className="flex items-center gap-2 pl-2 border-l border-border/60">
           <div className="flex items-center gap-2">
-            <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-[11px] font-semibold text-emerald-400 font-mono tracking-wide">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              GRID ACTIVE
+            <span
+              className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold font-mono tracking-wide border ${
+                isServerOnline
+                  ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400'
+                  : 'bg-red-500/10 border-red-500/40 text-red-400 animate-pulse'
+              }`}
+              title={
+                isServerOnline
+                  ? 'Server connectivity: ONLINE (BSNL 2 Mbps / Local Fast)'
+                  : 'Server connectivity: OFFLINE (Check local interface)'
+              }
+            >
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  isServerOnline ? 'bg-emerald-400 animate-pulse' : 'bg-red-500'
+                }`}
+              />
+              {isServerOnline ? 'ONLINE' : 'OFFLINE'}
             </span>
             <img
               src={currentUser?.avatar}
@@ -677,6 +795,9 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
         </div>
       </div>
 
+      {/* Panic Lock Screen Modal */}
+      <PanicLockModal isLocked={isPanicLocked} onUnlock={() => setIsPanicLocked(false)} />
+
       {/* Police Command Demo Showcase Modal */}
       <PoliceDemoModal isOpen={demoModalOpen} onClose={() => setDemoModalOpen(false)} />
 
@@ -694,6 +815,18 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
         isOpen={shortcutsOpen}
         onClose={() => setShortcutsOpen(false)}
         onOpenRules={() => setStatutoryRulesOpen(true)}
+      />
+
+      {/* What's New v2.4 Changelog Modal */}
+      <WhatsNewChangelogModal
+        isOpen={whatsNewOpen}
+        onClose={() => setWhatsNewOpen(false)}
+      />
+
+      {/* 10 Pro Features & Capabilities Hub Modal */}
+      <ProFeaturesHubModal
+        isOpen={featuresHubOpen}
+        onClose={() => setFeaturesHubOpen(false)}
       />
     </header>
   );
