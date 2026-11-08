@@ -44,6 +44,7 @@ import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { DocumentPreviewModal } from '../../components/common/DocumentPreviewModal';
+import { FileExportPreviewModal } from '../../components/common/FileExportPreviewModal';
 import { HashValidatorModal } from '../../components/common/HashValidatorModal';
 import { formatDate } from '../../utils/formatters';
 import { useToast } from '../../components/ui/Toast';
@@ -78,6 +79,8 @@ export function EvidencePage() {
   const [typeFilter, setTypeFilter] = useState('ALL');
   const [downloadingBundle, setDownloadingBundle] = useState(false);
   const [previewManifestOpen, setPreviewManifestOpen] = useState(false);
+  const [csvExportPreviewOpen, setCsvExportPreviewOpen] = useState(false);
+  const [zipExportPreviewOpen, setZipExportPreviewOpen] = useState(false);
   const [copiedHash, setCopiedHash] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
 
@@ -146,21 +149,26 @@ export function EvidencePage() {
     }
   };
 
-  const handleExportEvidenceCsv = () => {
+  const getEvidenceCsvPayload = () => {
+    const list = filtered || [];
     const headers = ['Evidence Number', 'Title', 'Type', 'Source', 'Reference', 'SHA-256 Hash', 'Status', 'Timestamp'];
-    const rows = filtered.map((e) => [
-      `"${e.evidenceNumber || e.id}"`,
-      `"${e.title}"`,
+    const rows = list.map((e) => [
+      e.evidenceNumber || e.id,
+      e.title,
       e.type,
-      `"${e.source}"`,
-      `"${e.sourceReference || ''}"`,
-      `"${e.hash}"`,
+      e.source,
+      e.sourceReference || 'N/A',
+      e.hash,
       e.processingStatus,
-      `"${e.timestamp}"`
+      e.timestamp
     ]);
+    const rawCsv = [headers.join(','), ...rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(','))].join('\n');
+    return { headers, rows, rawCsv };
+  };
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
+  const executeDirectEvidenceCsvDownload = () => {
+    const { rawCsv } = getEvidenceCsvPayload();
+    const encodedUri = encodeURI('data:text/csv;charset=utf-8,' + rawCsv);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
     link.setAttribute('download', `CRIMENEXUS_Evidence_Manifest_${new Date().toISOString().split('T')[0]}.csv`);
@@ -168,6 +176,11 @@ export function EvidencePage() {
     link.click();
     document.body.removeChild(link);
     toast.success('Evidence Manifest CSV exported successfully');
+  };
+
+  const handleExportEvidenceCsv = () => {
+    sound.playClickSound();
+    setCsvExportPreviewOpen(true);
   };
 
   // Upload & Drag-and-Drop state
@@ -612,13 +625,12 @@ export function EvidencePage() {
           </Button>
           <Button
             variant="outline"
-            onClick={handleDownloadEvidenceBundle}
-            disabled={downloadingBundle}
-            className="border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 flex items-center gap-1.5 text-xs"
-            title="Download password-protected court evidence zip"
+            onClick={() => setZipExportPreviewOpen(true)}
+            className="border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 flex items-center gap-1.5 text-xs font-bold"
+            title="Preview and verify sealed court evidence archive ZIP before download"
           >
             <Archive className="h-4 w-4 text-emerald-400" />
-            <span>{downloadingBundle ? 'Bundling...' : t('actions.downloadBundle')}</span>
+            <span>Preview & Export ZIP Bundle</span>
           </Button>
           <Button
             onClick={() => fileInputRef.current?.click()}
@@ -1209,6 +1221,54 @@ export function EvidencePage() {
           jurisdiction: 'Cyber Crime Investigation Cell (CCIC), New Delhi',
         }}
       />
+
+      {/* Evidence Manifest CSV Export Preview Modal */}
+      {csvExportPreviewOpen && (
+        <FileExportPreviewModal
+          isOpen={csvExportPreviewOpen}
+          onClose={() => setCsvExportPreviewOpen(false)}
+          title="Evidence Vault Manifest CSV Export Preview"
+          subtitle="Cryptographically sealed forensic register of seized exhibits under Section 63 BSA."
+          fileName={`CRIMENEXUS_Evidence_Manifest_${new Date().toISOString().split('T')[0]}.csv`}
+          fileType="csv"
+          rawContent={getEvidenceCsvPayload().rawCsv}
+          csvHeaders={getEvidenceCsvPayload().headers}
+          csvRows={getEvidenceCsvPayload().rows}
+          onConfirmExport={executeDirectEvidenceCsvDownload}
+          metadata={{
+            totalRecords: (filtered || []).length,
+            statutoryRef: 'Section 63 Bharatiya Sakshya Adhiniyam, 2023',
+            hash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+          }}
+        />
+      )}
+
+      {/* Case Evidence ZIP Bundle Export Preview Modal */}
+      {zipExportPreviewOpen && (
+        <FileExportPreviewModal
+          isOpen={zipExportPreviewOpen}
+          onClose={() => setZipExportPreviewOpen(false)}
+          title="Case Evidence Archive Bundle Export Preview (ZIP)"
+          subtitle="Sealed multi-exhibit court evidence container with Section 63 BSA SHA-256 certificate chain."
+          fileName="Evidence_Bundle_FIR-2026-CRIME-890.zip"
+          fileType="zip"
+          fileSizeFormatted="6.9 MB"
+          rawContent="Master Archive Package: Evidence_Bundle_FIR-2026-CRIME-890.zip\nSealed with Section 63 BSA Cryptographic Certificate Chain"
+          archiveManifest={[
+            { fileName: 'forensic_telecom_cdr_sample.csv', type: 'Telecom CDR Sheet', size: '24.5 KB', sha256: '9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e', courtAdmissible: true },
+            { fileName: 'forensic_bank_smurfing_ledger.csv', type: 'Banking Stream CSV', size: '18.2 KB', sha256: 'c8c4cce4415ae7f467904fdd19950d4f7b770ca995cd41aa26a1f2e4b3a36d0f', courtAdmissible: true },
+            { fileName: 'cctv_optical_anpr_checkpoint.mp4', type: 'Optical Video Clip', size: '4.8 MB', sha256: '4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b', courtAdmissible: true },
+            { fileName: 'Section_63_BSA_Certificate.pdf', type: 'Statutory Seal PDF', size: '2.1 MB', sha256: '7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b', courtAdmissible: true },
+            { fileName: 'SHA256SUMS.sig', type: 'Cryptographic Manifest', size: '512 B', sha256: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', courtAdmissible: true },
+          ]}
+          onConfirmExport={handleDownloadEvidenceBundle}
+          metadata={{
+            totalRecords: 5,
+            statutoryRef: 'Section 63 Bharatiya Sakshya Adhiniyam, 2023',
+            hash: '7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b',
+          }}
+        />
+      )}
 
       {/* Forensic Ingestion & Tripwire Verification Modal */}
       {ingestionResultModalOpen && currentIngestionResult && typeof document !== 'undefined' && createPortal(

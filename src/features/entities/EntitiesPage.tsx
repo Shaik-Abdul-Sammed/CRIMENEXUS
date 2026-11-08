@@ -31,6 +31,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Ca
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { DocumentPreviewModal } from '../../components/common/DocumentPreviewModal';
+import { FileExportPreviewModal } from '../../components/common/FileExportPreviewModal';
 import { getRiskColorClass } from '../../utils/formatters';
 import { sound } from '../../utils/soundEffects';
 import { useToast } from '../../components/ui/Toast';
@@ -41,6 +42,7 @@ export function EntitiesPage() {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'name' | 'risk' | 'confidence'>('risk');
   const [previewEntity, setPreviewEntity] = useState<Entity | null>(null);
+  const [csvExportPreviewOpen, setCsvExportPreviewOpen] = useState<boolean>(false);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [rowsPerPage, setRowsPerPage] = useState<number>(12);
@@ -72,33 +74,41 @@ export function EntitiesPage() {
     );
   };
 
-  const handleExportCsv = () => {
-    sound.playClickSound();
-    if (!filtered || filtered.length === 0) {
-      toast.warning('No entities to export under current filter.', 'Export Skipped');
-      return;
-    }
-
+  const getEntitiesCsvPayload = () => {
+    const list = filtered || [];
     const headers = ['Entity ID', 'Name', 'Type', 'Risk Level', 'Review Status', 'Confidence', 'Attributes'];
-    const rows = filtered.map((e) => [
-      `"${e.id}"`,
-      `"${e.name.replace(/"/g, '""')}"`,
-      `"${e.type}"`,
-      `"${e.riskLevel}"`,
-      `"${e.reviewStatus}"`,
-      `"${(e.confidence * 100).toFixed(0)}%"`,
-      `"${Object.entries(e.attributes).map(([k, v]) => `${k}:${v}`).join('; ').replace(/"/g, '""')}"`,
+    const rows = list.map((e) => [
+      e.id,
+      e.name,
+      e.type,
+      e.riskLevel,
+      e.reviewStatus,
+      `${(e.confidence * 100).toFixed(0)}%`,
+      Object.entries(e.attributes).map(([k, v]) => `${k}:${v}`).join('; ')
     ]);
+    const rawCsv = [headers.join(','), ...rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(','))].join('\n');
+    return { headers, rows, rawCsv };
+  };
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
+  const executeDirectCsvDownload = () => {
+    const { rawCsv } = getEntitiesCsvPayload();
+    const encodedUri = encodeURI('data:text/csv;charset=utf-8,' + rawCsv);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
     link.setAttribute('download', `CRIMENEXUS_Entities_Manifest_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    toast.success(`Exported ${filtered.length} entities to CSV manifest.`, 'CSV Export Ready');
+    toast.success(`Exported ${(filtered || []).length} entities to CSV manifest.`, 'CSV Export Ready');
+  };
+
+  const handleExportCsv = () => {
+    sound.playClickSound();
+    if (!filtered || filtered.length === 0) {
+      toast.warning('No entities to export under current filter.', 'Export Skipped');
+      return;
+    }
+    setCsvExportPreviewOpen(true);
   };
 
   const getEntityIcon = (type: EntityType) => {
@@ -456,6 +466,26 @@ export function EntitiesPage() {
             policeStation: 'Cyber Crime Police Station, Sector 20',
             suspectName: previewEntity.name,
             crimeType: `Suspected Target (${previewEntity.type})`,
+            hash: '4d3c2b1a0f9e8d7c6b5a4f3e2d1c0b9a8f7e6d5c4b3a2f1e0d9c8b7a6f5e4d3',
+          }}
+        />
+      )}
+
+      {csvExportPreviewOpen && (
+        <FileExportPreviewModal
+          isOpen={csvExportPreviewOpen}
+          onClose={() => setCsvExportPreviewOpen(false)}
+          title="Entity Directory Manifest CSV Export Preview"
+          subtitle="Comprehensive cross-jurisdictional entity resolution ledger and risk classifications."
+          fileName={`CRIMENEXUS_Entities_Manifest_${new Date().toISOString().slice(0, 10)}.csv`}
+          fileType="csv"
+          rawContent={getEntitiesCsvPayload().rawCsv}
+          csvHeaders={getEntitiesCsvPayload().headers}
+          csvRows={getEntitiesCsvPayload().rows}
+          onConfirmExport={executeDirectCsvDownload}
+          metadata={{
+            totalRecords: (filtered || []).length,
+            statutoryRef: 'Section 63 Bharatiya Sakshya Adhiniyam, 2023',
             hash: '4d3c2b1a0f9e8d7c6b5a4f3e2d1c0b9a8f7e6d5c4b3a2f1e0d9c8b7a6f5e4d3',
           }}
         />

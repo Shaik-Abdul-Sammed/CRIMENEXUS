@@ -26,6 +26,7 @@ import { formatDate } from '../../utils/formatters';
 import { useToast } from '../../components/ui/Toast';
 import { sound } from '../../utils/soundEffects';
 import { DocumentPreviewModal } from '../../components/common/DocumentPreviewModal';
+import { FileExportPreviewModal } from '../../components/common/FileExportPreviewModal';
 
 export function EvidenceDetailPage() {
   const { id = 'ev-101' } = useParams<{ id: string }>();
@@ -38,6 +39,7 @@ export function EvidenceDetailPage() {
   const [viewerTab, setViewerTab] = useState<'DOCUMENT' | 'HEX' | 'CERTIFICATE' | 'MEDIA'>('DOCUMENT');
   const [copiedHash, setCopiedHash] = useState(false);
   const [certificatePreviewOpen, setCertificatePreviewOpen] = useState(false);
+  const [txtExportPreviewOpen, setTxtExportPreviewOpen] = useState(false);
 
   // Fallback direct backend fetch to guarantee resolution under any ID scheme
   useEffect(() => {
@@ -111,9 +113,8 @@ export function EvidenceDetailPage() {
     }
   };
 
-  const handleExportCertificate = () => {
-    sound.playSuccessChime();
-    const certificateText = `GOVERNMENT OF INDIA - MINISTRY OF HOME AFFAIRS
+  const getCertificateText = () => {
+    return `GOVERNMENT OF INDIA - MINISTRY OF HOME AFFAIRS
 CENTRAL FORENSIC SCIENCE LABORATORY (CFSL) / CCTNS EVIDENCE REPOSITORY
 ========================================================================
 CERTIFICATE OF ELECTRONIC EVIDENCE UNDER SECTION 63 BNS / 65B IEA
@@ -142,17 +143,11 @@ Certified By:
 Digital Evidence Custodian, Special Cyber Crime Branch
 [STAMP: SEC 63 BSA ADMISSIBLE IN EVIDENCE]
 `;
+  };
 
-    const blob = new Blob([certificateText], { type: 'text/plain;charset=utf-8' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `Forensic_Cert_${item.evidenceNumber}_Sec63BSA.txt`);
-    document.body.appendChild(link);
-    link.click();
-    link.parentNode?.removeChild(link);
-    window.URL.revokeObjectURL(url);
-    toast.success('Downloaded Section 63 BSA Digital Evidence Certificate.', 'Certificate Generated');
+  const handleExportCertificate = () => {
+    sound.playClickSound();
+    setTxtExportPreviewOpen(true);
   };
 
   return (
@@ -199,8 +194,9 @@ Digital Evidence Custodian, Special Cyber Crime Branch
             onClick={handleExportCertificate}
             className="border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 flex items-center gap-1.5"
             icon={<Download className="h-4 w-4" />}
+            title="Preview and download formal Section 63 BSA certificate text"
           >
-            Export Sec 63 (.txt)
+            Preview & Export Sec 63 (.txt)
           </Button>
         </div>
       </div>
@@ -562,6 +558,18 @@ Digital Evidence Custodian, Special Cyber Crime Branch
           sourceReference: item.sourceReference,
           timestamp: item.timestamp,
         }}
+      />
+
+      {/* SECTION 63 BSA TEXT EXPORT PREVIEW MODAL */}
+      <FileExportPreviewModal
+        isOpen={txtExportPreviewOpen}
+        onClose={() => setTxtExportPreviewOpen(false)}
+        fileName={`Forensic_Cert_${item.evidenceNumber}_Sec63BSA.txt`}
+        fileType="txt"
+        title="Section 63 BSA Digital Evidence Certificate"
+        subtitle={`Court-admissible certificate of electronic evidence for exhibit ${item.evidenceNumber}`}
+        rawContent={getCertificateText()}
+        expectedHash={item.hash || '7f83b1657ff1fc53b9275bf9754168e3314051a89c31be4d8f57f4955b939103'}
       />
     </div>
   );

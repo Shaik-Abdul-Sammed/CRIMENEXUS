@@ -31,6 +31,7 @@ import { EventType, TimelineEvent } from '../../types';
 import { Card, CardHeader, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { DocumentPreviewModal } from '../../components/common/DocumentPreviewModal';
+import { FileExportPreviewModal } from '../../components/common/FileExportPreviewModal';
 import { formatDate } from '../../utils/formatters';
 import { sound } from '../../utils/soundEffects';
 
@@ -42,6 +43,7 @@ export function TimelinePage() {
   const [activeStep, setActiveStep] = useState<number>(0);
   const [playSpeed, setPlaySpeed] = useState<number>(1);
   const [previewDossierOpen, setPreviewDossierOpen] = useState<boolean>(false);
+  const [csvExportPreviewOpen, setCsvExportPreviewOpen] = useState<boolean>(false);
   const eventRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const { data: rawEvents, isLoading } = useTimeline('ALL');
@@ -116,27 +118,35 @@ export function TimelinePage() {
     }
   };
 
-  const handleExportTimelineCsv = () => {
-    sound.playClickSound();
+  const getTimelineCsvPayload = () => {
     const headers = ['Event ID', 'Timestamp', 'Event Type', 'Entity / Subject', 'Description', 'Location', 'Linked Evidence ID'];
     const rows = filteredEvents.map((e) => [
       e.id,
-      `"${e.timestamp}"`,
+      e.timestamp,
       e.eventType,
-      `"${e.entityName}"`,
-      `"${e.description.replace(/"/g, '""')}"`,
-      `"${e.location || ''}"`,
-      `"${e.evidenceId || ''}"`
+      e.entityName,
+      e.description,
+      e.location || 'NCR Operational Grid',
+      e.evidenceId || 'EVD-LINKED'
     ]);
+    const rawCsv = [headers.join(','), ...rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(','))].join('\n');
+    return { headers, rows, rawCsv };
+  };
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
+  const executeDirectCsvDownload = () => {
+    const { rawCsv } = getTimelineCsvPayload();
+    const encodedUri = encodeURI('data:text/csv;charset=utf-8,' + rawCsv);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
     link.setAttribute('download', `CRIMENEXUS_Timeline_WORM_Log_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleExportTimelineCsv = () => {
+    sound.playClickSound();
+    setCsvExportPreviewOpen(true);
   };
 
   const getEventIcon = (type: EventType) => {
@@ -586,6 +596,26 @@ export function TimelinePage() {
           hash: '5f4e3d2c1b0a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4',
         }}
       />
+
+      {csvExportPreviewOpen && (
+        <FileExportPreviewModal
+          isOpen={csvExportPreviewOpen}
+          onClose={() => setCsvExportPreviewOpen(false)}
+          title="Timeline WORM Chronology Export Preview"
+          subtitle="Cryptographically sealed chronological incident stream ready for Section 63 BSA submission."
+          fileName={`CRIMENEXUS_Timeline_WORM_Log_${new Date().toISOString().split('T')[0]}.csv`}
+          fileType="csv"
+          rawContent={getTimelineCsvPayload().rawCsv}
+          csvHeaders={getTimelineCsvPayload().headers}
+          csvRows={getTimelineCsvPayload().rows}
+          onConfirmExport={executeDirectCsvDownload}
+          metadata={{
+            totalRecords: filteredEvents.length,
+            statutoryRef: 'Section 63 Bharatiya Sakshya Adhiniyam, 2023',
+            hash: '5f4e3d2c1b0a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4',
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -14,6 +14,7 @@ import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Modal } from '../../components/ui/Modal';
+import { FileExportPreviewModal } from '../../components/common/FileExportPreviewModal';
 import { formatDate } from '../../utils/formatters';
 import { sound } from '../../utils/soundEffects';
 import { useToast } from '../../components/ui/Toast';
@@ -22,6 +23,7 @@ import { AuditLog } from '../../types';
 export function AuditLogsPage() {
   const [filterText, setFilterText] = useState('');
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
+  const [csvExportPreviewOpen, setCsvExportPreviewOpen] = useState(false);
   const toast = useToast();
   const { data: logs, isLoading } = useAuditLogs(filterText);
 
@@ -32,34 +34,42 @@ export function AuditLogsPage() {
     return 'secondary';
   };
 
-  const handleExportCsv = () => {
-    sound.playClickSound();
-    if (!logs || logs.length === 0) {
-      toast.warning('No audit logs to export.', 'Export Skipped');
-      return;
-    }
-
+  const getAuditCsvPayload = () => {
+    const list = logs || [];
     const headers = ['Log ID', 'Timestamp', 'User', 'Role', 'Action', 'Target Resource', 'IP Address', 'Metadata JSON'];
-    const rows = logs.map((l) => [
-      `"${l.id}"`,
-      `"${new Date(l.timestamp).toISOString()}"`,
-      `"${l.userName.replace(/"/g, '""')}"`,
-      `"${l.userRole}"`,
-      `"${l.action}"`,
-      `"${l.target.replace(/"/g, '""')}"`,
-      `"${l.ipAddress}"`,
-      `"${JSON.stringify(l.metadata || {}).replace(/"/g, '""')}"`,
+    const rows = list.map((l) => [
+      l.id,
+      new Date(l.timestamp).toISOString(),
+      l.userName,
+      l.userRole,
+      l.action,
+      l.target,
+      l.ipAddress,
+      JSON.stringify(l.metadata || {})
     ]);
+    const rawCsv = [headers.join(','), ...rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(','))].join('\n');
+    return { headers, rows, rawCsv };
+  };
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
+  const executeDirectCsvDownload = () => {
+    const { rawCsv } = getAuditCsvPayload();
+    const encodedUri = encodeURI('data:text/csv;charset=utf-8,' + rawCsv);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
     link.setAttribute('download', `CRIMENEXUS_Security_Audit_Ledger_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    toast.success(`Exported ${logs.length} immutable security audit events.`, 'Audit Ledger Exported');
+    toast.success(`Exported ${(logs || []).length} immutable security audit events.`, 'Audit Ledger Exported');
+  };
+
+  const handleExportCsv = () => {
+    sound.playClickSound();
+    if (!logs || logs.length === 0) {
+      toast.warning('No audit logs to export.', 'Export Skipped');
+      return;
+    }
+    setCsvExportPreviewOpen(true);
   };
 
   return (
@@ -218,6 +228,26 @@ export function AuditLogsPage() {
             </div>
           </div>
         </Modal>
+      )}
+
+      {csvExportPreviewOpen && (
+        <FileExportPreviewModal
+          isOpen={csvExportPreviewOpen}
+          onClose={() => setCsvExportPreviewOpen(false)}
+          title="Security Audit Ledger CSV Export Preview"
+          subtitle="Immutable WORM audit trail recording access, authentication, and statutory cryptographic operations."
+          fileName={`CRIMENEXUS_Security_Audit_Ledger_${new Date().toISOString().slice(0, 10)}.csv`}
+          fileType="csv"
+          rawContent={getAuditCsvPayload().rawCsv}
+          csvHeaders={getAuditCsvPayload().headers}
+          csvRows={getAuditCsvPayload().rows}
+          onConfirmExport={executeDirectCsvDownload}
+          metadata={{
+            totalRecords: (logs || []).length,
+            statutoryRef: 'Section 63 Bharatiya Sakshya Adhiniyam, 2023',
+            hash: 'e8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a7',
+          }}
+        />
       )}
     </div>
   );

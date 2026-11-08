@@ -262,7 +262,7 @@ export function ForensicClueReplayModal({
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-md animate-in fade-in"
+      className="fixed inset-0 z-[99999] overflow-y-auto bg-black/85 backdrop-blur-md animate-in fade-in"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           sound.playClickSound();
@@ -270,9 +270,18 @@ export function ForensicClueReplayModal({
         }
       }}
     >
-      <div className="relative w-full max-w-6xl max-h-[92vh] flex flex-col rounded-2xl border-2 border-primary/50 bg-slate-900 shadow-2xl overflow-hidden text-slate-100">
-        {/* Modal Header */}
-        <div className="p-4 px-6 border-b border-border/80 bg-slate-950 flex flex-wrap items-center justify-between gap-3">
+      <div
+        className="min-h-full flex items-center justify-center p-3 sm:p-5"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            sound.playClickSound();
+            onClose();
+          }
+        }}
+      >
+        <div className="relative w-full max-w-6xl max-h-[90vh] flex flex-col rounded-2xl border-2 border-primary/50 bg-slate-900 shadow-2xl overflow-hidden text-slate-100">
+          {/* Modal Header */}
+          <div className="p-4 px-6 border-b border-border/80 bg-slate-950 flex flex-wrap items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-red-600/20 text-red-400 border border-red-500/40">
               <Shield className="h-6 w-6 animate-pulse" />
@@ -846,7 +855,8 @@ export function ForensicClueReplayModal({
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 
   return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent;
 }

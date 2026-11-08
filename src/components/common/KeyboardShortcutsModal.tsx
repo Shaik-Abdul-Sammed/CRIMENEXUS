@@ -72,7 +72,7 @@ export const KeyboardShortcutsModal: React.FC<KeyboardShortcutsModalProps> = ({
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto"
+      className="fixed inset-0 z-[99999] overflow-y-auto bg-black/85 backdrop-blur-md animate-in fade-in duration-200"
       role="dialog"
       aria-modal="true"
       aria-labelledby="keyboard-shortcuts-title"
@@ -83,7 +83,16 @@ export const KeyboardShortcutsModal: React.FC<KeyboardShortcutsModalProps> = ({
         }
       }}
     >
-      <div className="relative w-full max-w-xl max-h-[88vh] my-auto rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+      <div
+        className="min-h-full flex items-center justify-center p-3 sm:p-5"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            sound.playClickSound();
+            onClose();
+          }
+        }}
+      >
+        <div className="relative w-full max-w-xl max-h-[88vh] rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="shrink-0 flex items-center justify-between p-4 sm:p-5 border-b border-slate-800 bg-slate-950/80">
           <div className="flex items-center gap-3">
@@ -185,7 +194,8 @@ export const KeyboardShortcutsModal: React.FC<KeyboardShortcutsModalProps> = ({
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 
   return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent;
 };

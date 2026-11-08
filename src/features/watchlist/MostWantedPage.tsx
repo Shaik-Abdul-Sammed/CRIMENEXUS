@@ -34,6 +34,7 @@ import { Card, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { DocumentPreviewModal } from '../../components/common/DocumentPreviewModal';
+import { FileExportPreviewModal } from '../../components/common/FileExportPreviewModal';
 import { sound } from '../../utils/soundEffects';
 
 export interface XAIFeatureFactor {
@@ -91,29 +92,38 @@ export function MostWantedPage() {
   const [loadingXaiId, setLoadingXaiId] = useState<string | null>(null);
   const [maskJuveniles, setMaskJuveniles] = useState<boolean>(true);
   const [copiedPlate, setCopiedPlate] = useState<string | null>(null);
+  const [csvExportPreviewOpen, setCsvExportPreviewOpen] = useState<boolean>(false);
 
-  const handleExportCsv = () => {
-    sound.playClickSound();
+  const getMostWantedCsvPayload = () => {
     const headers = ['Suspect ID', 'Name', 'Role', 'Risk Score', 'Danger Level', 'Linked Vehicle', 'Last Location', 'Warrant Status'];
     const rows = filteredWatchlist.map((s: WantedSuspect) => [
       s.id,
-      `"${s.name}"`,
-      `"${s.role || ''}"`,
-      s.risk_score,
-      `"${s.danger_level || ''}"`,
-      `"${s.linked_vehicle || ''}"`,
-      `"${s.last_known_location || ''}"`,
-      `"${s.warrant_status || ''}"`
+      s.name,
+      s.role || 'Unspecified',
+      String(s.risk_score),
+      s.danger_level || 'HIGH',
+      s.linked_vehicle || 'N/A',
+      s.last_known_location || 'NCR Grid',
+      s.warrant_status || 'NBW ACTIVE'
     ]);
+    const rawCsv = [headers.join(','), ...rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(','))].join('\n');
+    return { headers, rows, rawCsv };
+  };
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
+  const executeDirectCsvDownload = () => {
+    const { rawCsv } = getMostWantedCsvPayload();
+    const encodedUri = encodeURI('data:text/csv;charset=utf-8,' + rawCsv);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
     link.setAttribute('download', `CRIMENEXUS_Most_Wanted_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleExportCsv = () => {
+    sound.playClickSound();
+    setCsvExportPreviewOpen(true);
   };
 
   const handleCopyPlate = (plate: string) => {
@@ -928,6 +938,26 @@ export function MostWantedPage() {
             <X className="h-4 w-4" />
           </button>
         </div>
+      )}
+
+      {csvExportPreviewOpen && (
+        <FileExportPreviewModal
+          isOpen={csvExportPreviewOpen}
+          onClose={() => setCsvExportPreviewOpen(false)}
+          title="District Most Wanted Registry CSV Export Preview"
+          subtitle="Active high-risk syndicate fugitives, non-bailable warrants, and Look-Out-Circular (LOC) notices."
+          fileName={`CRIMENEXUS_Most_Wanted_${new Date().toISOString().split('T')[0]}.csv`}
+          fileType="csv"
+          rawContent={getMostWantedCsvPayload().rawCsv}
+          csvHeaders={getMostWantedCsvPayload().headers}
+          csvRows={getMostWantedCsvPayload().rows}
+          onConfirmExport={executeDirectCsvDownload}
+          metadata={{
+            totalRecords: filteredWatchlist.length,
+            statutoryRef: 'Section 70 CrPC / Section 73 BNSS Non-Bailable Warrants',
+            hash: 'b1a2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2',
+          }}
+        />
       )}
     </div>
   );

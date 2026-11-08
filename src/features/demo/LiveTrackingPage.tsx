@@ -64,6 +64,7 @@ import { sound } from '../../utils/soundEffects';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { DocumentPreviewModal } from '../../components/common/DocumentPreviewModal';
 import { ForensicClueReplayModal } from '../forensics/ForensicClueReplayModal';
+import { FileExportPreviewModal } from '../../components/common/FileExportPreviewModal';
 import { useToast } from '../../components/ui/Toast';
 
 // Predefined getaway route coordinates [lon, lat] through Delhi/Noida
@@ -597,6 +598,14 @@ export function LiveTrackingPage() {
     initX: 20,
     initY: 20,
   });
+  const [csvExportPreviewOpen, setCsvExportPreviewOpen] = useState<boolean>(false);
+
+  const getPursuitCsvPayload = () => {
+    return (
+      'Checkpoint,Time,Source,Latitude,Longitude,SpeedKmH,Status\n' +
+      GETAWAY_PATH.map((pt, idx) => `${idx + 1},14:${String(idx * 3).padStart(2, '0')}:00,Yamuna Exp Corridor,${pt[1]},${pt[0]},80,VERIFIED_SEC_63_BSA`).join('\n')
+    );
+  };
 
   const handleHudDragStart = (e: React.MouseEvent | React.TouchEvent) => {
     // If clicking a button inside header, don't initiate drag
@@ -3306,22 +3315,13 @@ export function LiveTrackingPage() {
                   variant="outline"
                   onClick={() => {
                     sound.playClickSound();
-                    const csvContent =
-                      'data:text/csv;charset=utf-8,Checkpoint,Time,Source,Latitude,Longitude,SpeedKmH,Status\n' +
-                      GETAWAY_PATH.map((pt, idx) => `${idx + 1},14:${String(idx * 3).padStart(2, '0')}:00,Yamuna Exp Corridor,${pt[1]},${pt[0]},80,VERIFIED_SEC_63_BSA`).join('\n');
-                    const encodedUri = encodeURI(csvContent);
-                    const link = document.createElement('a');
-                    link.setAttribute('href', encodedUri);
-                    link.setAttribute('download', 'Pursuit_Telemetry_TS09AB1234_Sec63BSA.csv');
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    toast.success('Pursuit telemetry CSV exported with Section 63 BSA audit metadata.', 'Export Complete');
+                    setCsvExportPreviewOpen(true);
                   }}
                   className="text-xs flex items-center gap-1.5"
+                  title="Preview and export pursuit telemetry CSV under Section 63 BSA"
                 >
                   <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-400" />
-                  <span>Export Telemetry CSV</span>
+                  <span>Preview & Export Telemetry CSV</span>
                 </Button>
 
                 <Button
@@ -4549,6 +4549,18 @@ export function LiveTrackingPage() {
           }}
         />
       )}
+
+      {/* PURSUIT TELEMETRY CSV EXPORT PREVIEW MODAL */}
+      <FileExportPreviewModal
+        isOpen={csvExportPreviewOpen}
+        onClose={() => setCsvExportPreviewOpen(false)}
+        fileName="Pursuit_Telemetry_TS09AB1234_Sec63BSA.csv"
+        fileType="csv"
+        title="Pursuit Telemetry GPS & Speed Log"
+        subtitle="Live GPS breadcrumbs, speed velocity readings, and corridor checkpoint coordinates under Section 63 BSA"
+        rawContent={getPursuitCsvPayload()}
+        expectedHash="7f83b1657ff1fc53b9275bf9754168e3314051a89c31be4d8f57f4955b939103"
+      />
     </div>
   );
 }

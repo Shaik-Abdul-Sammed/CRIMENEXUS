@@ -216,7 +216,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-border bg-card/98 px-3 sm:px-4 md:px-6 shadow-sm">
+      <header className="sticky top-0 z-50 flex h-16 w-full items-center justify-between border-b border-border bg-card/98 px-3 sm:px-4 md:px-6 shadow-sm">
       {/* Left: Responsive Breadcrumbs with overflow protection */}
       <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-muted-foreground min-w-0 shrink overflow-hidden">
         <Link to="/dashboard" className="hover:text-foreground font-semibold transition-colors shrink-0 flex items-center gap-1">

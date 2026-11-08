@@ -82,7 +82,7 @@ export const HashValidatorModal: React.FC<HashValidatorModalProps> = ({
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-[99999] overflow-y-auto bg-black/85 backdrop-blur-sm animate-in fade-in duration-200"
       role="dialog"
       aria-modal="true"
       aria-labelledby="hash-validator-title"
@@ -90,9 +90,15 @@ export const HashValidatorModal: React.FC<HashValidatorModalProps> = ({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="relative w-full max-w-2xl rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl flex flex-col overflow-hidden my-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-800 bg-slate-950/60">
+      <div
+        className="min-h-full flex items-center justify-center p-3 sm:p-5"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
+      >
+        <div className="relative w-full max-w-2xl rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl flex flex-col overflow-hidden max-h-[90vh]">
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-800 bg-slate-950/60 shrink-0">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-400">
               <FileCheck2 className="h-6 w-6" />
@@ -269,7 +275,8 @@ export const HashValidatorModal: React.FC<HashValidatorModalProps> = ({
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 
   return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent;
 };

@@ -64,46 +64,53 @@ export function Modal({
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-[99999] overflow-y-auto bg-black/75 backdrop-blur-sm animate-in fade-in duration-200"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div
-        ref={modalRef}
-        className={cn(
-          'relative w-full rounded-xl border border-border bg-card text-card-foreground shadow-2xl overflow-hidden focus:outline-none',
-          maxWidth || sizeClasses[size],
-          className
-        )}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        aria-describedby={descriptionId}
-        tabIndex={-1}
+        className="min-h-full flex items-center justify-center p-3 sm:p-5"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
       >
-        <div className="flex items-center justify-between p-5 border-b border-border">
-          <div>
-            {title && (
-              <h2 id={titleId} className="text-lg font-semibold text-foreground">
-                {title}
-              </h2>
-            )}
-            {description && (
-              <p id={descriptionId} className="text-sm text-muted-foreground mt-0.5">
-                {description}
-              </p>
-            )}
+        <div
+          ref={modalRef}
+          className={cn(
+            'relative w-full rounded-xl border border-border bg-card text-card-foreground shadow-2xl overflow-hidden focus:outline-none flex flex-col max-h-[90vh]',
+            maxWidth || sizeClasses[size],
+            className
+          )}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
+          aria-describedby={descriptionId}
+          tabIndex={-1}
+        >
+          <div className="flex items-center justify-between p-5 border-b border-border shrink-0">
+            <div>
+              {title && (
+                <h2 id={titleId} className="text-lg font-semibold text-foreground">
+                  {title}
+                </h2>
+              )}
+              {description && (
+                <p id={descriptionId} className="text-sm text-muted-foreground mt-0.5">
+                  {description}
+                </p>
+              )}
+            </div>
+            <button
+              onClick={onClose}
+              className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+              aria-label="Close modal dialog"
+            >
+              <X className="w-5 h-5" aria-hidden="true" />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
-            aria-label="Close modal dialog"
-          >
-            <X className="w-5 h-5" aria-hidden="true" />
-          </button>
+          <div className="p-5 flex-1 min-h-0 overflow-y-auto overscroll-contain modal-body-scroll">{children}</div>
         </div>
-        <div className="p-5 max-h-[calc(90vh-100px)] overflow-y-auto overscroll-contain modal-body-scroll">{children}</div>
       </div>
     </div>
   );
