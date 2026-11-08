@@ -352,6 +352,7 @@ export function MapIntelligencePage() {
   ]);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [isLegendOpen, setIsLegendOpen] = useState<boolean>(false);
+  const [showSmartMeterHUD, setShowSmartMeterHUD] = useState<boolean>(false);
   const [isLocatingUser, setIsLocatingUser] = useState<boolean>(false);
   const [userDeviceLoc, setUserDeviceLoc] = useState<{ lat: number; lon: number } | null>(null);
   const [isCalibratingLocation, setIsCalibratingLocation] = useState<boolean>(false);
@@ -2431,6 +2432,7 @@ export function MapIntelligencePage() {
               if (mapEngine === 'python') setMapEngine('maplibre');
               const next = !showSmartMeters;
               setShowSmartMeters(next);
+              setShowSmartMeterHUD(next);
               if (next) {
                 sound.playRadarPing();
                 setSelectedLocation({
@@ -2438,8 +2440,8 @@ export function MapIntelligencePage() {
                   title: '⚡ Smart Meter Anomaly: SM-NOIDA-9811',
                   locationType: 'CRIME_SCENE',
                   entityType: 'LOCATION',
-                  latitude: 28.6355,
-                  longitude: 77.3720,
+                  latitude: 28.6280,
+                  longitude: 77.3649,
                   address: 'Sector 62 Safehouse Hideout, Noida',
                   timestamp: new Date().toISOString(),
                   caseId: 'IOT-GRID-MONITOR',
@@ -2454,10 +2456,10 @@ export function MapIntelligencePage() {
                   },
                 });
                 if (mapRef.current) {
-                  mapRef.current.flyTo({ center: [77.3720, 28.6355], zoom: 14.5, duration: 850 });
+                  mapRef.current.flyTo({ center: [77.3649, 28.6280], zoom: 14.8, duration: 850 });
                 }
                 toast.success(
-                  '⚡ Smart Meter Grid Online: Sector 62 Safehouse power surge (+420.5%) detected and pinpointed.',
+                  '⚡ Smart Meter Grid Online: Sector 62 Safehouse power surge (+420.5%) detected and stream telemetry opened.',
                   'IoT Grid Telemetry'
                 );
               }
@@ -2805,20 +2807,20 @@ export function MapIntelligencePage() {
         </div>
       )}
 
-      {/* Dedicated Jurisdictional Entities & Tracked Units Directory: Unit ID ➔ Officer Hierarchy */}
-      <div className="p-3 rounded-xl border border-border/80 bg-card/95 shadow-md space-y-2.5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/40 pb-2">
-          <div className="flex items-center gap-2">
+      {/* Dedicated Police ID & Jurisdictional Units Directory: Which Police ID Represents Whom */}
+      <div className="p-3.5 rounded-xl border border-border/80 bg-card/95 shadow-md space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/40 pb-2.5">
+          <div className="flex items-center gap-2 flex-wrap">
             <Shield className="h-4 w-4 text-blue-400" />
-            <span className="text-xs font-bold text-foreground tracking-wide uppercase">
-              Tactical Unit & Jurisdictional Registry (Unit ID ➔ Officer In-Charge Hierarchy)
+            <span className="text-xs font-black text-foreground tracking-wide uppercase">
+              POLICE ID & OFFICER DIRECTORY • WHO EACH POLICE ID REPRESENTS
             </span>
-            <Badge variant="outline" className="text-[10px] text-cyan-400 border-cyan-500/30">
-              9 Police Interceptors (POL-01 to POL-09) • 1 Wanted Target (CRIM-01)
+            <Badge variant="outline" className="text-[10px] text-cyan-400 border-cyan-500/40 bg-cyan-950/30">
+              9 Verified Police Commands (POL-01 to POL-09) • 1 Active Criminal Target (CRIM-01)
             </Badge>
           </div>
-          <span className="text-[10px] text-muted-foreground hidden md:inline">
-            Click 📍 Locate to focus unit, or 🚔 Dispatch to draw tactical intercept vector from that squad
+          <span className="text-[10px] text-muted-foreground hidden lg:inline font-mono">
+            Official CCTNS Jurisdictional Hierarchy • Click [📍 Locate] or [🚔 Intercept]
           </span>
         </div>
 
@@ -3125,6 +3127,122 @@ export function MapIntelligencePage() {
                 />
               </ErrorBoundary>
             </div>
+
+            {/* Permanent Floating Live GPS Intercept Action Button on Map Canvas */}
+            <button
+              onClick={handleInterceptFromLiveLocation}
+              className="absolute bottom-5 left-5 z-20 px-3.5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs flex items-center gap-2 shadow-2xl shadow-indigo-950/90 border border-indigo-400/50 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+              title="Calculate tactical road intercept vector from your live device GPS coordinates"
+            >
+              <Navigation className="h-4 w-4 animate-pulse text-indigo-200" />
+              <span>📡 Live GPS Intercept</span>
+            </button>
+
+            {/* Quick Reopen Alert Banner Button if Closed */}
+            {!anprAlertOpen && (
+              <button
+                onClick={() => {
+                  sound.playClickSound();
+                  setAnprAlertOpen(true);
+                }}
+                className="absolute top-4 left-4 z-20 px-3 py-1.5 rounded-lg bg-red-950/90 hover:bg-red-900 border border-red-500/60 text-red-200 text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-red-950/60 transition-all cursor-pointer"
+                title="Reopen Active Pursuit Alert for Scorpio TS 09 AB 1234"
+              >
+                <Radio className="h-3.5 w-3.5 text-red-400 animate-pulse" />
+                <span>🚨 Reopen Pursuit Alert (TS 09 AB 1234)</span>
+              </button>
+            )}
+
+            {/* Feature: Live Smart Meter IoT Grid Stream Telemetry HUD */}
+            {showSmartMeters && showSmartMeterHUD && (
+              <div className="absolute top-4 right-14 z-30 w-80 md:w-96 rounded-2xl border-2 border-rose-500/80 bg-slate-950/95 p-4 shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-top-3 space-y-3">
+                <div className="flex items-center justify-between border-b border-rose-500/40 pb-2.5">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-rose-600/30 text-rose-400 border border-rose-500/50">
+                      <Activity className="h-4 w-4 animate-pulse" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-white tracking-wide flex items-center gap-1.5">
+                        <span>SMART METER STREAM</span>
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500" />
+                        </span>
+                      </h4>
+                      <p className="text-[10px] text-rose-300 font-mono">UPPCL 33kV Grid • Sector 62 Safehouse</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowSmartMeterHUD(false)}
+                    className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
+                    title="Dismiss Stream HUD"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+
+                {/* Live Stream Telemetry Metrics */}
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="p-2.5 rounded-xl bg-slate-900/90 border border-rose-500/30 space-y-0.5">
+                    <div className="text-[10px] text-slate-400 font-semibold uppercase">Power Spike</div>
+                    <div className="text-base font-black text-rose-400 font-mono">+420.5%</div>
+                    <div className="text-[9px] text-slate-400">0.38 &rarr; 4.82 kWh</div>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-slate-900/90 border border-rose-500/30 space-y-0.5">
+                    <div className="text-[10px] text-slate-400 font-semibold uppercase">Fugitive Match</div>
+                    <div className="text-base font-black text-emerald-400 font-mono">98.4%</div>
+                    <div className="text-[9px] text-emerald-300">Physical Presence Locked</div>
+                  </div>
+                </div>
+
+                {/* Live Stream Gauge / Meter Bar */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[10px] text-slate-300 font-mono">
+                    <span>Grid Load Factor:</span>
+                    <span className="text-rose-400 font-bold">4.82 kWh (Critical)</span>
+                  </div>
+                  <div className="h-2.5 w-full bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+                    <div className="h-full bg-gradient-to-r from-amber-500 via-rose-500 to-red-600 rounded-full animate-pulse" style={{ width: '92%' }} />
+                  </div>
+                  <div className="flex justify-between text-[8px] text-slate-400 font-mono">
+                    <span>0 kWh (Idle)</span>
+                    <span>2.5 kWh (Baseline)</span>
+                    <span className="text-rose-400">5.0 kWh (Max Surge)</span>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      sound.playAlertBeep();
+                      const target = OSM_POLICE_STATIONS[3] || OSM_POLICE_STATIONS[0];
+                      fetchInterceptRoute(28.6280, 77.3649, target);
+                      toast.success('Dispatched Sector 62 SWAT & PCR-03 Interceptor to Safehouse hideout.', 'Raid Vector Dispatched');
+                    }}
+                    className="h-8 text-[11px] bg-rose-600 hover:bg-rose-700 text-white font-extrabold flex items-center justify-center gap-1 shadow-lg shadow-rose-950/60"
+                  >
+                    <Shield className="h-3.5 w-3.5" />
+                    <span>Raid Safehouse</span>
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      sound.playClickSound();
+                      if (mapRef.current) {
+                        mapRef.current.flyTo({ center: [77.3649, 28.6280], zoom: 15.5, duration: 800 });
+                      }
+                    }}
+                    className="h-8 text-[11px] border-slate-700 text-slate-200 hover:bg-slate-900 font-bold flex items-center justify-center gap-1"
+                  >
+                    <Locate className="h-3.5 w-3.5 text-rose-400" />
+                    <span>Center Meter</span>
+                  </Button>
+                </div>
+              </div>
+            )}
 
             {/* Feature 4: Active Geofence Targets Overlay - Compact Bottom-Right Placement */}
             {geofenceActive && (

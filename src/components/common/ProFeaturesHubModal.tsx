@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import {
   Sparkles,
@@ -193,9 +194,31 @@ export function ProFeaturesHubModal({ isOpen, onClose, initialTab = 'FEATURES' }
     navigate(route);
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-5xl bg-slate-900 border border-primary/50 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') onClose();
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.body.style.overflow = 'unset';
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [isOpen, onClose]);
+
+  const modalContent = (
+    <div
+      className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          sound.playClickSound();
+          onClose();
+        }
+      }}
+    >
+      <div className="relative w-full max-w-5xl bg-slate-900 border border-primary/50 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] my-auto">
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-border/80 bg-slate-950 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -463,4 +486,6 @@ export function ProFeaturesHubModal({ isOpen, onClose, initialTab = 'FEATURES' }
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent;
 }

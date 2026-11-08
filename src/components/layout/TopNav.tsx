@@ -215,9 +215,10 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
   }, [navigate, setGlobalSearchOpen]);
 
   return (
-    <header className="sticky top-0 z-20 flex h-16 w-full items-center justify-between border-b border-border bg-card/95 px-3 sm:px-4 md:px-6 backdrop-blur-md overflow-x-hidden">
+    <>
+      <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-border bg-card/98 px-3 sm:px-4 md:px-6 shadow-sm">
       {/* Left: Responsive Breadcrumbs with overflow protection */}
-      <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-muted-foreground min-w-0 max-w-[28%] md:max-w-[35%] lg:max-w-[40%] overflow-hidden">
+      <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-muted-foreground min-w-0 shrink overflow-hidden">
         <Link to="/dashboard" className="hover:text-foreground font-semibold transition-colors shrink-0 flex items-center gap-1">
           <span>Home</span>
         </Link>
@@ -240,7 +241,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
       </div>
 
       {/* Right: Consolidated Tools & Actions (Responsive & Overflow Protected) */}
-      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 max-w-[72%] md:max-w-[65%] lg:max-w-[60%] justify-end">
+      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 justify-end">
         {/* Quick Search Trigger (Modal Launcher) */}
         <button
           onClick={() => setGlobalSearchOpen(true)}
@@ -785,40 +786,29 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           </Button>
         </div>
       </div>
-
-      {/* Panic Lock Screen Modal */}
-      <PanicLockModal isLocked={isPanicLocked} onUnlock={() => setIsPanicLocked(false)} />
-
-      {/* Police Command Demo Showcase Modal */}
-      <PoliceDemoModal isOpen={demoModalOpen} onClose={() => setDemoModalOpen(false)} />
-
-      {/* Investigating Officer Interactive Onboarding Tour */}
-      <OnboardingTour isOpen={tourOpen} onClose={() => setTourOpen(false)} />
-
-      {/* 15 Statutory Criminal Rules & Remand Guard Modal */}
-      <StatutoryRulesModal
-        isOpen={statutoryRulesOpen}
-        onClose={() => setStatutoryRulesOpen(false)}
-      />
-
-      {/* Global Keyboard Shortcuts Modal */}
-      <KeyboardShortcutsModal
-        isOpen={shortcutsOpen}
-        onClose={() => setShortcutsOpen(false)}
-        onOpenRules={() => setStatutoryRulesOpen(true)}
-      />
-
-      {/* What's New v2.4 Changelog Modal */}
-      <WhatsNewChangelogModal
-        isOpen={whatsNewOpen}
-        onClose={() => setWhatsNewOpen(false)}
-      />
-
-      {/* 10 Pro Features & Capabilities Hub Modal */}
-      <ProFeaturesHubModal
-        isOpen={featuresHubOpen}
-        onClose={() => setFeaturesHubOpen(false)}
-      />
     </header>
-  );
+
+    {/* Top-Level Portal Modals (rendered as siblings outside header to eliminate CSS containment/stacking traps) */}
+    <PanicLockModal isLocked={isPanicLocked} onUnlock={() => setIsPanicLocked(false)} />
+    <PoliceDemoModal isOpen={demoModalOpen} onClose={() => setDemoModalOpen(false)} />
+    <OnboardingTour isOpen={tourOpen} onClose={() => setTourOpen(false)} />
+    <StatutoryRulesModal
+      isOpen={statutoryRulesOpen}
+      onClose={() => setStatutoryRulesOpen(false)}
+    />
+    <KeyboardShortcutsModal
+      isOpen={shortcutsOpen}
+      onClose={() => setShortcutsOpen(false)}
+      onOpenRules={() => setStatutoryRulesOpen(true)}
+    />
+    <WhatsNewChangelogModal
+      isOpen={whatsNewOpen}
+      onClose={() => setWhatsNewOpen(false)}
+    />
+    <ProFeaturesHubModal
+      isOpen={featuresHubOpen}
+      onClose={() => setFeaturesHubOpen(false)}
+    />
+  </>
+);
 }

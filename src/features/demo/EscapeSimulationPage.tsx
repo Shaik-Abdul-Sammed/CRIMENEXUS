@@ -26,12 +26,15 @@ import {
   ExternalLink,
   Volume2,
   Lock,
-  Navigation
+  Navigation,
+  Eye,
+  FileCheck2
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Modal } from '../../components/ui/Modal';
+import { DocumentPreviewModal } from '../../components/common/DocumentPreviewModal';
 import { sound } from '../../utils/soundEffects';
 import { useToast } from '../../components/ui/Toast';
 import { Link } from 'react-router-dom';
@@ -144,6 +147,7 @@ export function EscapeSimulationPage() {
   const [showInterceptModal, setShowInterceptModal] = useState<boolean>(false);
   const [remandTimerSeconds, setRemandTimerSeconds] = useState<number>(24 * 3600);
   const [simulationCompleted, setSimulationCompleted] = useState<boolean>(false);
+  const [previewDossierOpen, setPreviewDossierOpen] = useState<boolean>(false);
 
   // Remand 24-Hour Countdown Clock
   useEffect(() => {
@@ -486,6 +490,20 @@ export function EscapeSimulationPage() {
           >
             <RotateCcw className="h-3.5 w-3.5" />
             <span>Reset</span>
+          </Button>
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              sound.playClickSound();
+              setPreviewDossierOpen(true);
+            }}
+            className="border-indigo-500/50 text-indigo-300 hover:bg-indigo-950/40 text-xs font-bold flex items-center gap-1.5"
+            title="Preview Escape Trajectory Dossier & Case Synthesis"
+          >
+            <Eye className="h-3.5 w-3.5 text-indigo-400" />
+            <span>Preview Dossier</span>
           </Button>
 
           <Link to="/digital-footprint">
@@ -922,6 +940,23 @@ export function EscapeSimulationPage() {
           </div>
         </div>
       </Modal>
+
+      <DocumentPreviewModal
+        isOpen={previewDossierOpen}
+        onClose={() => setPreviewDossierOpen(false)}
+        title="Fugitive Pursuit & Escape Trajectory Dossier"
+        subtitle="FIR-2026-DEL-9812 • Accused: Vikram Malhotra (WANTED) • Intercept Toll KM 48"
+        caseNumber="FIR-2026-DEL-9812"
+        pdfUrl="/CRIMENEXUS_Police_Department_Deployment_Dossier.pdf"
+        fileName="Escape_Trajectory_Dossier_FIR-2026-DEL-9812.pdf"
+        metadata={{
+          ioName: 'Inspector Rajesh Varma',
+          policeStation: 'Jewar Police Station (Yamuna Expressway Command)',
+          suspectName: 'Vikram Malhotra @ Vicky (Scorpio TS 09 AB 1234)',
+          crimeType: 'Armed Getaway, FASTag Toll Evasion & Organized Extortion',
+          hash: '8f4a1c9d2e3b5a7c0f1e2d4b6a8c0e2f4a6b8c0d2e4f6a8b0c2d4e6f8a0b2c4',
+        }}
+      />
     </div>
   );
 }

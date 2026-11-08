@@ -36,6 +36,7 @@ import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Modal } from '../../components/ui/Modal';
+import { DocumentPreviewModal } from '../../components/common/DocumentPreviewModal';
 import { sound } from '../../utils/soundEffects';
 import { useToast } from '../../components/ui/Toast';
 
@@ -146,6 +147,7 @@ export function DigitalFootprintPage() {
   // Warrant Modal State
   const [warrantModalOpen, setWarrantModalOpen] = useState<boolean>(false);
   const [remandSeconds, setRemandSeconds] = useState<number>(24 * 3600);
+  const [previewDossierOpen, setPreviewDossierOpen] = useState<boolean>(false);
 
   // Remand Countdown Timer
   useEffect(() => {
@@ -610,6 +612,20 @@ export function DigitalFootprintPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              sound.playClickSound();
+              setPreviewDossierOpen(true);
+            }}
+            className="border-indigo-500/50 text-indigo-300 hover:bg-indigo-950/40 text-xs font-bold flex items-center gap-1.5"
+            title="Preview Multi-Vector Digital Footprint Dossier"
+          >
+            <Eye className="h-3.5 w-3.5 text-indigo-400" />
+            <span>Preview Dossier</span>
+          </Button>
+
           <Button
             size="sm"
             onClick={handleRunOmniTrace}
@@ -1108,6 +1124,23 @@ export function DigitalFootprintPage() {
           </div>
         </div>
       </Modal>
+
+      <DocumentPreviewModal
+        isOpen={previewDossierOpen}
+        onClose={() => setPreviewDossierOpen(false)}
+        title="Multi-Vector Digital Footprint & Telemetry Dossier"
+        subtitle="Suspect: Rajan Verma • Safehouse: Sector 62, Noida • Fused 96 Data Feeds"
+        caseNumber="FIR-2026-CRIME-890"
+        pdfUrl="/CRIMENEXUS_Police_Department_Deployment_Dossier.pdf"
+        fileName="Digital_Footprint_Dossier_Rajan_Verma.pdf"
+        metadata={{
+          ioName: 'Inspector V. K. Sharma',
+          policeStation: 'Cyber Crime Police Station, Sector 20, Noida',
+          suspectName: 'Rajan Verma (Syndicate Kingpin)',
+          crimeType: 'Telecom Spoofing, Fastag Evasion, Safehouse IoT Spikes',
+          hash: '6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5',
+        }}
+      />
     </div>
   );
 }

@@ -82,11 +82,18 @@ export function App() {
                 <Route path="/graph" element={<Navigate to="/network-graph" replace />} />
                 <Route path="/timeline" element={<TimelinePage />} />
                 <Route path="/map" element={<MapIntelligencePage />} />
+                <Route path="/map-intelligence" element={<Navigate to="/map" replace />} />
                 <Route path="/live-tracking" element={<LiveTrackingPage />} />
+                <Route path="/tracking" element={<Navigate to="/live-tracking" replace />} />
                 <Route path="/escape-demo" element={<EscapeSimulationPage />} />
+                <Route path="/escape" element={<Navigate to="/escape-demo" replace />} />
                 <Route path="/digital-footprint" element={<DigitalFootprintPage />} />
+                <Route path="/footprint" element={<Navigate to="/digital-footprint" replace />} />
                 <Route path="/data-lake" element={<Navigate to="/digital-footprint" replace />} />
                 <Route path="/forensics" element={<Navigate to="/live-tracking?tab=forensics" replace />} />
+                <Route path="/dossier" element={<Navigate to="/reports" replace />} />
+                <Route path="/evidence-vault" element={<Navigate to="/evidence" replace />} />
+                <Route path="/intel" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/most-wanted" element={<MostWantedPage />} />
                 <Route path="/drafting" element={<DraftingPage />} />
                 <Route path="/ai-assistant" element={<AIAssistantPage />} />

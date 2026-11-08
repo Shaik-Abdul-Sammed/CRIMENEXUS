@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { Clock, AlertOctagon, Scale, CheckCircle2, RefreshCw } from 'lucide-react';
+import { Clock, AlertOctagon, Scale, CheckCircle2, RefreshCw, Eye } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
+import { DocumentPreviewModal } from '../../components/common/DocumentPreviewModal';
+import { sound } from '../../utils/soundEffects';
 
 interface CustodyItem {
   id: number;
@@ -59,6 +61,7 @@ export function RemandDeadlinesWidget() {
   ]);
 
   const [loading, setLoading] = useState(false);
+  const [selectedCaseForPreview, setSelectedCaseForPreview] = useState<CustodyItem | null>(null);
   const isOfflineRef = useRef<boolean>(false);
   const consecutiveFailuresRef = useRef<number>(0);
 
@@ -200,6 +203,17 @@ export function RemandDeadlinesWidget() {
                   </div>
 
                   <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      onClick={() => {
+                        sound.playClickSound();
+                        setSelectedCaseForPreview(c);
+                      }}
+                      className="px-2 py-1 text-[10px] font-bold rounded border border-indigo-500/50 text-indigo-300 hover:bg-indigo-950/40 transition-colors flex items-center gap-1"
+                      title="Preview Case Dossier & Remand Ledger"
+                    >
+                      <Eye className="h-3 w-3" />
+                      <span>Preview</span>
+                    </button>
                     <span className={`px-2 py-1 text-[10px] font-bold rounded border uppercase ${badgeColor}`}>
                       {isRed ? 'URGENT: DUE TODAY' : isYellow ? '7-DAY WARNING' : 'COMPLIANT'}
                     </span>
@@ -219,6 +233,25 @@ export function RemandDeadlinesWidget() {
           </div>
         )}
       </CardContent>
+
+      {selectedCaseForPreview && (
+        <DocumentPreviewModal
+          isOpen={!!selectedCaseForPreview}
+          onClose={() => setSelectedCaseForPreview(null)}
+          title={`Remand Dossier: ${selectedCaseForPreview.suspect_name}`}
+          subtitle={`${selectedCaseForPreview.case_id} • Police Station: ${selectedCaseForPreview.police_station}`}
+          caseNumber={selectedCaseForPreview.case_id}
+          pdfUrl="/CRIMENEXUS_Police_Department_Deployment_Dossier.pdf"
+          fileName={`Remand_Dossier_${selectedCaseForPreview.case_id}.pdf`}
+          metadata={{
+            ioName: 'Inspector Rajesh Varma',
+            policeStation: selectedCaseForPreview.police_station,
+            suspectName: selectedCaseForPreview.suspect_name,
+            crimeType: 'Fugitive Remand Under BNSS Section 187',
+            hash: '7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b',
+          }}
+        />
+      )}
     </Card>
   );
 }

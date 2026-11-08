@@ -23,12 +23,14 @@ import {
   ArrowUpDown,
   ChevronLeft,
   ChevronRight,
+  Eye,
 } from 'lucide-react';
 import { useEntities, useResolutionCandidates } from '../../hooks/useIntelligenceApi';
-import { EntityType } from '../../types';
+import { EntityType, Entity } from '../../types';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
+import { DocumentPreviewModal } from '../../components/common/DocumentPreviewModal';
 import { getRiskColorClass } from '../../utils/formatters';
 import { sound } from '../../utils/soundEffects';
 import { useToast } from '../../components/ui/Toast';
@@ -38,6 +40,7 @@ export function EntitiesPage() {
   const [typeFilter, setTypeFilter] = useState('ALL');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'name' | 'risk' | 'confidence'>('risk');
+  const [previewEntity, setPreviewEntity] = useState<Entity | null>(null);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [rowsPerPage, setRowsPerPage] = useState<number>(12);
@@ -363,15 +366,30 @@ export function EntitiesPage() {
                   </div>
                 </CardContent>
 
-                <div className="p-4 pt-0 border-t border-border/40 mt-3 flex items-center justify-between">
+                <div className="p-4 pt-0 border-t border-border/40 mt-3 flex items-center justify-between gap-2 flex-wrap">
                   <Badge variant={item.reviewStatus === 'VERIFIED' ? 'success' : 'warning'}>
                     {item.reviewStatus}
                   </Badge>
-                  <Link to={`/entities/${item.id}`}>
-                    <Button size="sm" variant="outline">
-                      Inspect Entity &rarr;
+                  <div className="flex items-center gap-1.5">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        sound.playClickSound();
+                        setPreviewEntity(item);
+                      }}
+                      className="border-indigo-500/40 text-indigo-300 hover:bg-indigo-950/40 text-xs font-bold flex items-center gap-1"
+                      title="Preview Entity Intelligence Dossier"
+                    >
+                      <Eye className="h-3 w-3 text-indigo-400" />
+                      <span>Preview</span>
                     </Button>
-                  </Link>
+                    <Link to={`/entities/${item.id}`}>
+                      <Button size="sm" variant="outline">
+                        Inspect &rarr;
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               </Card>
             ))}
@@ -422,6 +440,25 @@ export function EntitiesPage() {
             </div>
           )}
         </div>
+      )}
+
+      {previewEntity && (
+        <DocumentPreviewModal
+          isOpen={!!previewEntity}
+          onClose={() => setPreviewEntity(null)}
+          title={`Entity Intelligence Dossier: ${previewEntity.name}`}
+          subtitle={`Entity ID: ${previewEntity.id} • Type: ${previewEntity.type} • Confidence: ${((previewEntity.confidence ?? 0.85) * 100).toFixed(0)}%`}
+          caseNumber="CASE-2026-8812"
+          pdfUrl="/CRIMENEXUS_Police_Department_Deployment_Dossier.pdf"
+          fileName={`Entity_Dossier_${previewEntity.name.replace(/\s+/g, '_')}.pdf`}
+          metadata={{
+            ioName: 'Inspector Rajesh Varma',
+            policeStation: 'Cyber Crime Police Station, Sector 20',
+            suspectName: previewEntity.name,
+            crimeType: `Suspected Target (${previewEntity.type})`,
+            hash: '4d3c2b1a0f9e8d7c6b5a4f3e2d1c0b9a8f7e6d5c4b3a2f1e0d9c8b7a6f5e4d3',
+          }}
+        />
       )}
     </div>
   );

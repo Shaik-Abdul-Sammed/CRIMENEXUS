@@ -49,7 +49,7 @@ export function AccessibilityBar() {
         aria-label="Toggle High Contrast Sunlight Mode"
       >
         <Sun className="h-3 w-3" />
-        <span>Sunlight</span>
+        <span className="hidden xl:inline">Sunlight</span>
       </button>
 
       {/* Font Size A- / A / A+ Switcher */}

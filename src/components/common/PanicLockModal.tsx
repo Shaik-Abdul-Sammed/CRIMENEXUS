@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Lock, ShieldAlert, KeyRound, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { sound } from '../../utils/soundEffects';
@@ -33,9 +34,9 @@ export function PanicLockModal({ isLocked, onUnlock }: PanicLockModalProps) {
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[99999] bg-slate-950/98 backdrop-blur-2xl flex flex-col items-center justify-center p-6 text-center select-none animate-in fade-in duration-150">
-      <div className="max-w-md w-full p-8 rounded-2xl border-2 border-red-500/60 bg-slate-900/90 shadow-2xl shadow-red-950/80 space-y-6">
+  const modalContent = (
+    <div className="fixed inset-0 z-[999999] bg-slate-950/98 backdrop-blur-2xl flex flex-col items-center justify-center p-6 text-center select-none animate-in fade-in duration-150">
+      <div className="max-w-md w-full p-8 rounded-2xl border-2 border-red-500/60 bg-slate-900/90 shadow-2xl shadow-red-950/80 space-y-6 my-auto">
         <div className="flex flex-col items-center gap-3">
           <div className="p-4 rounded-full bg-red-500/20 text-red-400 border border-red-500/40 animate-pulse">
             <Lock className="h-10 w-10 text-red-400" />
@@ -106,4 +107,6 @@ export function PanicLockModal({ isLocked, onUnlock }: PanicLockModalProps) {
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent;
 }

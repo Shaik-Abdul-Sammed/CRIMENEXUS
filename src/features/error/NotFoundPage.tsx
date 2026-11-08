@@ -38,12 +38,29 @@ export function NotFoundPage() {
 
         <div className="flex flex-col sm:flex-row items-center gap-3 justify-center pt-2">
           {isPdf ? (
-            <a href={path} download className="w-full sm:w-auto">
-              <Button className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white font-bold flex items-center justify-center gap-2">
-                <FileQuestion className="h-4 w-4" />
-                <span>Open / Download PDF Directly</span>
-              </Button>
-            </a>
+            <div className="w-full space-y-3">
+              <div className="h-64 w-full rounded-xl border border-slate-700 bg-slate-950 overflow-hidden shadow-inner">
+                <iframe
+                  src={path}
+                  className="w-full h-full border-0"
+                  title="Police Department Deployment Dossier PDF"
+                />
+              </div>
+              <div className="flex items-center gap-2 justify-center">
+                <a href={path} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+                  <Button className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white font-bold flex items-center justify-center gap-2">
+                    <FileQuestion className="h-4 w-4" />
+                    <span>Open in Full Tab</span>
+                  </Button>
+                </a>
+                <Link to="/dashboard" className="w-full sm:w-auto">
+                  <Button variant="outline" className="w-full sm:w-auto">
+                    <Home className="h-4 w-4 mr-1.5" />
+                    <span>Dashboard</span>
+                  </Button>
+                </Link>
+              </div>
+            </div>
           ) : (
             <Link to="/dashboard" className="w-full sm:w-auto">
               <Button className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white font-bold flex items-center justify-center gap-2">

@@ -24,11 +24,13 @@ import {
   Shield,
   Hash,
   FileSpreadsheet,
+  Eye,
 } from 'lucide-react';
 import { useTimeline } from '../../hooks/useIntelligenceApi';
 import { EventType, TimelineEvent } from '../../types';
 import { Card, CardHeader, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
+import { DocumentPreviewModal } from '../../components/common/DocumentPreviewModal';
 import { formatDate } from '../../utils/formatters';
 import { sound } from '../../utils/soundEffects';
 
@@ -39,6 +41,7 @@ export function TimelinePage() {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [activeStep, setActiveStep] = useState<number>(0);
   const [playSpeed, setPlaySpeed] = useState<number>(1);
+  const [previewDossierOpen, setPreviewDossierOpen] = useState<boolean>(false);
   const eventRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const { data: rawEvents, isLoading } = useTimeline('ALL');
@@ -237,6 +240,19 @@ export function TimelinePage() {
             >
               <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-400" />
               <span className="hidden sm:inline">Export CSV</span>
+            </button>
+
+            {/* Preview Timeline Dossier */}
+            <button
+              onClick={() => {
+                sound.playClickSound();
+                setPreviewDossierOpen(true);
+              }}
+              className="px-2.5 py-1.5 rounded-lg border border-indigo-500/50 bg-indigo-950/30 hover:bg-indigo-900/50 text-indigo-300 font-bold text-xs flex items-center gap-1 transition-colors"
+              title="Preview Court-Admissible Forensic Chronology Dossier"
+            >
+              <Eye className="h-3.5 w-3.5 text-indigo-400" />
+              <span className="hidden sm:inline">Preview Dossier</span>
             </button>
 
             <div className="flex items-center gap-1 bg-background/60 border border-border rounded-lg p-0.5 text-[11px]">
@@ -553,6 +569,23 @@ export function TimelinePage() {
           )}
         </div>
       </div>
+
+      <DocumentPreviewModal
+        isOpen={previewDossierOpen}
+        onClose={() => setPreviewDossierOpen(false)}
+        title="Chronological Forensic Timeline Dossier"
+        subtitle="FIR-2026-CRIME-890 • Section 63 BSA Hash-Chained Forensic Sequence"
+        caseNumber="FIR-2026-CRIME-890"
+        pdfUrl="/CRIMENEXUS_Police_Department_Deployment_Dossier.pdf"
+        fileName="Forensic_Timeline_Dossier_FIR-2026-CRIME-890.pdf"
+        metadata={{
+          ioName: 'Inspector Rajesh Varma',
+          policeStation: 'Cyber Crime Police Station, Sector 20',
+          suspectName: 'Rajan Verma & Syndicate Entities',
+          crimeType: 'Chronological Telemetry & Call Detail Records',
+          hash: '5f4e3d2c1b0a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4',
+        }}
+      />
     </div>
   );
 }

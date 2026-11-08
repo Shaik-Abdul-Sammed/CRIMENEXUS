@@ -101,8 +101,9 @@ export function Sidebar() {
   ];
 
   return (
-    <aside
-      className={cn(
+    <>
+      <aside
+        className={cn(
         'relative flex flex-col border-r border-border bg-card/95 transition-all duration-300 z-30 shrink-0 select-none h-screen max-h-screen',
         sidebarOpen ? 'w-72 min-w-[18rem]' : 'w-16 min-w-[4rem]'
       )}
@@ -318,10 +319,12 @@ export function Sidebar() {
         </div>
       )}
 
+      </aside>
+
       <ProFeaturesHubModal
         isOpen={featuresModalOpen}
         onClose={() => setFeaturesModalOpen(false)}
       />
-    </aside>
+    </>
   );
 }
