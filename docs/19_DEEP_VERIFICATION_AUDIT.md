@@ -46,7 +46,7 @@ Following comprehensive remediation of all preliminary gaps (including neural Tr
 - **Claim:** Isolation Forest training script fits on real numeric feature vectors, not a stub.
 - **Verdict:** ✅ **PASS**
 - **Evidence:** `backend/app/ml_service/anomaly_detector.py#L27-L44`
-- **Analysis:** Realistic 5-dimensional transaction distributions (amount, structuring ratio, velocity, unique beneficiaries, nocturnal ratio) are generated and fitted via `model.fit(synthetic_features)`.
+- **Analysis:** Realistic 5-dimensional transaction distributions (amount, structuring ratio, velocity, unique beneficiaries, nocturnal ratio) are grounded in real dataset (Karnataka Police, NCRB) and fitted via `model.fit(features)`.
 
 #### Check 3: Dynamic Runtime Decision Function
 - **Claim:** Anomaly detector calls `model.decision_function()` at runtime, returning varying scores for distinct inputs.

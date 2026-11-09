@@ -1,0 +1,45 @@
+{
+  "noida_sec62": {
+    "lat": 28.628,
+    "lon": 77.3649,
+    "display_name": "Sector 62, Noida, Gautam Buddha Nagar, Uttar Pradesh, India",
+    "type": "commercial",
+    "osm_tags": {
+      "amenity": "bank",
+      "landuse": "commercial",
+      "highway": "tertiary"
+    }
+  },
+  "yamuna_toll_km48": {
+    "lat": 28.1402,
+    "lon": 77.551,
+    "display_name": "Yamuna Expressway Toll Plaza KM 48, Jewar, Uttar Pradesh, India",
+    "type": "highway",
+    "osm_tags": {
+      "barrier": "toll_booth",
+      "highway": "motorway",
+      "landuse": "transport"
+    }
+  },
+  "karol_bagh": {
+    "lat": 28.6517,
+    "lon": 77.1906,
+    "display_name": "Karol Bagh Metro Gate 2, Central Delhi, Delhi, India",
+    "type": "retail",
+    "osm_tags": {
+      "shop": "jewelry",
+      "landuse": "retail",
+      "amenity": "bank"
+    }
+  },
+  "bengaluru_indiranagar": {
+    "lat": 12.9784,
+    "lon": 77.6408,
+    "display_name": "100 Feet Road, Indiranagar, Bengaluru, Karnataka, India",
+    "type": "commercial",
+    "osm_tags": {
+      "amenity": "restaurant",
+      "landuse": "commercial"
+    }
+  }
+}

@@ -210,7 +210,7 @@ export function ProFeaturesHubModal({ isOpen, onClose, initialTab = 'FEATURES' }
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[99999] overflow-y-auto bg-black/85 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-[999999] bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-hidden animate-in fade-in duration-200"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           sound.playClickSound();
@@ -218,18 +218,9 @@ export function ProFeaturesHubModal({ isOpen, onClose, initialTab = 'FEATURES' }
         }
       }}
     >
-      <div
-        className="min-h-full flex justify-center p-2 sm:p-4 md:p-6"
-        onClick={(e) => {
-          if (e.target === e.currentTarget) {
-            sound.playClickSound();
-            onClose();
-          }
-        }}
-      >
-        <div className="relative w-full my-auto max-w-5xl bg-slate-900 border border-primary/50 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
-          {/* Header */}
-          <div className="p-4 sm:p-5 border-b border-border/80 bg-slate-950 flex items-center justify-between shrink-0">
+      <div className="relative w-full max-w-5xl bg-slate-900 border border-primary/50 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        {/* Header */}
+        <div className="p-4 sm:p-5 border-b border-border/80 bg-slate-950 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-gradient-to-br from-amber-500 to-primary text-black shadow-lg">
               <Sparkles className="h-5 w-5" />
@@ -678,8 +669,7 @@ export function ProFeaturesHubModal({ isOpen, onClose, initialTab = 'FEATURES' }
         </div>
       </div>
     </div>
-  </div>
-);
+  );
 
   return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent;
 }

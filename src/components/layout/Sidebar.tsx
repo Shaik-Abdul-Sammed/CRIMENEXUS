@@ -113,6 +113,7 @@ export function Sidebar() {
       items: [
         { label: t('nav.dashboard') || 'Command Dashboard', path: '/dashboard', icon: LayoutDashboard, id: 'sidebar-dashboard' },
         { label: t('nav.investigations') || 'Investigations & Cases', path: '/cases', icon: FolderGit2, badge: 'LIVE', id: 'sidebar-cases' },
+        { label: 'Citizen Reports Queue', path: '/police-reports', icon: Shield, badge: 'NEW', id: 'sidebar-citizen-reports' },
         { label: t('nav.evidence') || 'Evidence Vault (Sec 63 BSA)', path: '/evidence', icon: FileCheck2, badge: 'BSA', id: 'sidebar-evidence' },
         { label: t('nav.mostWanted') || 'District Most Wanted', path: '/most-wanted', icon: Flame, badge: 'HOT', id: 'sidebar-most-wanted' },
       ],

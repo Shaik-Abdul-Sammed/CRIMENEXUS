@@ -1,5 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RotateCcw, Home } from 'lucide-react';
+import { useAppStore } from '../../stores/appStore';
 
 interface Props {
   children: ReactNode;
@@ -28,6 +29,13 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   private handleReset = () => {
+    try {
+      useAppStore.getState().setFeaturesHubModalOpen(false);
+      useAppStore.getState().setGlobalSearchOpen(false);
+      useAppStore.getState().setPageDirectoryOpen(false);
+    } catch {
+      // ignore
+    }
     this.setState({ hasError: false, error: null });
     if (this.props.onReset) {
       this.props.onReset();
@@ -35,6 +43,13 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   private handleSafeDashboard = () => {
+    try {
+      useAppStore.getState().setFeaturesHubModalOpen(false);
+      useAppStore.getState().setGlobalSearchOpen(false);
+      useAppStore.getState().setPageDirectoryOpen(false);
+    } catch {
+      // ignore
+    }
     this.setState({ hasError: false, error: null });
     window.location.href = '/dashboard';
   };

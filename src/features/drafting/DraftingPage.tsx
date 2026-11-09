@@ -163,15 +163,20 @@ export function DraftingPage() {
     setIsAnalyzingVernacular(true);
 
     setTimeout(() => {
-      // Script detection
-      const isHindi = /[\u0900-\u097F]/.test(firNarrative);
+      // Script and vocabulary detection
+      const hasDevanagari = /[\u0900-\u097F]/.test(firNarrative);
+      const isMarathi = hasDevanagari && /(आहे|झाले|केले|तक्रार|गुन्हा|पोलीस|रुपये|पसार|गाडी|चौकशी|आरोपी|रोजी|नोंदवले|केल्याचे|खंडणी|खात्यांद्वारे)/i.test(firNarrative);
+      const isHindi = hasDevanagari && !isMarathi;
       const isTelugu = /[\u0C00-\u0C7F]/.test(firNarrative);
       const isKannada = /[\u0C80-\u0CFF]/.test(firNarrative);
 
       let detectedLang = 'English (en-IN)';
       let translatedEnglish = '';
 
-      if (isHindi) {
+      if (isMarathi) {
+        detectedLang = 'मराठी (Marathi - mr-IN)';
+        translatedEnglish = 'On 28-October-2026, complainant filed a formal police statement stating that accused Rajan carried out unauthorized extortion diversions into fraudulent mule accounts, escaping in getaway vehicle TS 09 AB 1234. CCTNS investigation registered under Section 173 BNSS with electronic evidence preserved under Section 63 BSA.';
+      } else if (isHindi) {
         detectedLang = 'हिन्दी (Hindi - hi-IN)';
         translatedEnglish = 'On 28-October-2026, complainant lodged a report stating that accused Rajan orchestrated structured micro-deposits under the Rs. 50,000 threshold into fraudulent mule accounts, subsequently fleeing via highway corridor in Scorpio vehicle TS 09 AB 1234. Lawful digital evidence and telecom records were secured under Section 63 BSA for formal prosecution.';
       } else if (isTelugu) {

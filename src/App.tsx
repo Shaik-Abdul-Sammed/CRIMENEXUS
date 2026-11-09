@@ -34,6 +34,9 @@ const EscapeSimulationPage = React.lazy(() => import('./features/demo/EscapeSimu
 const DigitalFootprintPage = React.lazy(() => import('./features/demo/DigitalFootprintPage').then((m) => ({ default: m.DigitalFootprintPage })));
 const TechnicalRoadmapPage = React.lazy(() => import('./features/roadmap/TechnicalRoadmapPage').then((m) => ({ default: m.TechnicalRoadmapPage })));
 const RailwayVerificationPage = React.lazy(() => import('./features/railway/RailwayVerificationPage').then((m) => ({ default: m.RailwayVerificationPage })));
+const CitizenReportingPage = React.lazy(() => import('./features/citizen/CitizenReportingPage').then((m) => ({ default: m.CitizenReportingPage })));
+const TrackReportPage = React.lazy(() => import('./features/citizen/TrackReportPage').then((m) => ({ default: m.TrackReportPage })));
+const PublicReportsQueue = React.lazy(() => import('./features/police/PublicReportsQueue').then((m) => ({ default: m.PublicReportsQueue })));
 const NotFoundPage = React.lazy(() => import('./features/error/NotFoundPage').then((m) => ({ default: m.NotFoundPage })));
 
 const LazyRouteFallback = (
@@ -62,6 +65,12 @@ export function App() {
               {/* Public Auth & Ultra-Low Bandwidth Thana Lite Mode */}
               <Route path="/login" element={<LoginPage />} />
               <Route path="/lite" element={<LightweightDashboard />} />
+
+              {/* Citizen Sentinel - Public Crime Reporting (No Auth Required) */}
+              <Route path="/citizen" element={<CitizenReportingPage />} />
+              <Route path="/citizen/track" element={<TrackReportPage />} />
+              <Route path="/report" element={<Navigate to="/citizen" replace />} />
+              <Route path="/track" element={<Navigate to="/citizen/track" replace />} />
 
               {/* Protected Application Workspace */}
               <Route
@@ -107,6 +116,8 @@ export function App() {
                 <Route path="/railway-verification" element={<RailwayVerificationPage />} />
                 <Route path="/railway" element={<Navigate to="/railway-verification" replace />} />
                 <Route path="/tc-verification" element={<Navigate to="/railway-verification" replace />} />
+                <Route path="/police-reports" element={<PublicReportsQueue />} />
+                <Route path="/citizen-reports" element={<Navigate to="/police-reports" replace />} />
                 <Route path="/about" element={<AboutPlatformPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
               </Route>

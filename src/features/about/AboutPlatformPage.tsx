@@ -40,7 +40,7 @@ import { Button } from '../../components/ui/Button';
 
 export function AboutPlatformPage() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'WORKFLOW' | 'BEFORE_AFTER' | 'DATA_SECURITY' | 'FEATURES' | 'COMPARISON' | 'AUTOMATIONS'>('WORKFLOW');
+  const [activeTab, setActiveTab] = useState<'WORKFLOW' | 'BEFORE_AFTER' | 'DATA_SECURITY' | 'FEATURES' | 'COMPARISON' | 'AUTOMATIONS' | 'CITIZEN'>('WORKFLOW');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [selectedRoleScenario, setSelectedRoleScenario] = useState<'PATROL' | 'IO' | 'COMMAND'>('PATROL');
   const [featuresSearchQuery, setFeaturesSearchQuery] = useState('');
@@ -488,6 +488,14 @@ export function AboutPlatformPage() {
               <RefreshCw className="h-4 w-4 text-cyan-400" />
               <span>Autonomous Daemons</span>
             </Button>
+            <Button
+              variant="outline"
+              onClick={() => setActiveTab('CITIZEN')}
+              className="border-emerald-500/50 hover:bg-emerald-950/40 text-emerald-300 font-bold flex items-center gap-2"
+            >
+              <Users className="h-4 w-4 text-emerald-400" />
+              <span>Citizen Sentinel Module</span>
+            </Button>
           </div>
         </div>
       </div>
@@ -497,6 +505,7 @@ export function AboutPlatformPage() {
         {[
           { id: 'WORKFLOW', label: 'How Police Ingest & Use Data', icon: Radio, count: null },
           { id: 'BEFORE_AFTER', label: 'Before & After Police Scenarios', icon: Scale, count: 'New' },
+          { id: 'CITIZEN', label: 'Citizen Sentinel (Public Crime Portal)', icon: Users, count: 'Sentinel' },
           { id: 'DATA_SECURITY', label: 'Data Integration, Safety & Privacy', icon: Lock, count: 'Audit' },
           { id: 'FEATURES', label: '32 Sovereign Capabilities', icon: Sparkles, count: 32 },
           { id: 'COMPARISON', label: 'Platform Benchmark (CCTNS & MahaCrimeOS)', icon: Layers, count: null },
@@ -507,7 +516,7 @@ export function AboutPlatformPage() {
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as 'WORKFLOW' | 'BEFORE_AFTER' | 'DATA_SECURITY' | 'FEATURES' | 'COMPARISON' | 'AUTOMATIONS')}
+              onClick={() => setActiveTab(tab.id as 'WORKFLOW' | 'BEFORE_AFTER' | 'DATA_SECURITY' | 'FEATURES' | 'COMPARISON' | 'AUTOMATIONS' | 'CITIZEN')}
               className={`flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-bold rounded-xl transition-all whitespace-nowrap ${
                 isActive
                   ? 'bg-primary text-primary-foreground shadow-md'
@@ -1427,6 +1436,279 @@ export function AboutPlatformPage() {
                       <td className="p-3 text-red-300">{row.before}</td>
                       <td className="p-3 text-emerald-300 font-semibold">{row.after}</td>
                       <td className="p-3 font-mono text-[10px] text-primary">{row.statute}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Tab: Citizen Sentinel (Public Crime Reporting & AI Satellite Verification) */}
+      {activeTab === 'CITIZEN' && (
+        <div className="space-y-8 animate-in fade-in duration-200">
+          {/* Header Banner */}
+          <div className="p-6 rounded-2xl border border-emerald-500/40 bg-gradient-to-r from-emerald-950/40 via-slate-900 to-slate-950 shadow-xl space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Badge className="bg-emerald-600 text-white font-black text-xs px-2.5 py-0.5">
+                  CITIZEN SENTINEL
+                </Badge>
+                <span className="text-xs font-mono text-muted-foreground">
+                  Section 91 CrPC Informer Privilege & DPDP Act 2023 Compliant
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => navigate('/citizen')}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md"
+                >
+                  <Users className="h-3.5 w-3.5" />
+                  <span>Open Citizen Portal (/citizen)</span>
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => navigate('/police-reports')}
+                  className="border-emerald-500/50 text-emerald-300 hover:bg-emerald-950/40 font-bold text-xs flex items-center gap-1.5"
+                >
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  <span>Police Review Queue (/police-reports)</span>
+                </Button>
+              </div>
+            </div>
+
+            <h2 className="text-2xl font-black text-white tracking-tight">
+              Citizen Sentinel: Bridging Public Reporting with Autonomous Police Response
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-300 max-w-4xl leading-relaxed">
+              Traditional Indian reporting apps fail because complaints are text-only, delayed by weeks of manual bureaucracy, or restricted to cybercrimes. Citizen Sentinel provides India&apos;s first public reporting platform with <strong>AI Satellite Geospatial Verification</strong>, sub-second police proximity routing, real-time public milestone tracking, and 1-click conversion to statutory FIRs.
+            </p>
+          </div>
+
+          {/* 5 Core Differentiators Grid */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between border-b border-border/70 pb-2">
+              <h3 className="text-base font-black text-white flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-emerald-400" />
+                <span>5 Sovereign Architectural Differentiators</span>
+              </h3>
+              <Badge variant="outline" className="text-[10px] font-mono border-emerald-500/40 text-emerald-300">
+                FIRST IN INDIA
+              </Badge>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+              <Card className="p-4 border-emerald-500/30 bg-card/80 space-y-2">
+                <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm">
+                  <Compass className="h-5 w-5 shrink-0" />
+                  <span>1. AI Satellite Analyzer</span>
+                </div>
+                <p className="text-slate-300 text-xs leading-relaxed">
+                  Extracts EXIF GPS coordinates from uploaded evidence and verifies proximity against reported location (within 100m = 1.0, 1km = 0.75). Validates temporal authenticity and cross-references geospatial land-use heuristics to prevent fraudulent submissions.
+                </p>
+                <div className="text-[10px] font-mono text-emerald-400/80 pt-1 border-t border-border/40">
+                  Layers: EXIF GPS + Time Pass + Land-Use
+                </div>
+              </Card>
+
+              <Card className="p-4 border-sky-500/30 bg-card/80 space-y-2">
+                <div className="flex items-center gap-2 text-sky-400 font-bold text-sm">
+                  <MapPin className="h-5 w-5 shrink-0" />
+                  <span>2. Instant Station Routing</span>
+                </div>
+                <p className="text-slate-300 text-xs leading-relaxed">
+                  Computes high-precision Haversine geodesic distance and OSRM road vectors from incident coordinates to the closest jurisdictional Thana. Automatically assigns the report to the nearest Station House Officer (SHO) with station phone and officer contact.
+                </p>
+                <div className="text-[10px] font-mono text-sky-400/80 pt-1 border-t border-border/40">
+                  Sub-second Haversine Proximity Engine
+                </div>
+              </Card>
+
+              <Card className="p-4 border-amber-500/30 bg-card/80 space-y-2">
+                <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
+                  <Clock className="h-5 w-5 shrink-0" />
+                  <span>3. Real-Time Public Tracking</span>
+                </div>
+                <p className="text-slate-300 text-xs leading-relaxed">
+                  Citizens track report progress with their unique tracking code (e.g. <code>PUB-2026-0001</code>) without requiring passwords or JWT tokens. 5-stage visual milestone progression: Submitted &rarr; AI Analyzed &rarr; Police Review &rarr; Verified/Rejected &rarr; Action Taken.
+                </p>
+                <div className="text-[10px] font-mono text-amber-400/80 pt-1 border-t border-border/40">
+                  Zero Login • Public Transparency
+                </div>
+              </Card>
+
+              <Card className="p-4 border-purple-500/30 bg-card/80 space-y-2">
+                <div className="flex items-center gap-2 text-purple-400 font-bold text-sm">
+                  <Lock className="h-5 w-5 shrink-0" />
+                  <span>4. Informer Anonymity & DPDP</span>
+                </div>
+                <p className="text-slate-300 text-xs leading-relaxed">
+                  Enables whistleblowers and vulnerable witnesses to report crimes 100% anonymously. Protected under Section 91 CrPC informer privilege and DPDP Act 2023. Zero browser tracking, no advertising SDKs, and automated PII scrubbing on public nearby feeds.
+                </p>
+                <div className="text-[10px] font-mono text-purple-400/80 pt-1 border-t border-border/40">
+                  Sec 91 CrPC + DPDP Act 2023 Compliant
+                </div>
+              </Card>
+
+              <Card className="p-4 border-rose-500/30 bg-card/80 space-y-2 lg:col-span-2">
+                <div className="flex items-center gap-2 text-rose-400 font-bold text-sm">
+                  <FileCheck2 className="h-5 w-5 shrink-0" />
+                  <span>5. 1-Click Conversion to Active Case (Neo4j Dual-Write)</span>
+                </div>
+                <p className="text-slate-300 text-xs leading-relaxed">
+                  Officers review reports inside the secure <code>/police-reports</code> queue with satellite confidence badges. With a single click, verified reports are converted into official Police FIRs and active Case records. Dual-written to PostgreSQL and Neo4j with <code>(:Case)-[:CONVERTED_FROM]-&gt;(:PublicReport)</code> and <code>(:Location)</code> graph linkages.
+                </p>
+                <div className="text-[10px] font-mono text-rose-400/80 pt-1 border-t border-border/40">
+                  Instant FIR Conversion • Graph Intelligence Integration
+                </div>
+              </Card>
+            </div>
+          </div>
+
+          {/* Global Landscape Comparison Table */}
+          <Card className="p-6 border-border/80 shadow-xl space-y-4">
+            <div>
+              <h3 className="text-base font-black text-foreground flex items-center gap-2">
+                <Scale className="h-5 w-5 text-primary" />
+                <span>Global & National Public Crime Reporting Systems Benchmark</span>
+              </h3>
+              <p className="text-xs text-muted-foreground mt-1">
+                Comparative analysis of NCRP, UPCOP, Citizen App, CrimeStoppers, Dubai Police, and CRIMENEXUS Citizen Sentinel:
+              </p>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse min-w-[760px]">
+                <thead>
+                  <tr className="border-b border-border bg-slate-900/60 text-slate-200">
+                    <th className="p-3 font-bold uppercase tracking-wider text-[11px]">System / Platform</th>
+                    <th className="p-3 font-bold uppercase tracking-wider text-[11px] text-center">Physical Crimes</th>
+                    <th className="p-3 font-bold uppercase tracking-wider text-[11px] text-center">Proof Upload</th>
+                    <th className="p-3 font-bold uppercase tracking-wider text-[11px] text-center">AI Satellite Verif.</th>
+                    <th className="p-3 font-bold uppercase tracking-wider text-[11px] text-center">Proximity Routing</th>
+                    <th className="p-3 font-bold uppercase tracking-wider text-[11px] text-center">Public Tracking</th>
+                    <th className="p-3 font-bold uppercase tracking-wider text-[11px]">Critical Demerit & Resolution</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/60 text-slate-300">
+                  {[
+                    {
+                      system: 'NCRP (India)',
+                      jurisdiction: 'National Cyber Portal',
+                      physical: false,
+                      proof: false,
+                      satellite: false,
+                      routing: false,
+                      tracking: 'Minimal',
+                      demerit: 'Only handles cybercrime; no physical crime reporting, no proof upload, no proximity routing.',
+                      color: 'text-red-400',
+                    },
+                    {
+                      system: 'UPCOP (UP Police)',
+                      jurisdiction: 'State Police App',
+                      physical: true,
+                      proof: false,
+                      satellite: false,
+                      routing: false,
+                      tracking: 'Yes',
+                      demerit: 'Text-only complaints with no image/video proof upload, no AI verification, and no automated location snapping.',
+                      color: 'text-amber-400',
+                    },
+                    {
+                      system: 'Citizen App (US)',
+                      jurisdiction: 'Commercial App',
+                      physical: true,
+                      proof: true,
+                      satellite: false,
+                      routing: false,
+                      tracking: 'Yes',
+                      demerit: 'Not connected to police departments directly; highly privacy-invasive continuous user GPS tracking.',
+                      color: 'text-amber-400',
+                    },
+                    {
+                      system: 'CrimeStoppers (UK/US)',
+                      jurisdiction: 'NGO Tip Line',
+                      physical: true,
+                      proof: false,
+                      satellite: false,
+                      routing: false,
+                      tracking: 'No',
+                      demerit: 'Anonymous tips with zero follow-up visibility to reporter, no proof verification, and low conversion rate to police action.',
+                      color: 'text-red-400',
+                    },
+                    {
+                      system: 'Dubai Police App',
+                      jurisdiction: 'Dubai Police',
+                      physical: true,
+                      proof: true,
+                      satellite: false,
+                      routing: true,
+                      tracking: 'Yes',
+                      demerit: 'Requires UAE national ID (no anonymous option) and lacks satellite geospatial or EXIF verification.',
+                      color: 'text-sky-400',
+                    },
+                    {
+                      system: 'CRIMENEXUS Citizen Sentinel',
+                      jurisdiction: 'Sovereign India v2.4',
+                      physical: true,
+                      proof: true,
+                      satellite: true,
+                      routing: true,
+                      tracking: 'Yes (5-Stage)',
+                      demerit: 'None. Overcomes all demerits: dual physical/cyber, photo/video/doc proof, AI satellite verification, and instant station routing.',
+                      color: 'text-emerald-400',
+                      highlight: true,
+                    },
+                  ].map((row, idx) => (
+                    <tr
+                      key={idx}
+                      className={row.highlight ? 'bg-emerald-950/20 hover:bg-emerald-950/30 font-semibold' : 'hover:bg-slate-900/40'}
+                    >
+                      <td className="p-3">
+                        <span className={`font-bold block ${row.color}`}>{row.system}</span>
+                        <span className="text-[10px] text-muted-foreground font-mono">{row.jurisdiction}</span>
+                      </td>
+                      <td className="p-3 text-center">
+                        {row.physical ? (
+                          <span className="text-emerald-400 font-bold">✓ Yes</span>
+                        ) : (
+                          <span className="text-red-400 font-bold">✗ No</span>
+                        )}
+                      </td>
+                      <td className="p-3 text-center">
+                        {row.proof ? (
+                          <span className="text-emerald-400 font-bold">✓ Yes</span>
+                        ) : (
+                          <span className="text-red-400 font-bold">✗ No</span>
+                        )}
+                      </td>
+                      <td className="p-3 text-center">
+                        {row.satellite ? (
+                          <span className="text-emerald-400 font-bold">✓ Yes (AI)</span>
+                        ) : (
+                          <span className="text-red-400 font-bold">✗ No</span>
+                        )}
+                      </td>
+                      <td className="p-3 text-center">
+                        {row.routing ? (
+                          <span className="text-emerald-400 font-bold">✓ Yes</span>
+                        ) : (
+                          <span className="text-red-400 font-bold">✗ No</span>
+                        )}
+                      </td>
+                      <td className="p-3 text-center">
+                        <span className={row.highlight ? 'text-emerald-300 font-bold' : 'text-slate-300'}>
+                          {row.tracking}
+                        </span>
+                      </td>
+                      <td className="p-3 text-[11px] leading-relaxed">
+                        <span className={row.highlight ? 'text-emerald-200' : 'text-slate-400'}>
+                          {row.demerit}
+                        </span>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

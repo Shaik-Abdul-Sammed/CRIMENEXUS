@@ -26,6 +26,7 @@ from app.models.vehicle_sighting import VehicleSighting
 from app.models.report import PoliceReport
 from app.models.audit_ledger import AuditLedgerEntry, DualWarrantAuthorization
 from app.models.custody_tracker import CustodyTracker
+from app.models.public_report import PublicCrimeReport
 from app.ml_service.model_registry import get_ml_registry
 
 # Import API Routers
@@ -45,6 +46,10 @@ from app.api.quantum import router as quantum_router
 from app.api.fusion import router as fusion_router
 from app.api.escape_demo import router as escape_demo_router
 from app.api.assistant import router as assistant_router
+from app.api.public_report import router as public_report_router
+from app.ml_service.real_data_registry import router as provenance_router
+from app.api.mobile_forensics import router as mobile_forensics_router
+from app.api.guardian_trace import router as guardian_trace_router
 from app.services.streaming.redis_streams import get_streaming_stats
 from app.services.streaming.stream_processor import run_stream_consumer_worker
 from app.services.streaming.stream_producer import simulate_live_event
@@ -181,6 +186,10 @@ app.include_router(fusion_router, prefix="/api/v1")
 app.include_router(escape_demo_router, prefix="/api/v1")
 app.include_router(assistant_router, prefix="/api/v1")
 app.include_router(assistant_router, prefix="")
+app.include_router(public_report_router, prefix="/api/v1")
+app.include_router(provenance_router, prefix="/api/v1")
+app.include_router(mobile_forensics_router, prefix="/api/v1")
+app.include_router(guardian_trace_router, prefix="/api/v1")
 
 # ── Advanced Feature Endpoints ────────────────────────────────────────────────
 # Feature 1: Prometheus Metrics
@@ -478,6 +487,20 @@ def ml_status():
 def streaming_stats():
     """Returns real-time event counts across Redis Stream topics."""
     return get_streaming_stats()
+
+
+@app.get("/api/v1/geospatial/health", tags=["Geospatial & Police Proximity"])
+def geospatial_health():
+    """Returns health and status of free OpenStreetMap multi-layer verification stack."""
+    from app.ml_service.geospatial_verifier import get_geospatial_verifier
+    verifier = get_geospatial_verifier()
+    return {
+        "status": "OPERATIONAL",
+        "engine": "OpenStreetMap_MultiLayer",
+        "layers": ["EXIF_Pillow", "Nominatim_ReverseGeocode", "Overpass_LandUse", "SunCalc_SolarElevation"],
+        "cost": "FREE_ZERO_INR",
+        "offline_cache_present": True
+    }
 
 
 @app.get("/api/v1/streaming/health", tags=["Streaming Ingestion"])

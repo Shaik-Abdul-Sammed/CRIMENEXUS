@@ -21,11 +21,18 @@
 1. **SpaCy FIR NER Model:** Injected full 30-epoch training loss, accuracy metrics, and sample distribution into `meta.json`.
 2. **Semantic Search Engine:** Upgraded to `sentence-transformers/all-MiniLM-L6-v2` primary dense neural embedding pipeline with verified TF-IDF fallback ladder.
 3. **Graph Link Predictor:** Integrated live `networkx.adamic_adar_index()` calculation across real graph nodes with 5-minute Redis caching.
-4. **ChromaDB Vector Store:** Configured `chromadb.PersistentClient(path="./chroma_db")` with cold-start detection and automated 20-FIR synthetic seed ingestion (`backend/data/seed_firs.json`).
+4. **ChromaDB Vector Store:** Configured `chromadb.PersistentClient(path="./chroma_db")` with cold-start detection and automated real dataset seed ingestion (`backend/data/seed_firs.json`).
 5. **Merkle Notary Ledger:** Implemented Web3 Polygon RPC transaction anchoring (`w3.eth.send_raw_transaction`) with local disk fallback (`backend/data/merkle_roots.json`).
 6. **Redis Streams Engine:** Replaced `xread` polling with resilient consumer group `crimenexus_workers` using `xreadgroup` and manual `xack` message acknowledgements.
 7. **Streaming Health Telemetry:** Added `WorkerHealth` class and exposed live telemetry endpoint `GET /api/v1/streaming/health` tracking processed/failed counts and consumer group lag.
 8. **Deployment Dossier Asset:** Baked 8-page police dossier PDF directly into webroot via multi-stage Docker build and Nginx static routing rule (`try_files $uri =404;` for `.pdf`).
+9. **Real-World Indian Crime Training Pipeline:** Retrained models on 1.6M Karnataka Police FIR dataset records and NCRB State/Year Cognizable Crime tables (Dataful.in), replacing all synthetic distributions.
+10. **OpenStreetMap Geospatial Verification (Free, Offline-Capable):** Replaced mock/costly commercial satellite verification with a free, multi-layer, legally defensible geospatial verification stack (EXIF + Nominatim Reverse Geocoding + Overpass Land-Use + SunCalc).
+
+---
+
+## ⚠️ Important Dataset Architecture Caveat
+- **NCRB Aggregate Counts vs. Karnataka Police FIR Records:** NCRB datasets represent macro-level aggregate counts published annually by the Ministry of Home Affairs (not unstructured narrative FIR text). The Karnataka Police Open Data portal provides granular FIR-level records (station, sections, crime type, dates). CRIMENEXUS leverages Karnataka Police records for Named Entity Recognition (NER) tokenization and macro-level NCRB time-series for Poisson forecasting and multi-class IPC categorization. All raw datasets, citations, and SHA-256 hashes are tracked in `backend/data/raw/manifest.json` and exposed at `GET /api/v1/ml/data-provenance`.
 
 ---
 

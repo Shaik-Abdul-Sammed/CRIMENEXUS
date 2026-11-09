@@ -384,3 +384,33 @@ Unlike foreign enterprise intelligence platforms that host law-enforcement data 
 - **Air-Gapped & On-Premise Execution:** Local SLM (Mistral-7B / Llama 3 via Ollama) and local vector search (ChromaDB) ensuring zero data leakage to foreign clouds.
 - **Section 63 BSA WORM Cryptography:** Every corridor event, link prediction, and statutory debit freeze is permanently timestamped with a tamper-evident SHA-256 cryptographic signature admissible before the Indian Judiciary.
 
+---
+
+## 🌐 Citizen Sentinel Module (New in v2.4)
+
+### Architectural Overview & Public Crime Reporting
+The **Citizen Sentinel** module bridges the general public and sovereign law-enforcement infrastructure by providing a secure, public-facing portal (`/citizen`) where citizens report physical and cyber crimes with forensic proof (photos, videos, documents up to 20MB).
+
+Unlike legacy reporting platforms (e.g., NCRP, UPCOP), CRIMENEXUS integrates an **AI Satellite Analyzer** that automatically verifies submitted evidence using geospatial satellite passes, EXIF GPS coordinates, and land-use consistency before routing reports to the closest jurisdictional Thana via the Haversine proximity engine.
+
+### Global & National Comparison Matrix
+
+| Operational Dimension | NCRP (India) | UPCOP (UP Police) | Citizen App (US) | CrimeStoppers (UK/US) | Dubai Police | CRIMENEXUS Citizen Sentinel |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Physical Crime Reporting** | ❌ (Cyber only) | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes | ✅ **Yes (Physical & Cyber)** |
+| **Evidence Proof Upload** | ❌ None | ❌ Text-only | ✅ Photos/Videos | ❌ Text tips | ✅ Media | ✅ **Up to 5 files @ 20MB (SHA-256 sealed)** |
+| **AI Satellite & EXIF Verif.** | ❌ No | ❌ No | ❌ No | ❌ No | ❌ No | ✅ **3-Layer Geospatial AI Analyzer** |
+| **Proximity Thana Dispatch** | ❌ No | ❌ No | ❌ No | ❌ No | ✅ Station list | ✅ **Sub-second Haversine & OSRM Routing** |
+| **Public Milestone Tracking** | Minimal | Basic status | Real-time map | ❌ None | Basic | ✅ **5-Stage Visual Timeline (No login)** |
+| **Reporter Anonymity** | ❌ Requires Aadhaar/OTP | ❌ Verified phone | ❌ Continuous tracking | ✅ Anonymous | ❌ Requires National ID | ✅ **Sec 91 CrPC + DPDP 2023 Anonymity** |
+| **1-Click Conversion to FIR** | Manual transfer | 7–14 days | ❌ Not connected | ❌ Low conversion | Manual review | ✅ **1-Click Conversion with Neo4j dual-write** |
+
+### Core Endpoints & Workflows
+* **`POST /api/v1/public/report/submit`**: Multipart form data with automatic SHA-256 hashing, directory isolation, AI Satellite Analyzer inference, and nearest station routing.
+* **`GET /api/v1/public/report/status/{report_number}`**: Public 5-stage tracking timeline (`Submitted → AI Analyzed → Under Review → Verified/Rejected → Action Taken`).
+* **`GET /api/v1/public/report/nearby`**: Privacy-sanitized nearby public crime sightings (coordinates fuzzed to 3 decimal places under DPDP Act 2023).
+* **`GET /api/v1/police/reports/pending`**: Officer review queue with satellite verification badges.
+* **`POST /api/v1/police/reports/{id}/review`**: Approves, rejects with statutory grounds, or requests additional evidence.
+* **`POST /api/v1/police/reports/{id}/convert`**: Converts verified public reports into an official Police Case and FIR record with graph link `(:Case)-[:CONVERTED_FROM]->(:PublicReport)`.
+
+

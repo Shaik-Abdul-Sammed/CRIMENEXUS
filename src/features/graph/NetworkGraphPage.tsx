@@ -320,7 +320,7 @@ export function NetworkGraphPage() {
     if (!text) return '';
     return text
       .replace(/[#*`_~]/g, ' ')
-      .replace(/\bCRIMENEXUS\b/gi, 'Crime Nexus')
+      .replace(/CRIMENEXUS|CrimeNexus|CRIME-NEXUS/gi, 'Crime Nexus')
       .replace(/\bANPR\b/g, 'A.N.P.R. optical scanner')
       .replace(/\bCDR\b/g, 'Call Detail Records')
       .replace(/\bBSA\b/g, 'Bharatiya Sakshya Adhiniyam')
@@ -400,7 +400,7 @@ export function NetworkGraphPage() {
     const vehicleCount = typeCount['VEHICLE'] || 0;
     const personCount = typeCount['PERSON'] || 0;
 
-    let narrative = `CRIMENEXUS Tactical Intelligence Analysis: The active knowledge graph spans ${totalNodes} forensic entities interconnected across ${totalEdges} multi-modal relationships (topology density ratio: ${(totalEdges / Math.max(totalNodes, 1)).toFixed(2)}). `;
+    let narrative = `Crime Nexus Tactical Intelligence Analysis: The active knowledge graph spans ${totalNodes} forensic entities interconnected across ${totalEdges} multi-modal relationships (topology density ratio: ${(totalEdges / Math.max(totalNodes, 1)).toFixed(2)}). `;
 
     if (personKingpin) {
       narrative += `Primary human ringleader identified as ${personKingpin.name} (Graph Degree ${degreeMap[personKingpin.id] || 0}), orchestrating operations across ${personCount} syndicate actors. `;

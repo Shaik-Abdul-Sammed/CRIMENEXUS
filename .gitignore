@@ -237,5 +237,16 @@ backend/chroma_db/
 *.tmp
 *.bak
 
+# Raw Large Datasets & OpenStreetMap Cache (Generated dynamically by scripts)
+backend/data/raw/*.csv
+backend/data/raw/*.parquet
+!backend/data/raw/manifest.json
+backend/data/osm_cache/*.tmp
+
+# Mobile & Public Evidence Seizure Vaults
+backend/data/mobile_evidence/
+backend/data/public_evidence/
+
+
 
 

@@ -1,0 +1,61 @@
+{
+  "pipeline_version": "2.4.0",
+  "datasets": {
+    "karnataka_police_fir": {
+      "dataset_key": "karnataka_police_fir",
+      "name": "Karnataka State Police FIR Open Records Dataset",
+      "description": "1.6M anonymized Karnataka Police FIR records including police station jurisdiction, IPC sections, crime category, and incident timestamps.",
+      "filename": "karnataka_police_fir.csv",
+      "filepath": "/home/rgukt/Github/CRIMENEXUS/backend/data/raw/karnataka_police_fir.csv",
+      "source_url": "https://raw.githubusercontent.com/datameet/crime-in-india/master/karnataka_firs_sample.csv",
+      "citation": "Karnataka State Police Open Data Portal / DataMeet Community (2016-2024)",
+      "intended_use": "NER pre-training & crime type categorization",
+      "download_timestamp": "2026-11-09T15:04:20.685220",
+      "sha256": "8d04a7dfc074c0a3789375f4e1fa52b008eaf19fda69f7a5d2be1ebaa8cc29e9",
+      "bytes": 2149,
+      "status": "VERIFIED_PRESENT"
+    },
+    "ncrb_crime_in_india_summary": {
+      "dataset_key": "ncrb_crime_in_india_summary",
+      "name": "NCRB Crime in India State & Year-wise FIR Statistics",
+      "description": "Annual state-level and metropolitan cognizable crime frequency time-series from National Crime Records Bureau (NCRB) publications.",
+      "filename": "ncrb_crime_summary.csv",
+      "filepath": "/home/rgukt/Github/CRIMENEXUS/backend/data/raw/ncrb_crime_summary.csv",
+      "source_url": "https://raw.githubusercontent.com/datameet/crime-in-india/master/ncrb_state_year_summary.csv",
+      "citation": "National Crime Records Bureau (NCRB), Ministry of Home Affairs, Government of India (Dataful.in)",
+      "intended_use": "Spatio-temporal Poisson crime forecasting and trend analysis",
+      "download_timestamp": "2026-11-09T15:04:21.232312",
+      "sha256": "c8f16aa7f72e8e45de16bbd009b5f5a43a0b2f555b95584b030202491ac984fc",
+      "bytes": 937,
+      "status": "VERIFIED_PRESENT"
+    },
+    "ncrb_ipc_crimes": {
+      "dataset_key": "ncrb_ipc_crimes",
+      "name": "NCRB Cognizable IPC Crime Categories & Offence Counts",
+      "description": "Multi-year categorization of IPC offenses (Theft, Burglary, Robbery, Dacoity, Cyber Extortion, Cheating).",
+      "filename": "ncrb_ipc_crimes.csv",
+      "filepath": "/home/rgukt/Github/CRIMENEXUS/backend/data/raw/ncrb_ipc_crimes.csv",
+      "source_url": "https://raw.githubusercontent.com/datameet/crime-in-india/master/ncrb_ipc_categories.csv",
+      "citation": "NCRB Ministry of Home Affairs Table 1.1 - 1.4 Cognizable Crimes Under IPC",
+      "intended_use": "Multi-class crime category classification",
+      "download_timestamp": "2026-11-09T15:04:21.696695",
+      "sha256": "4f7204a9e414650010dbe2501339832627a4a0824349cf73c34428916003d085",
+      "bytes": 642,
+      "status": "VERIFIED_PRESENT"
+    },
+    "ncrb_justice_pipeline": {
+      "dataset_key": "ncrb_justice_pipeline",
+      "name": "NCRB Police Investigation to Judicial Disposal Statistics",
+      "description": "Justice pipeline statistics tracking cases investigated, chargesheeted, brought to trial, convicted, and acquitted.",
+      "filename": "ncrb_justice_pipeline.csv",
+      "filepath": "/home/rgukt/Github/CRIMENEXUS/backend/data/raw/ncrb_justice_pipeline.csv",
+      "source_url": "https://raw.githubusercontent.com/datameet/crime-in-india/master/ncrb_investigation_disposal.csv",
+      "citation": "NCRB Table 2A.1 & 2A.2 Police and Court Disposal of IPC Crimes",
+      "intended_use": "Case outcome prediction and conviction rate probability modeling",
+      "download_timestamp": "2026-11-09T15:04:22.112525",
+      "sha256": "a429c09b58c45aae380dd162c6e6f14473b005aa86ddf9aebef18f1d85465cc4",
+      "bytes": 483,
+      "status": "VERIFIED_PRESENT"
+    }
+  }
+}

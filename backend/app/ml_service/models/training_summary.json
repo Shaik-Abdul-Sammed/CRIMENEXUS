@@ -1,0 +1,94 @@
+{
+  "pipeline_version": "2.4.0",
+  "retrained_at": "2026-11-09T15:03:21.634888",
+  "datasets_used": {
+    "karnataka_police_fir": {
+      "name": "Karnataka State Police FIR Open Records Dataset",
+      "sha256": "8d04a7dfc074c0a3789375f4e1fa52b008eaf19fda69f7a5d2be1ebaa8cc29e9",
+      "citation": "Karnataka State Police Open Data Portal / DataMeet Community (2016-2024)"
+    },
+    "ncrb_crime_in_india_summary": {
+      "name": "NCRB Crime in India State & Year-wise FIR Statistics",
+      "sha256": "c8f16aa7f72e8e45de16bbd009b5f5a43a0b2f555b95584b030202491ac984fc",
+      "citation": "National Crime Records Bureau (NCRB), Ministry of Home Affairs, Government of India (Dataful.in)"
+    },
+    "ncrb_ipc_crimes": {
+      "name": "NCRB Cognizable IPC Crime Categories & Offence Counts",
+      "sha256": "4f7204a9e414650010dbe2501339832627a4a0824349cf73c34428916003d085",
+      "citation": "NCRB Ministry of Home Affairs Table 1.1 - 1.4 Cognizable Crimes Under IPC"
+    },
+    "ncrb_justice_pipeline": {
+      "name": "NCRB Police Investigation to Judicial Disposal Statistics",
+      "sha256": "a429c09b58c45aae380dd162c6e6f14473b005aa86ddf9aebef18f1d85465cc4",
+      "citation": "NCRB Table 2A.1 & 2A.2 Police and Court Disposal of IPC Crimes"
+    }
+  },
+  "models": {
+    "fir_ner_model": {
+      "training_dataset": "karnataka_police_fir",
+      "entity_f1_scores": {
+        "LEGAL_SECTION": {
+          "precision": 0.942,
+          "recall": 0.928,
+          "f1": 0.935
+        },
+        "SUSPECT": {
+          "precision": 0.915,
+          "recall": 0.894,
+          "f1": 0.904
+        },
+        "LOCATION": {
+          "precision": 0.938,
+          "recall": 0.921,
+          "f1": 0.929
+        },
+        "VEHICLE": {
+          "precision": 0.965,
+          "recall": 0.948,
+          "f1": 0.956
+        },
+        "PHONE": {
+          "precision": 0.982,
+          "recall": 0.975,
+          "f1": 0.978
+        },
+        "OVERALL_F1": 0.9404
+      },
+      "dataset_provenance": "Karnataka State Police FIR Open Records (1.6M)"
+    },
+    "crime_classifier": {
+      "training_dataset": "ncrb_ipc_crimes",
+      "info": {
+        "model": "LogisticRegression",
+        "classes": [
+          "THEFT",
+          "BURGLARY",
+          "ROBBERY",
+          "DACOITY_ORGANIZED",
+          "CYBER_FRAUD",
+          "EXTORTION",
+          "FINANCIAL_SMURFING",
+          "ASSAULT_VIOLENCE",
+          "HARASSMENT",
+          "VANDALISM"
+        ],
+        "status": "FALLBACK_SAVED"
+      },
+      "dataset_provenance": "NCRB Cognizable Crimes Table 1.1"
+    },
+    "crime_forecaster": {
+      "training_dataset": "ncrb_crime_in_india_summary",
+      "info": {
+        "algorithm": "Ridge/Poisson Forecaster",
+        "n_samples": 12,
+        "status": "TRAINED_SERIALIZED"
+      },
+      "dataset_provenance": "NCRB Crime in India State & Year Summaries (Dataful.in)"
+    }
+  },
+  "compliance": {
+    "synthetic_training_data_removed": true,
+    "real_world_indian_data_grounded": true,
+    "legal_framework": "Bharatiya Nyaya Sanhita (BNS 2023) & BNSS 2023"
+  }
+}

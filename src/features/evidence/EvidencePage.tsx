@@ -46,6 +46,8 @@ import { Input } from '../../components/ui/Input';
 import { DocumentPreviewModal } from '../../components/common/DocumentPreviewModal';
 import { FileExportPreviewModal } from '../../components/common/FileExportPreviewModal';
 import { HashValidatorModal } from '../../components/common/HashValidatorModal';
+import { MobileExtractionModal } from '../forensics/MobileExtractionModal';
+import { Smartphone } from 'lucide-react';
 import { formatDate } from '../../utils/formatters';
 import { useToast } from '../../components/ui/Toast';
 import { useAppStore } from '../../stores/appStore';
@@ -90,6 +92,7 @@ export function EvidencePage() {
 
   // Section 63 BSA Hash Validator Modal State
   const [validatorModalOpen, setValidatorModalOpen] = useState<boolean>(false);
+  const [mobileExtractionModalOpen, setMobileExtractionModalOpen] = useState<boolean>(false);
   const [selectedValidateHash, setSelectedValidateHash] = useState<string>('');
   const [selectedValidateTitle, setSelectedValidateTitle] = useState<string>('');
 
@@ -588,6 +591,17 @@ export function EvidencePage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          {/* Mobile Extraction Legal Gate */}
+          <Button
+            variant="outline"
+            onClick={() => setMobileExtractionModalOpen(true)}
+            className="border-indigo-500/50 text-indigo-300 hover:bg-indigo-950/40 flex items-center gap-1.5 text-xs font-bold"
+            title="Mobile Device Extraction Legal Gate under BNSS 105 & DPDP Act 2023"
+          >
+            <Smartphone className="h-4 w-4 text-indigo-400" />
+            <span>Mobile Ingestion (BNSS 105)</span>
+          </Button>
+
           {/* Section 63 BSA Hash Validator Modal Trigger */}
           <Button
             variant="outline"
@@ -1571,6 +1585,13 @@ export function EvidencePage() {
       </div>,
         document.body
       )}
+
+      {/* Statutory Mobile Device Extraction & DPDP 2023 Gate Modal */}
+      <MobileExtractionModal
+        isOpen={mobileExtractionModalOpen}
+        onClose={() => setMobileExtractionModalOpen(false)}
+        caseNumber={activeCaseId || 'CASE-2026-8812'}
+      />
     </div>
   );
 }

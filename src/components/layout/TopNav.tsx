@@ -223,18 +223,18 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
 
   return (
     <>
-      <header className="sticky top-0 z-50 flex h-16 w-full max-w-full items-center justify-between border-b border-border bg-card/98 px-3 sm:px-4 md:px-6 shadow-sm">
-      {/* Left: Responsive Breadcrumbs with guaranteed minimum width to prevent 'H' truncation */}
-      <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-muted-foreground min-w-[140px] max-w-[260px] shrink-0 overflow-hidden">
+      <header className="sticky top-0 z-50 flex h-16 w-full max-w-full items-center justify-between border-b border-border bg-card/98 px-3 sm:px-4 md:px-6 shadow-sm gap-2">
+      {/* Left: Responsive Breadcrumbs with guaranteed full 'Home' visibility and no clipping */}
+      <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-muted-foreground shrink-0 min-w-fit max-w-[340px] overflow-hidden">
         <Link to="/dashboard" className="hover:text-foreground font-bold transition-colors shrink-0 flex items-center gap-1 text-primary">
-          <span>Home</span>
+          <span className="whitespace-nowrap font-extrabold">Home</span>
         </Link>
         {breadcrumbs.map((b, idx) => (
           <React.Fragment key={b.url}>
             <ChevronRight className="h-3 w-3 text-border shrink-0" />
             <Link
               to={b.url}
-              className={`truncate max-w-[130px] ${
+              className={`truncate max-w-[140px] whitespace-nowrap ${
                 idx === breadcrumbs.length - 1
                   ? 'font-extrabold text-foreground'
                   : 'hover:text-foreground transition-colors'
@@ -248,7 +248,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
       </div>
 
       {/* Right: Consolidated Tools & Actions (Streamlined, Zero Horizontal Overflow) */}
-      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 justify-end min-w-0">
+      <div className="flex items-center gap-1.5 sm:gap-2 shrink min-w-0 justify-end overflow-x-auto no-scrollbar">
         {/* 1. Global Intelligence Search Trigger (High Usage) */}
         <button
           onClick={() => setGlobalSearchOpen(true)}
@@ -274,7 +274,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           aria-label="All Pages Directory"
         >
           <Grid className="h-3.5 w-3.5 text-primary shrink-0" />
-          <span className="hidden md:inline text-[11px]">All Pages</span>
+          <span className="hidden md:inline text-[11px]">Pages</span>
           <span className="px-1 py-0.2 rounded-full bg-primary/20 text-primary text-[9px] font-mono font-black">25</span>
         </button>
 
@@ -286,8 +286,8 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           aria-label="100 Specs Roadmap"
         >
           <Compass className="h-3.5 w-3.5 text-amber-400 shrink-0 animate-spin-slow" />
-          <span className="hidden lg:inline text-[11px] font-black">Next 96 Roadmap</span>
-          <span className="px-1.5 py-0.2 rounded-full bg-amber-400/25 text-amber-300 text-[9px] font-mono font-black border border-amber-400/40">100 SPECS</span>
+          <span className="hidden lg:inline text-[11px] font-black">Roadmap</span>
+          <span className="px-1.5 py-0.2 rounded-full bg-amber-400/25 text-amber-300 text-[9px] font-mono font-black border border-amber-400/40">96</span>
         </Link>
 
         {/* 4. 10 Core Pro Features Hub Modal Trigger */}
@@ -301,7 +301,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           aria-label="Features Showcase"
         >
           <Sparkles className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
-          <span className="hidden xl:inline text-[11px]">Features Hub</span>
+          <span className="hidden xl:inline text-[11px]">Features</span>
           <span className="px-1 py-0.2 rounded-full bg-cyan-400/20 text-cyan-300 text-[9px] font-mono font-extrabold">10</span>
         </button>
 
