@@ -39,7 +39,6 @@ import { KeyboardShortcutsModal } from '../common/KeyboardShortcutsModal';
 import { PanicLockModal } from '../common/PanicLockModal';
 import { AccessibilityBar } from '../common/AccessibilityBar';
 import { WhatsNewChangelogModal } from '../common/WhatsNewChangelogModal';
-import { ProFeaturesHubModal } from '../common/ProFeaturesHubModal';
 import { Lock } from 'lucide-react';
 
 export function TopNav() {
@@ -48,6 +47,7 @@ export function TopNav() {
   const {
     setGlobalSearchOpen,
     setPageDirectoryOpen,
+    setFeaturesHubModalOpen,
     theme,
     toggleTheme,
     figmaTheme,
@@ -63,6 +63,7 @@ export function TopNav() {
   const [notifMenuOpen, setNotifMenuOpen] = useState(false);
   const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
+  const [tacticalMenuOpen, setTacticalMenuOpen] = useState(false);
   const [demoModalOpen, setDemoModalOpen] = useState(false);
   const [tourOpen, setTourOpen] = useState(false);
   const [statutoryRulesOpen, setStatutoryRulesOpen] = useState(false);
@@ -71,7 +72,6 @@ export function TopNav() {
   const [isPanicLocked, setIsPanicLocked] = useState(false);
   const [isServerOnline, setIsServerOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
   const [whatsNewOpen, setWhatsNewOpen] = useState(false);
-  const [featuresHubOpen, setFeaturesHubOpen] = useState(false);
 
   useEffect(() => {
     const handleOnline = () => setIsServerOnline(true);
@@ -107,6 +107,7 @@ export function TopNav() {
   const settingsRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
   const themeRef = useRef<HTMLDivElement>(null);
+  const tacticalRef = useRef<HTMLDivElement>(null);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -139,6 +140,9 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
       }
       if (themeRef.current && !themeRef.current.contains(event.target as Node)) {
         setThemeMenuOpen(false);
+      }
+      if (tacticalRef.current && !tacticalRef.current.contains(event.target as Node)) {
+        setTacticalMenuOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -219,10 +223,10 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
 
   return (
     <>
-      <header className="sticky top-0 z-50 flex h-16 w-full max-w-full items-center justify-between border-b border-border bg-card/98 px-2.5 sm:px-4 md:px-6 shadow-sm overflow-hidden">
-      {/* Left: Responsive Breadcrumbs with overflow protection */}
-      <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-muted-foreground min-w-0 shrink overflow-hidden max-w-[28%] sm:max-w-[35%] md:max-w-[45%]">
-        <Link to="/dashboard" className="hover:text-foreground font-semibold transition-colors shrink-0 flex items-center gap-1">
+      <header className="sticky top-0 z-50 flex h-16 w-full max-w-full items-center justify-between border-b border-border bg-card/98 px-3 sm:px-4 md:px-6 shadow-sm">
+      {/* Left: Responsive Breadcrumbs with guaranteed minimum width to prevent 'H' truncation */}
+      <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-muted-foreground min-w-[140px] max-w-[260px] shrink-0 overflow-hidden">
+        <Link to="/dashboard" className="hover:text-foreground font-bold transition-colors shrink-0 flex items-center gap-1 text-primary">
           <span>Home</span>
         </Link>
         {breadcrumbs.map((b, idx) => (
@@ -230,9 +234,9 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
             <ChevronRight className="h-3 w-3 text-border shrink-0" />
             <Link
               to={b.url}
-              className={`truncate max-w-[80px] sm:max-w-[120px] md:max-w-[160px] ${
+              className={`truncate max-w-[130px] ${
                 idx === breadcrumbs.length - 1
-                  ? 'font-bold text-foreground'
+                  ? 'font-extrabold text-foreground'
                   : 'hover:text-foreground transition-colors'
               }`}
               title={b.name}
@@ -243,8 +247,8 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
         ))}
       </div>
 
-      {/* Right: Consolidated Tools & Actions (Responsive & Overflow Protected) */}
-      <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 justify-end min-w-0">
+      {/* Right: Consolidated Tools & Actions (Streamlined, Zero Horizontal Overflow) */}
+      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 justify-end min-w-0">
         {/* 1. Global Intelligence Search Trigger (High Usage) */}
         <button
           onClick={() => setGlobalSearchOpen(true)}
@@ -253,7 +257,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           aria-label="Search cases, entities, and evidence"
         >
           <Search className="h-3.5 w-3.5 text-primary shrink-0" />
-          <span className="hidden lg:inline text-[11px] truncate">{t('actions.search')}</span>
+          <span className="hidden xl:inline text-[11px] truncate">{t('actions.search')}</span>
           <kbd className="hidden lg:inline-flex h-4 select-none items-center gap-0.5 rounded border border-border bg-muted px-1 font-mono text-[9px] font-medium text-muted-foreground">
             /
           </kbd>
@@ -274,7 +278,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           <span className="px-1 py-0.2 rounded-full bg-primary/20 text-primary text-[9px] font-mono font-black">25</span>
         </button>
 
-        {/* 3. 100 Technical Specifications & Next 96 Roadmap (Prominent, High Priority) */}
+        {/* 3. 100 Technical Specifications & Next 96 Roadmap */}
         <Link
           to="/roadmap"
           className="flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg border border-amber-500/50 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 text-xs font-bold transition-all shadow-sm shrink-0"
@@ -286,11 +290,11 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           <span className="px-1.5 py-0.2 rounded-full bg-amber-400/25 text-amber-300 text-[9px] font-mono font-black border border-amber-400/40">100 SPECS</span>
         </Link>
 
-        {/* 4. 10 Core Pro Features Hub Modal */}
+        {/* 4. 10 Core Pro Features Hub Modal Trigger */}
         <button
           onClick={() => {
             sound.playClickSound();
-            setFeaturesHubOpen(true);
+            setFeaturesHubModalOpen(true);
           }}
           className="flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg border border-cyan-500/50 bg-cyan-950/50 hover:bg-cyan-900/50 text-cyan-300 text-xs font-bold transition-all shadow-sm shrink-0"
           title="CRIMENEXUS 10 Core Pro Features & Capabilities Hub"
@@ -301,167 +305,168 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           <span className="px-1 py-0.2 rounded-full bg-cyan-400/20 text-cyan-300 text-[9px] font-mono font-extrabold">10</span>
         </button>
 
-        {/* 5. Indian Railways TC Aadhaar Face Verification Terminal Button */}
-        <Link
-          to="/railway-verification"
-          className="hidden sm:flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg border border-sky-500/40 bg-sky-950/50 hover:bg-sky-900/50 text-sky-300 text-xs font-bold transition-all shadow-sm shrink-0"
-          title="Indian Railways TC Biometric Aadhaar Face Verification & CCTNS Watchlist Terminal"
-          aria-label="Railway TC Verification"
-        >
-          <Train className="h-3.5 w-3.5 text-sky-400 shrink-0" />
-          <span className="hidden 2xl:inline text-[11px]">Railway Face</span>
-          <span className="px-1 py-0.2 rounded-full bg-sky-400/20 text-sky-300 text-[9px] font-mono font-bold">TC</span>
-        </Link>
+        {/* 5. 1-Click Vernacular Full Page Language Switcher (Directly on TopNav) */}
+        <div className="flex items-center gap-1 h-8 sm:h-9 px-2 rounded-lg border border-sky-500/40 bg-sky-950/40 text-xs shrink-0">
+          <Languages className="h-3.5 w-3.5 text-sky-400 shrink-0" />
+          <select
+            value={language}
+            onChange={(e) => {
+              sound.playClickSound();
+              setLanguage(e.target.value as SupportedLanguage);
+            }}
+            className="bg-transparent text-sky-200 font-bold text-xs focus:outline-none cursor-pointer pr-1"
+            aria-label="Switch Entire Application Language"
+            title="Full Entire Page Translation (EN / हिन्दी / मराठी / ಕನ್ನಡ / తెలుగు)"
+          >
+            <option value="en" className="bg-slate-900 text-slate-100">English (EN)</option>
+            <option value="hi" className="bg-slate-900 text-slate-100">हिन्दी (Hindi)</option>
+            <option value="mr" className="bg-slate-900 text-slate-100">मराठी (Marathi)</option>
+            <option value="kn" className="bg-slate-900 text-slate-100">ಕನ್ನಡ (Kannada)</option>
+            <option value="te" className="bg-slate-900 text-slate-100">తెలుగు (Telugu)</option>
+          </select>
+        </div>
 
-        {/* 6. 15 Statutory Rules & Remand Guard Button */}
-        <button
-          onClick={() => {
-            sound.playClickSound();
-            setStatutoryRulesOpen(true);
-          }}
-          className="hidden md:flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2 rounded-lg border border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 text-xs font-bold transition-all shrink-0"
-          title="15 Sovereign Statutory Criminal Rules & Remand Guard (Press S)"
-          aria-label="15 Sovereign Statutory Criminal Rules"
-        >
-          <Scale className="h-3.5 w-3.5 text-amber-400 shrink-0" />
-          <span className="hidden 2xl:inline text-[11px]">15 Rules</span>
-        </button>
-
-        {/* Global Keyboard Shortcuts Hub */}
-        <button
-          onClick={() => {
-            sound.playClickSound();
-            setShortcutsOpen(true);
-          }}
-          className="hidden sm:flex items-center justify-center h-8 sm:h-9 w-8 sm:w-9 rounded-lg border border-border/80 bg-background/80 text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors shrink-0"
-          title="Investigating Officer Keyboard Shortcuts (Press ?)"
-          aria-label="Keyboard Shortcuts"
-        >
-          <Keyboard className="h-3.5 w-3.5" />
-        </button>
-
-        {/* Tactical Audio Feedback Mute / Unmute Toggle */}
-        <button
-          onClick={() => {
-            const nextState = sound.toggleMute();
-            setAudioMuted(!nextState);
-            if (nextState) sound.playClickSound();
-          }}
-          className={`flex items-center justify-center h-8 sm:h-9 w-8 sm:w-9 rounded-lg border transition-colors shrink-0 ${
-            audioMuted
-              ? 'border-border/60 text-muted-foreground/50 hover:text-muted-foreground'
-              : 'border-border/80 bg-background/80 text-foreground hover:bg-accent/40'
-          }`}
-          title={audioMuted ? 'Tactical Audio: Muted (Click to Unmute)' : 'Tactical Audio: Enabled (Click to Mute)'}
-          aria-label={audioMuted ? 'Unmute Audio' : 'Mute Audio'}
-        >
-          {audioMuted ? <VolumeX className="h-3.5 w-3.5 text-muted-foreground" /> : <Volume2 className="h-3.5 w-3.5 text-emerald-400" />}
-        </button>
-
-        {/* Panic Lock Button */}
-        <button
-          onClick={() => {
-            sound.playWarningBeep();
-            setIsPanicLocked(true);
-          }}
-          className="flex items-center justify-center h-8 sm:h-9 w-8 sm:w-9 rounded-lg border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:border-red-500 transition-colors shadow-sm shrink-0"
-          title="Panic Lock: Instantly conceal classified evidence & lock screen (Ctrl+Alt+L)"
-          aria-label="Panic Lock Screen"
-        >
-          <Lock className="h-3.5 w-3.5" />
-        </button>
-
-        {/* Figma Sovereign Theme Switcher */}
-        <div className="relative" ref={themeRef}>
+        {/* 6. Consolidated Tactical Tools Popover (Prevents Navbar Overflow) */}
+        <div className="relative shrink-0" ref={tacticalRef}>
           <button
             onClick={() => {
               sound.playClickSound();
-              setThemeMenuOpen(!themeMenuOpen);
+              setTacticalMenuOpen(!tacticalMenuOpen);
             }}
-            className={`flex items-center gap-1.5 h-9 px-2.5 rounded-lg border transition-all text-xs font-semibold ${
-              themeMenuOpen
-                ? 'border-primary bg-primary/10 text-primary shadow-sm'
-                : 'border-border/70 bg-background/80 text-foreground hover:border-primary/50 hover:bg-accent/40'
+            className={`flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg border text-xs font-bold transition-all shadow-sm ${
+              tacticalMenuOpen
+                ? 'border-amber-400 bg-amber-500/20 text-amber-300 shadow-md'
+                : 'border-border/80 bg-background/80 text-foreground hover:border-amber-500/50 hover:bg-accent/40'
             }`}
-            title="Switch Figma Sovereign Theme"
-            aria-label="Switch Figma Sovereign Theme"
+            title="Tactical Field Tools (Railway TC Face, 15 Rules, Panic Lock, Audio Mute, Theme)"
+            aria-label="Tactical Tools Menu"
           >
-            <Palette className="h-4 w-4 text-primary" />
-            <span className="hidden xl:inline text-[11px] font-medium">
-              {FIGMA_THEME_OPTIONS.find((t) => t.id === figmaTheme)?.icon || '🎨'}{' '}
-              {FIGMA_THEME_OPTIONS.find((t) => t.id === figmaTheme)?.badge || 'Theme'}
-            </span>
+            <Zap className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+            <span className="hidden sm:inline text-[11px]">Tactical</span>
+            <span className="px-1 py-0.2 rounded-full bg-amber-400/20 text-amber-300 text-[9px] font-mono font-bold">Tools</span>
           </button>
 
-          {themeMenuOpen && (
-            <div className="absolute right-0 mt-2 w-64 max-w-[calc(100vw-2rem)] rounded-xl border border-border bg-card p-3 shadow-2xl z-[100] animate-in fade-in zoom-in-95 select-none">
-              <div className="flex items-center justify-between pb-2 border-b border-border mb-2">
+          {tacticalMenuOpen && (
+            <div className="absolute right-0 mt-2 w-72 rounded-2xl border border-border bg-slate-900/95 backdrop-blur-md p-3 shadow-2xl z-[100] animate-in fade-in zoom-in-95 space-y-2 select-none">
+              <div className="flex items-center justify-between pb-2 border-b border-border/60">
                 <div className="flex items-center gap-1.5">
-                  <Palette className="h-3.5 w-3.5 text-primary" />
-                  <span className="text-xs font-bold text-foreground">Figma Sovereign Themes</span>
+                  <Zap className="h-3.5 w-3.5 text-amber-400" />
+                  <span className="text-xs font-black text-white uppercase tracking-wider">Tactical Field Utilities</span>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <Link
-                    to="/design-system"
-                    onClick={() => setThemeMenuOpen(false)}
-                    className="text-[10px] text-primary hover:underline font-mono"
-                  >
-                    Tokens
-                  </Link>
-                  <button
-                    onClick={() => {
-                      sound.playClickSound();
-                      setThemeMenuOpen(false);
-                    }}
-                    className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                    title="Close theme menu"
-                    aria-label="Close theme menu"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </div>
+                <button
+                  onClick={() => setTacticalMenuOpen(false)}
+                  className="p-1 rounded text-muted-foreground hover:text-white hover:bg-slate-800 transition-colors"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
               </div>
 
-              <div className="space-y-1.5">
-                {FIGMA_THEME_OPTIONS.map((opt) => {
-                  const isActive = figmaTheme === opt.id;
-                  return (
+              {/* Railway TC Aadhaar Face Verification Terminal */}
+              <Link
+                to="/railway-verification"
+                onClick={() => setTacticalMenuOpen(false)}
+                className="w-full flex items-center justify-between p-2 rounded-xl bg-sky-950/40 border border-sky-500/30 hover:bg-sky-900/50 text-xs text-sky-200 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <Train className="h-4 w-4 text-sky-400" />
+                  <div className="text-left">
+                    <div className="font-bold">Railway TC Biometric Face</div>
+                    <div className="text-[10px] text-sky-300/70 font-mono">Aadhaar & CCTNS Watchlist</div>
+                  </div>
+                </div>
+                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300">TC</span>
+              </Link>
+
+              {/* 15 Statutory Rules & Remand Guard */}
+              <button
+                onClick={() => {
+                  sound.playClickSound();
+                  setTacticalMenuOpen(false);
+                  setStatutoryRulesOpen(true);
+                }}
+                className="w-full flex items-center justify-between p-2 rounded-xl bg-amber-950/40 border border-amber-500/30 hover:bg-amber-900/50 text-xs text-amber-200 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <Scale className="h-4 w-4 text-amber-400" />
+                  <div className="text-left">
+                    <div className="font-bold">15 Statutory Rules (BNS/BNSS)</div>
+                    <div className="text-[10px] text-amber-300/70 font-mono">Mandatory Remand Guard (Press S)</div>
+                  </div>
+                </div>
+                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300">Rules</span>
+              </button>
+
+              {/* Panic Lock Screen Button */}
+              <button
+                onClick={() => {
+                  sound.playWarningBeep();
+                  setTacticalMenuOpen(false);
+                  setIsPanicLocked(true);
+                }}
+                className="w-full flex items-center justify-between p-2 rounded-xl bg-red-950/40 border border-red-500/30 hover:bg-red-900/50 text-xs text-red-200 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <Lock className="h-4 w-4 text-red-400" />
+                  <div className="text-left">
+                    <div className="font-bold">Panic Lock Evidence Screen</div>
+                    <div className="text-[10px] text-red-300/70 font-mono">Conceal Dossier (Ctrl+Alt+L)</div>
+                  </div>
+                </div>
+                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-red-500/20 text-red-300">Lock</span>
+              </button>
+
+              {/* Tactical Audio & Keyboard Shortcuts Dual Row */}
+              <div className="grid grid-cols-2 gap-2 pt-1 border-t border-border/50">
+                <button
+                  onClick={() => {
+                    const nextState = sound.toggleMute();
+                    setAudioMuted(!nextState);
+                    if (nextState) sound.playClickSound();
+                  }}
+                  className="flex items-center justify-center gap-1.5 p-2 rounded-xl border border-border/80 bg-slate-800/60 hover:bg-slate-700/60 text-xs font-semibold text-slate-200 transition-colors"
+                >
+                  {audioMuted ? <VolumeX className="h-3.5 w-3.5 text-muted-foreground" /> : <Volume2 className="h-3.5 w-3.5 text-emerald-400" />}
+                  <span>{audioMuted ? 'Audio Muted' : 'Audio On'}</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    sound.playClickSound();
+                    setTacticalMenuOpen(false);
+                    setShortcutsOpen(true);
+                  }}
+                  className="flex items-center justify-center gap-1.5 p-2 rounded-xl border border-border/80 bg-slate-800/60 hover:bg-slate-700/60 text-xs font-semibold text-slate-200 transition-colors"
+                >
+                  <Keyboard className="h-3.5 w-3.5 text-sky-400" />
+                  <span>Shortcuts (?)</span>
+                </button>
+              </div>
+
+              {/* Figma Theme Quick Select */}
+              <div className="pt-2 border-t border-border/50">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
+                  Palette Theme
+                </span>
+                <div className="grid grid-cols-2 gap-1">
+                  {FIGMA_THEME_OPTIONS.map((opt) => (
                     <button
                       key={opt.id}
                       onClick={() => {
                         sound.playClickSound();
                         setFigmaTheme(opt.id);
-                        setThemeMenuOpen(false);
+                        setTacticalMenuOpen(false);
                       }}
-                      className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs transition-all ${
-                        isActive
-                          ? 'bg-primary text-primary-foreground font-bold shadow-sm'
+                      className={`flex items-center gap-1.5 px-2 py-1.5 text-[11px] rounded-lg transition-colors ${
+                        figmaTheme === opt.id
+                          ? 'bg-primary text-primary-foreground font-bold'
                           : 'bg-muted/40 hover:bg-muted text-foreground'
                       }`}
                     >
-                      <div className="flex items-center gap-2">
-                        <span>{opt.icon}</span>
-                        <div className="text-left">
-                          <div className="leading-tight">{opt.name}</div>
-                          <div
-                            className={`text-[9px] font-mono ${
-                              isActive ? 'text-primary-foreground/80' : 'text-muted-foreground'
-                            }`}
-                          >
-                            {opt.badge} Palette
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <span
-                          className="h-2.5 w-2.5 rounded-full border border-white/20"
-                          style={{ backgroundColor: opt.dotColor }}
-                        />
-                        {isActive && <Check className="h-3.5 w-3.5" />}
-                      </div>
+                      <span>{opt.icon}</span>
+                      <span className="truncate">{opt.name.split(' ')[0]}</span>
                     </button>
-                  );
-                })}
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -879,10 +884,6 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
     <WhatsNewChangelogModal
       isOpen={whatsNewOpen}
       onClose={() => setWhatsNewOpen(false)}
-    />
-    <ProFeaturesHubModal
-      isOpen={featuresHubOpen}
-      onClose={() => setFeaturesHubOpen(false)}
     />
   </>
 );

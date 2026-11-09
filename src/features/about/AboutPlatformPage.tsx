@@ -32,6 +32,7 @@ import {
   Terminal,
   Car,
   Play,
+  Search,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
@@ -42,6 +43,7 @@ export function AboutPlatformPage() {
   const [activeTab, setActiveTab] = useState<'WORKFLOW' | 'BEFORE_AFTER' | 'DATA_SECURITY' | 'FEATURES' | 'COMPARISON' | 'AUTOMATIONS'>('WORKFLOW');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [selectedRoleScenario, setSelectedRoleScenario] = useState<'PATROL' | 'IO' | 'COMMAND'>('PATROL');
+  const [featuresSearchQuery, setFeaturesSearchQuery] = useState('');
 
   const DEMO_FEATURES = [
     {
@@ -409,9 +411,16 @@ export function AboutPlatformPage() {
     { id: 'SECURITY', label: 'Zero-Trust Security' },
   ];
 
-  const filteredFeatures = selectedCategory === 'ALL'
-    ? DEMO_FEATURES
-    : DEMO_FEATURES.filter((f) => f.category === selectedCategory);
+  const filteredFeatures = DEMO_FEATURES.filter((f) => {
+    const matchesCategory = selectedCategory === 'ALL' || f.category === selectedCategory;
+    const matchesSearch =
+      !featuresSearchQuery.trim() ||
+      f.title.toLowerCase().includes(featuresSearchQuery.toLowerCase()) ||
+      f.statutoryRef.toLowerCase().includes(featuresSearchQuery.toLowerCase()) ||
+      f.description.toLowerCase().includes(featuresSearchQuery.toLowerCase()) ||
+      f.category.toLowerCase().includes(featuresSearchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   return (
     <div className="space-y-8 w-full max-w-7xl mx-auto pb-12">
@@ -1615,92 +1624,149 @@ export function AboutPlatformPage() {
         </div>
       )}
 
-      {/* Tab 1: 32 Live Demo Capabilities */}
+      {/* Tab 1: 32 Live Demo Capabilities (Sequenced & Domain-Arranged Architecture) */}
       {activeTab === 'FEATURES' && (
         <div className="space-y-6">
-          {/* Category Filter Chips */}
-          <div className="flex flex-wrap items-center gap-2 text-xs">
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`px-3 py-1.5 rounded-lg border font-semibold transition-all ${
-                  selectedCategory === cat.id
-                    ? 'bg-primary/20 border-primary text-primary font-bold'
-                    : 'bg-card border-border/60 text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {cat.label}
-              </button>
-            ))}
+          {/* Header Controls: Live Search & Category Filter */}
+          <div className="p-4 rounded-2xl border border-primary/30 bg-slate-900/90 shadow-lg space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h3 className="text-base font-black text-white flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-emerald-400" />
+                  <span>32 Sovereign Capabilities Index (#01 to #32)</span>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Showing {filteredFeatures.length} of 32 live functional capabilities grounded in the New Criminal Laws.
+                </p>
+              </div>
+
+              {/* Instant Search Bar */}
+              <div className="relative w-full sm:w-72">
+                <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                <input
+                  type="text"
+                  value={featuresSearchQuery}
+                  onChange={(e) => setFeaturesSearchQuery(e.target.value)}
+                  placeholder="Search capabilities, BNS/BSA sections..."
+                  className="w-full h-8 pl-8 pr-3 rounded-lg border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+                {featuresSearchQuery && (
+                  <button
+                    onClick={() => setFeaturesSearchQuery('')}
+                    className="absolute right-2.5 top-2 text-[10px] text-muted-foreground hover:text-white"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Category Filter Chips */}
+            <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-border/50 text-xs">
+              {CATEGORIES.map((cat) => {
+                const count = cat.id === 'ALL'
+                  ? DEMO_FEATURES.length
+                  : DEMO_FEATURES.filter((f) => f.category === cat.id).length;
+                const isSelected = selectedCategory === cat.id;
+
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => setSelectedCategory(cat.id)}
+                    className={`px-2.5 py-1 rounded-lg border text-xs font-bold transition-all flex items-center gap-1.5 ${
+                      isSelected
+                        ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                        : 'bg-card border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted/40'
+                    }`}
+                  >
+                    <span>{cat.label}</span>
+                    <span className={`text-[10px] font-mono px-1 py-0.2 rounded-full ${
+                      isSelected ? 'bg-black/30 text-white' : 'bg-muted text-muted-foreground'
+                    }`}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          {/* Grid of 20 Features */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filteredFeatures.map((feat) => {
-              const Icon = feat.icon;
-              return (
-                <Card
-                  key={feat.id}
-                  className="p-5 space-y-4 hover:border-primary/60 transition-all duration-200 border-border/70 bg-card/90 flex flex-col justify-between group shadow-md"
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div
-                        className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0 border"
-                        style={{
-                          backgroundColor: `${feat.color}15`,
-                          borderColor: `${feat.color}40`,
-                          color: feat.color,
-                        }}
-                      >
-                        <Icon className="h-5 w-5" />
+          {/* Grid of 32 Sequenced Capabilities */}
+          {filteredFeatures.length === 0 ? (
+            <div className="p-8 text-center rounded-2xl border border-dashed border-border bg-card/40 space-y-2">
+              <p className="text-sm font-bold text-foreground">No matching capabilities found</p>
+              <p className="text-xs text-muted-foreground">Try clearing your search query or choosing another category filter.</p>
+              <Button size="sm" variant="outline" onClick={() => { setFeaturesSearchQuery(''); setSelectedCategory('ALL'); }}>
+                Reset Filters
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {filteredFeatures.map((feat) => {
+                const Icon = feat.icon;
+                return (
+                  <Card
+                    key={feat.id}
+                    className="p-5 space-y-4 hover:border-primary/60 transition-all duration-200 border-border/70 bg-card/90 flex flex-col justify-between group shadow-md"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div
+                          className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0 border"
+                          style={{
+                            backgroundColor: `${feat.color}15`,
+                            borderColor: `${feat.color}40`,
+                            color: feat.color,
+                          }}
+                        >
+                          <Icon className="h-5 w-5" />
+                        </div>
+                        <span className="font-mono text-xs font-black px-2 py-0.5 rounded-md bg-muted/60 text-foreground border border-border">
+                          #{String(feat.id).padStart(2, '0')}
+                        </span>
                       </div>
-                      <span className="font-mono text-xs font-bold text-muted-foreground">
-                        #{String(feat.id).padStart(2, '0')}
-                      </span>
+
+                      <div>
+                        <span className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-wider block">
+                          {feat.category}
+                        </span>
+                        <h3 className="font-black text-sm sm:text-base text-foreground leading-snug group-hover:text-primary transition-colors">
+                          {feat.title}
+                        </h3>
+                      </div>
+
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {feat.description}
+                      </p>
+
+                      <div className="p-2.5 rounded-lg bg-background/60 border border-border/50 text-[11px] space-y-1">
+                        <span className="text-primary font-bold block text-[10px] uppercase tracking-wider">
+                          Operational Impact:
+                        </span>
+                        <span className="text-slate-300 font-medium">{feat.impact}</span>
+                      </div>
                     </div>
 
-                    <div>
-                      <span className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-wider block">
-                        {feat.category}
-                      </span>
-                      <h3 className="font-extrabold text-sm sm:text-base text-foreground leading-snug group-hover:text-primary transition-colors">
-                        {feat.title}
-                      </h3>
+                    <div className="pt-3 border-t border-border/40 space-y-2">
+                      <div className="text-[10px] text-muted-foreground flex items-center gap-1.5 font-mono truncate" title={feat.statutoryRef}>
+                        <Shield className="h-3 w-3 text-emerald-400 shrink-0" />
+                        <span className="truncate">{feat.statutoryRef}</span>
+                      </div>
+
+                      <Button
+                        size="sm"
+                        onClick={() => navigate(feat.route)}
+                        className="w-full text-xs font-bold flex items-center justify-center gap-1.5 bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground border border-primary/30 transition-all"
+                      >
+                        <span>Launch Interactive Demo</span>
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </Button>
                     </div>
-
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      {feat.description}
-                    </p>
-
-                    <div className="p-2.5 rounded-lg bg-background/60 border border-border/50 text-[11px] space-y-1">
-                      <span className="text-primary font-bold block text-[10px] uppercase tracking-wider">
-                        Operational Impact:
-                      </span>
-                      <span className="text-slate-300 font-medium">{feat.impact}</span>
-                    </div>
-                  </div>
-
-                  <div className="pt-3 border-t border-border/40 space-y-2">
-                    <div className="text-[10px] text-muted-foreground flex items-center gap-1.5 font-mono truncate" title={feat.statutoryRef}>
-                      <Shield className="h-3 w-3 text-emerald-400 shrink-0" />
-                      <span className="truncate">{feat.statutoryRef}</span>
-                    </div>
-
-                    <Button
-                      size="sm"
-                      onClick={() => navigate(feat.route)}
-                      className="w-full text-xs font-bold flex items-center justify-center gap-1.5 bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground border border-primary/30 transition-all"
-                    >
-                      <span>Launch Interactive Demo</span>
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                </Card>
-              );
-            })}
-          </div>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 

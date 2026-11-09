@@ -34,7 +34,6 @@ import { useAuthStore } from '../../stores/authStore';
 import { useInvestigations } from '../../hooks/useIntelligenceApi';
 import { useTranslation } from '../../hooks/useTranslation';
 import { cn } from '../../utils/cn';
-import { ProFeaturesHubModal } from '../common/ProFeaturesHubModal';
 import { sound } from '../../utils/soundEffects';
 
 interface NavItem {
@@ -64,12 +63,12 @@ export function Sidebar() {
     setSidebarOpen,
     activeCaseId,
     setActiveCaseId,
-    setPageDirectoryOpen
+    setPageDirectoryOpen,
+    setFeaturesHubModalOpen,
   } = useAppStore();
   const { currentUser, activeRole } = useAuthStore();
   const { data: cases } = useInvestigations();
   const { t } = useTranslation();
-  const [featuresModalOpen, setFeaturesModalOpen] = React.useState(false);
 
   const handleCaseChange = (newCaseId: string) => {
     setActiveCaseId(newCaseId);
@@ -279,7 +278,7 @@ export function Sidebar() {
               <button
                 onClick={() => {
                   sound.playClickSound();
-                  setFeaturesModalOpen(true);
+                  setFeaturesHubModalOpen(true);
                 }}
                 className="p-2 rounded-lg bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-primary/20 border border-cyan-500/50 text-cyan-300 hover:text-white flex items-center justify-between text-xs font-bold transition-all shadow-sm"
                 title="Open 10 Core AI Engines & Capabilities Hub"
@@ -308,7 +307,7 @@ export function Sidebar() {
               <button
                 onClick={() => {
                   sound.playClickSound();
-                  setFeaturesModalOpen(true);
+                  setFeaturesHubModalOpen(true);
                 }}
                 className="w-10 h-10 rounded-lg bg-cyan-500/20 border border-cyan-500/50 text-cyan-300 flex items-center justify-center hover:bg-cyan-500/30 transition-all"
                 title="Features Hub (10 Engines)"
@@ -446,12 +445,6 @@ export function Sidebar() {
           </div>
         )}
       </aside>
-
-      {/* 10 Core Pro Features Hub Modal */}
-      <ProFeaturesHubModal
-        isOpen={featuresModalOpen}
-        onClose={() => setFeaturesModalOpen(false)}
-      />
     </>
   );
 }

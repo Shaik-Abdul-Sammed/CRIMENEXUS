@@ -315,6 +315,31 @@ export function NetworkGraphPage() {
     };
   }, []);
 
+  // Phonetic Speech Normalizer for Natural Law-Enforcement Audio Readout
+  const prepareSpokenText = (text: string): string => {
+    if (!text) return '';
+    return text
+      .replace(/[#*`_~]/g, ' ')
+      .replace(/\bCRIMENEXUS\b/gi, 'Crime Nexus')
+      .replace(/\bANPR\b/g, 'A.N.P.R. optical scanner')
+      .replace(/\bCDR\b/g, 'Call Detail Records')
+      .replace(/\bBSA\b/g, 'Bharatiya Sakshya Adhiniyam')
+      .replace(/\bBNSS\b/g, 'Bharatiya Nagarik Suraksha Sanhita')
+      .replace(/\bBNS\b/g, 'Bharatiya Nyaya Sanhita')
+      .replace(/\bFIR\b/g, 'First Information Report')
+      .replace(/\bGNN\b/g, 'Graph Neural Network')
+      .replace(/\bHDM-GNN\b/g, 'Heterogeneous Graph Neural Network')
+      .replace(/\bIMEI\b/g, 'I.M.E.I. device identifier')
+      .replace(/\bUPI\b/g, 'U.P.I. transaction')
+      .replace(/\bCCTNS\b/g, 'C.C.T.N.S. police network')
+      .replace(/\bIO\b/g, 'Investigating Officer')
+      .replace(/\bSHO\b/g, 'Station House Officer')
+      .replace(/\bDSP\b/g, 'Deputy Superintendent of Police')
+      .replace(/₹/g, 'Rupees ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
   const handleToggleSpeech = () => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
       toast.warning('Text-to-speech audio synthesis is not supported in this browser.', 'Audio Unsupported');
@@ -330,9 +355,9 @@ export function NetworkGraphPage() {
 
     window.speechSynthesis.cancel();
     sound.playRadarPing();
-    const cleanSpeechText = aiGraphExplanation.replace(/[#*`_~]/g, ' ');
+    const cleanSpeechText = prepareSpokenText(aiGraphExplanation);
     const utterance = new SpeechSynthesisUtterance(cleanSpeechText);
-    utterance.rate = 1.0;
+    utterance.rate = 0.98;
     utterance.pitch = 1.0;
     utterance.onend = () => setIsSpeaking(false);
     utterance.onerror = () => setIsSpeaking(false);
@@ -399,7 +424,7 @@ export function NetworkGraphPage() {
         window.speechSynthesis.resume();
       }
       sound.playRadarPing();
-      const clean = text.replace(/[#*`_~]/g, ' ');
+      const clean = prepareSpokenText(text);
       const utterance = new SpeechSynthesisUtterance(clean);
       const voices = window.speechSynthesis.getVoices();
       if (voices.length > 0) {
@@ -2444,9 +2469,94 @@ export function NetworkGraphPage() {
                   )}
                 </div>
 
-                <p className="text-foreground leading-relaxed font-sans font-medium bg-background/60 p-3 rounded-lg border border-border">
-                  {aiGraphExplanation}
-                </p>
+                {/* Visual Photographic Intelligence Cards (Replaces Dense Wordy Text) */}
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  {/* Card 1: Primary Syndicate Kingpin */}
+                  <div className="rounded-xl border border-red-500/40 bg-slate-900/90 p-2 space-y-1.5 flex flex-col justify-between overflow-hidden shadow-sm">
+                    <div className="flex items-center gap-2">
+                      <img
+                        src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+                        alt="Rajan Verma"
+                        className="w-10 h-10 rounded-lg object-cover border-2 border-red-500 shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <span className="text-[11px] font-black text-white truncate block">Rajan Verma</span>
+                        <span className="text-[9px] font-mono text-red-400 font-bold block">Syndicate Kingpin</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between text-[10px] font-mono pt-1 border-t border-white/10 text-muted-foreground">
+                      <span>Degree 8 Hub</span>
+                      <span className="text-red-400 font-black">92% Risk</span>
+                    </div>
+                  </div>
+
+                  {/* Card 2: Getaway Vehicle ANPR */}
+                  <div className="rounded-xl border border-amber-500/40 bg-slate-900/90 p-2 space-y-1.5 flex flex-col justify-between overflow-hidden shadow-sm">
+                    <div className="flex items-center gap-2">
+                      <img
+                        src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=400"
+                        alt="Scorpio ANPR"
+                        className="w-10 h-10 rounded-lg object-cover border-2 border-amber-500 shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <span className="text-[11px] font-black text-white truncate block">TS 09 AB 1234</span>
+                        <span className="text-[9px] font-mono text-amber-300 font-bold block">Black Scorpio</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between text-[10px] font-mono pt-1 border-t border-white/10 text-muted-foreground">
+                      <span>118 km/h</span>
+                      <span className="text-amber-400 font-bold">KM 48 Toll</span>
+                    </div>
+                  </div>
+
+                  {/* Card 3: Smurfing Bank Mule */}
+                  <div className="rounded-xl border border-cyan-500/40 bg-slate-900/90 p-2 space-y-1.5 flex flex-col justify-between overflow-hidden shadow-sm">
+                    <div className="flex items-center gap-2">
+                      <img
+                        src="https://images.unsplash.com/photo-1563986768609-322da13575f3?w=400"
+                        alt="HDFC Bank"
+                        className="w-10 h-10 rounded-lg object-cover border-2 border-cyan-500 shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <span className="text-[11px] font-black text-white truncate block">ACC-908122</span>
+                        <span className="text-[9px] font-mono text-cyan-300 font-bold block">HDFC Mule</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between text-[10px] font-mono pt-1 border-t border-white/10 text-muted-foreground">
+                      <span>₹48,500 Flows</span>
+                      <span className="text-cyan-400 font-bold">Sec 102 CrPC</span>
+                    </div>
+                  </div>
+
+                  {/* Card 4: Telecom Tower Azimuth */}
+                  <div className="rounded-xl border border-purple-500/40 bg-slate-900/90 p-2 space-y-1.5 flex flex-col justify-between overflow-hidden shadow-sm">
+                    <div className="flex items-center gap-2">
+                      <img
+                        src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400"
+                        alt="Telecom Tower"
+                        className="w-10 h-10 rounded-lg object-cover border-2 border-purple-500 shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <span className="text-[11px] font-black text-white truncate block">DL-TWR-8812</span>
+                        <span className="text-[9px] font-mono text-purple-300 font-bold block">Airtel Azimuth</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between text-[10px] font-mono pt-1 border-t border-white/10 text-muted-foreground">
+                      <span>142° Sector</span>
+                      <span className="text-purple-400 font-bold">Sec 39 BNSS</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-lg bg-background/60 border border-border text-xs space-y-1.5 leading-relaxed">
+                  <div className="flex items-center gap-1.5 text-primary font-bold text-[11px]">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    <span>Topological Synthesis:</span>
+                  </div>
+                  <p className="text-foreground/90 font-medium text-[11px]">
+                    {aiGraphExplanation}
+                  </p>
+                </div>
                 <div className="grid grid-cols-3 gap-2 pt-1 text-center font-mono text-[10px]">
                   <div className="p-2 rounded bg-background/60 border border-border">
                     <span className="text-muted-foreground block">Entities</span>
@@ -2476,10 +2586,34 @@ export function NetworkGraphPage() {
                   <X className="h-4 w-4" />
                 </button>
               </CardHeader>
-              <CardContent className="space-y-4 text-xs">
-                <div>
-                  <Badge variant="outline">{selectedNode.type}</Badge>
-                  <h3 className="text-base font-extrabold text-foreground mt-1">{selectedNode.name}</h3>
+              <CardContent className="space-y-3 text-xs">
+                {/* Visual Photographic Banner for Selected Entity */}
+                <div className="relative rounded-xl overflow-hidden border border-border/80 bg-slate-950">
+                  <img
+                    src={
+                      selectedNode.type === 'PERSON'
+                        ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300'
+                        : selectedNode.type === 'VEHICLE'
+                        ? 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=400'
+                        : selectedNode.type === 'BANK_ACCOUNT'
+                        ? 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=400'
+                        : 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400'
+                    }
+                    alt={selectedNode.name}
+                    className="w-full h-28 object-cover opacity-85"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+                  <div className="absolute bottom-2 left-2.5 right-2.5 flex items-end justify-between">
+                    <div>
+                      <Badge variant="outline" className="text-[10px] font-mono bg-black/60 border-primary/50 text-primary font-bold">
+                        {selectedNode.type}
+                      </Badge>
+                      <h3 className="text-sm font-black text-white mt-0.5 truncate">{selectedNode.name}</h3>
+                    </div>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-red-500/30 text-red-300 border border-red-500/50 font-bold">
+                      {selectedNode.riskLevel || 'HIGH'} RISK
+                    </span>
+                  </div>
                 </div>
 
                 <div className="p-3 rounded-lg bg-background/60 border border-border space-y-1 text-[11px]">

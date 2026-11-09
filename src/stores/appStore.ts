@@ -17,6 +17,7 @@ interface AppState {
   activeCaseId: string;
   globalSearchOpen: boolean;
   pageDirectoryOpen: boolean;
+  featuresHubModalOpen: boolean;
   theme: 'dark' | 'light';
   figmaTheme: FigmaTheme;
   notifications: AppNotification[];
@@ -25,6 +26,7 @@ interface AppState {
   setActiveCaseId: (caseId: string) => void;
   setGlobalSearchOpen: (open: boolean) => void;
   setPageDirectoryOpen: (open: boolean) => void;
+  setFeaturesHubModalOpen: (open: boolean) => void;
   setTheme: (theme: 'dark' | 'light') => void;
   setFigmaTheme: (theme: FigmaTheme) => void;
   toggleTheme: () => void;
@@ -54,6 +56,7 @@ export const useAppStore = create<AppState>((set, get) => {
     activeCaseId: 'case-101',
     globalSearchOpen: false,
     pageDirectoryOpen: false,
+    featuresHubModalOpen: false,
     theme: initialFigmaTheme === 'light' ? 'light' : 'dark',
     figmaTheme: initialFigmaTheme,
     notifications: [
@@ -118,6 +121,7 @@ export const useAppStore = create<AppState>((set, get) => {
   setActiveCaseId: (caseId) => set({ activeCaseId: caseId }),
   setGlobalSearchOpen: (open) => set({ globalSearchOpen: open }),
   setPageDirectoryOpen: (open) => set({ pageDirectoryOpen: open }),
+  setFeaturesHubModalOpen: (open) => set({ featuresHubModalOpen: open }),
   setFigmaTheme: (theme: FigmaTheme) => {
     if (typeof document !== 'undefined') {
       document.documentElement.classList.remove('light', 'dark', 'theme-palantir', 'theme-daylight', 'theme-cyber-matrix', 'theme-amber-tactical');

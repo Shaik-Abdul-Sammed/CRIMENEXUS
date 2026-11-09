@@ -5,12 +5,15 @@ import { Sidebar } from '../components/layout/Sidebar';
 import { TopNav } from '../components/layout/TopNav';
 import { GlobalSearchModal } from '../components/layout/GlobalSearchModal';
 import { PageDirectoryModal } from '../components/common/PageDirectoryModal';
+import { ProFeaturesHubModal } from '../components/common/ProFeaturesHubModal';
 import { PageTransition } from '../components/common/PageTransition';
 import { BackToTopButton } from '../components/common/BackToTopButton';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
+import { useAppStore } from '../stores/appStore';
 
 export function AppLayout() {
   const location = useLocation();
+  const { featuresHubModalOpen, setFeaturesHubModalOpen } = useAppStore();
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground">
@@ -48,6 +51,10 @@ export function AppLayout() {
       {/* Universal Modal Overlays */}
       <GlobalSearchModal />
       <PageDirectoryModal />
+      <ProFeaturesHubModal
+        isOpen={featuresHubModalOpen}
+        onClose={() => setFeaturesHubModalOpen(false)}
+      />
 
       {/* Floating Back to Top Button */}
       <BackToTopButton />
