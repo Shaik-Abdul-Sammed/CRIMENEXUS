@@ -24,6 +24,7 @@ import {
   Volume2,
   VolumeX,
   Train,
+  Grid,
 } from 'lucide-react';
 import { sound } from '../../utils/soundEffects';
 import { useAppStore, FigmaTheme } from '../../stores/appStore';
@@ -46,6 +47,7 @@ export function TopNav() {
   const navigate = useNavigate();
   const {
     setGlobalSearchOpen,
+    setPageDirectoryOpen,
     theme,
     toggleTheme,
     figmaTheme,
@@ -243,11 +245,11 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
 
       {/* Right: Consolidated Tools & Actions (Responsive & Overflow Protected) */}
       <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 justify-end min-w-0">
-        {/* Quick Search Trigger (Modal Launcher) */}
+        {/* 1. Global Intelligence Search Trigger (High Usage) */}
         <button
           onClick={() => setGlobalSearchOpen(true)}
           className="flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg border border-border bg-background/80 text-xs text-muted-foreground hover:border-primary/50 hover:bg-accent/50 transition-all focus:outline-none shrink-0"
-          title="Search cases, entities, and evidence (Press /)"
+          title="Search cases, entities, pages, and evidence (Press /)"
           aria-label="Search cases, entities, and evidence"
         >
           <Search className="h-3.5 w-3.5 text-primary shrink-0" />
@@ -257,13 +259,40 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           </kbd>
         </button>
 
-        {/* 10 Pro Features Hub Button */}
+        {/* 2. All 25 Pages Directory & Quick Navigator (High Priority) */}
+        <button
+          onClick={() => {
+            sound.playClickSound();
+            setPageDirectoryOpen(true);
+          }}
+          className="flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold transition-all shadow-sm shrink-0"
+          title="Open complete 25 Pages System Directory (Press ⌘P / Ctrl+P)"
+          aria-label="All Pages Directory"
+        >
+          <Grid className="h-3.5 w-3.5 text-primary shrink-0" />
+          <span className="hidden md:inline text-[11px]">All Pages</span>
+          <span className="px-1 py-0.2 rounded-full bg-primary/20 text-primary text-[9px] font-mono font-black">25</span>
+        </button>
+
+        {/* 3. 100 Technical Specifications & Next 96 Roadmap (Prominent, High Priority) */}
+        <Link
+          to="/roadmap"
+          className="flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg border border-amber-500/50 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 text-xs font-bold transition-all shadow-sm shrink-0"
+          title="100 Sovereign Technical Specifications & Next 96 Engineering Roadmap"
+          aria-label="100 Specs Roadmap"
+        >
+          <Compass className="h-3.5 w-3.5 text-amber-400 shrink-0 animate-spin-slow" />
+          <span className="hidden lg:inline text-[11px] font-black">Next 96 Roadmap</span>
+          <span className="px-1.5 py-0.2 rounded-full bg-amber-400/25 text-amber-300 text-[9px] font-mono font-black border border-amber-400/40">100 SPECS</span>
+        </Link>
+
+        {/* 4. 10 Core Pro Features Hub Modal */}
         <button
           onClick={() => {
             sound.playClickSound();
             setFeaturesHubOpen(true);
           }}
-          className="flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg border border-cyan-500/50 bg-gradient-to-r from-cyan-950/80 to-blue-950/80 text-cyan-300 hover:from-cyan-900/80 hover:to-blue-900/80 text-xs font-bold transition-all shadow-sm shrink-0"
+          className="flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg border border-cyan-500/50 bg-cyan-950/50 hover:bg-cyan-900/50 text-cyan-300 text-xs font-bold transition-all shadow-sm shrink-0"
           title="CRIMENEXUS 10 Core Pro Features & Capabilities Hub"
           aria-label="Features Showcase"
         >
@@ -272,10 +301,10 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           <span className="px-1 py-0.2 rounded-full bg-cyan-400/20 text-cyan-300 text-[9px] font-mono font-extrabold">10</span>
         </button>
 
-        {/* Indian Railways TC Aadhaar Face Verification Terminal Button */}
+        {/* 5. Indian Railways TC Aadhaar Face Verification Terminal Button */}
         <Link
           to="/railway-verification"
-          className="hidden xl:flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg border border-sky-500/40 bg-sky-950/50 hover:bg-sky-900/50 text-sky-300 text-xs font-bold transition-all shadow-sm shrink-0"
+          className="hidden sm:flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg border border-sky-500/40 bg-sky-950/50 hover:bg-sky-900/50 text-sky-300 text-xs font-bold transition-all shadow-sm shrink-0"
           title="Indian Railways TC Biometric Aadhaar Face Verification & CCTNS Watchlist Terminal"
           aria-label="Railway TC Verification"
         >
@@ -284,25 +313,13 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           <span className="px-1 py-0.2 rounded-full bg-sky-400/20 text-sky-300 text-[9px] font-mono font-bold">TC</span>
         </Link>
 
-        {/* 100 Technical Specifications Roadmap Button */}
-        <Link
-          to="/roadmap"
-          className="hidden xl:flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg border border-amber-500/40 bg-amber-950/40 hover:bg-amber-900/40 text-amber-300 text-xs font-bold transition-all shadow-sm shrink-0"
-          title="100 Sovereign Technical Specifications & Next 96 Engineering Roadmap"
-          aria-label="100 Specs Roadmap"
-        >
-          <Compass className="h-3.5 w-3.5 text-amber-400 shrink-0" />
-          <span className="hidden 2xl:inline text-[11px]">100 Specs</span>
-          <span className="px-1 py-0.2 rounded-full bg-amber-400/20 text-amber-300 text-[9px] font-mono font-bold">96 NEW</span>
-        </Link>
-
-        {/* 15 Statutory Rules & Remand Guard Button */}
+        {/* 6. 15 Statutory Rules & Remand Guard Button */}
         <button
           onClick={() => {
             sound.playClickSound();
             setStatutoryRulesOpen(true);
           }}
-          className="hidden 2xl:flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2 rounded-lg border border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 text-xs font-bold transition-all shrink-0"
+          className="hidden md:flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2 rounded-lg border border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 text-xs font-bold transition-all shrink-0"
           title="15 Sovereign Statutory Criminal Rules & Remand Guard (Press S)"
           aria-label="15 Sovereign Statutory Criminal Rules"
         >
@@ -764,6 +781,39 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
                   ) : (
                     <Moon className="h-3.5 w-3.5 text-slate-700" />
                   )}
+                </button>
+              </div>
+
+              {/* Direct Jumps to 100 Specs Roadmap & All 25 Pages Directory */}
+              <div className="pt-2 border-t border-border space-y-1">
+                <Link
+                  to="/roadmap"
+                  onClick={() => setSettingsMenuOpen(false)}
+                  className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all"
+                >
+                  <div className="flex items-center gap-2">
+                    <Compass className="h-3.5 w-3.5 text-amber-400 animate-spin-slow" />
+                    <span>100 Specs & Next 96 Roadmap</span>
+                  </div>
+                  <span className="text-[9px] font-mono font-black px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-300">
+                    96 NEW
+                  </span>
+                </Link>
+
+                <button
+                  onClick={() => {
+                    setSettingsMenuOpen(false);
+                    setPageDirectoryOpen(true);
+                  }}
+                  className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 text-xs font-bold transition-all text-left"
+                >
+                  <div className="flex items-center gap-2">
+                    <Grid className="h-3.5 w-3.5 text-primary" />
+                    <span>Complete 25 Pages Directory</span>
+                  </div>
+                  <span className="text-[9px] font-mono font-black px-1.5 py-0.2 rounded bg-primary/20 text-primary">
+                    ⌘P
+                  </span>
                 </button>
               </div>
             </div>

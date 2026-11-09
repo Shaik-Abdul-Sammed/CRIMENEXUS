@@ -439,6 +439,16 @@ export function AboutPlatformPage() {
 
           <div className="flex flex-wrap items-center gap-3 pt-3">
             <Button
+              onClick={() => navigate('/roadmap')}
+              className="bg-amber-500 hover:bg-amber-400 text-black font-extrabold flex items-center gap-2 shadow-md"
+            >
+              <Compass className="h-4 w-4" />
+              <span>100 Technical Roadmap (96 Next Specs)</span>
+              <span className="px-1.5 py-0.2 rounded bg-black/20 text-black text-[9px] font-mono font-black">
+                96 NEW
+              </span>
+            </Button>
+            <Button
               onClick={() => setActiveTab('WORKFLOW')}
               className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg flex items-center gap-2"
             >

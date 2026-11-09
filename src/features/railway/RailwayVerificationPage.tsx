@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Train,
   Camera,
@@ -21,7 +22,8 @@ import {
   Car,
   FileText,
   BadgeAlert,
-  Sparkles
+  Sparkles,
+  Compass,
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
@@ -224,15 +226,29 @@ LOCATION AT SCAN : KM 84 Marker near Jewar / Aligarh Outer (Speed: 92 km/h)
           </div>
         </div>
 
-        {/* Train Operational Badge */}
-        <div className="p-3 rounded-xl border border-sky-500/30 bg-slate-950 flex flex-col text-right shrink-0">
-          <div className="text-[10px] text-muted-foreground uppercase font-mono">Current Corridor Intercept</div>
-          <div className="text-sm font-extrabold text-white flex items-center justify-end gap-1.5 font-mono">
-            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
-            <span>12424 Rajdhani Exp (92 km/h)</span>
-          </div>
-          <div className="text-[10px] text-sky-400 font-mono">
-            Next: Aligarh Jn (Platform 2 in 18m)
+        <div className="flex items-center gap-2.5 shrink-0">
+          <Link to="/roadmap">
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 text-xs font-bold flex items-center gap-1.5"
+              title="View Spec #37: UIDAI FaceRD Biometrics in 100 Technical Roadmap"
+            >
+              <Compass className="h-3.5 w-3.5 text-amber-400" />
+              <span>Spec #37 in Roadmap</span>
+            </Button>
+          </Link>
+
+          {/* Train Operational Badge */}
+          <div className="p-2.5 rounded-xl border border-sky-500/30 bg-slate-950 flex flex-col text-right">
+            <div className="text-[10px] text-muted-foreground uppercase font-mono">Current Corridor Intercept</div>
+            <div className="text-xs font-extrabold text-white flex items-center justify-end gap-1.5 font-mono">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
+              <span>12424 Rajdhani Exp (92 km/h)</span>
+            </div>
+            <div className="text-[10px] text-sky-400 font-mono">
+              Next: Aligarh Jn (Platform 2 in 18m)
+            </div>
           </div>
         </div>
       </div>

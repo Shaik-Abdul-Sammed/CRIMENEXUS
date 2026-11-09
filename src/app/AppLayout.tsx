@@ -4,6 +4,7 @@ import { AnimatePresence } from 'framer-motion';
 import { Sidebar } from '../components/layout/Sidebar';
 import { TopNav } from '../components/layout/TopNav';
 import { GlobalSearchModal } from '../components/layout/GlobalSearchModal';
+import { PageDirectoryModal } from '../components/common/PageDirectoryModal';
 import { PageTransition } from '../components/common/PageTransition';
 import { BackToTopButton } from '../components/common/BackToTopButton';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
@@ -44,8 +45,9 @@ export function AppLayout() {
         </main>
       </div>
 
-      {/* Universal Modal Overlay */}
+      {/* Universal Modal Overlays */}
       <GlobalSearchModal />
+      <PageDirectoryModal />
 
       {/* Floating Back to Top Button */}
       <BackToTopButton />

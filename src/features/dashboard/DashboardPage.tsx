@@ -26,6 +26,7 @@ import {
   Activity,
   Radio,
   PlusCircle,
+  Compass,
 } from 'lucide-react';
 import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import {
@@ -348,6 +349,21 @@ export function DashboardPage() {
               </button>
             ))}
           </div>
+
+          {/* Next 96 Roadmap & 100 Specs Button */}
+          <Link to="/roadmap">
+            <Button
+              size="sm"
+              className="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50 font-bold text-xs flex items-center gap-1.5 whitespace-nowrap shrink-0 shadow-sm"
+              title="Explore 100 Sovereign Technical Specifications & Next 96 Engineering Roadmap"
+            >
+              <Compass className="h-4 w-4 text-amber-400" />
+              <span>Next 96 Roadmap</span>
+              <span className="px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-200 text-[9px] font-mono font-black border border-amber-400/30">
+                100 SPECS
+              </span>
+            </Button>
+          </Link>
 
           {/* Operation Shatter Criminal Escape Demo Button */}
           <Link to="/escape-demo">

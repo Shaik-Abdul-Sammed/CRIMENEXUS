@@ -248,15 +248,31 @@ export function ProFeaturesHubModal({ isOpen, onClose, initialTab = 'FEATURES' }
               </p>
             </div>
           </div>
-          <button
-            onClick={() => {
-              sound.playClickSound();
-              onClose();
-            }}
-            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-slate-800 transition-colors"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              onClick={() => {
+                sound.playClickSound();
+                onClose();
+                navigate('/roadmap');
+              }}
+              className="hidden sm:flex items-center gap-1.5 bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-black border border-amber-500/40 text-xs font-bold py-1 px-2.5 rounded-lg transition-all"
+              title="Open full 100 Technical Specifications & Next 96 Roadmap"
+            >
+              <Compass className="h-3.5 w-3.5 text-amber-400" />
+              <span>Next 96 Roadmap</span>
+              <span className="px-1 py-0.2 rounded bg-amber-500/30 text-amber-200 text-[9px] font-mono font-black">96 NEW</span>
+            </Button>
+            <button
+              onClick={() => {
+                sound.playClickSound();
+                onClose();
+              }}
+              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-slate-800 transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         {/* Tab Switcher: Features Directory vs Global Precedents */}
@@ -330,7 +346,7 @@ export function ProFeaturesHubModal({ isOpen, onClose, initialTab = 'FEATURES' }
 
         {/* Content Body */}
         <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 space-y-4 scrollbar-thin scrollbar-thumb-border">
-          {activeTab === 'FEATURES' ? (
+          {activeTab === 'FEATURES' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {filteredFeatures.map((feat) => {
                 const Icon = feat.icon;
@@ -393,7 +409,9 @@ export function ProFeaturesHubModal({ isOpen, onClose, initialTab = 'FEATURES' }
                 );
               })}
             </div>
-          ) : (
+          )}
+
+          {activeTab === 'GLOBAL_IMPACT' && (
             /* Tab 2: International Graph Intelligence Precedents & Crime Reduction Impact */
             <div className="space-y-4">
               <div className="p-4 rounded-xl border border-emerald-500/40 bg-emerald-950/20">
@@ -490,83 +508,136 @@ export function ProFeaturesHubModal({ isOpen, onClose, initialTab = 'FEATURES' }
 
           {activeTab === 'ROADMAP' && (
             <div className="space-y-4">
-              <div className="p-4 rounded-xl border border-amber-500/40 bg-gradient-to-r from-amber-950/30 via-slate-900 to-slate-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                  <h3 className="font-extrabold text-sm sm:text-base text-white flex items-center gap-2">
-                    <Compass className="h-4 w-4 text-amber-400" />
-                    <span>Sovereign Roadmap: Next 96 Technical Specifications</span>
-                  </h3>
-                  <p className="text-xs text-slate-300 mt-1">
-                    Exhaustive multi-phase engineering architecture scaling CRIMENEXUS from 10 live production models to all 100 claimed forensic and quantum capabilities.
+              <div className="p-5 rounded-2xl border-2 border-amber-500/60 bg-gradient-to-r from-amber-950/70 via-slate-900 to-amber-950/50 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="p-1.5 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/40">
+                      <Compass className="h-5 w-5 animate-spin-slow" />
+                    </span>
+                    <h3 className="font-black text-base sm:text-lg text-white tracking-tight">
+                      Sovereign Engineering Roadmap: Next 96 Technical Specifications
+                    </h3>
+                  </div>
+                  <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+                    Exhaustive multi-phase architectural blueprint scaling CRIMENEXUS from 10 live production models to all 100 claimed forensic, mathematical, and quantum capabilities with statutory anchors under BNS/BNSS/BSA.
                   </p>
                 </div>
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    sound.playClickSound();
-                    onClose();
-                    navigate('/roadmap');
-                  }}
-                  className="bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-xs shrink-0 flex items-center gap-1.5 shadow-md shadow-amber-500/20"
-                >
-                  <span>Open Full 100 Specs Workspace</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </Button>
+                <div className="flex flex-wrap items-center gap-2 shrink-0">
+                  <Button
+                    onClick={() => {
+                      sound.playClickSound();
+                      onClose();
+                      navigate('/roadmap');
+                    }}
+                    className="bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs px-4 py-2.5 flex items-center gap-2 shadow-lg shadow-amber-500/25 transition-all"
+                  >
+                    <span>Open Full 100 Specs Workspace</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 text-xs">
                 {/* Phase 2 */}
-                <div className="p-3.5 rounded-xl border border-blue-500/30 bg-slate-950/80 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Badge variant="outline" className="border-blue-500/50 text-blue-400 text-[9px] font-mono">
-                      PHASE 2 (Q1-Q2 2027)
-                    </Badge>
-                    <span className="text-[10px] text-muted-foreground font-mono">25 Engines</span>
+                <div className="p-4 rounded-xl border border-blue-500/40 bg-slate-950/90 space-y-3 flex flex-col justify-between hover:border-blue-500 transition-all">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Badge variant="outline" className="border-blue-500/50 text-blue-400 text-[9px] font-mono font-bold">
+                        PHASE 2 (Q1-Q2 2027)
+                      </Badge>
+                      <span className="text-[10px] text-blue-300 font-mono font-bold">25 Engines</span>
+                    </div>
+                    <h4 className="font-extrabold text-white text-xs leading-snug">
+                      Post-Quantum Cryptography & Neural Diarization
+                    </h4>
+                    <ul className="text-[11px] text-slate-300 space-y-1.5 list-disc list-inside">
+                      <li>NIST FIPS 203 ML-KEM Kyber-1024 Quantum Key Exchange</li>
+                      <li>NIST FIPS 204 ML-DSA Dilithium-5 Signatures</li>
+                      <li>Qiskit Gate-Level QAOA Quantum Patrol Intercept</li>
+                      <li>Whisper Large-v3 Multilingual Wiretap Diarization</li>
+                      <li>UIDAI FaceRD AI Biometric Railway TC Verification</li>
+                    </ul>
                   </div>
-                  <h4 className="font-bold text-white text-xs">Post-Quantum Cryptography & Neural Diarization</h4>
-                  <ul className="text-[11px] text-slate-300 space-y-1 list-disc list-inside">
-                    <li>NIST FIPS 203 ML-KEM Kyber-1024 Quantum Key Exchange</li>
-                    <li>NIST FIPS 204 ML-DSA Dilithium-5 Digital Signatures</li>
-                    <li>Qiskit Gate-Level QAOA Quantum Patrol Intercept</li>
-                    <li>Whisper Large-v3 Multilingual Wiretap Diarization</li>
-                    <li>UIDAI FaceRD AI Biometric Railway TC Verification</li>
-                  </ul>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      sound.playClickSound();
+                      onClose();
+                      navigate('/roadmap');
+                    }}
+                    className="w-full mt-2 h-7 text-[11px] font-bold bg-blue-500/20 hover:bg-blue-500 text-blue-300 hover:text-black border border-blue-500/40 transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <span>Explore Phase 2 Specs</span>
+                    <ArrowRight className="h-3 w-3" />
+                  </Button>
                 </div>
 
                 {/* Phase 3 */}
-                <div className="p-3.5 rounded-xl border border-amber-500/30 bg-slate-950/80 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Badge variant="outline" className="border-amber-500/50 text-amber-400 text-[9px] font-mono">
-                      PHASE 3 (Q3-Q4 2027)
-                    </Badge>
-                    <span className="text-[10px] text-muted-foreground font-mono">35 Engines</span>
+                <div className="p-4 rounded-xl border border-amber-500/40 bg-slate-950/90 space-y-3 flex flex-col justify-between hover:border-amber-500 transition-all">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Badge variant="outline" className="border-amber-500/50 text-amber-400 text-[9px] font-mono font-bold">
+                        PHASE 3 (Q3-Q4 2027)
+                      </Badge>
+                      <span className="text-[10px] text-amber-300 font-mono font-bold">35 Engines</span>
+                    </div>
+                    <h4 className="font-extrabold text-white text-xs leading-snug">
+                      Zero-Knowledge Biometrics & Automated Charge-Sheets
+                    </h4>
+                    <ul className="text-[11px] text-slate-300 space-y-1.5 list-disc list-inside">
+                      <li>zk-SNARKs Privacy Minutiae Vault (DPDP Act)</li>
+                      <li>BNS 2023 Sec 193 Automated Charge-Sheet Synthesis</li>
+                      <li>Hardware TPM 2.0 Enclave Mobile Sealing</li>
+                      <li>SS7/Diameter Cellular IMSI-Swap Listener</li>
+                      <li>Smart Meter NILM Disaggregation Safehouse Detection</li>
+                    </ul>
                   </div>
-                  <h4 className="font-bold text-white text-xs">Zero-Knowledge Biometrics & Automated Charge-Sheets</h4>
-                  <ul className="text-[11px] text-slate-300 space-y-1 list-disc list-inside">
-                    <li>zk-SNARKs Privacy Minutiae Vault (DPDP Act compliant)</li>
-                    <li>BNS 2023 Sec 193 Automated Final Charge-Sheet Synthesis</li>
-                    <li>Hardware TPM 2.0 Enclave Sealing on Mobile Terminals</li>
-                    <li>SS7/Diameter Cellular Handover & IMSI-Swap Listener</li>
-                    <li>Smart Meter NILM Disaggregation for Safehouse Detection</li>
-                  </ul>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      sound.playClickSound();
+                      onClose();
+                      navigate('/roadmap');
+                    }}
+                    className="w-full mt-2 h-7 text-[11px] font-bold bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-black border border-amber-500/40 transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <span>Explore Phase 3 Specs</span>
+                    <ArrowRight className="h-3 w-3" />
+                  </Button>
                 </div>
 
                 {/* Phase 4 */}
-                <div className="p-3.5 rounded-xl border border-purple-500/30 bg-slate-950/80 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Badge variant="outline" className="border-purple-500/50 text-purple-400 text-[9px] font-mono">
-                      PHASE 4 (2028 NATIONAL)
-                    </Badge>
-                    <span className="text-[10px] text-muted-foreground font-mono">36 Engines</span>
+                <div className="p-4 rounded-xl border border-purple-500/40 bg-slate-950/90 space-y-3 flex flex-col justify-between hover:border-purple-500 transition-all">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Badge variant="outline" className="border-purple-500/50 text-purple-400 text-[9px] font-mono font-bold">
+                        PHASE 4 (2028 NATIONAL)
+                      </Badge>
+                      <span className="text-[10px] text-purple-300 font-mono font-bold">36 Engines</span>
+                    </div>
+                    <h4 className="font-extrabold text-white text-xs leading-snug">
+                      Orbital Satellite Radar & National e-Courts Anchor
+                    </h4>
+                    <ul className="text-[11px] text-slate-300 space-y-1.5 list-disc list-inside">
+                      <li>ISRO RISAT Synthetic Aperture Radar (SAR) Wakes</li>
+                      <li>Indian Railways PRS 2.4M Ticket Correlation</li>
+                      <li>e-Courts Judicial Blockchain Proof Consortia</li>
+                      <li>5G/SatCom Autonomous Drone Swarm Mesh (OLSRv2)</li>
+                      <li>Section 180 BNSS Contradiction AI Matrix</li>
+                    </ul>
                   </div>
-                  <h4 className="font-bold text-white text-xs">Orbital Satellite Radar & National e-Courts Anchor</h4>
-                  <ul className="text-[11px] text-slate-300 space-y-1 list-disc list-inside">
-                    <li>ISRO RISAT Synthetic Aperture Radar (SAR) Vehicle Wake</li>
-                    <li>Indian Railways PRS 2.4M Ticket Stream Correlation</li>
-                    <li>Offline e-Courts Judicial Consortium Blockchain Anchor</li>
-                    <li>5G/SatCom Autonomous Drone Swarm Mesh (OLSRv2)</li>
-                    <li>Section 180 BNSS Judicial Contradiction AI Matrix</li>
-                  </ul>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      sound.playClickSound();
+                      onClose();
+                      navigate('/roadmap');
+                    }}
+                    className="w-full mt-2 h-7 text-[11px] font-bold bg-purple-500/20 hover:bg-purple-500 text-purple-300 hover:text-black border border-purple-500/40 transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <span>Explore Phase 4 Specs</span>
+                    <ArrowRight className="h-3 w-3" />
+                  </Button>
                 </div>
               </div>
             </div>
@@ -579,16 +650,31 @@ export function ProFeaturesHubModal({ isOpen, onClose, initialTab = 'FEATURES' }
             <Shield className="h-3.5 w-3.5 text-primary" />
             <span>CRIMENEXUS Production Grade Suite • Compliant with Section 167 BNSS & Section 63 BSA</span>
           </div>
-          <Button
-            size="sm"
-            onClick={() => {
-              sound.playClickSound();
-              onClose();
-            }}
-            className="w-full sm:w-auto text-xs"
-          >
-            Close Features Hub
-          </Button>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Button
+              size="sm"
+              onClick={() => {
+                sound.playClickSound();
+                onClose();
+                navigate('/roadmap');
+              }}
+              className="bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs flex items-center gap-1.5 shadow-md shrink-0"
+            >
+              <Compass className="h-3.5 w-3.5" />
+              <span>Full Roadmap Workspace →</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                sound.playClickSound();
+                onClose();
+              }}
+              className="w-full sm:w-auto text-xs"
+            >
+              Close Hub
+            </Button>
+          </div>
         </div>
       </div>
     </div>
