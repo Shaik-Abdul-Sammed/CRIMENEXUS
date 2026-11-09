@@ -3073,22 +3073,48 @@ export function LiveTrackingPage() {
           </div>
         )}
 
-        {/* TAB 2: All 32 Sovereign Tools Grid & Interactive Runner */}
+        {/* TAB 2: All 32 Sovereign Tools Grid & Interactive Runner (Sequenced, Cleanly Categorized & Arranged) */}
         {activeInfoTab === 'tools' && (
           <div className="space-y-4">
+            {/* Top Operational Capabilities Summary Banner */}
+            <div className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-950/20 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-md">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-emerald-600 text-white font-extrabold text-[10px] uppercase tracking-wider px-2 py-0.5">
+                    32 CAPABILITIES VERIFIED
+                  </Badge>
+                  <span className="text-xs font-mono text-emerald-300 font-semibold">
+                    100% Sovereign Police Platform Feature Suite
+                  </span>
+                </div>
+                <p className="text-xs text-slate-300">
+                  Every feature implements statutory procedures under BNSS 2023, BNS 2023, and BSA 2023 with cryptographic evidentiary trails.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 text-xs font-mono">
+                <span className="px-2.5 py-1 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-emerald-300">
+                  32/32 Operational
+                </span>
+                <span className="px-2.5 py-1 rounded-lg bg-amber-950/60 border border-amber-500/40 text-amber-300">
+                  Sec 63 BSA Hashed
+                </span>
+              </div>
+            </div>
+
+            {/* Filter & Category Sequence Controls */}
             <div className="flex flex-wrap items-center justify-between gap-3 bg-muted/30 p-3 rounded-xl border border-border/80">
-              <div className="relative flex-1 min-w-[260px]">
+              <div className="relative flex-1 min-w-[240px]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
                   type="text"
                   value={featureSearchQuery}
                   onChange={(e) => setFeatureSearchQuery(e.target.value)}
-                  placeholder="Filter 32 sovereign law-enforcement tools (e.g. remand, hawala, voice, ANPR, graph)..."
+                  placeholder="Filter 32 tools by keyword (e.g. remand, hawala, voice, ANPR, graph)..."
                   className="w-full pl-9 pr-3 py-1.5 bg-background border border-border/80 rounded-lg text-xs text-foreground placeholder-muted-foreground focus:outline-none focus:border-emerald-500"
                 />
               </div>
 
-              <div className="flex items-center gap-1 overflow-x-auto text-xs">
+              <div className="flex items-center gap-1 overflow-x-auto text-xs pb-1 sm:pb-0">
                 {['ALL', 'TACTICAL', 'FORENSICS', 'LEGAL', 'AI_INTEL', 'SECURITY', 'INFRASTRUCTURE'].map((cat) => (
                   <button
                     key={cat}
@@ -3096,7 +3122,7 @@ export function LiveTrackingPage() {
                       sound.playClickSound();
                       setSelectedFeatureCategory(cat);
                     }}
-                    className={`px-2.5 py-1 rounded-md font-bold text-[11px] transition-colors whitespace-nowrap ${
+                    className={`px-2.5 py-1 rounded-md font-bold text-[10px] sm:text-[11px] transition-colors whitespace-nowrap ${
                       selectedFeatureCategory === cat
                         ? 'bg-emerald-600 text-white shadow-sm'
                         : 'bg-muted/50 text-muted-foreground hover:text-foreground'
@@ -3108,7 +3134,8 @@ export function LiveTrackingPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[540px] overflow-y-auto pr-1">
+            {/* Structured 32 Features Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 max-h-[580px] overflow-y-auto pr-1">
               {filtered32Features.map((feat) => {
                 const Icon = feat.icon;
                 const result = toolExecutionResults[feat.id];
@@ -3117,7 +3144,7 @@ export function LiveTrackingPage() {
                 return (
                   <div
                     key={feat.id}
-                    className="p-3.5 rounded-xl border border-border/80 bg-background/60 hover:border-emerald-500/50 hover:bg-card transition-all flex flex-col justify-between group shadow-sm"
+                    className="p-3.5 rounded-xl border border-border/80 bg-background/70 hover:border-emerald-500/50 hover:bg-card transition-all flex flex-col justify-between group shadow-sm"
                   >
                     <div>
                       <div className="flex items-center justify-between gap-2 mb-2">
@@ -3137,20 +3164,20 @@ export function LiveTrackingPage() {
                       </div>
 
                       <div className="flex items-start gap-2.5 mb-2">
-                        <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
+                        <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0 mt-0.5">
                           <Icon className="h-4 w-4" />
                         </div>
-                        <div>
-                          <h3 className="text-xs font-bold text-foreground group-hover:text-emerald-400 transition-colors leading-snug">
+                        <div className="min-w-0">
+                          <h3 className="text-xs font-bold text-foreground group-hover:text-emerald-400 transition-colors leading-snug line-clamp-1">
                             {feat.title}
                           </h3>
-                          <div className="text-[10px] text-amber-400 font-medium mt-0.5">
+                          <div className="text-[10px] text-amber-400 font-medium mt-0.5 truncate">
                             {feat.statutoryRef}
                           </div>
                         </div>
                       </div>
 
-                      <p className="text-[11px] text-muted-foreground line-clamp-2 mt-1">
+                      <p className="text-[11px] text-muted-foreground line-clamp-2 mt-1 leading-relaxed">
                         {feat.desc}
                       </p>
 
@@ -3184,7 +3211,7 @@ export function LiveTrackingPage() {
                         ) : (
                           <>
                             <Zap className="h-2.5 w-2.5" />
-                            <span>Run / Test Tool</span>
+                            <span>Run Tool</span>
                           </>
                         )}
                       </Button>

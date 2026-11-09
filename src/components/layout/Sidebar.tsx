@@ -16,6 +16,7 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  Shield,
   ShieldCheck,
   Flame,
   Scale,
@@ -28,6 +29,7 @@ import {
   Train,
   Zap,
   Grid,
+  ScrollText,
 } from 'lucide-react';
 import { useAppStore } from '../../stores/appStore';
 import { useAuthStore } from '../../stores/authStore';
@@ -127,6 +129,7 @@ export function Sidebar() {
         { label: t('nav.entities') || 'Entity Directory & Profiles', path: '/entities', icon: Users2, id: 'sidebar-entities' },
         { label: t('nav.resolution') || 'AI Entity Resolution', path: '/entity-resolution', icon: GitMerge, badge: 'AI', id: 'sidebar-resolution' },
         { label: t('nav.timeline') || 'Timeline Stream & Logs', path: '/timeline', icon: Clock, id: 'sidebar-timeline' },
+        { label: 'FIR Intelligence Archive', path: '/fir-archive', icon: ScrollText, badge: '25 AI', id: 'sidebar-fir-archive' },
         { label: t('nav.aiAssistant') || 'Copilot AI Assistant', path: '/ai-assistant', icon: Bot, badge: 'RAG', id: 'sidebar-assistant' },
       ],
     },
@@ -140,6 +143,7 @@ export function Sidebar() {
         { label: 'Escape Pursuit Simulation', path: '/escape-demo', icon: ShieldAlert, badge: 'TRACE', id: 'sidebar-escape-demo' },
         { label: 'Omni-Trace 96 Feeds', path: '/digital-footprint', icon: Layers, badge: '96 IOT', id: 'sidebar-data-lake' },
         { label: 'Railway TC Aadhaar Face', path: '/railway-verification', icon: Train, badge: 'UIDAI', id: 'sidebar-railway' },
+        { label: 'Guardian Trace (Rescue)', path: '/guardian-trace', icon: ShieldAlert, badge: 'RESCUE', id: 'sidebar-guardian-trace' },
       ],
     },
     {

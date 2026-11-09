@@ -1,6 +1,5 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime
+from sqlalchemy import Column, Integer, String, Text, DateTime, Float, Date
 from datetime import datetime
-
 from app.database.postgres import Base
 
 
@@ -16,3 +15,14 @@ class Case(Base):
     status = Column(String(50), default="active")
     risk_level = Column(String(50), default="medium")
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Historical FIR Archive & Forensic Linguistics fields
+    detected_language = Column(String(50), nullable=True)
+    fir_summary_en = Column(Text, nullable=True)
+    original_text = Column(Text, nullable=True)
+    ocr_confidence = Column(Float, nullable=True)
+    officer_badge = Column(String(100), nullable=True)
+    officer_name = Column(String(200), nullable=True)
+    court_name = Column(String(200), nullable=True)
+    case_outcome = Column(String(50), nullable=True)  # CONVICTED, ACQUITTED, PENDING, CLOSED, UNDERTRIAL
+    outcome_date = Column(Date, nullable=True)

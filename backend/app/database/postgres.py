@@ -57,6 +57,7 @@ if "sqlite" in str(engine.url):
         import app.models.person
         import app.models.relationship
         import app.models.guardian_trace
+        import app.models.fir_archive_models
         Base.metadata.create_all(bind=engine)
     except Exception as table_exc:
         logger.warning("Could not auto-create SQLite fallback tables: %s", table_exc)

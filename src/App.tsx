@@ -34,9 +34,11 @@ const EscapeSimulationPage = React.lazy(() => import('./features/demo/EscapeSimu
 const DigitalFootprintPage = React.lazy(() => import('./features/demo/DigitalFootprintPage').then((m) => ({ default: m.DigitalFootprintPage })));
 const TechnicalRoadmapPage = React.lazy(() => import('./features/roadmap/TechnicalRoadmapPage').then((m) => ({ default: m.TechnicalRoadmapPage })));
 const RailwayVerificationPage = React.lazy(() => import('./features/railway/RailwayVerificationPage').then((m) => ({ default: m.RailwayVerificationPage })));
+const GuardianTracePage = React.lazy(() => import('./features/guardian-trace/GuardianTracePage').then((m) => ({ default: m.GuardianTracePage })));
 const CitizenReportingPage = React.lazy(() => import('./features/citizen/CitizenReportingPage').then((m) => ({ default: m.CitizenReportingPage })));
 const TrackReportPage = React.lazy(() => import('./features/citizen/TrackReportPage').then((m) => ({ default: m.TrackReportPage })));
 const PublicReportsQueue = React.lazy(() => import('./features/police/PublicReportsQueue').then((m) => ({ default: m.PublicReportsQueue })));
+const FIRArchivePage = React.lazy(() => import('./features/fir-archive/FIRArchivePage').then((m) => ({ default: m.FIRArchivePage })));
 const NotFoundPage = React.lazy(() => import('./features/error/NotFoundPage').then((m) => ({ default: m.NotFoundPage })));
 
 const LazyRouteFallback = (
@@ -116,8 +118,13 @@ export function App() {
                 <Route path="/railway-verification" element={<RailwayVerificationPage />} />
                 <Route path="/railway" element={<Navigate to="/railway-verification" replace />} />
                 <Route path="/tc-verification" element={<Navigate to="/railway-verification" replace />} />
+                <Route path="/guardian-trace" element={<GuardianTracePage />} />
+                <Route path="/guardian" element={<Navigate to="/guardian-trace" replace />} />
+                <Route path="/missing-persons" element={<Navigate to="/guardian-trace" replace />} />
                 <Route path="/police-reports" element={<PublicReportsQueue />} />
                 <Route path="/citizen-reports" element={<Navigate to="/police-reports" replace />} />
+                <Route path="/fir-archive" element={<FIRArchivePage />} />
+                <Route path="/archive" element={<Navigate to="/fir-archive" replace />} />
                 <Route path="/about" element={<AboutPlatformPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
               </Route>

@@ -28,13 +28,15 @@ export function AppLayout() {
       {/* Collapsible Sidebar */}
       <Sidebar />
 
-      {/* Main Content Area */}
-      <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Top Header */}
-        <TopNav />
+      {/* Main Content Area with Strict Z-Index Layering to Prevent Menus Appearing Behind Content */}
+      <div className="flex flex-1 flex-col overflow-hidden relative z-0">
+        {/* Top Header firmly anchored on top of all page elements */}
+        <div className="relative z-50 shrink-0">
+          <TopNav />
+        </div>
 
         {/* Dynamic Page Workspace View with Contained Error Boundary */}
-        <main id="main-content" tabIndex={-1} className="flex-1 overflow-y-auto p-6 focus:outline-none">
+        <main id="main-content" tabIndex={-1} className="flex-1 overflow-y-auto p-4 sm:p-6 focus:outline-none relative z-0">
           <ErrorBoundary
             fallbackTitle="Workspace Module Rendering Error"
             fallbackMessage="An error occurred in this interactive view. Sidebar navigation, emergency dispatch, and command functions remain active."

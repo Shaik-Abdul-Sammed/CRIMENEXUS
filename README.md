@@ -413,4 +413,102 @@ Unlike legacy reporting platforms (e.g., NCRP, UPCOP), CRIMENEXUS integrates an 
 * **`POST /api/v1/police/reports/{id}/review`**: Approves, rejects with statutory grounds, or requests additional evidence.
 * **`POST /api/v1/police/reports/{id}/convert`**: Converts verified public reports into an official Police Case and FIR record with graph link `(:Case)-[:CONVERTED_FROM]->(:PublicReport)`.
 
+---
+
+## 🛰️ Guardian Trace: Multimodal Missing Persons Search-and-Rescue Engine (New in v2.4)
+
+### Architectural Overview & Multi-Source Sensor Fusion
+**Guardian Trace** (`/guardian-trace`) is a dedicated search-and-rescue engine designed to overcome the critical failures of legacy missing person systems (NCMEC, AMBER Alert, TrackChild, Childline 1098, Khoj) by combining real-time digital exhaust with tactical spatial analytics into a single unified investigative HUD.
+
+In the critical first 24 hours of a disappearance, manual cell tower dumps and paper reports are too slow. Guardian Trace ingests and correlates six multimodal sensor streams:
+1. **Cellular IMEI Azimuth Pings (Weight: 0.90):** Active cell tower handovers and timing advances.
+2. **Transit Ticketing Gate Scans (Weight: 0.85):** Delhi Metro AFC smartcard taps and DTC bus e-tickets.
+3. **Core Banking & Merchant UPI (Weight: 0.80):** Low-value convenience store and pharmacy QR transactions.
+4. **Facial CCTV Corridor Optical Matches (Weight: 0.75):** Subway and railway concourse facial recognition hits.
+5. **Wi-Fi & Bluetooth LE Beacons (Weight: 0.70 / 0.65):** Public cafe router probe requests and smart-band MAC addresses.
+6. **Citizen Sentinel Public Tips (Weight: 0.60):** Verified community sightings cross-referenced with geotags.
+
+### Missing Persons Benchmark Matrix
+
+| Capability / Benchmark | NCMEC (US) | AMBER Alert (US) | TrackChild (India) | Childline 1098 | Khoj (Mumbai Police) | CRIMENEXUS Guardian Trace |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Geographic Scope** | US Only | US / Select States | India (National) | India (Hotline) | Mumbai Police | **Sovereign India v2.4** |
+| **Multimodal Sensor Fusion** | ❌ None | ❌ None | ❌ None | ❌ None | ❌ None | ✅ **6-Stream Real-Time Fusion** |
+| **Markov & Directional Velocity**| ❌ No | ❌ No | ❌ No | ❌ No | ❌ No | ✅ **Velocity Vector + Temporal Diurnal** |
+| **Concentric Ring Search Grid** | ❌ No | ❌ Broadcast only | ❌ No | ❌ No | ❌ No | ✅ **3 Tiers (1 km, 3 km, 10 km)** |
+| **Child < 12 Auto-CRITICAL** | Discretionary | Manual approval | Standard listing | Manual priority | Manual priority | ✅ **Mandatory Bachpan Bachao Triage** |
+| **Emergency Community Broadcast**| ❌ No | ✅ Cellular broadcast | ❌ No | ❌ Helpline | ❌ Social media | ✅ **DPDP Sec 17(b) 5 km Geofence Push** |
+| **Court-Admissible Dossier** | Static summary | ❌ None | Basic printout | Call log | Missing poster | ✅ **Sec 63 BSA Cryptographic Seal** |
+
+### Tactical Ring Search Protocol & AI Predictions
+* **Tier 1 (0–1 km, Foot & Drone Search):** High-density thermal drone scans and foot patrols around last-seen transit coordinates.
+* **Tier 2 (1–3 km, PCR Patrols & Transit Choke-Points):** Mobile PCR patrol sweeps, Metro gate alerts, and bus terminus monitoring.
+* **Tier 3 (3–10 km, Interstate Cordons & Railway Terminals):** Highway toll checkpoints, major railway concourses (e.g. NDLS), and interstate bus terminals.
+* **Top-3 AI Next-Location Predictions:** Directional Markov mobility modeling incorporating anchor affinity (home, school, coaching) and diurnal time-of-day weighting with explainable SHAP-style feature attributions.
+
+### Core Endpoints
+* **`POST /api/v1/guardian-trace/case/create`**: Registers missing person case with automatic `<12yo` Bachpan Bachao CRITICAL escalation.
+* **`GET /api/v1/guardian-trace/case/{case_number}`**: Full case profile, mobility baseline, and frequent location anchors.
+* **`GET /api/v1/guardian-trace/case/{case_number}/trajectory`**: Chronologically sorted, 500m clustered sighting points with velocity vector.
+* **`GET /api/v1/guardian-trace/case/{case_number}/predictions`**: Top-3 predicted next locations with SHAP feature weights and confidence bounds $[0.0, 1.0]$.
+* **`GET /api/v1/guardian-trace/case/{case_number}/search-grid`**: 3-Tier concentric police search perimeter geo-coordinates.
+* **`POST /api/v1/guardian-trace/sighting`**: Live ingestion of digital sightings from telecoms, transit gates, or citizen tips.
+* **`POST /api/v1/guardian-trace/case/{case_number}/broadcast`**: Triggers DPDP Section 17(b) compliant emergency community broadcast to nearby app users.
+* **`POST /api/v1/guardian-trace/case/{case_number}/close`**: Closes case upon recovery with Section 173 BNSS statutory verification.
+
+---
+
+## 📜 FIR Intelligence Archive (New in v2.4)
+
+CRIMENEXUS now possesses an **institutional memory** — it reads, understands, cross-references, and analyzes every past FIR in any Indian language.
+
+### Capabilities
+- **11-Language Support**: English, Hindi, Marathi, Kannada, Telugu, Tamil, Bengali, Gujarati, Punjabi, Malayalam, Urdu.
+- **Handwritten & Degraded OCR**: Tesseract Indic + Microsoft TrOCR (`microsoft/trocr-base-handwritten`) for 50-year-old cursive and handwritten Devanagari FIRs with Otsu deskew preprocessing.
+- **Suspect Life-Status Inference**: Combines Municipal Aadhaar death registries, NCRB mortality data, and Section 108 Indian Evidence Act presumption of death after 7+ / 25+ years absence without trace.
+- **Officer Career Registry**: Comprehensive tracking of investigating officer lifetime FIR dockets, conviction percentages, and specialized offence proficiencies.
+- **25 Expert Retrospective Analytics**:
+  1. **Modus Operandi Evolution**: Longitudinal crime pattern mutation across years (theft $\to$ SIM swap $\to$ crypto).
+  2. **Syndicate DNA Mapping**: Recurring names, aliases, and shell directors across decades.
+  3. **Linguistic Fingerprint**: Stylometric n-gram forgery detection exposing legal proxy complaint mills.
+  4. **Dialect Origin Locator**: Maps colloquial dialect markers to geographic sub-districts.
+  5. **Charge Framing Accuracy**: Flags historical section omission trends that triggered judicial discharges.
+  6. **Case Outcome Predictor**: Sentence-BERT similarity to trial verdicts forecasting conviction probability.
+  7. **Witness Reliability Score**: Identifies recurring stock witnesses violating Section 105 BNSS independent witness guidelines.
+  8. **Judicial Precedent Mining**: Bench-specific rulings on electronic evidence and CDR co-presence.
+  9. **Suspect Life-Status Tracker**: Live cross-referencing of death registries vs active cell sightings.
+  10. **Case Aging Patterns**: Identifies bottleneck stages (e.g. FSL forensic backlogs) delaying chargesheets.
+  11. **Officer Performance History**: Lifetime conviction rate analytics per officer and crime category.
+  12. **Repeat Offender Network**: Inter-state graph deduplication identifying persistent syndicate recidivists.
+  13. **Victim-Offender Relationship**: Pre-FIR commercial, family, and partnership linkages.
+  14. **Sentencing Pattern Analysis**: Average rigorous imprisonment durations and restitution awards.
+  15. **Seasonal Crime Waves**: Temporal surge forecasting (e.g. festive e-commerce phishing spikes).
+  16. **Modus Operandi Signature**: Unique mathematical fingerprint of crime execution (e.g. ₹49k smurfing).
+  17. **Location Evolution**: Spatial centroid drift tracking syndicate geographic relocation.
+  18. **Language Sentiment Trend**: Detects acute distress and intimidation spikes in cyber harassment dockets.
+  19. **Digitization Shift**: Tracks paper-to-digital transition from 2015 to 2025.
+  20. **Cold Case Resurrection**: Resurfaces unsolved archival dockets matching active syndicate MO.
+  21. **Cross-Jurisdiction Matching**: Multi-state CCTNS matching across Delhi, Mumbai, and Bengaluru.
+  22. **Legal Section Concordance**: 100% verified IPC-to-BNS statutory concordance crosswalk.
+  23. **Property Recovery History**: Asset recovery velocity curves (48-hour golden window).
+  24. **Appeal / Revision History**: High Court appellate affirmation rates under Section 63 BSA electronic seals.
+  25. **Bias Detection & Equity Audit**: Article 14 constitutional Disparate Impact Ratio (DIR) compliance audits.
+
+### Why This Matters
+No Indian police software currently offers:
+- Multi-lingual FIR archive with deep meaning extraction
+- Cross-decade syndicate tracking
+- Officer performance analytics
+- Suspect life-status inference (Section 108 Evidence Act)
+
+CRIMENEXUS is the **first Indian police platform with a forensic-grade FIR archive.**
+
+### Research References
+- **IndicBERT (AI4Bharat)**: Multi-lingual Indian NLP contextual representations.
+- **TrOCR (Microsoft)**: Transformer-based optical character recognition for handwritten text.
+- **Section 108 Indian Evidence Act / Section 113 BNSS**: Presumption of death after 7 years absence.
+- **Stylometry for Forensic Linguistics**: UK National Crime Agency (NCA) & Interpol complainant authorship verification standards.
+
+
+
 

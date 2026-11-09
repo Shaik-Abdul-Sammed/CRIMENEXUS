@@ -33,6 +33,7 @@ import {
   Car,
   Play,
   Search,
+  ScrollText,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
@@ -40,7 +41,7 @@ import { Button } from '../../components/ui/Button';
 
 export function AboutPlatformPage() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'WORKFLOW' | 'BEFORE_AFTER' | 'DATA_SECURITY' | 'FEATURES' | 'COMPARISON' | 'AUTOMATIONS' | 'CITIZEN'>('WORKFLOW');
+  const [activeTab, setActiveTab] = useState<'WORKFLOW' | 'BEFORE_AFTER' | 'DATA_SECURITY' | 'FEATURES' | 'COMPARISON' | 'AUTOMATIONS' | 'CITIZEN' | 'GUARDIAN' | 'ARCHIVE'>('WORKFLOW');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [selectedRoleScenario, setSelectedRoleScenario] = useState<'PATROL' | 'IO' | 'COMMAND'>('PATROL');
   const [featuresSearchQuery, setFeaturesSearchQuery] = useState('');
@@ -496,6 +497,22 @@ export function AboutPlatformPage() {
               <Users className="h-4 w-4 text-emerald-400" />
               <span>Citizen Sentinel Module</span>
             </Button>
+            <Button
+              variant="outline"
+              onClick={() => setActiveTab('GUARDIAN')}
+              className="border-red-500/50 hover:bg-red-950/40 text-red-300 font-bold flex items-center gap-2"
+            >
+              <ShieldAlert className="h-4 w-4 text-red-400" />
+              <span>Guardian Trace (Rescue)</span>
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setActiveTab('ARCHIVE')}
+              className="border-amber-500/50 hover:bg-amber-950/40 text-amber-300 font-bold flex items-center gap-2"
+            >
+              <ScrollText className="h-4 w-4 text-amber-400" />
+              <span>FIR Intelligence Archive</span>
+            </Button>
           </div>
         </div>
       </div>
@@ -506,6 +523,8 @@ export function AboutPlatformPage() {
           { id: 'WORKFLOW', label: 'How Police Ingest & Use Data', icon: Radio, count: null },
           { id: 'BEFORE_AFTER', label: 'Before & After Police Scenarios', icon: Scale, count: 'New' },
           { id: 'CITIZEN', label: 'Citizen Sentinel (Public Crime Portal)', icon: Users, count: 'Sentinel' },
+          { id: 'GUARDIAN', label: 'Guardian Trace (Search & Rescue)', icon: ShieldAlert, count: 'Rescue' },
+          { id: 'ARCHIVE', label: 'FIR Intelligence Archive (25 Analytics)', icon: ScrollText, count: '25 AI' },
           { id: 'DATA_SECURITY', label: 'Data Integration, Safety & Privacy', icon: Lock, count: 'Audit' },
           { id: 'FEATURES', label: '32 Sovereign Capabilities', icon: Sparkles, count: 32 },
           { id: 'COMPARISON', label: 'Platform Benchmark (CCTNS & MahaCrimeOS)', icon: Layers, count: null },
@@ -516,7 +535,7 @@ export function AboutPlatformPage() {
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as 'WORKFLOW' | 'BEFORE_AFTER' | 'DATA_SECURITY' | 'FEATURES' | 'COMPARISON' | 'AUTOMATIONS' | 'CITIZEN')}
+              onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-bold rounded-xl transition-all whitespace-nowrap ${
                 isActive
                   ? 'bg-primary text-primary-foreground shadow-md'
@@ -1718,6 +1737,511 @@ export function AboutPlatformPage() {
         </div>
       )}
 
+      {/* Tab: FIR Intelligence Archive & Forensic Linguistics (25 Analytics) */}
+      {activeTab === 'ARCHIVE' && (
+        <div className="space-y-8 animate-in fade-in duration-200">
+          {/* Header Banner */}
+          <div className="p-6 rounded-2xl border border-amber-500/40 bg-gradient-to-r from-amber-950/40 via-slate-900 to-slate-950 shadow-xl space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Badge className="bg-amber-600 text-white font-black text-xs px-2.5 py-0.5">
+                  INSTITUTIONAL MEMORY
+                </Badge>
+                <span className="text-xs font-mono text-muted-foreground">
+                  IndicBERT Multi-Lingual NLP • TrOCR Handwritten • Section 108 IEA
+                </span>
+              </div>
+              <Link to="/fir-archive">
+                <Button
+                  size="sm"
+                  className="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md"
+                >
+                  <ScrollText className="h-3.5 w-3.5" />
+                  <span>Launch FIR Intelligence Archive (/fir-archive)</span>
+                </Button>
+              </Link>
+            </div>
+            <h2 className="text-2xl font-black text-white tracking-tight">
+              FIR Intelligence Archive: Turning Historical Dockets into Institutional Memory
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-300 max-w-4xl leading-relaxed">
+              CRIMENEXUS reads, understands, and analyzes every historical FIR across 11 Indian languages. By cross-referencing investigating officers, suspect civil mortality registries, and judicial trial outcomes, it executes 25 expert-grade forensic analytical pipelines that transform reactive police files into proactive criminal intelligence.
+            </p>
+          </div>
+
+          {/* Core Pillars */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <Card className="p-4 border-amber-500/30 bg-card/80 space-y-2">
+              <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
+                <Languages className="h-5 w-5 shrink-0" />
+                <span>1. 11-Language Multilingual NLP</span>
+              </div>
+              <p className="text-slate-300 leading-relaxed">
+                Ingests FIRs in English, Hindi, Marathi, Kannada, Telugu, Tamil, Bengali, Gujarati, Punjabi, Malayalam, and Urdu with IndicBERT contextual semantics and cached IndicTrans2 neural translation.
+              </p>
+            </Card>
+
+            <Card className="p-4 border-sky-500/30 bg-card/80 space-y-2">
+              <div className="flex items-center gap-2 text-sky-400 font-bold text-sm">
+                <Sparkles className="h-5 w-5 shrink-0" />
+                <span>2. TrOCR Handwritten OCR</span>
+              </div>
+              <p className="text-slate-300 leading-relaxed">
+                Processes degraded and handwritten Devanagari station entries using Microsoft TrOCR with Otsu deskew and CLAHE contrast enhancement, rejecting outputs below 0.60 confidence for manual verification.
+              </p>
+            </Card>
+
+            <Card className="p-4 border-emerald-500/30 bg-card/80 space-y-2">
+              <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm">
+                <ShieldCheck className="h-5 w-5 shrink-0" />
+                <span>3. Suspect Life-Status Engine</span>
+              </div>
+              <p className="text-slate-300 leading-relaxed">
+                Cross-references Municipal Aadhaar and NCRB mortality databases, applying Section 108 Indian Evidence Act presumption of death after 7+ or 25+ years without investigative trace.
+              </p>
+            </Card>
+          </div>
+
+          {/* 25 Analytics Catalog */}
+          <Card className="p-6 border-border/80 shadow-xl space-y-4">
+            <div className="space-y-1">
+              <h3 className="text-base font-black text-white flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-amber-400" />
+                <span>The 25 Expert Retrospective Analytics Catalog</span>
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Autonomous analytical models executed across all archival FIRs with explainable SHAP feature decompositions:
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+              {[
+                { id: 'FIA-001', name: 'Modus Operandi Evolution', desc: 'Longitudinal mutation from physical theft to OTP SIM-swapping and crypto mixers.' },
+                { id: 'FIA-002', name: 'Syndicate DNA Mapping', desc: 'Identifies masterminds and shell conduits recurring across multiple decades.' },
+                { id: 'FIA-003', name: 'Linguistic Fingerprint', desc: 'Stylometric character n-gram forgery detection flagging duplicate typist complaint mills.' },
+                { id: 'FIA-004', name: 'Dialect Origin Locator', desc: 'Maps colloquial phonetics and regional idioms to specific police sub-districts.' },
+                { id: 'FIA-005', name: 'Charge Framing Accuracy', desc: 'Identifies historical charge omissions causing judicial discharges in trial courts.' },
+                { id: 'FIA-006', name: 'Case Outcome Predictor', desc: 'Sentence-BERT verdict forecasting based on recovery and electronic evidence.' },
+                { id: 'FIA-007', name: 'Witness Reliability Score', desc: 'Flags professional stock witnesses appearing across multiple unrelated station FIRs.' },
+                { id: 'FIA-008', name: 'Judicial Precedent Mining', desc: 'Surfaces bench-specific evidentiary standards for telecom and CDR co-presence.' },
+                { id: 'FIA-009', name: 'Suspect Life-Status Tracker', desc: 'Tracks suspect civil mortality status (Alive, Deceased, Presumed Dead under Sec 108 IEA).' },
+                { id: 'FIA-010', name: 'Case Aging Patterns', desc: 'Pinpoints forensic lab bottlenecks (FSL) causing statutory chargesheet delays.' },
+                { id: 'FIA-011', name: 'Officer Performance History', desc: 'Tracks IO conviction percentage, caseload, and crime category specialization.' },
+                { id: 'FIA-012', name: 'Repeat Offender Network', desc: 'Inter-state graph deduplication identifying persistent syndicate recidivists.' },
+                { id: 'FIA-013', name: 'Victim-Offender Relationship', desc: 'Discovers pre-FIR commercial partnerships and corporate DIN cross-linkages.' },
+                { id: 'FIA-014', name: 'Sentencing Pattern Analysis', desc: 'Calculates average imprisonment terms and court victim restitution awards.' },
+                { id: 'FIA-015', name: 'Seasonal Crime Waves', desc: 'Surges predictive patrols ahead of recurring festival shopping fraud spikes.' },
+                { id: 'FIA-016', name: 'Modus Operandi Signature', desc: 'Isolates mathematical transaction structuring (e.g. ₹49,000 smurfing).' },
+                { id: 'FIA-017', name: 'Location Evolution', desc: 'Spatial centroid tracking showing crime syndicate geographical relocation.' },
+                { id: 'FIA-018', name: 'Language Sentiment Trend', desc: 'Measures intimidation indices in digital loan app and cyber harassment dockets.' },
+                { id: 'FIA-019', name: 'Digitization Shift', desc: 'Monitors the paper-to-digital transition rate from 2015 to 2025.' },
+                { id: 'FIA-020', name: 'Cold Case Resurrection', desc: 'Surfaces unsolved archival cases matching active syndicate MO and telephone pings.' },
+                { id: 'FIA-021', name: 'Cross-Jurisdiction Matching', desc: 'Correlates suspects wanted across multiple state police commissionerates.' },
+                { id: 'FIA-022', name: 'Legal Section Concordance', desc: 'Direct statutory crosswalk translating 1860 IPC to 2023 BNS sections.' },
+                { id: 'FIA-023', name: 'Property Recovery History', desc: 'Models asset recovery probability curves within the 48-hour golden window.' },
+                { id: 'FIA-024', name: 'Appeal/Revision History', desc: 'High Court appellate validation tracking Section 63 BSA electronic hash seals.' },
+                { id: 'FIA-025', name: 'Bias Detection & Equity Audit', desc: 'Continuous Article 14 Disparate Impact Ratio audits ensuring zero demographic bias.' },
+              ].map((item) => (
+                <div key={item.id} className="p-3 rounded-lg border border-border/70 bg-slate-900/60 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[10px] text-amber-400 font-black">{item.id}</span>
+                    <Badge variant="outline" className="text-[9px] font-mono border-primary/30 text-primary">
+                      AI Model
+                    </Badge>
+                  </div>
+                  <h4 className="font-bold text-white text-xs">{item.name}</h4>
+                  <p className="text-slate-400 text-[11px] leading-relaxed">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          {/* Research References */}
+          <Card className="p-5 border-border/80 bg-slate-950/60 space-y-2">
+            <h4 className="font-mono text-xs uppercase tracking-wider text-muted-foreground font-bold">
+              Research &amp; Statutory Foundations
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs text-slate-300">
+              <div className="p-2.5 rounded bg-slate-900 border border-border/60">
+                <strong className="text-white block">IndicBERT (AI4Bharat)</strong>
+                <span className="text-slate-400 text-[11px]">Multi-lingual Indic language representations across 11 national scripts.</span>
+              </div>
+              <div className="p-2.5 rounded bg-slate-900 border border-border/60">
+                <strong className="text-white block">TrOCR (Microsoft)</strong>
+                <span className="text-slate-400 text-[11px]">Transformer-based handwritten text recognition for cursive police records.</span>
+              </div>
+              <div className="p-2.5 rounded bg-slate-900 border border-border/60">
+                <strong className="text-white block">Section 108 IEA / Sec 113 BNSS</strong>
+                <span className="text-slate-400 text-[11px]">Presumption of death after 7+ years of continuous absence without trace.</span>
+              </div>
+              <div className="p-2.5 rounded bg-slate-900 border border-border/60">
+                <strong className="text-white block">Forensic Stylometry (NCA)</strong>
+                <span className="text-slate-400 text-[11px]">Authorship verification and forgery detection using character n-grams.</span>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Tab: Guardian Trace (Missing Persons Search & Rescue Engine) */}
+      {activeTab === 'GUARDIAN' && (
+        <div className="space-y-8 animate-in fade-in duration-200">
+          {/* Header Banner */}
+          <div className="p-6 rounded-2xl border border-red-500/40 bg-gradient-to-r from-red-950/40 via-slate-900 to-slate-950 shadow-xl space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Badge className="bg-red-600 text-white font-black text-xs px-2.5 py-0.5 animate-pulse">
+                  RESCUE COMMAND HUD
+                </Badge>
+                <span className="text-xs font-mono text-muted-foreground">
+                  Supreme Court Bachpan Bachao Mandate • Section 63 BSA • DPDP Sec 17(b)
+                </span>
+              </div>
+              <Link to="/guardian-trace">
+                <Button
+                  size="sm"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md"
+                >
+                  <Play className="h-3.5 w-3.5 fill-current" />
+                  <span>Launch Live Guardian Trace HUD</span>
+                </Button>
+              </Link>
+            </div>
+            <h2 className="text-2xl font-black text-white tracking-tight">
+              Guardian Trace: Multimodal Missing Persons Search-and-Rescue Engine
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-300 max-w-4xl leading-relaxed">
+              When a child or vulnerable person goes missing, the first 24 hours determine survival. Traditional systems rely on manual CDR dumps, slow bureaucratic requests, and disconnected public tips. Guardian Trace fuses live digital exhaust (cellular IMEI handovers, transit metro/bus tickets, UPI merchant debits, optical CCTV matches, Wi-Fi probes, and BLE beacons) with a predictive Ring Search spatial engine that isolates high-probability locations in real time.
+            </p>
+          </div>
+
+          {/* 3 Core Pillars of Guardian Trace */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card className="p-5 border-border/80 bg-card/60 space-y-2.5">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-red-500/20 text-red-400 border border-red-500/40">
+                  <ShieldAlert className="h-5 w-5" />
+                </div>
+                <h3 className="text-sm font-black text-white">Bachpan Bachao Auto-Triage</h3>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Cases with children under 12 automatically escalate to <strong>CRITICAL</strong> status, enforcing immediate station broadcast, senior officer notification, and 0-minute turnaround without waiting for formal FIR filing.
+              </p>
+            </Card>
+
+            <Card className="p-5 border-border/80 bg-card/60 space-y-2.5">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-cyan-500/20 text-cyan-400 border border-cyan-500/40">
+                  <Radio className="h-5 w-5" />
+                </div>
+                <h3 className="text-sm font-black text-white">Multimodal Sensor Fusion</h3>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Clusters spatial sightings within 500 meters using weighted confidence models (IMEI 0.9, Transit 0.85, UPI 0.8, CCTV 0.75, WiFi 0.7, BLE 0.65, Citizen 0.6) into an immutable, chronologically ordered escape or transit trajectory.
+              </p>
+            </Card>
+
+            <Card className="p-5 border-border/80 bg-card/60 space-y-2.5">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/40">
+                  <MapPin className="h-5 w-5" />
+                </div>
+                <h3 className="text-sm font-black text-white">Tactical Ring Search Grid</h3>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Deploys concentric operational perimeters: <strong>Tier 1 (0-1 km)</strong> for foot &amp; drone thermal search, <strong>Tier 2 (1-3 km)</strong> for mobile PCR patrols and transit stations, and <strong>Tier 3 (3-10 km)</strong> for expressway cordons and border choke-points.
+              </p>
+            </Card>
+          </div>
+
+          {/* Research Reference Comparative Matrix */}
+          <Card className="p-6 border-border/80 shadow-xl space-y-4">
+            <div className="space-y-1">
+              <h3 className="text-base font-black text-foreground flex items-center gap-2">
+                <Scale className="h-5 w-5 text-primary" />
+                Missing Persons Systems Comparative Benchmark Matrix
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Documented failures of existing domestic and international platforms, and how Guardian Trace systematically overcomes them.
+              </p>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse min-w-[760px]">
+                <thead>
+                  <tr className="border-b border-border bg-slate-900/60 text-slate-200">
+                    <th className="p-3 font-bold uppercase tracking-wider text-[11px]">System / Platform</th>
+                    <th className="p-3 font-bold uppercase tracking-wider text-[11px] text-center">Coverage</th>
+                    <th className="p-3 font-bold uppercase tracking-wider text-[11px] text-center">Digital Fusion</th>
+                    <th className="p-3 font-bold uppercase tracking-wider text-[11px] text-center">Predictive AI</th>
+                    <th className="p-3 font-bold uppercase tracking-wider text-[11px] text-center">Ring Grid</th>
+                    <th className="p-3 font-bold uppercase tracking-wider text-[11px] text-center">Court Dossier</th>
+                    <th className="p-3 font-bold uppercase tracking-wider text-[11px]">Critical Demerit &amp; Limitation</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/60 text-slate-300">
+                  {[
+                    {
+                      system: 'NCMEC (US)',
+                      jurisdiction: 'United States',
+                      digitalFusion: false,
+                      predictiveAI: false,
+                      ringGrid: false,
+                      dossier: true,
+                      demerit: 'US-only database. No real-time mobile telemetry or dynamic spatial exhaust fusion.',
+                      color: 'text-amber-400',
+                    },
+                    {
+                      system: 'AMBER Alert (US)',
+                      jurisdiction: 'United States',
+                      digitalFusion: false,
+                      predictiveAI: false,
+                      ringGrid: false,
+                      dossier: false,
+                      demerit: 'Broadcast alerts only. Highly reactive, causes alert fatigue, lacks proactive trajectory prediction.',
+                      color: 'text-rose-400',
+                    },
+                    {
+                      system: 'TrackChild (India)',
+                      jurisdiction: 'Govt. of India',
+                      digitalFusion: false,
+                      predictiveAI: false,
+                      ringGrid: false,
+                      dossier: false,
+                      demerit: 'Static national portal for photo uploads. Zero digital exhaust fusion, no predictive analytics or patrol routing.',
+                      color: 'text-orange-400',
+                    },
+                    {
+                      system: 'Childline 1098 (India)',
+                      jurisdiction: 'Helpline / NGO',
+                      digitalFusion: false,
+                      predictiveAI: false,
+                      ringGrid: false,
+                      dossier: false,
+                      demerit: 'Manual telephony call routing. No technical search layer, geospatial heatmaps, or sensor ingestion.',
+                      color: 'text-yellow-400',
+                    },
+                    {
+                      system: 'Khoj (Mumbai Police)',
+                      jurisdiction: 'Mumbai Police',
+                      digitalFusion: false,
+                      predictiveAI: false,
+                      ringGrid: false,
+                      dossier: false,
+                      demerit: 'Limited strictly to static photo posters and manual citizen tips without sensor telemetry.',
+                      color: 'text-sky-400',
+                    },
+                    {
+                      system: 'CRIMENEXUS Guardian Trace',
+                      jurisdiction: 'Sovereign India v2.4',
+                      digitalFusion: true,
+                      predictiveAI: true,
+                      ringGrid: true,
+                      dossier: true,
+                      demerit: 'None. Synthesizes 6 sensor streams, runs Markov & velocity predictions, deploys Ring Search grid, and issues Sec 63 BSA court dossiers.',
+                      color: 'text-emerald-400',
+                      highlight: true,
+                    },
+                  ].map((row, idx) => (
+                    <tr
+                      key={idx}
+                      className={row.highlight ? 'bg-emerald-950/20 hover:bg-emerald-950/30 font-semibold' : 'hover:bg-slate-900/40'}
+                    >
+                      <td className="p-3">
+                        <span className={`font-bold block ${row.color}`}>{row.system}</span>
+                        <span className="text-[10px] text-muted-foreground font-mono">{row.jurisdiction}</span>
+                      </td>
+                      <td className="p-3 text-center">
+                        <span className="font-mono text-xs">{row.jurisdiction}</span>
+                      </td>
+                      <td className="p-3 text-center">
+                        {row.digitalFusion ? (
+                          <span className="text-emerald-400 font-bold">✓ Multi-Source</span>
+                        ) : (
+                          <span className="text-red-400 font-bold">✗ None</span>
+                        )}
+                      </td>
+                      <td className="p-3 text-center">
+                        {row.predictiveAI ? (
+                          <span className="text-emerald-400 font-bold">✓ Velocity &amp; Anchor</span>
+                        ) : (
+                          <span className="text-red-400 font-bold">✗ None</span>
+                        )}
+                      </td>
+                      <td className="p-3 text-center">
+                        {row.ringGrid ? (
+                          <span className="text-emerald-400 font-bold">✓ 3 Tiers (1-10km)</span>
+                        ) : (
+                          <span className="text-red-400 font-bold">✗ None</span>
+                        )}
+                      </td>
+                      <td className="p-3 text-center">
+                        {row.dossier ? (
+                          <span className="text-emerald-400 font-bold">✓ Sec 63 BSA</span>
+                        ) : (
+                          <span className="text-red-400 font-bold">✗ None</span>
+                        )}
+                      </td>
+                      <td className="p-3 text-[11px] leading-relaxed">
+                        <span className={row.highlight ? 'text-emerald-200' : 'text-slate-400'}>
+                          {row.demerit}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Tab: FIR Intelligence Archive & Forensic Linguistics (25 Analytics) */}
+      {activeTab === 'ARCHIVE' && (
+        <div className="space-y-8 animate-in fade-in duration-200">
+          {/* Header Banner */}
+          <div className="p-6 rounded-2xl border border-amber-500/40 bg-gradient-to-r from-amber-950/40 via-slate-900 to-slate-950 shadow-xl space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Badge className="bg-amber-600 text-white font-black text-xs px-2.5 py-0.5">
+                  INSTITUTIONAL MEMORY
+                </Badge>
+                <span className="text-xs font-mono text-muted-foreground">
+                  IndicBERT Multi-Lingual NLP • TrOCR Handwritten • Section 108 IEA
+                </span>
+              </div>
+              <Link to="/fir-archive">
+                <Button
+                  size="sm"
+                  className="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md"
+                >
+                  <ScrollText className="h-3.5 w-3.5" />
+                  <span>Launch FIR Intelligence Archive (/fir-archive)</span>
+                </Button>
+              </Link>
+            </div>
+            <h2 className="text-2xl font-black text-white tracking-tight">
+              FIR Intelligence Archive: Turning Historical Dockets into Institutional Memory
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-300 max-w-4xl leading-relaxed">
+              CRIMENEXUS reads, understands, and analyzes every historical FIR across 11 Indian languages. By cross-referencing investigating officers, suspect civil mortality registries, and judicial trial outcomes, it executes 25 expert-grade forensic analytical pipelines that transform reactive police files into proactive criminal intelligence.
+            </p>
+          </div>
+
+          {/* Core Pillars */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <Card className="p-4 border-amber-500/30 bg-card/80 space-y-2">
+              <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
+                <Languages className="h-5 w-5 shrink-0" />
+                <span>1. 11-Language Multilingual NLP</span>
+              </div>
+              <p className="text-slate-300 leading-relaxed">
+                Ingests FIRs in English, Hindi, Marathi, Kannada, Telugu, Tamil, Bengali, Gujarati, Punjabi, Malayalam, and Urdu with IndicBERT contextual semantics and cached IndicTrans2 neural translation.
+              </p>
+            </Card>
+
+            <Card className="p-4 border-sky-500/30 bg-card/80 space-y-2">
+              <div className="flex items-center gap-2 text-sky-400 font-bold text-sm">
+                <Sparkles className="h-5 w-5 shrink-0" />
+                <span>2. TrOCR Handwritten OCR</span>
+              </div>
+              <p className="text-slate-300 leading-relaxed">
+                Processes degraded and handwritten Devanagari station entries using Microsoft TrOCR with Otsu deskew and CLAHE contrast enhancement, rejecting outputs below 0.60 confidence for manual verification.
+              </p>
+            </Card>
+
+            <Card className="p-4 border-emerald-500/30 bg-card/80 space-y-2">
+              <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm">
+                <ShieldCheck className="h-5 w-5 shrink-0" />
+                <span>3. Suspect Life-Status Engine</span>
+              </div>
+              <p className="text-slate-300 leading-relaxed">
+                Cross-references Municipal Aadhaar and NCRB mortality databases, applying Section 108 Indian Evidence Act presumption of death after 7+ or 25+ years without investigative trace.
+              </p>
+            </Card>
+          </div>
+
+          {/* 25 Analytics Catalog */}
+          <Card className="p-6 border-border/80 shadow-xl space-y-4">
+            <div className="space-y-1">
+              <h3 className="text-base font-black text-white flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-amber-400" />
+                <span>The 25 Expert Retrospective Analytics Catalog</span>
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Autonomous analytical models executed across all archival FIRs with explainable SHAP feature decompositions:
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+              {[
+                { id: 'FIA-001', name: 'Modus Operandi Evolution', desc: 'Longitudinal mutation from physical theft to OTP SIM-swapping and crypto mixers.' },
+                { id: 'FIA-002', name: 'Syndicate DNA Mapping', desc: 'Identifies masterminds and shell conduits recurring across multiple decades.' },
+                { id: 'FIA-003', name: 'Linguistic Fingerprint', desc: 'Stylometric character n-gram forgery detection flagging duplicate typist complaint mills.' },
+                { id: 'FIA-004', name: 'Dialect Origin Locator', desc: 'Maps colloquial phonetics and regional idioms to specific police sub-districts.' },
+                { id: 'FIA-005', name: 'Charge Framing Accuracy', desc: 'Identifies historical charge omissions causing judicial discharges in trial courts.' },
+                { id: 'FIA-006', name: 'Case Outcome Predictor', desc: 'Sentence-BERT verdict forecasting based on recovery and electronic evidence.' },
+                { id: 'FIA-007', name: 'Witness Reliability Score', desc: 'Flags professional stock witnesses appearing across multiple unrelated station FIRs.' },
+                { id: 'FIA-008', name: 'Judicial Precedent Mining', desc: 'Surfaces bench-specific evidentiary standards for telecom and CDR co-presence.' },
+                { id: 'FIA-009', name: 'Suspect Life-Status Tracker', desc: 'Tracks suspect civil mortality status (Alive, Deceased, Presumed Dead under Sec 108 IEA).' },
+                { id: 'FIA-010', name: 'Case Aging Patterns', desc: 'Pinpoints forensic lab bottlenecks (FSL) causing statutory chargesheet delays.' },
+                { id: 'FIA-011', name: 'Officer Performance History', desc: 'Tracks IO conviction percentage, caseload, and crime category specialization.' },
+                { id: 'FIA-012', name: 'Repeat Offender Network', desc: 'Inter-state graph deduplication identifying persistent syndicate recidivists.' },
+                { id: 'FIA-013', name: 'Victim-Offender Relationship', desc: 'Discovers pre-FIR commercial partnerships and corporate DIN cross-linkages.' },
+                { id: 'FIA-014', name: 'Sentencing Pattern Analysis', desc: 'Calculates average imprisonment terms and court victim restitution awards.' },
+                { id: 'FIA-015', name: 'Seasonal Crime Waves', desc: 'Surges predictive patrols ahead of recurring festival shopping fraud spikes.' },
+                { id: 'FIA-016', name: 'Modus Operandi Signature', desc: 'Isolates mathematical transaction structuring (e.g. ₹49,000 smurfing).' },
+                { id: 'FIA-017', name: 'Location Evolution', desc: 'Spatial centroid tracking showing crime syndicate geographical relocation.' },
+                { id: 'FIA-018', name: 'Language Sentiment Trend', desc: 'Measures intimidation indices in digital loan app and cyber harassment dockets.' },
+                { id: 'FIA-019', name: 'Digitization Shift', desc: 'Monitors the paper-to-digital transition rate from 2015 to 2025.' },
+                { id: 'FIA-020', name: 'Cold Case Resurrection', desc: 'Surfaces unsolved archival cases matching active syndicate MO and telephone pings.' },
+                { id: 'FIA-021', name: 'Cross-Jurisdiction Matching', desc: 'Correlates suspects wanted across multiple state police commissionerates.' },
+                { id: 'FIA-022', name: 'Legal Section Concordance', desc: 'Direct statutory crosswalk translating 1860 IPC to 2023 BNS sections.' },
+                { id: 'FIA-023', name: 'Property Recovery History', desc: 'Models asset recovery probability curves within the 48-hour golden window.' },
+                { id: 'FIA-024', name: 'Appeal/Revision History', desc: 'High Court appellate validation tracking Section 63 BSA electronic hash seals.' },
+                { id: 'FIA-025', name: 'Bias Detection & Equity Audit', desc: 'Continuous Article 14 Disparate Impact Ratio audits ensuring zero demographic bias.' },
+              ].map((item) => (
+                <div key={item.id} className="p-3 rounded-lg border border-border/70 bg-slate-900/60 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[10px] text-amber-400 font-black">{item.id}</span>
+                    <Badge variant="outline" className="text-[9px] font-mono border-primary/30 text-primary">
+                      AI Model
+                    </Badge>
+                  </div>
+                  <h4 className="font-bold text-white text-xs">{item.name}</h4>
+                  <p className="text-slate-400 text-[11px] leading-relaxed">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          {/* Research References */}
+          <Card className="p-5 border-border/80 bg-slate-950/60 space-y-2">
+            <h4 className="font-mono text-xs uppercase tracking-wider text-muted-foreground font-bold">
+              Research &amp; Statutory Foundations
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs text-slate-300">
+              <div className="p-2.5 rounded bg-slate-900 border border-border/60">
+                <strong className="text-white block">IndicBERT (AI4Bharat)</strong>
+                <span className="text-slate-400 text-[11px]">Multi-lingual Indic language representations across 11 national scripts.</span>
+              </div>
+              <div className="p-2.5 rounded bg-slate-900 border border-border/60">
+                <strong className="text-white block">TrOCR (Microsoft)</strong>
+                <span className="text-slate-400 text-[11px]">Transformer-based handwritten text recognition for cursive police records.</span>
+              </div>
+              <div className="p-2.5 rounded bg-slate-900 border border-border/60">
+                <strong className="text-white block">Section 108 IEA / Sec 113 BNSS</strong>
+                <span className="text-slate-400 text-[11px]">Presumption of death after 7+ years of continuous absence without trace.</span>
+              </div>
+              <div className="p-2.5 rounded bg-slate-900 border border-border/60">
+                <strong className="text-white block">Forensic Stylometry (NCA)</strong>
+                <span className="text-slate-400 text-[11px]">Authorship verification and forgery detection using character n-grams.</span>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
       {/* Tab: Data Integration, Safety, Security & Privacy Architecture */}
       {activeTab === 'DATA_SECURITY' && (
         <div className="space-y-8 animate-in fade-in duration-200">
@@ -1900,6 +2424,152 @@ export function AboutPlatformPage() {
                 <p className="text-[11px] text-slate-400">
                   Audit logs cannot be modified, reordered, or deleted, even by system administrators (WORM Write-Once-Read-Many architecture).
                 </p>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Tab: FIR Intelligence Archive & Forensic Linguistics (25 Analytics) */}
+      {activeTab === 'ARCHIVE' && (
+        <div className="space-y-8 animate-in fade-in duration-200">
+          {/* Header Banner */}
+          <div className="p-6 rounded-2xl border border-amber-500/40 bg-gradient-to-r from-amber-950/40 via-slate-900 to-slate-950 shadow-xl space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Badge className="bg-amber-600 text-white font-black text-xs px-2.5 py-0.5">
+                  INSTITUTIONAL MEMORY
+                </Badge>
+                <span className="text-xs font-mono text-muted-foreground">
+                  IndicBERT Multi-Lingual NLP • TrOCR Handwritten • Section 108 IEA
+                </span>
+              </div>
+              <Link to="/fir-archive">
+                <Button
+                  size="sm"
+                  className="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md"
+                >
+                  <ScrollText className="h-3.5 w-3.5" />
+                  <span>Launch FIR Intelligence Archive (/fir-archive)</span>
+                </Button>
+              </Link>
+            </div>
+            <h2 className="text-2xl font-black text-white tracking-tight">
+              FIR Intelligence Archive: Turning Historical Dockets into Institutional Memory
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-300 max-w-4xl leading-relaxed">
+              CRIMENEXUS reads, understands, and analyzes every historical FIR across 11 Indian languages. By cross-referencing investigating officers, suspect civil mortality registries, and judicial trial outcomes, it executes 25 expert-grade forensic analytical pipelines that transform reactive police files into proactive criminal intelligence.
+            </p>
+          </div>
+
+          {/* Core Pillars */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <Card className="p-4 border-amber-500/30 bg-card/80 space-y-2">
+              <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
+                <Languages className="h-5 w-5 shrink-0" />
+                <span>1. 11-Language Multilingual NLP</span>
+              </div>
+              <p className="text-slate-300 leading-relaxed">
+                Ingests FIRs in English, Hindi, Marathi, Kannada, Telugu, Tamil, Bengali, Gujarati, Punjabi, Malayalam, and Urdu with IndicBERT contextual semantics and cached IndicTrans2 neural translation.
+              </p>
+            </Card>
+
+            <Card className="p-4 border-sky-500/30 bg-card/80 space-y-2">
+              <div className="flex items-center gap-2 text-sky-400 font-bold text-sm">
+                <Sparkles className="h-5 w-5 shrink-0" />
+                <span>2. TrOCR Handwritten OCR</span>
+              </div>
+              <p className="text-slate-300 leading-relaxed">
+                Processes degraded and handwritten Devanagari station entries using Microsoft TrOCR with Otsu deskew and CLAHE contrast enhancement, rejecting outputs below 0.60 confidence for manual verification.
+              </p>
+            </Card>
+
+            <Card className="p-4 border-emerald-500/30 bg-card/80 space-y-2">
+              <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm">
+                <ShieldCheck className="h-5 w-5 shrink-0" />
+                <span>3. Suspect Life-Status Engine</span>
+              </div>
+              <p className="text-slate-300 leading-relaxed">
+                Cross-references Municipal Aadhaar and NCRB mortality databases, applying Section 108 Indian Evidence Act presumption of death after 7+ or 25+ years without investigative trace.
+              </p>
+            </Card>
+          </div>
+
+          {/* 25 Analytics Catalog */}
+          <Card className="p-6 border-border/80 shadow-xl space-y-4">
+            <div className="space-y-1">
+              <h3 className="text-base font-black text-white flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-amber-400" />
+                <span>The 25 Expert Retrospective Analytics Catalog</span>
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Autonomous analytical models executed across all archival FIRs with explainable SHAP feature decompositions:
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+              {[
+                { id: 'FIA-001', name: 'Modus Operandi Evolution', desc: 'Longitudinal mutation from physical theft to OTP SIM-swapping and crypto mixers.' },
+                { id: 'FIA-002', name: 'Syndicate DNA Mapping', desc: 'Identifies masterminds and shell conduits recurring across multiple decades.' },
+                { id: 'FIA-003', name: 'Linguistic Fingerprint', desc: 'Stylometric character n-gram forgery detection flagging duplicate typist complaint mills.' },
+                { id: 'FIA-004', name: 'Dialect Origin Locator', desc: 'Maps colloquial phonetics and regional idioms to specific police sub-districts.' },
+                { id: 'FIA-005', name: 'Charge Framing Accuracy', desc: 'Identifies historical charge omissions causing judicial discharges in trial courts.' },
+                { id: 'FIA-006', name: 'Case Outcome Predictor', desc: 'Sentence-BERT verdict forecasting based on recovery and electronic evidence.' },
+                { id: 'FIA-007', name: 'Witness Reliability Score', desc: 'Flags professional stock witnesses appearing across multiple unrelated station FIRs.' },
+                { id: 'FIA-008', name: 'Judicial Precedent Mining', desc: 'Surfaces bench-specific evidentiary standards for telecom and CDR co-presence.' },
+                { id: 'FIA-009', name: 'Suspect Life-Status Tracker', desc: 'Tracks suspect civil mortality status (Alive, Deceased, Presumed Dead under Sec 108 IEA).' },
+                { id: 'FIA-010', name: 'Case Aging Patterns', desc: 'Pinpoints forensic lab bottlenecks (FSL) causing statutory chargesheet delays.' },
+                { id: 'FIA-011', name: 'Officer Performance History', desc: 'Tracks IO conviction percentage, caseload, and crime category specialization.' },
+                { id: 'FIA-012', name: 'Repeat Offender Network', desc: 'Inter-state graph deduplication identifying persistent syndicate recidivists.' },
+                { id: 'FIA-013', name: 'Victim-Offender Relationship', desc: 'Discovers pre-FIR commercial partnerships and corporate DIN cross-linkages.' },
+                { id: 'FIA-014', name: 'Sentencing Pattern Analysis', desc: 'Calculates average imprisonment terms and court victim restitution awards.' },
+                { id: 'FIA-015', name: 'Seasonal Crime Waves', desc: 'Surges predictive patrols ahead of recurring festival shopping fraud spikes.' },
+                { id: 'FIA-016', name: 'Modus Operandi Signature', desc: 'Isolates mathematical transaction structuring (e.g. ₹49,000 smurfing).' },
+                { id: 'FIA-017', name: 'Location Evolution', desc: 'Spatial centroid tracking showing crime syndicate geographical relocation.' },
+                { id: 'FIA-018', name: 'Language Sentiment Trend', desc: 'Measures intimidation indices in digital loan app and cyber harassment dockets.' },
+                { id: 'FIA-019', name: 'Digitization Shift', desc: 'Monitors the paper-to-digital transition rate from 2015 to 2025.' },
+                { id: 'FIA-020', name: 'Cold Case Resurrection', desc: 'Surfaces unsolved archival cases matching active syndicate MO and telephone pings.' },
+                { id: 'FIA-021', name: 'Cross-Jurisdiction Matching', desc: 'Correlates suspects wanted across multiple state police commissionerates.' },
+                { id: 'FIA-022', name: 'Legal Section Concordance', desc: 'Direct statutory crosswalk translating 1860 IPC to 2023 BNS sections.' },
+                { id: 'FIA-023', name: 'Property Recovery History', desc: 'Models asset recovery probability curves within the 48-hour golden window.' },
+                { id: 'FIA-024', name: 'Appeal/Revision History', desc: 'High Court appellate validation tracking Section 63 BSA electronic hash seals.' },
+                { id: 'FIA-025', name: 'Bias Detection & Equity Audit', desc: 'Continuous Article 14 Disparate Impact Ratio audits ensuring zero demographic bias.' },
+              ].map((item) => (
+                <div key={item.id} className="p-3 rounded-lg border border-border/70 bg-slate-900/60 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[10px] text-amber-400 font-black">{item.id}</span>
+                    <Badge variant="outline" className="text-[9px] font-mono border-primary/30 text-primary">
+                      AI Model
+                    </Badge>
+                  </div>
+                  <h4 className="font-bold text-white text-xs">{item.name}</h4>
+                  <p className="text-slate-400 text-[11px] leading-relaxed">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          {/* Research References */}
+          <Card className="p-5 border-border/80 bg-slate-950/60 space-y-2">
+            <h4 className="font-mono text-xs uppercase tracking-wider text-muted-foreground font-bold">
+              Research &amp; Statutory Foundations
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs text-slate-300">
+              <div className="p-2.5 rounded bg-slate-900 border border-border/60">
+                <strong className="text-white block">IndicBERT (AI4Bharat)</strong>
+                <span className="text-slate-400 text-[11px]">Multi-lingual Indic language representations across 11 national scripts.</span>
+              </div>
+              <div className="p-2.5 rounded bg-slate-900 border border-border/60">
+                <strong className="text-white block">TrOCR (Microsoft)</strong>
+                <span className="text-slate-400 text-[11px]">Transformer-based handwritten text recognition for cursive police records.</span>
+              </div>
+              <div className="p-2.5 rounded bg-slate-900 border border-border/60">
+                <strong className="text-white block">Section 108 IEA / Sec 113 BNSS</strong>
+                <span className="text-slate-400 text-[11px]">Presumption of death after 7+ years of continuous absence without trace.</span>
+              </div>
+              <div className="p-2.5 rounded bg-slate-900 border border-border/60">
+                <strong className="text-white block">Forensic Stylometry (NCA)</strong>
+                <span className="text-slate-400 text-[11px]">Authorship verification and forgery detection using character n-grams.</span>
               </div>
             </div>
           </Card>
@@ -2164,6 +2834,511 @@ export function AboutPlatformPage() {
         </div>
       )}
 
+      {/* Tab: FIR Intelligence Archive & Forensic Linguistics (25 Analytics) */}
+      {activeTab === 'ARCHIVE' && (
+        <div className="space-y-8 animate-in fade-in duration-200">
+          {/* Header Banner */}
+          <div className="p-6 rounded-2xl border border-amber-500/40 bg-gradient-to-r from-amber-950/40 via-slate-900 to-slate-950 shadow-xl space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Badge className="bg-amber-600 text-white font-black text-xs px-2.5 py-0.5">
+                  INSTITUTIONAL MEMORY
+                </Badge>
+                <span className="text-xs font-mono text-muted-foreground">
+                  IndicBERT Multi-Lingual NLP • TrOCR Handwritten • Section 108 IEA
+                </span>
+              </div>
+              <Link to="/fir-archive">
+                <Button
+                  size="sm"
+                  className="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md"
+                >
+                  <ScrollText className="h-3.5 w-3.5" />
+                  <span>Launch FIR Intelligence Archive (/fir-archive)</span>
+                </Button>
+              </Link>
+            </div>
+            <h2 className="text-2xl font-black text-white tracking-tight">
+              FIR Intelligence Archive: Turning Historical Dockets into Institutional Memory
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-300 max-w-4xl leading-relaxed">
+              CRIMENEXUS reads, understands, and analyzes every historical FIR across 11 Indian languages. By cross-referencing investigating officers, suspect civil mortality registries, and judicial trial outcomes, it executes 25 expert-grade forensic analytical pipelines that transform reactive police files into proactive criminal intelligence.
+            </p>
+          </div>
+
+          {/* Core Pillars */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <Card className="p-4 border-amber-500/30 bg-card/80 space-y-2">
+              <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
+                <Languages className="h-5 w-5 shrink-0" />
+                <span>1. 11-Language Multilingual NLP</span>
+              </div>
+              <p className="text-slate-300 leading-relaxed">
+                Ingests FIRs in English, Hindi, Marathi, Kannada, Telugu, Tamil, Bengali, Gujarati, Punjabi, Malayalam, and Urdu with IndicBERT contextual semantics and cached IndicTrans2 neural translation.
+              </p>
+            </Card>
+
+            <Card className="p-4 border-sky-500/30 bg-card/80 space-y-2">
+              <div className="flex items-center gap-2 text-sky-400 font-bold text-sm">
+                <Sparkles className="h-5 w-5 shrink-0" />
+                <span>2. TrOCR Handwritten OCR</span>
+              </div>
+              <p className="text-slate-300 leading-relaxed">
+                Processes degraded and handwritten Devanagari station entries using Microsoft TrOCR with Otsu deskew and CLAHE contrast enhancement, rejecting outputs below 0.60 confidence for manual verification.
+              </p>
+            </Card>
+
+            <Card className="p-4 border-emerald-500/30 bg-card/80 space-y-2">
+              <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm">
+                <ShieldCheck className="h-5 w-5 shrink-0" />
+                <span>3. Suspect Life-Status Engine</span>
+              </div>
+              <p className="text-slate-300 leading-relaxed">
+                Cross-references Municipal Aadhaar and NCRB mortality databases, applying Section 108 Indian Evidence Act presumption of death after 7+ or 25+ years without investigative trace.
+              </p>
+            </Card>
+          </div>
+
+          {/* 25 Analytics Catalog */}
+          <Card className="p-6 border-border/80 shadow-xl space-y-4">
+            <div className="space-y-1">
+              <h3 className="text-base font-black text-white flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-amber-400" />
+                <span>The 25 Expert Retrospective Analytics Catalog</span>
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Autonomous analytical models executed across all archival FIRs with explainable SHAP feature decompositions:
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+              {[
+                { id: 'FIA-001', name: 'Modus Operandi Evolution', desc: 'Longitudinal mutation from physical theft to OTP SIM-swapping and crypto mixers.' },
+                { id: 'FIA-002', name: 'Syndicate DNA Mapping', desc: 'Identifies masterminds and shell conduits recurring across multiple decades.' },
+                { id: 'FIA-003', name: 'Linguistic Fingerprint', desc: 'Stylometric character n-gram forgery detection flagging duplicate typist complaint mills.' },
+                { id: 'FIA-004', name: 'Dialect Origin Locator', desc: 'Maps colloquial phonetics and regional idioms to specific police sub-districts.' },
+                { id: 'FIA-005', name: 'Charge Framing Accuracy', desc: 'Identifies historical charge omissions causing judicial discharges in trial courts.' },
+                { id: 'FIA-006', name: 'Case Outcome Predictor', desc: 'Sentence-BERT verdict forecasting based on recovery and electronic evidence.' },
+                { id: 'FIA-007', name: 'Witness Reliability Score', desc: 'Flags professional stock witnesses appearing across multiple unrelated station FIRs.' },
+                { id: 'FIA-008', name: 'Judicial Precedent Mining', desc: 'Surfaces bench-specific evidentiary standards for telecom and CDR co-presence.' },
+                { id: 'FIA-009', name: 'Suspect Life-Status Tracker', desc: 'Tracks suspect civil mortality status (Alive, Deceased, Presumed Dead under Sec 108 IEA).' },
+                { id: 'FIA-010', name: 'Case Aging Patterns', desc: 'Pinpoints forensic lab bottlenecks (FSL) causing statutory chargesheet delays.' },
+                { id: 'FIA-011', name: 'Officer Performance History', desc: 'Tracks IO conviction percentage, caseload, and crime category specialization.' },
+                { id: 'FIA-012', name: 'Repeat Offender Network', desc: 'Inter-state graph deduplication identifying persistent syndicate recidivists.' },
+                { id: 'FIA-013', name: 'Victim-Offender Relationship', desc: 'Discovers pre-FIR commercial partnerships and corporate DIN cross-linkages.' },
+                { id: 'FIA-014', name: 'Sentencing Pattern Analysis', desc: 'Calculates average imprisonment terms and court victim restitution awards.' },
+                { id: 'FIA-015', name: 'Seasonal Crime Waves', desc: 'Surges predictive patrols ahead of recurring festival shopping fraud spikes.' },
+                { id: 'FIA-016', name: 'Modus Operandi Signature', desc: 'Isolates mathematical transaction structuring (e.g. ₹49,000 smurfing).' },
+                { id: 'FIA-017', name: 'Location Evolution', desc: 'Spatial centroid tracking showing crime syndicate geographical relocation.' },
+                { id: 'FIA-018', name: 'Language Sentiment Trend', desc: 'Measures intimidation indices in digital loan app and cyber harassment dockets.' },
+                { id: 'FIA-019', name: 'Digitization Shift', desc: 'Monitors the paper-to-digital transition rate from 2015 to 2025.' },
+                { id: 'FIA-020', name: 'Cold Case Resurrection', desc: 'Surfaces unsolved archival cases matching active syndicate MO and telephone pings.' },
+                { id: 'FIA-021', name: 'Cross-Jurisdiction Matching', desc: 'Correlates suspects wanted across multiple state police commissionerates.' },
+                { id: 'FIA-022', name: 'Legal Section Concordance', desc: 'Direct statutory crosswalk translating 1860 IPC to 2023 BNS sections.' },
+                { id: 'FIA-023', name: 'Property Recovery History', desc: 'Models asset recovery probability curves within the 48-hour golden window.' },
+                { id: 'FIA-024', name: 'Appeal/Revision History', desc: 'High Court appellate validation tracking Section 63 BSA electronic hash seals.' },
+                { id: 'FIA-025', name: 'Bias Detection & Equity Audit', desc: 'Continuous Article 14 Disparate Impact Ratio audits ensuring zero demographic bias.' },
+              ].map((item) => (
+                <div key={item.id} className="p-3 rounded-lg border border-border/70 bg-slate-900/60 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[10px] text-amber-400 font-black">{item.id}</span>
+                    <Badge variant="outline" className="text-[9px] font-mono border-primary/30 text-primary">
+                      AI Model
+                    </Badge>
+                  </div>
+                  <h4 className="font-bold text-white text-xs">{item.name}</h4>
+                  <p className="text-slate-400 text-[11px] leading-relaxed">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          {/* Research References */}
+          <Card className="p-5 border-border/80 bg-slate-950/60 space-y-2">
+            <h4 className="font-mono text-xs uppercase tracking-wider text-muted-foreground font-bold">
+              Research &amp; Statutory Foundations
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs text-slate-300">
+              <div className="p-2.5 rounded bg-slate-900 border border-border/60">
+                <strong className="text-white block">IndicBERT (AI4Bharat)</strong>
+                <span className="text-slate-400 text-[11px]">Multi-lingual Indic language representations across 11 national scripts.</span>
+              </div>
+              <div className="p-2.5 rounded bg-slate-900 border border-border/60">
+                <strong className="text-white block">TrOCR (Microsoft)</strong>
+                <span className="text-slate-400 text-[11px]">Transformer-based handwritten text recognition for cursive police records.</span>
+              </div>
+              <div className="p-2.5 rounded bg-slate-900 border border-border/60">
+                <strong className="text-white block">Section 108 IEA / Sec 113 BNSS</strong>
+                <span className="text-slate-400 text-[11px]">Presumption of death after 7+ years of continuous absence without trace.</span>
+              </div>
+              <div className="p-2.5 rounded bg-slate-900 border border-border/60">
+                <strong className="text-white block">Forensic Stylometry (NCA)</strong>
+                <span className="text-slate-400 text-[11px]">Authorship verification and forgery detection using character n-grams.</span>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Tab: Guardian Trace (Missing Persons Search & Rescue Engine) */}
+      {activeTab === 'GUARDIAN' && (
+        <div className="space-y-8 animate-in fade-in duration-200">
+          {/* Header Banner */}
+          <div className="p-6 rounded-2xl border border-red-500/40 bg-gradient-to-r from-red-950/40 via-slate-900 to-slate-950 shadow-xl space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Badge className="bg-red-600 text-white font-black text-xs px-2.5 py-0.5 animate-pulse">
+                  RESCUE COMMAND HUD
+                </Badge>
+                <span className="text-xs font-mono text-muted-foreground">
+                  Supreme Court Bachpan Bachao Mandate • Section 63 BSA • DPDP Sec 17(b)
+                </span>
+              </div>
+              <Link to="/guardian-trace">
+                <Button
+                  size="sm"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md"
+                >
+                  <Play className="h-3.5 w-3.5 fill-current" />
+                  <span>Launch Live Guardian Trace HUD</span>
+                </Button>
+              </Link>
+            </div>
+            <h2 className="text-2xl font-black text-white tracking-tight">
+              Guardian Trace: Multimodal Missing Persons Search-and-Rescue Engine
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-300 max-w-4xl leading-relaxed">
+              When a child or vulnerable person goes missing, the first 24 hours determine survival. Traditional systems rely on manual CDR dumps, slow bureaucratic requests, and disconnected public tips. Guardian Trace fuses live digital exhaust (cellular IMEI handovers, transit metro/bus tickets, UPI merchant debits, optical CCTV matches, Wi-Fi probes, and BLE beacons) with a predictive Ring Search spatial engine that isolates high-probability locations in real time.
+            </p>
+          </div>
+
+          {/* 3 Core Pillars of Guardian Trace */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card className="p-5 border-border/80 bg-card/60 space-y-2.5">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-red-500/20 text-red-400 border border-red-500/40">
+                  <ShieldAlert className="h-5 w-5" />
+                </div>
+                <h3 className="text-sm font-black text-white">Bachpan Bachao Auto-Triage</h3>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Cases with children under 12 automatically escalate to <strong>CRITICAL</strong> status, enforcing immediate station broadcast, senior officer notification, and 0-minute turnaround without waiting for formal FIR filing.
+              </p>
+            </Card>
+
+            <Card className="p-5 border-border/80 bg-card/60 space-y-2.5">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-cyan-500/20 text-cyan-400 border border-cyan-500/40">
+                  <Radio className="h-5 w-5" />
+                </div>
+                <h3 className="text-sm font-black text-white">Multimodal Sensor Fusion</h3>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Clusters spatial sightings within 500 meters using weighted confidence models (IMEI 0.9, Transit 0.85, UPI 0.8, CCTV 0.75, WiFi 0.7, BLE 0.65, Citizen 0.6) into an immutable, chronologically ordered escape or transit trajectory.
+              </p>
+            </Card>
+
+            <Card className="p-5 border-border/80 bg-card/60 space-y-2.5">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/40">
+                  <MapPin className="h-5 w-5" />
+                </div>
+                <h3 className="text-sm font-black text-white">Tactical Ring Search Grid</h3>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Deploys concentric operational perimeters: <strong>Tier 1 (0-1 km)</strong> for foot &amp; drone thermal search, <strong>Tier 2 (1-3 km)</strong> for mobile PCR patrols and transit stations, and <strong>Tier 3 (3-10 km)</strong> for expressway cordons and border choke-points.
+              </p>
+            </Card>
+          </div>
+
+          {/* Research Reference Comparative Matrix */}
+          <Card className="p-6 border-border/80 shadow-xl space-y-4">
+            <div className="space-y-1">
+              <h3 className="text-base font-black text-foreground flex items-center gap-2">
+                <Scale className="h-5 w-5 text-primary" />
+                Missing Persons Systems Comparative Benchmark Matrix
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Documented failures of existing domestic and international platforms, and how Guardian Trace systematically overcomes them.
+              </p>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse min-w-[760px]">
+                <thead>
+                  <tr className="border-b border-border bg-slate-900/60 text-slate-200">
+                    <th className="p-3 font-bold uppercase tracking-wider text-[11px]">System / Platform</th>
+                    <th className="p-3 font-bold uppercase tracking-wider text-[11px] text-center">Coverage</th>
+                    <th className="p-3 font-bold uppercase tracking-wider text-[11px] text-center">Digital Fusion</th>
+                    <th className="p-3 font-bold uppercase tracking-wider text-[11px] text-center">Predictive AI</th>
+                    <th className="p-3 font-bold uppercase tracking-wider text-[11px] text-center">Ring Grid</th>
+                    <th className="p-3 font-bold uppercase tracking-wider text-[11px] text-center">Court Dossier</th>
+                    <th className="p-3 font-bold uppercase tracking-wider text-[11px]">Critical Demerit &amp; Limitation</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/60 text-slate-300">
+                  {[
+                    {
+                      system: 'NCMEC (US)',
+                      jurisdiction: 'United States',
+                      digitalFusion: false,
+                      predictiveAI: false,
+                      ringGrid: false,
+                      dossier: true,
+                      demerit: 'US-only database. No real-time mobile telemetry or dynamic spatial exhaust fusion.',
+                      color: 'text-amber-400',
+                    },
+                    {
+                      system: 'AMBER Alert (US)',
+                      jurisdiction: 'United States',
+                      digitalFusion: false,
+                      predictiveAI: false,
+                      ringGrid: false,
+                      dossier: false,
+                      demerit: 'Broadcast alerts only. Highly reactive, causes alert fatigue, lacks proactive trajectory prediction.',
+                      color: 'text-rose-400',
+                    },
+                    {
+                      system: 'TrackChild (India)',
+                      jurisdiction: 'Govt. of India',
+                      digitalFusion: false,
+                      predictiveAI: false,
+                      ringGrid: false,
+                      dossier: false,
+                      demerit: 'Static national portal for photo uploads. Zero digital exhaust fusion, no predictive analytics or patrol routing.',
+                      color: 'text-orange-400',
+                    },
+                    {
+                      system: 'Childline 1098 (India)',
+                      jurisdiction: 'Helpline / NGO',
+                      digitalFusion: false,
+                      predictiveAI: false,
+                      ringGrid: false,
+                      dossier: false,
+                      demerit: 'Manual telephony call routing. No technical search layer, geospatial heatmaps, or sensor ingestion.',
+                      color: 'text-yellow-400',
+                    },
+                    {
+                      system: 'Khoj (Mumbai Police)',
+                      jurisdiction: 'Mumbai Police',
+                      digitalFusion: false,
+                      predictiveAI: false,
+                      ringGrid: false,
+                      dossier: false,
+                      demerit: 'Limited strictly to static photo posters and manual citizen tips without sensor telemetry.',
+                      color: 'text-sky-400',
+                    },
+                    {
+                      system: 'CRIMENEXUS Guardian Trace',
+                      jurisdiction: 'Sovereign India v2.4',
+                      digitalFusion: true,
+                      predictiveAI: true,
+                      ringGrid: true,
+                      dossier: true,
+                      demerit: 'None. Synthesizes 6 sensor streams, runs Markov & velocity predictions, deploys Ring Search grid, and issues Sec 63 BSA court dossiers.',
+                      color: 'text-emerald-400',
+                      highlight: true,
+                    },
+                  ].map((row, idx) => (
+                    <tr
+                      key={idx}
+                      className={row.highlight ? 'bg-emerald-950/20 hover:bg-emerald-950/30 font-semibold' : 'hover:bg-slate-900/40'}
+                    >
+                      <td className="p-3">
+                        <span className={`font-bold block ${row.color}`}>{row.system}</span>
+                        <span className="text-[10px] text-muted-foreground font-mono">{row.jurisdiction}</span>
+                      </td>
+                      <td className="p-3 text-center">
+                        <span className="font-mono text-xs">{row.jurisdiction}</span>
+                      </td>
+                      <td className="p-3 text-center">
+                        {row.digitalFusion ? (
+                          <span className="text-emerald-400 font-bold">✓ Multi-Source</span>
+                        ) : (
+                          <span className="text-red-400 font-bold">✗ None</span>
+                        )}
+                      </td>
+                      <td className="p-3 text-center">
+                        {row.predictiveAI ? (
+                          <span className="text-emerald-400 font-bold">✓ Velocity &amp; Anchor</span>
+                        ) : (
+                          <span className="text-red-400 font-bold">✗ None</span>
+                        )}
+                      </td>
+                      <td className="p-3 text-center">
+                        {row.ringGrid ? (
+                          <span className="text-emerald-400 font-bold">✓ 3 Tiers (1-10km)</span>
+                        ) : (
+                          <span className="text-red-400 font-bold">✗ None</span>
+                        )}
+                      </td>
+                      <td className="p-3 text-center">
+                        {row.dossier ? (
+                          <span className="text-emerald-400 font-bold">✓ Sec 63 BSA</span>
+                        ) : (
+                          <span className="text-red-400 font-bold">✗ None</span>
+                        )}
+                      </td>
+                      <td className="p-3 text-[11px] leading-relaxed">
+                        <span className={row.highlight ? 'text-emerald-200' : 'text-slate-400'}>
+                          {row.demerit}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Tab: FIR Intelligence Archive & Forensic Linguistics (25 Analytics) */}
+      {activeTab === 'ARCHIVE' && (
+        <div className="space-y-8 animate-in fade-in duration-200">
+          {/* Header Banner */}
+          <div className="p-6 rounded-2xl border border-amber-500/40 bg-gradient-to-r from-amber-950/40 via-slate-900 to-slate-950 shadow-xl space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Badge className="bg-amber-600 text-white font-black text-xs px-2.5 py-0.5">
+                  INSTITUTIONAL MEMORY
+                </Badge>
+                <span className="text-xs font-mono text-muted-foreground">
+                  IndicBERT Multi-Lingual NLP • TrOCR Handwritten • Section 108 IEA
+                </span>
+              </div>
+              <Link to="/fir-archive">
+                <Button
+                  size="sm"
+                  className="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md"
+                >
+                  <ScrollText className="h-3.5 w-3.5" />
+                  <span>Launch FIR Intelligence Archive (/fir-archive)</span>
+                </Button>
+              </Link>
+            </div>
+            <h2 className="text-2xl font-black text-white tracking-tight">
+              FIR Intelligence Archive: Turning Historical Dockets into Institutional Memory
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-300 max-w-4xl leading-relaxed">
+              CRIMENEXUS reads, understands, and analyzes every historical FIR across 11 Indian languages. By cross-referencing investigating officers, suspect civil mortality registries, and judicial trial outcomes, it executes 25 expert-grade forensic analytical pipelines that transform reactive police files into proactive criminal intelligence.
+            </p>
+          </div>
+
+          {/* Core Pillars */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <Card className="p-4 border-amber-500/30 bg-card/80 space-y-2">
+              <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
+                <Languages className="h-5 w-5 shrink-0" />
+                <span>1. 11-Language Multilingual NLP</span>
+              </div>
+              <p className="text-slate-300 leading-relaxed">
+                Ingests FIRs in English, Hindi, Marathi, Kannada, Telugu, Tamil, Bengali, Gujarati, Punjabi, Malayalam, and Urdu with IndicBERT contextual semantics and cached IndicTrans2 neural translation.
+              </p>
+            </Card>
+
+            <Card className="p-4 border-sky-500/30 bg-card/80 space-y-2">
+              <div className="flex items-center gap-2 text-sky-400 font-bold text-sm">
+                <Sparkles className="h-5 w-5 shrink-0" />
+                <span>2. TrOCR Handwritten OCR</span>
+              </div>
+              <p className="text-slate-300 leading-relaxed">
+                Processes degraded and handwritten Devanagari station entries using Microsoft TrOCR with Otsu deskew and CLAHE contrast enhancement, rejecting outputs below 0.60 confidence for manual verification.
+              </p>
+            </Card>
+
+            <Card className="p-4 border-emerald-500/30 bg-card/80 space-y-2">
+              <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm">
+                <ShieldCheck className="h-5 w-5 shrink-0" />
+                <span>3. Suspect Life-Status Engine</span>
+              </div>
+              <p className="text-slate-300 leading-relaxed">
+                Cross-references Municipal Aadhaar and NCRB mortality databases, applying Section 108 Indian Evidence Act presumption of death after 7+ or 25+ years without investigative trace.
+              </p>
+            </Card>
+          </div>
+
+          {/* 25 Analytics Catalog */}
+          <Card className="p-6 border-border/80 shadow-xl space-y-4">
+            <div className="space-y-1">
+              <h3 className="text-base font-black text-white flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-amber-400" />
+                <span>The 25 Expert Retrospective Analytics Catalog</span>
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Autonomous analytical models executed across all archival FIRs with explainable SHAP feature decompositions:
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+              {[
+                { id: 'FIA-001', name: 'Modus Operandi Evolution', desc: 'Longitudinal mutation from physical theft to OTP SIM-swapping and crypto mixers.' },
+                { id: 'FIA-002', name: 'Syndicate DNA Mapping', desc: 'Identifies masterminds and shell conduits recurring across multiple decades.' },
+                { id: 'FIA-003', name: 'Linguistic Fingerprint', desc: 'Stylometric character n-gram forgery detection flagging duplicate typist complaint mills.' },
+                { id: 'FIA-004', name: 'Dialect Origin Locator', desc: 'Maps colloquial phonetics and regional idioms to specific police sub-districts.' },
+                { id: 'FIA-005', name: 'Charge Framing Accuracy', desc: 'Identifies historical charge omissions causing judicial discharges in trial courts.' },
+                { id: 'FIA-006', name: 'Case Outcome Predictor', desc: 'Sentence-BERT verdict forecasting based on recovery and electronic evidence.' },
+                { id: 'FIA-007', name: 'Witness Reliability Score', desc: 'Flags professional stock witnesses appearing across multiple unrelated station FIRs.' },
+                { id: 'FIA-008', name: 'Judicial Precedent Mining', desc: 'Surfaces bench-specific evidentiary standards for telecom and CDR co-presence.' },
+                { id: 'FIA-009', name: 'Suspect Life-Status Tracker', desc: 'Tracks suspect civil mortality status (Alive, Deceased, Presumed Dead under Sec 108 IEA).' },
+                { id: 'FIA-010', name: 'Case Aging Patterns', desc: 'Pinpoints forensic lab bottlenecks (FSL) causing statutory chargesheet delays.' },
+                { id: 'FIA-011', name: 'Officer Performance History', desc: 'Tracks IO conviction percentage, caseload, and crime category specialization.' },
+                { id: 'FIA-012', name: 'Repeat Offender Network', desc: 'Inter-state graph deduplication identifying persistent syndicate recidivists.' },
+                { id: 'FIA-013', name: 'Victim-Offender Relationship', desc: 'Discovers pre-FIR commercial partnerships and corporate DIN cross-linkages.' },
+                { id: 'FIA-014', name: 'Sentencing Pattern Analysis', desc: 'Calculates average imprisonment terms and court victim restitution awards.' },
+                { id: 'FIA-015', name: 'Seasonal Crime Waves', desc: 'Surges predictive patrols ahead of recurring festival shopping fraud spikes.' },
+                { id: 'FIA-016', name: 'Modus Operandi Signature', desc: 'Isolates mathematical transaction structuring (e.g. ₹49,000 smurfing).' },
+                { id: 'FIA-017', name: 'Location Evolution', desc: 'Spatial centroid tracking showing crime syndicate geographical relocation.' },
+                { id: 'FIA-018', name: 'Language Sentiment Trend', desc: 'Measures intimidation indices in digital loan app and cyber harassment dockets.' },
+                { id: 'FIA-019', name: 'Digitization Shift', desc: 'Monitors the paper-to-digital transition rate from 2015 to 2025.' },
+                { id: 'FIA-020', name: 'Cold Case Resurrection', desc: 'Surfaces unsolved archival cases matching active syndicate MO and telephone pings.' },
+                { id: 'FIA-021', name: 'Cross-Jurisdiction Matching', desc: 'Correlates suspects wanted across multiple state police commissionerates.' },
+                { id: 'FIA-022', name: 'Legal Section Concordance', desc: 'Direct statutory crosswalk translating 1860 IPC to 2023 BNS sections.' },
+                { id: 'FIA-023', name: 'Property Recovery History', desc: 'Models asset recovery probability curves within the 48-hour golden window.' },
+                { id: 'FIA-024', name: 'Appeal/Revision History', desc: 'High Court appellate validation tracking Section 63 BSA electronic hash seals.' },
+                { id: 'FIA-025', name: 'Bias Detection & Equity Audit', desc: 'Continuous Article 14 Disparate Impact Ratio audits ensuring zero demographic bias.' },
+              ].map((item) => (
+                <div key={item.id} className="p-3 rounded-lg border border-border/70 bg-slate-900/60 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[10px] text-amber-400 font-black">{item.id}</span>
+                    <Badge variant="outline" className="text-[9px] font-mono border-primary/30 text-primary">
+                      AI Model
+                    </Badge>
+                  </div>
+                  <h4 className="font-bold text-white text-xs">{item.name}</h4>
+                  <p className="text-slate-400 text-[11px] leading-relaxed">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          {/* Research References */}
+          <Card className="p-5 border-border/80 bg-slate-950/60 space-y-2">
+            <h4 className="font-mono text-xs uppercase tracking-wider text-muted-foreground font-bold">
+              Research &amp; Statutory Foundations
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs text-slate-300">
+              <div className="p-2.5 rounded bg-slate-900 border border-border/60">
+                <strong className="text-white block">IndicBERT (AI4Bharat)</strong>
+                <span className="text-slate-400 text-[11px]">Multi-lingual Indic language representations across 11 national scripts.</span>
+              </div>
+              <div className="p-2.5 rounded bg-slate-900 border border-border/60">
+                <strong className="text-white block">TrOCR (Microsoft)</strong>
+                <span className="text-slate-400 text-[11px]">Transformer-based handwritten text recognition for cursive police records.</span>
+              </div>
+              <div className="p-2.5 rounded bg-slate-900 border border-border/60">
+                <strong className="text-white block">Section 108 IEA / Sec 113 BNSS</strong>
+                <span className="text-slate-400 text-[11px]">Presumption of death after 7+ years of continuous absence without trace.</span>
+              </div>
+              <div className="p-2.5 rounded bg-slate-900 border border-border/60">
+                <strong className="text-white block">Forensic Stylometry (NCA)</strong>
+                <span className="text-slate-400 text-[11px]">Authorship verification and forgery detection using character n-grams.</span>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
       {/* Tab 3: Autonomous Background Daemons */}
       {activeTab === 'AUTOMATIONS' && (
         <div className="space-y-6">
@@ -2250,6 +3425,152 @@ export function AboutPlatformPage() {
                   </div>
                 );
               })}
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Tab: FIR Intelligence Archive & Forensic Linguistics (25 Analytics) */}
+      {activeTab === 'ARCHIVE' && (
+        <div className="space-y-8 animate-in fade-in duration-200">
+          {/* Header Banner */}
+          <div className="p-6 rounded-2xl border border-amber-500/40 bg-gradient-to-r from-amber-950/40 via-slate-900 to-slate-950 shadow-xl space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Badge className="bg-amber-600 text-white font-black text-xs px-2.5 py-0.5">
+                  INSTITUTIONAL MEMORY
+                </Badge>
+                <span className="text-xs font-mono text-muted-foreground">
+                  IndicBERT Multi-Lingual NLP • TrOCR Handwritten • Section 108 IEA
+                </span>
+              </div>
+              <Link to="/fir-archive">
+                <Button
+                  size="sm"
+                  className="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md"
+                >
+                  <ScrollText className="h-3.5 w-3.5" />
+                  <span>Launch FIR Intelligence Archive (/fir-archive)</span>
+                </Button>
+              </Link>
+            </div>
+            <h2 className="text-2xl font-black text-white tracking-tight">
+              FIR Intelligence Archive: Turning Historical Dockets into Institutional Memory
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-300 max-w-4xl leading-relaxed">
+              CRIMENEXUS reads, understands, and analyzes every historical FIR across 11 Indian languages. By cross-referencing investigating officers, suspect civil mortality registries, and judicial trial outcomes, it executes 25 expert-grade forensic analytical pipelines that transform reactive police files into proactive criminal intelligence.
+            </p>
+          </div>
+
+          {/* Core Pillars */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <Card className="p-4 border-amber-500/30 bg-card/80 space-y-2">
+              <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
+                <Languages className="h-5 w-5 shrink-0" />
+                <span>1. 11-Language Multilingual NLP</span>
+              </div>
+              <p className="text-slate-300 leading-relaxed">
+                Ingests FIRs in English, Hindi, Marathi, Kannada, Telugu, Tamil, Bengali, Gujarati, Punjabi, Malayalam, and Urdu with IndicBERT contextual semantics and cached IndicTrans2 neural translation.
+              </p>
+            </Card>
+
+            <Card className="p-4 border-sky-500/30 bg-card/80 space-y-2">
+              <div className="flex items-center gap-2 text-sky-400 font-bold text-sm">
+                <Sparkles className="h-5 w-5 shrink-0" />
+                <span>2. TrOCR Handwritten OCR</span>
+              </div>
+              <p className="text-slate-300 leading-relaxed">
+                Processes degraded and handwritten Devanagari station entries using Microsoft TrOCR with Otsu deskew and CLAHE contrast enhancement, rejecting outputs below 0.60 confidence for manual verification.
+              </p>
+            </Card>
+
+            <Card className="p-4 border-emerald-500/30 bg-card/80 space-y-2">
+              <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm">
+                <ShieldCheck className="h-5 w-5 shrink-0" />
+                <span>3. Suspect Life-Status Engine</span>
+              </div>
+              <p className="text-slate-300 leading-relaxed">
+                Cross-references Municipal Aadhaar and NCRB mortality databases, applying Section 108 Indian Evidence Act presumption of death after 7+ or 25+ years without investigative trace.
+              </p>
+            </Card>
+          </div>
+
+          {/* 25 Analytics Catalog */}
+          <Card className="p-6 border-border/80 shadow-xl space-y-4">
+            <div className="space-y-1">
+              <h3 className="text-base font-black text-white flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-amber-400" />
+                <span>The 25 Expert Retrospective Analytics Catalog</span>
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Autonomous analytical models executed across all archival FIRs with explainable SHAP feature decompositions:
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+              {[
+                { id: 'FIA-001', name: 'Modus Operandi Evolution', desc: 'Longitudinal mutation from physical theft to OTP SIM-swapping and crypto mixers.' },
+                { id: 'FIA-002', name: 'Syndicate DNA Mapping', desc: 'Identifies masterminds and shell conduits recurring across multiple decades.' },
+                { id: 'FIA-003', name: 'Linguistic Fingerprint', desc: 'Stylometric character n-gram forgery detection flagging duplicate typist complaint mills.' },
+                { id: 'FIA-004', name: 'Dialect Origin Locator', desc: 'Maps colloquial phonetics and regional idioms to specific police sub-districts.' },
+                { id: 'FIA-005', name: 'Charge Framing Accuracy', desc: 'Identifies historical charge omissions causing judicial discharges in trial courts.' },
+                { id: 'FIA-006', name: 'Case Outcome Predictor', desc: 'Sentence-BERT verdict forecasting based on recovery and electronic evidence.' },
+                { id: 'FIA-007', name: 'Witness Reliability Score', desc: 'Flags professional stock witnesses appearing across multiple unrelated station FIRs.' },
+                { id: 'FIA-008', name: 'Judicial Precedent Mining', desc: 'Surfaces bench-specific evidentiary standards for telecom and CDR co-presence.' },
+                { id: 'FIA-009', name: 'Suspect Life-Status Tracker', desc: 'Tracks suspect civil mortality status (Alive, Deceased, Presumed Dead under Sec 108 IEA).' },
+                { id: 'FIA-010', name: 'Case Aging Patterns', desc: 'Pinpoints forensic lab bottlenecks (FSL) causing statutory chargesheet delays.' },
+                { id: 'FIA-011', name: 'Officer Performance History', desc: 'Tracks IO conviction percentage, caseload, and crime category specialization.' },
+                { id: 'FIA-012', name: 'Repeat Offender Network', desc: 'Inter-state graph deduplication identifying persistent syndicate recidivists.' },
+                { id: 'FIA-013', name: 'Victim-Offender Relationship', desc: 'Discovers pre-FIR commercial partnerships and corporate DIN cross-linkages.' },
+                { id: 'FIA-014', name: 'Sentencing Pattern Analysis', desc: 'Calculates average imprisonment terms and court victim restitution awards.' },
+                { id: 'FIA-015', name: 'Seasonal Crime Waves', desc: 'Surges predictive patrols ahead of recurring festival shopping fraud spikes.' },
+                { id: 'FIA-016', name: 'Modus Operandi Signature', desc: 'Isolates mathematical transaction structuring (e.g. ₹49,000 smurfing).' },
+                { id: 'FIA-017', name: 'Location Evolution', desc: 'Spatial centroid tracking showing crime syndicate geographical relocation.' },
+                { id: 'FIA-018', name: 'Language Sentiment Trend', desc: 'Measures intimidation indices in digital loan app and cyber harassment dockets.' },
+                { id: 'FIA-019', name: 'Digitization Shift', desc: 'Monitors the paper-to-digital transition rate from 2015 to 2025.' },
+                { id: 'FIA-020', name: 'Cold Case Resurrection', desc: 'Surfaces unsolved archival cases matching active syndicate MO and telephone pings.' },
+                { id: 'FIA-021', name: 'Cross-Jurisdiction Matching', desc: 'Correlates suspects wanted across multiple state police commissionerates.' },
+                { id: 'FIA-022', name: 'Legal Section Concordance', desc: 'Direct statutory crosswalk translating 1860 IPC to 2023 BNS sections.' },
+                { id: 'FIA-023', name: 'Property Recovery History', desc: 'Models asset recovery probability curves within the 48-hour golden window.' },
+                { id: 'FIA-024', name: 'Appeal/Revision History', desc: 'High Court appellate validation tracking Section 63 BSA electronic hash seals.' },
+                { id: 'FIA-025', name: 'Bias Detection & Equity Audit', desc: 'Continuous Article 14 Disparate Impact Ratio audits ensuring zero demographic bias.' },
+              ].map((item) => (
+                <div key={item.id} className="p-3 rounded-lg border border-border/70 bg-slate-900/60 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[10px] text-amber-400 font-black">{item.id}</span>
+                    <Badge variant="outline" className="text-[9px] font-mono border-primary/30 text-primary">
+                      AI Model
+                    </Badge>
+                  </div>
+                  <h4 className="font-bold text-white text-xs">{item.name}</h4>
+                  <p className="text-slate-400 text-[11px] leading-relaxed">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          {/* Research References */}
+          <Card className="p-5 border-border/80 bg-slate-950/60 space-y-2">
+            <h4 className="font-mono text-xs uppercase tracking-wider text-muted-foreground font-bold">
+              Research &amp; Statutory Foundations
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs text-slate-300">
+              <div className="p-2.5 rounded bg-slate-900 border border-border/60">
+                <strong className="text-white block">IndicBERT (AI4Bharat)</strong>
+                <span className="text-slate-400 text-[11px]">Multi-lingual Indic language representations across 11 national scripts.</span>
+              </div>
+              <div className="p-2.5 rounded bg-slate-900 border border-border/60">
+                <strong className="text-white block">TrOCR (Microsoft)</strong>
+                <span className="text-slate-400 text-[11px]">Transformer-based handwritten text recognition for cursive police records.</span>
+              </div>
+              <div className="p-2.5 rounded bg-slate-900 border border-border/60">
+                <strong className="text-white block">Section 108 IEA / Sec 113 BNSS</strong>
+                <span className="text-slate-400 text-[11px]">Presumption of death after 7+ years of continuous absence without trace.</span>
+              </div>
+              <div className="p-2.5 rounded bg-slate-900 border border-border/60">
+                <strong className="text-white block">Forensic Stylometry (NCA)</strong>
+                <span className="text-slate-400 text-[11px]">Authorship verification and forgery detection using character n-grams.</span>
+              </div>
             </div>
           </Card>
         </div>

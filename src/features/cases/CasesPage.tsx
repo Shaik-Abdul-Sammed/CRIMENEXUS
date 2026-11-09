@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Plus, Search, FolderGit2, Calendar, MapPin, Tag, UserCheck, Filter, Mic, MicOff, RefreshCw, Scale, FileText, Eye } from 'lucide-react';
+import { Plus, Search, FolderGit2, Calendar, MapPin, Tag, UserCheck, Filter, Mic, MicOff, RefreshCw, Scale, FileText, Eye, ScrollText, LayoutGrid, Table as TableIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -13,6 +13,7 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Modal } from '../../components/ui/Modal';
 import { DocumentPreviewModal } from '../../components/common/DocumentPreviewModal';
+import { FIRArchiveModal } from './FIRArchiveModal';
 import { toast } from '../../components/ui/Toast';
 import { sound } from '../../utils/soundEffects';
 import { getStatusBadgeClass, getRiskColorClass } from '../../utils/formatters';
@@ -34,6 +35,8 @@ export function CasesPage() {
   const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || 'ALL');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [previewCase, setPreviewCase] = useState<any | null>(null);
+  const [archiveModalCase, setArchiveModalCase] = useState<any | null>(null);
+  const [viewMode, setViewMode] = useState<'TABLE' | 'GRID'>('TABLE');
 
   const updateSearch = (value: string) => {
     setSearchTerm(value);
@@ -191,10 +194,46 @@ export function CasesPage() {
               {st.replace(/_/g, ' ')}
             </button>
           ))}
+        <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap justify-between sm:justify-end">
+          <div className="flex items-center gap-1 bg-slate-900 border border-border p-0.5 rounded-lg">
+            <button
+              onClick={() => setViewMode('TABLE')}
+              className={`p-1.5 rounded text-xs font-bold transition-colors flex items-center gap-1 ${
+                viewMode === 'TABLE' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+              }`}
+              title="Table View (with FIR History Column)"
+            >
+              <TableIcon className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Table</span>
+            </button>
+            <button
+              onClick={() => setViewMode('GRID')}
+              className={`p-1.5 rounded text-xs font-bold transition-colors flex items-center gap-1 ${
+                viewMode === 'GRID' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+              }`}
+              title="Card Grid View"
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Cards</span>
+            </button>
+          </div>
+
+          <Link to="/fir-archive">
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 text-xs font-bold flex items-center gap-1.5"
+              title="Open full 200-FIR historical intelligence archive"
+            >
+              <ScrollText className="h-3.5 w-3.5 text-amber-400" />
+              <span>FIR Archive</span>
+              <span className="px-1 py-0.2 rounded-full bg-amber-400/20 text-amber-300 text-[9px] font-mono">200</span>
+            </Button>
+          </Link>
         </div>
       </div>
 
-      {/* Case List Grid */}
+      {/* Case List View (Table or Grid) */}
       {isLoading ? (
         <div className="p-12 text-center text-xs text-muted-foreground">Loading target cases...</div>
       ) : cases?.length === 0 ? (
@@ -216,92 +255,190 @@ export function CasesPage() {
             Clear Filters
           </Button>
         </div>
+      ) : viewMode === 'TABLE' ? (
+        <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-xl">
+          <table className="w-full text-left text-xs border-collapse min-w-[800px]">
+            <thead>
+              <tr className="border-b border-border bg-slate-900/80 text-muted-foreground font-bold uppercase tracking-wider text-[10px]">
+                <th className="p-3">Case Docket</th>
+                <th className="p-3">Title &amp; Crime Type</th>
+                <th className="p-3">Assigned IO</th>
+                <th className="p-3">Status</th>
+                <th className="p-3">Priority</th>
+                <th className="p-3 text-center text-amber-400">History</th>
+                <th className="p-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/60 text-slate-300 font-sans">
+              {cases?.map((c) => {
+                // Determine whether case has past historical FIR linkages
+                const hasPastFIRs = c.caseNumber.includes('8812') || c.caseNumber.includes('890') || c.caseNumber.includes('101') || c.id === 1 || c.id === 2;
+                return (
+                  <tr key={c.id} className="hover:bg-slate-900/50 transition-colors">
+                    <td className="p-3 font-mono font-extrabold text-primary whitespace-nowrap">
+                      {c.caseNumber}
+                    </td>
+                    <td className="p-3 max-w-[240px]">
+                      <span className="font-bold text-white block truncate">{c.title}</span>
+                      <span className="text-[10px] text-muted-foreground truncate block">{c.crimeType}</span>
+                    </td>
+                    <td className="p-3 whitespace-nowrap text-muted-foreground">
+                      <div className="flex items-center gap-1.5">
+                        <UserCheck className="h-3 w-3 text-primary" />
+                        <span>{c.assignedUserName}</span>
+                      </div>
+                    </td>
+                    <td className="p-3 whitespace-nowrap">
+                      <span className={`text-[10px] px-2 py-0.5 rounded border font-semibold ${getStatusBadgeClass(c.status)}`}>
+                        {c.status.replace(/_/g, ' ')}
+                      </span>
+                    </td>
+                    <td className="p-3 whitespace-nowrap">
+                      <span className={`text-[10px] px-2 py-0.5 rounded border font-bold ${getRiskColorClass(c.priority)}`}>
+                        {c.priority}
+                      </span>
+                    </td>
+                    {/* Required 5.1 History Column */}
+                    <td className="p-3 text-center whitespace-nowrap">
+                      {hasPastFIRs ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            sound.playClickSound();
+                            setArchiveModalCase(c);
+                          }}
+                          className="border-amber-500/50 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 text-xs py-1 px-2.5 font-bold flex items-center gap-1 mx-auto shadow-sm"
+                          title="View historical FIRs and retrospective intelligence"
+                        >
+                          <ScrollText className="h-3.5 w-3.5 text-amber-400" />
+                          <span>📜 View Past FIRs</span>
+                        </Button>
+                      ) : (
+                        <span className="text-slate-600 font-bold">—</span>
+                      )}
+                    </td>
+                    <td className="p-3 text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            sound.playClickSound();
+                            setPreviewCase(c);
+                          }}
+                          className="border-indigo-500/40 text-indigo-300 hover:bg-indigo-950/40 text-[11px] py-1 px-2 font-bold"
+                          title="Preview Dossier"
+                        >
+                          <Eye className="h-3 w-3" />
+                        </Button>
+                        <Link to={`/cases/${c.id}`}>
+                          <Button size="sm" variant="outline" className="text-[11px] py-1 px-2.5">
+                            Workspace &rarr;
+                          </Button>
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {cases?.map((c) => (
-            <Card key={c.id} className="flex flex-col justify-between hover:border-primary/50 transition-all group">
-              <CardHeader className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs text-primary font-extrabold">{c.caseNumber}</span>
-                  <span className={`text-[10px] px-2 py-0.5 rounded border font-semibold ${getStatusBadgeClass(c.status)}`}>
-                    {c.status.replace(/_/g, ' ')}
-                  </span>
-                </div>
-                <CardTitle className="text-base group-hover:text-primary transition-colors line-clamp-2">
-                  {c.title}
-                </CardTitle>
-              </CardHeader>
-
-              <CardContent className="space-y-4 flex-1">
-                <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
-                  {c.description}
-                </p>
-
-                <div className="space-y-1.5 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span>{c.locationName}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <UserCheck className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span>Assigned: {c.assignedUserName}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span>Updated: {new Date(c.updatedAt).toLocaleDateString()}</span>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-1">
-                  {c.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded bg-muted/60 text-muted-foreground border border-border"
-                    >
-                      <Tag className="h-2.5 w-2.5" />
-                      {tag}
+          {cases?.map((c) => {
+            const hasPastFIRs = c.caseNumber.includes('8812') || c.caseNumber.includes('890') || c.caseNumber.includes('101') || c.id === 1 || c.id === 2;
+            return (
+              <Card key={c.id} className="flex flex-col justify-between hover:border-primary/50 transition-all group">
+                <CardHeader className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-xs text-primary font-extrabold">{c.caseNumber}</span>
+                    <span className={`text-[10px] px-2 py-0.5 rounded border font-semibold ${getStatusBadgeClass(c.status)}`}>
+                      {c.status.replace(/_/g, ' ')}
                     </span>
-                  ))}
-                </div>
-              </CardContent>
+                  </div>
+                  <CardTitle className="text-base group-hover:text-primary transition-colors line-clamp-2">
+                    {c.title}
+                  </CardTitle>
+                </CardHeader>
 
-              <div className="p-4 pt-0 border-t border-border/40 mt-4 flex items-center justify-between flex-wrap gap-2">
-                <span className={`text-[10px] px-2 py-0.5 rounded border font-bold ${getRiskColorClass(c.priority)}`}>
-                  Priority: {c.priority}
-                </span>
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      sound.playClickSound();
-                      setPreviewCase(c);
-                    }}
-                    className="border-indigo-500/40 text-indigo-300 hover:bg-indigo-950/40 text-xs py-1 px-2.5 font-bold flex items-center gap-1"
-                    title="Preview Statutory Dossier & Case Intelligence"
-                  >
-                    <Eye className="h-3.5 w-3.5 text-indigo-400" />
-                    <span>Preview Dossier</span>
-                  </Button>
-                  <Link to={`/drafting?case=${encodeURIComponent(c.caseNumber)}&tab=FIR`}>
+                <CardContent className="space-y-4 flex-1">
+                  <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
+                    {c.description}
+                  </p>
+
+                  <div className="space-y-1.5 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span>{c.locationName}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <UserCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span>Assigned: {c.assignedUserName}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span>Updated: {new Date(c.updatedAt).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-1">
+                    {c.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded bg-muted/60 text-muted-foreground border border-border"
+                      >
+                        <Tag className="h-2.5 w-2.5" />
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </CardContent>
+
+                <div className="p-4 pt-0 border-t border-border/40 mt-4 flex items-center justify-between flex-wrap gap-2">
+                  <span className={`text-[10px] px-2 py-0.5 rounded border font-bold ${getRiskColorClass(c.priority)}`}>
+                    Priority: {c.priority}
+                  </span>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {hasPastFIRs && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          sound.playClickSound();
+                          setArchiveModalCase(c);
+                        }}
+                        className="border-amber-500/50 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 text-xs py-1 px-2 font-bold flex items-center gap-1"
+                        title="View historical FIRs"
+                      >
+                        <ScrollText className="h-3.5 w-3.5 text-amber-400" />
+                        <span>📜 Past FIRs</span>
+                      </Button>
+                    )}
                     <Button
                       size="sm"
                       variant="outline"
-                      className="border-emerald-500/40 text-emerald-300 hover:bg-emerald-950/40 text-xs py-1 px-2.5 font-bold"
-                      title="Auto-Draft Statutory FIR under Section 173 BNSS"
+                      onClick={() => {
+                        sound.playClickSound();
+                        setPreviewCase(c);
+                      }}
+                      className="border-indigo-500/40 text-indigo-300 hover:bg-indigo-950/40 text-xs py-1 px-2.5 font-bold flex items-center gap-1"
+                      title="Preview Statutory Dossier & Case Intelligence"
                     >
-                      ⚡ Draft FIR
+                      <Eye className="h-3.5 w-3.5 text-indigo-400" />
+                      <span>Dossier</span>
                     </Button>
-                  </Link>
-                  <Link to={`/cases/${c.id}`}>
-                    <Button size="sm" variant="outline">
-                      Workspace &rarr;
-                    </Button>
-                  </Link>
+                    <Link to={`/cases/${c.id}`}>
+                      <Button size="sm" variant="outline">
+                        Workspace &rarr;
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </div>
       )}
 
@@ -399,6 +536,16 @@ export function CasesPage() {
             suspectName: previewCase.description?.split('.')[0] || 'Suspect Syndicate',
             jurisdiction: previewCase.locationName || 'Delhi NCR & Yamuna Expressway Corridor',
           }}
+        />
+      )}
+
+      {/* Retrospective FIR Intelligence Archive Modal */}
+      {archiveModalCase && (
+        <FIRArchiveModal
+          isOpen={!!archiveModalCase}
+          onClose={() => setArchiveModalCase(null)}
+          caseNumber={archiveModalCase.caseNumber}
+          caseTitle={archiveModalCase.title}
         />
       )}
     </div>

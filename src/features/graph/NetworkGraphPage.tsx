@@ -320,6 +320,7 @@ export function NetworkGraphPage() {
     if (!text) return '';
     return text
       .replace(/[#*`_~]/g, ' ')
+      .replace(/C\s*R\s*I\s*M\s*E\s*N\s*E\s*X\s*U\s*S/gi, 'Crime Nexus')
       .replace(/CRIMENEXUS|CrimeNexus|CRIME-NEXUS/gi, 'Crime Nexus')
       .replace(/\bANPR\b/g, 'A.N.P.R. optical scanner')
       .replace(/\bCDR\b/g, 'Call Detail Records')

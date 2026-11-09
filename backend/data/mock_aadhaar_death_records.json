@@ -1,0 +1,66 @@
+[
+  {
+    "name": "Ramesh Chandra Sharma",
+    "aadhaar_last_four": "9012",
+    "date_of_death": "2018-04-12",
+    "registration_number": "DTH-NDMC-2018-99012",
+    "district": "New Delhi",
+    "state": "Delhi"
+  },
+  {
+    "name": "Iqbal Ansari",
+    "aadhaar_last_four": "4432",
+    "date_of_death": "2019-11-05",
+    "registration_number": "DTH-MUM-2019-81234",
+    "district": "Mumbai Central",
+    "state": "Maharashtra"
+  },
+  {
+    "name": "Harishankar Tiwari",
+    "aadhaar_last_four": "1198",
+    "date_of_death": "2021-08-20",
+    "registration_number": "DTH-LKO-2021-00441",
+    "district": "Gorakhpur",
+    "state": "Uttar Pradesh"
+  },
+  {
+    "name": "Vikramaditya Rao",
+    "aadhaar_last_four": "7721",
+    "date_of_death": "2017-02-14",
+    "registration_number": "DTH-HYD-2017-33120",
+    "district": "Hyderabad",
+    "state": "Telangana"
+  },
+  {
+    "name": "Jagjit Singh Brar",
+    "aadhaar_last_four": "5501",
+    "date_of_death": "2020-01-30",
+    "registration_number": "DTH-ASR-2020-11209",
+    "district": "Amritsar",
+    "state": "Punjab"
+  },
+  {
+    "name": "Pranab Mukherjee Deb",
+    "aadhaar_last_four": "6643",
+    "date_of_death": "2016-09-18",
+    "registration_number": "DTH-KOL-2016-77812",
+    "district": "Kolkata North",
+    "state": "West Bengal"
+  },
+  {
+    "name": "Bhavesh Patel",
+    "aadhaar_last_four": "2214",
+    "date_of_death": "2022-05-11",
+    "registration_number": "DTH-AMD-2022-55091",
+    "district": "Ahmedabad",
+    "state": "Gujarat"
+  },
+  {
+    "name": "Deceased Test Suspect",
+    "aadhaar_last_four": "0000",
+    "date_of_death": "2019-06-15",
+    "registration_number": "DTH-TEST-2019-00001",
+    "district": "Central Delhi",
+    "state": "Delhi"
+  }
+]

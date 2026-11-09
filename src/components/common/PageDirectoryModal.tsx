@@ -30,7 +30,8 @@ import {
   ShieldCheck,
   CheckCircle2,
   FileSearch,
-  ExternalLink
+  ExternalLink,
+  ScrollText,
 } from 'lucide-react';
 import { useAppStore } from '../../stores/appStore';
 import { Button } from '../ui/Button';
@@ -220,6 +221,20 @@ export function PageDirectoryModal() {
       badgeColor: 'border-violet-500/50 text-violet-400 bg-violet-950/40',
       keywords: ['assistant', 'copilot', 'ai', 'rag', 'chat', 'legal advisor', 'statutes'],
     },
+    {
+      id: 'page-fir-archive',
+      order: 13,
+      title: 'FIR Intelligence Archive',
+      route: '/fir-archive',
+      category: 'INTELLIGENCE_AI',
+      categoryLabel: 'Intelligence & AI',
+      icon: ScrollText,
+      description: 'Historical FIR intelligence archive spanning 11 Indic languages with TrOCR handwritten OCR, suspect mortality tracking, and 25 expert analytics.',
+      badge: '25 AI',
+      badgeColor: 'border-amber-500/50 text-amber-400 bg-amber-950/40',
+      keywords: ['fir archive', 'multilingual', 'indicbert', 'trocr', 'handwritten', 'historical', 'suspect life status'],
+      isHero: true,
+    },
 
     // --- 3. FIELD PURSUIT & SURVEILLANCE ---
     {
@@ -286,6 +301,20 @@ export function PageDirectoryModal() {
       badge: 'UIDAI TC',
       badgeColor: 'border-sky-500/50 text-sky-400 bg-sky-950/40',
       keywords: ['railway', 'train', 'tc', 'aadhaar', 'face verification', 'uidai', 'cctns watchlist', 'prs ticket'],
+    },
+    {
+      id: 'page-guardian-trace',
+      order: 18,
+      title: 'Guardian Trace (Missing Persons Rescue)',
+      route: '/guardian-trace',
+      category: 'FIELD_PURSUIT',
+      categoryLabel: 'Field Pursuit',
+      icon: ShieldAlert,
+      description: 'Multimodal missing persons search-and-rescue HUD fusing cellular exhaust, transit logs, UPI hits, and Ring Search prediction vectors.',
+      badge: 'RESCUE',
+      badgeColor: 'border-emerald-500/50 text-emerald-400 bg-emerald-950/40',
+      keywords: ['guardian trace', 'missing person', 'child rescue', 'search and rescue', 'amber alert', 'trackchild', 'ring search'],
+      isHero: true,
     },
 
     // --- 4. LEGAL COMPLIANCE & REPORTS ---

@@ -25,6 +25,7 @@ import {
   Radio,
   PlusCircle,
   Compass,
+  Camera,
 } from 'lucide-react';
 import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import {
@@ -730,10 +731,10 @@ export function DashboardPage() {
               </Link>
             </CardHeader>
             <CardContent className="space-y-4">
-              {aiFindings?.slice(0, 2).map((item) => (
+              {aiFindings?.slice(0, 2).map((item, idx) => (
                 <div
                   key={item.id}
-                  className="p-4 rounded-xl border border-border bg-background/60 space-y-2 hover:border-primary/40 transition-colors"
+                  className="p-4 rounded-xl border border-border bg-background/60 space-y-3 hover:border-primary/40 transition-colors"
                 >
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
                     <span className="font-semibold text-sm text-foreground flex items-center gap-2">
@@ -744,6 +745,54 @@ export function DashboardPage() {
                       {(item.confidence * 100).toFixed(0)}% Confidence
                     </Badge>
                   </div>
+
+                  {/* Visual Evidence Picture Frame (Replacing dense text with interactive visual diagram) */}
+                  {idx === 0 ? (
+                    <div className="p-3 rounded-lg border border-red-500/30 bg-red-950/20 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                      <div className="flex items-center gap-3">
+                        <div className="h-12 w-12 rounded-lg bg-red-500/20 border border-red-500/40 flex items-center justify-center text-red-400 shrink-0">
+                          <Lock className="h-6 w-6" />
+                        </div>
+                        <div>
+                          <span className="text-[10px] font-mono text-red-400 font-bold block uppercase tracking-wider">
+                            PMLA 2002 / CrPC 102 Telemetry
+                          </span>
+                          <span className="text-white font-bold text-xs">
+                            Structured Smurfing Flow: 11 rapid deposits below ₹50,000 threshold
+                          </span>
+                          <span className="text-slate-400 text-[11px] block mt-0.5">
+                            Beneficiary: ACC-HDFC-908122 (Karol Bagh Branch) &rarr; Conduits
+                          </span>
+                        </div>
+                      </div>
+                      <Badge className="bg-red-600 text-white font-mono text-[10px] shrink-0">
+                        ₹4,80,000 / 48H
+                      </Badge>
+                    </div>
+                  ) : (
+                    <div className="p-3 rounded-lg border border-sky-500/30 bg-sky-950/20 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                      <div className="flex items-center gap-3">
+                        <div className="h-12 w-12 rounded-lg bg-sky-500/20 border border-sky-500/40 flex items-center justify-center text-sky-400 shrink-0">
+                          <Camera className="h-6 w-6" />
+                        </div>
+                        <div>
+                          <span className="text-[10px] font-mono text-sky-400 font-bold block uppercase tracking-wider">
+                            Optical ANPR Highway Intercept Snapshot
+                          </span>
+                          <span className="text-white font-bold text-xs">
+                            Plate: TS 09 AB 1234 (Black Mahindra Scorpio) at Yamuna KM 48
+                          </span>
+                          <span className="text-slate-400 text-[11px] block mt-0.5">
+                            Cross-referenced with Airtel BTS Tower #DL-TWR-8812 (Handover Azimuth: 142°)
+                          </span>
+                        </div>
+                      </div>
+                      <Badge className="bg-sky-600 text-white font-mono text-[10px] shrink-0">
+                        118 KM/H • HOT HIT
+                      </Badge>
+                    </div>
+                  )}
+
                   <p className="text-xs text-muted-foreground leading-relaxed">{item.finding}</p>
                   <div className="flex items-center justify-between pt-1 text-[11px] text-muted-foreground border-t border-border/40">
                     <span>Target Case: Operation Shadow Vault</span>

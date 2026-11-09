@@ -1,0 +1,34 @@
+[
+  {
+    "person_name": "Sultan Qureshi",
+    "cctns_person_id": "P-NCRB-2015-8812",
+    "death_year": 2017,
+    "cause_of_death": "Natural causes in judicial remand",
+    "prison_id": "PRISON-TMR-CENTRAL",
+    "state": "Delhi"
+  },
+  {
+    "person_name": "Balwinder Singh Dhillon",
+    "cctns_person_id": "P-NCRB-2016-9931",
+    "death_year": 2021,
+    "cause_of_death": "Fatal accident",
+    "police_station": "PS-CIVIL-LINES-JALANDHAR",
+    "state": "Punjab"
+  },
+  {
+    "person_name": "Dinesh Goud",
+    "cctns_person_id": "P-NCRB-2018-4410",
+    "death_year": 2020,
+    "cause_of_death": "Hospital illness",
+    "police_station": "PS-SECUNDERABAD",
+    "state": "Telangana"
+  },
+  {
+    "person_name": "Mukesh Anna",
+    "cctns_person_id": "P-NCRB-2014-1102",
+    "death_year": 2018,
+    "cause_of_death": "Cardiac arrest",
+    "police_station": "PS-DHARAVI",
+    "state": "Maharashtra"
+  }
+]
