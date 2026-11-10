@@ -115,6 +115,8 @@ export function App() {
                 <Route path="/design-system" element={<DesignSystemPage />} />
                 <Route path="/roadmap" element={<TechnicalRoadmapPage />} />
                 <Route path="/technical-specs" element={<Navigate to="/roadmap" replace />} />
+                <Route path="/improvements" element={<Navigate to="/roadmap" replace />} />
+                <Route path="/audit" element={<Navigate to="/roadmap" replace />} />
                 <Route path="/railway-verification" element={<RailwayVerificationPage />} />
                 <Route path="/railway" element={<Navigate to="/railway-verification" replace />} />
                 <Route path="/tc-verification" element={<Navigate to="/railway-verification" replace />} />

@@ -51,6 +51,7 @@ from app.ml_service.real_data_registry import router as provenance_router
 from app.api.mobile_forensics import router as mobile_forensics_router
 from app.api.guardian_trace import router as guardian_trace_router
 from app.api.fir_archive import router as fir_archive_router
+from app.api.hundred_improvements import router as hundred_improvements_router
 from app.services.streaming.redis_streams import get_streaming_stats
 from app.services.streaming.stream_processor import run_stream_consumer_worker
 from app.services.streaming.stream_producer import simulate_live_event
@@ -192,6 +193,7 @@ app.include_router(provenance_router, prefix="/api/v1")
 app.include_router(mobile_forensics_router, prefix="/api/v1")
 app.include_router(guardian_trace_router, prefix="/api/v1")
 app.include_router(fir_archive_router, prefix="/api/v1")
+app.include_router(hundred_improvements_router, prefix="/api/v1")
 
 # ── Advanced Feature Endpoints ────────────────────────────────────────────────
 # Feature 1: Prometheus Metrics

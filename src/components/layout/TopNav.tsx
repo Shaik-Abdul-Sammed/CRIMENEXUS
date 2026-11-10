@@ -278,16 +278,16 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           <span className="px-1 py-0.2 rounded-full bg-primary/20 text-primary text-[9px] font-mono font-black">25</span>
         </button>
 
-        {/* 3. 100 Technical Specifications & Next 96 Roadmap */}
+        {/* 3. 100 Technical Specifications & 100 AI/ML Improvements Roadmap */}
         <Link
           to="/roadmap"
           className="flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg border border-amber-500/50 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 text-xs font-bold transition-all shadow-sm shrink-0"
-          title="100 Sovereign Technical Specifications & Next 96 Engineering Roadmap"
+          title="100 AI/ML Improvements Audit & Sovereign Engineering Roadmap (Sec 63 BSA)"
           aria-label="100 Specs Roadmap"
         >
-          <Compass className="h-3.5 w-3.5 text-amber-400 shrink-0 animate-spin-slow" />
-          <span className="hidden lg:inline text-[11px] font-black">Roadmap</span>
-          <span className="px-1.5 py-0.2 rounded-full bg-amber-400/25 text-amber-300 text-[9px] font-mono font-black border border-amber-400/40">96</span>
+          <Compass className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+          <span className="hidden lg:inline text-[11px] font-black">100 Roadmap</span>
+          <span className="px-1.5 py-0.2 rounded-full bg-amber-400/25 text-amber-300 text-[9px] font-mono font-black border border-amber-400/40">100</span>
         </Link>
 
         {/* 4. 10 Core Pro Features Hub Modal Trigger */}
