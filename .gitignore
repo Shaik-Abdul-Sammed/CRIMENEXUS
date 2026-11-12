@@ -252,6 +252,22 @@ backend/data/public_evidence/
 *.buildinfo
 *.log
 
+# Word, Office, and Unwanted Documentation Artifacts
+*.doc
+*.docx
+*.dot
+*.dotx
+*.odt
+*.rtf
+*.doc.tmp
+*.docx.tmp
+.docs/
+docs/audits/
+docs/*.pdf
+docs/*_AUDIT*.md
+docs/*_REPORT*.md
+
+
 
 
 
