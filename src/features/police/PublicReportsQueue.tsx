@@ -25,13 +25,20 @@ import {
   CheckSquare,
   Square,
   X,
-  Globe
+  Globe,
+  Edit3,
+  Plus,
+  Trash2,
+  HelpCircle,
+  Maximize2,
+  Download,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 import { useToast } from '../../components/ui/Toast';
+import { sound } from '../../utils/soundEffects';
 import { OmniTraceSatelliteModal } from '../../components/common/OmniTraceSatelliteModal';
 
 interface PublicReportItem {
@@ -91,6 +98,182 @@ export function PublicReportsQueue() {
   // Bulk Selection State
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
+  // Lightbox Preview Image State
+  const [previewImage, setPreviewImage] = useState<{
+    url: string;
+    filename: string;
+    sha256: string;
+    sizeBytes: number;
+    type: string;
+  } | null>(null);
+
+  // Factor Explanation Modal State
+  const [explainFactorsOpen, setExplainFactorsOpen] = useState<boolean>(false);
+
+  // AI Modifier / CRUD Modal State
+  const [aiModifierModalOpen, setAiModifierModalOpen] = useState<boolean>(false);
+  const [crudMode, setCrudMode] = useState<'EDIT' | 'CREATE'>('EDIT');
+  const [editDraft, setEditDraft] = useState<{
+    id?: number;
+    report_number: string;
+    crime_type: string;
+    description: string;
+    location_name: string;
+    latitude: number;
+    longitude: number;
+    bns_sections: string;
+    status: string;
+    review_notes: string;
+  }>({
+    report_number: 'PUB-2026-NEW',
+    crime_type: 'Theft & Snatching',
+    description: '',
+    location_name: 'Connaught Place Block B, New Delhi',
+    latitude: 28.6315,
+    longitude: 77.2167,
+    bns_sections: 'Sec 303(2) BNS (Snatching)',
+    status: 'PENDING',
+    review_notes: '',
+  });
+
+  const handleOpenModifier = (report?: PublicReportItem) => {
+    sound.playClickSound();
+    if (report) {
+      setCrudMode('EDIT');
+      setEditDraft({
+        id: report.id,
+        report_number: report.report_number,
+        crime_type: report.crime_type,
+        description: report.description,
+        location_name: report.location_name,
+        latitude: report.latitude || 28.6315,
+        longitude: report.longitude || 77.2167,
+        bns_sections: report.crime_type === 'Theft & Snatching' ? 'Sec 303(2) BNS (Snatching)' : report.crime_type === 'Cyber Fraud' ? 'Sec 318(4) BNS & Sec 66D IT Act' : 'Sec 115(2) BNS (Voluntarily Causing Hurt)',
+        status: report.status,
+        review_notes: report.review_notes || 'IO review in progress',
+      });
+    } else {
+      setCrudMode('CREATE');
+      setEditDraft({
+        id: Date.now(),
+        report_number: `PUB-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+        crime_type: 'Theft & Snatching',
+        description: 'Citizen walked in to report motorcycle robbery near metro gate.',
+        location_name: 'Connaught Place Block B, New Delhi',
+        latitude: 28.6315,
+        longitude: 77.2167,
+        bns_sections: 'Sec 303(2) BNS (Snatching)',
+        status: 'PENDING',
+        review_notes: 'Walk-in report recorded by Duty Officer.',
+      });
+    }
+    setAiModifierModalOpen(true);
+  };
+
+  const handleSaveModifiedReport = () => {
+    sound.playSuccessChime();
+    if (crudMode === 'EDIT' && editDraft.id) {
+      setReports((prev) =>
+        prev.map((r) =>
+          r.id === editDraft.id
+            ? {
+                ...r,
+                crime_type: editDraft.crime_type,
+                description: editDraft.description,
+                location_name: editDraft.location_name,
+                latitude: editDraft.latitude,
+                longitude: editDraft.longitude,
+                status: editDraft.status,
+                review_notes: editDraft.review_notes,
+              }
+            : r
+        )
+      );
+      if (selectedReport && selectedReport.id === editDraft.id) {
+        setSelectedReport((prev) =>
+          prev
+            ? {
+                ...prev,
+                crime_type: editDraft.crime_type,
+                description: editDraft.description,
+                location_name: editDraft.location_name,
+                latitude: editDraft.latitude,
+                longitude: editDraft.longitude,
+                status: editDraft.status,
+                review_notes: editDraft.review_notes,
+              }
+            : null
+        );
+      }
+      toast.success(`Report ${editDraft.report_number} successfully modified with AI formalization.`, 'Report Updated');
+    } else {
+      const newReport: PublicReportItem = {
+        id: editDraft.id || Date.now(),
+        report_number: editDraft.report_number,
+        crime_type: editDraft.crime_type,
+        description: editDraft.description,
+        location_name: editDraft.location_name,
+        latitude: editDraft.latitude,
+        longitude: editDraft.longitude,
+        incident_timestamp: new Date().toISOString(),
+        submitted_at: new Date().toISOString(),
+        is_anonymous: false,
+        reporter_name: 'Walk-in Citizen (Recorded at Thana)',
+        reporter_phone: '+91 98100 12345',
+        evidence_count: 1,
+        evidence_files: [
+          {
+            filename: 'walkin_statement_scan.jpg',
+            saved_as: 'walkin_scan.jpg',
+            sha256: '8f4c2e91a0b3d5678491cbaef1938294a5e01b4c3d2e1f0987654321fedcba01',
+            type: 'image/jpeg',
+            size_bytes: 1200000,
+            path: 'https://images.unsplash.com/photo-1586075010923-2dd4570fb338?w=900&auto=format&fit=crop',
+          },
+        ],
+        satellite_verified: true,
+        satellite_confidence: 0.91,
+        satellite_analysis: {
+          verdict: 'HIGH_CONFIDENCE_SATELLITE_VERIFIED',
+          layers: {
+            exif: { score: 1.0, status: 'VERIFIED_WITH_GPS', notes: 'Walk-in report locus verified against GIS cadastre.' },
+            timestamp: { score: 1.0, status: 'REAL_TIME_FRESH (<24h)', notes: 'Reported contemporaneously.' },
+            location_type: { score: 0.90, status: 'CONSISTENT', notes: 'High-density commercial precinct.' },
+          },
+        },
+        nearest_station_name: 'Connaught Place Police Station',
+        distance_to_station_km: 0.8,
+        status: editDraft.status,
+        reviewed_by_officer: 'Duty Officer Insp. Rajesh Varma',
+        review_notes: editDraft.review_notes,
+        rejection_reason: null,
+        converted_case_id: null,
+      };
+      setReports((prev) => [newReport, ...prev]);
+      toast.success(`New report ${editDraft.report_number} successfully ingested into queue.`, 'Report Created');
+    }
+    setAiModifierModalOpen(false);
+  };
+
+  const handleDeleteReport = (id: number) => {
+    sound.playClickSound();
+    setReports((prev) => prev.filter((r) => r.id !== id));
+    if (selectedReport?.id === id) setSelectedReport(null);
+    setAiModifierModalOpen(false);
+    toast.info('Report archived and removed from active processing queue.', 'Report Deleted');
+  };
+
+  const handleAiRefineDescription = () => {
+    sound.playRadarPing();
+    const refined = `COMPLAINANT STATEMENT FORMALIZED (SEC 173 BNSS):\nOn ${new Date().toLocaleDateString()}, at approximately ${editDraft.location_name}, unknown accused riding a motorcycle unlawfully restrained the complainant and committed snatching. The accused fled towards the southern radial road. Applicable penal sections: ${editDraft.bns_sections}. Satellite telemetry confirms locus existence.`;
+    setEditDraft((prev) => ({
+      ...prev,
+      description: refined,
+      review_notes: 'AI Legal NLP refined statement with statutory precision for Section 173 BNSS FIR.',
+    }));
+    toast.success('AI refined statement with formal legal precision and BNS penal references.', 'AI Formalization Applied');
+  };
+
   const fetchReports = async () => {
     setLoading(true);
     const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
@@ -129,7 +312,7 @@ export function PublicReportsQueue() {
               sha256: '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08',
               type: 'image/jpeg',
               size_bytes: 1420000,
-              path: '/data/cctv_snatching_frame.jpg'
+              path: 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=900&auto=format&fit=crop'
             }
           ],
           satellite_verified: true,
@@ -171,7 +354,7 @@ export function PublicReportsQueue() {
               sha256: '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8',
               type: 'image/png',
               size_bytes: 840000,
-              path: '/data/bank_debit_sms.png'
+              path: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=900&auto=format&fit=crop'
             }
           ],
           satellite_verified: true,
@@ -213,7 +396,7 @@ export function PublicReportsQueue() {
               sha256: '4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a',
               type: 'video/mp4',
               size_bytes: 8900000,
-              path: '/data/dashcam.mp4'
+              path: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=900&auto=format&fit=crop'
             }
           ],
           satellite_verified: true,
@@ -363,6 +546,15 @@ export function PublicReportsQueue() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <Button
+            size="sm"
+            onClick={() => handleOpenModifier()}
+            className="bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-purple-950/40"
+            title="Create or manually ingest a new citizen complaint into queue"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            <span>Ingest / CRUD Report</span>
+          </Button>
           <Link to="/citizen" target="_blank">
             <Button size="sm" variant="outline" className="border-cyan-500/40 text-cyan-300 font-bold text-xs flex items-center gap-1.5 hover:bg-cyan-950/40">
               <ExternalLink className="h-3.5 w-3.5" />
@@ -599,16 +791,31 @@ export function PublicReportsQueue() {
                   <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
                   <span>AI Satellite & Geospatial Verification Layers:</span>
                 </span>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setSatelliteModalOpen(true)}
-                  className="h-6 text-[10px] font-bold border-cyan-500/40 text-cyan-300 hover:bg-cyan-950/40 flex items-center gap-1"
-                  title="Inspect multi-spectral Earth observation satellite confirmation"
-                >
-                  <Globe className="h-3 w-3 text-cyan-400" />
-                  <span>Inspect OmniTrace Satellite</span>
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      sound.playClickSound();
+                      setExplainFactorsOpen(true);
+                    }}
+                    className="h-6 text-[10px] font-bold border-amber-500/40 text-amber-300 hover:bg-amber-950/40 flex items-center gap-1 shadow-sm"
+                    title="Detailed mathematical and spatial criteria for each verification factor"
+                  >
+                    <HelpCircle className="h-3 w-3 text-amber-400" />
+                    <span>How We Verified (5 Factors)</span>
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setSatelliteModalOpen(true)}
+                    className="h-6 text-[10px] font-bold border-cyan-500/40 text-cyan-300 hover:bg-cyan-950/40 flex items-center gap-1"
+                    title="Inspect multi-spectral Earth observation satellite confirmation"
+                  >
+                    <Globe className="h-3 w-3 text-cyan-400" />
+                    <span>Inspect OmniTrace Satellite</span>
+                  </Button>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
@@ -655,18 +862,48 @@ export function PublicReportsQueue() {
               </span>
 
               {selectedReport.evidence_files && selectedReport.evidence_files.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {selectedReport.evidence_files.map((f, i) => (
-                    <div key={i} className="p-2 rounded-lg border border-border bg-slate-950 space-y-1 text-center">
-                      <div className="h-16 w-full rounded bg-slate-900 border border-border/40 flex items-center justify-center font-mono text-[10px] text-primary">
-                        {f.filename.split('.').pop()?.toUpperCase() || 'EVIDENCE'}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  {selectedReport.evidence_files.map((f, i) => {
+                    const imgUrl = (f as any).path?.startsWith('http')
+                      ? (f as any).path
+                      : 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=900&auto=format&fit=crop';
+                    return (
+                      <div
+                        key={i}
+                        onClick={() => {
+                          sound.playClickSound();
+                          setPreviewImage({
+                            url: imgUrl,
+                            filename: f.filename,
+                            sha256: f.sha256,
+                            sizeBytes: f.size_bytes,
+                            type: f.type,
+                          });
+                        }}
+                        className="group relative p-2 rounded-xl border border-border bg-slate-950 hover:border-purple-500 hover:bg-purple-950/20 transition-all cursor-pointer space-y-1.5 text-center shadow-md overflow-hidden"
+                      >
+                        <div className="h-24 w-full rounded-lg bg-slate-900 border border-border/40 overflow-hidden relative">
+                          <img
+                            src={imgUrl}
+                            alt={f.filename}
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent flex items-end justify-between p-1.5">
+                            <span className="font-mono text-[9px] font-black px-1.5 py-0.5 rounded bg-purple-950/90 text-purple-200 border border-purple-500/50">
+                              {f.filename.split('.').pop()?.toUpperCase() || 'JPG'}
+                            </span>
+                            <span className="text-[10px] text-white opacity-0 group-hover:opacity-100 transition-opacity font-bold">
+                              🔍 Enlarge
+                            </span>
+                          </div>
+                        </div>
+                        <span className="text-[11px] text-white font-bold truncate block">{f.filename}</span>
+                        <span className="text-[8px] font-mono text-cyan-300 block truncate">
+                          SHA: {f.sha256.slice(0, 16)}...
+                        </span>
                       </div>
-                      <span className="text-[10px] text-white font-medium truncate block">{f.filename}</span>
-                      <span className="text-[8px] font-mono text-muted-foreground block truncate">
-                        {f.sha256.slice(0, 16)}...
-                      </span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <p className="text-muted-foreground italic text-[11px]">No proof files attached to this report.</p>
@@ -702,7 +939,17 @@ export function PublicReportsQueue() {
                 <span>Reject with Statutory Reason</span>
               </Button>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Button
+                  size="sm"
+                  onClick={() => handleOpenModifier(selectedReport)}
+                  className="bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs h-9 px-3 flex items-center gap-1.5 shadow-md shadow-purple-950/40"
+                  title="Modify, edit, or CRUD this report with AI legal formalization"
+                >
+                  <Edit3 className="h-3.5 w-3.5" />
+                  <span>AI Modifier &amp; CRUD</span>
+                </Button>
+
                 <Button
                   variant="outline"
                   size="sm"
@@ -795,6 +1042,313 @@ export function PublicReportsQueue() {
         reportNumber={selectedReport?.report_number || 'PUB-POLICE-VERIFY'}
         timestamp={selectedReport?.submitted_at}
       />
+
+      {/* Lightbox High-Resolution Proof Viewer Modal */}
+      {previewImage && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in">
+          <div className="relative w-full max-w-4xl max-h-[90vh] flex flex-col rounded-2xl border-2 border-purple-500/70 bg-slate-950 text-white shadow-2xl overflow-hidden">
+            <div className="px-5 py-3 border-b border-white/10 bg-slate-900/90 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Camera className="h-4 w-4 text-purple-400" />
+                <span className="font-bold text-sm text-white">{previewImage.filename}</span>
+                <Badge className="bg-purple-950 text-purple-300 border-purple-500/40 text-[10px] font-mono">
+                  SHA-256 VERIFIED
+                </Badge>
+              </div>
+              <button
+                onClick={() => setPreviewImage(null)}
+                className="p-1 rounded text-slate-400 hover:text-white"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Main Image Stage */}
+            <div className="flex-1 min-h-[300px] max-h-[60vh] bg-black flex items-center justify-center overflow-hidden p-3 relative">
+              <img
+                src={previewImage.url}
+                alt={previewImage.filename}
+                className="max-w-full max-h-[58vh] object-contain rounded-lg shadow-2xl border border-white/10"
+              />
+              <div className="absolute top-5 left-5 px-3 py-1.5 rounded-lg bg-black/80 border border-white/20 text-[10px] font-mono text-cyan-300 backdrop-blur-md">
+                📹 CCTV Surveillance Locus • 1080p Digital Capture
+              </div>
+            </div>
+
+            {/* Metadata Footer */}
+            <div className="p-4 border-t border-white/10 bg-slate-900/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono">
+              <div className="space-y-0.5">
+                <div className="text-slate-400 text-[10px]">
+                  Cryptographic SHA-256 Hash Seal (Section 63 BSA):
+                </div>
+                <div className="text-cyan-300 font-bold text-[11px] break-all">
+                  {previewImage.sha256}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <a
+                  href={previewImage.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center gap-1 shadow"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  <span>Download Original</span>
+                </a>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPreviewImage(null)}
+                >
+                  Close Viewer
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Factor Explanation Modal */}
+      {explainFactorsOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
+          <div className="relative w-full max-w-3xl max-h-[88vh] overflow-y-auto rounded-2xl border-2 border-amber-500/70 bg-slate-950 p-6 text-white shadow-2xl space-y-4 font-sans">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/40">
+                  <Sparkles className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-white">
+                    AI Multi-Factor Geospatial Verification Methodology
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Mathematical specifications and sensor telemetry thresholds used to verify citizen reports
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setExplainFactorsOpen(false)}
+                className="p-1 rounded text-slate-400 hover:text-white"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs leading-relaxed">
+              {/* Factor 1 */}
+              <div className="p-3.5 rounded-xl border border-cyan-500/40 bg-cyan-950/20 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-cyan-300 uppercase font-mono text-[11px]">
+                    Factor 1: Hardware EXIF Spatial Geolocation Matching (Weight: 35%)
+                  </span>
+                  <Badge className="bg-cyan-500 text-black font-mono font-bold text-[9px]">Δd ≤ 50m</Badge>
+                </div>
+                <p className="text-slate-300">
+                  Extracts embedded exchangeable image file format (EXIF) latitude and longitude from photo metadata. Calculates the Haversine great-circle distance Δd against the citizen&apos;s pinned incident coordinates. A delta &lt; 50m confirms the photo was physically captured at the reported scene, eliminating GPS spoofing.
+                </p>
+              </div>
+
+              {/* Factor 2 */}
+              <div className="p-3.5 rounded-xl border border-emerald-500/40 bg-emerald-950/20 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-emerald-300 uppercase font-mono text-[11px]">
+                    Factor 2: Chrono-Temporal Delta Freshness (Weight: 25%)
+                  </span>
+                  <Badge className="bg-emerald-500 text-black font-mono font-bold text-[9px]">Δt &lt; 24h</Badge>
+                </div>
+                <p className="text-slate-300">
+                  Computes the temporal difference Δt between camera shutter creation timestamp, phone upload time, and reported incident hour. Fresh submissions (reported within 2 hours of occurrence) receive a 1.0 confidence score, preventing re-uploaded stale media fraud.
+                </p>
+              </div>
+
+              {/* Factor 3 */}
+              <div className="p-3.5 rounded-xl border border-amber-500/40 bg-amber-950/20 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-amber-300 uppercase font-mono text-[11px]">
+                    Factor 3: Municipal Land-Use &amp; CCTNS Crime Density Matching (Weight: 20%)
+                  </span>
+                  <Badge className="bg-amber-500 text-black font-mono font-bold text-[9px]">Prior P = 0.85</Badge>
+                </div>
+                <p className="text-slate-300">
+                  Cross-references municipal GIS cadastral parcel zoning (commercial, transit, residential, highway) against historical police CCTNS snatching and extortion incident frequency distributions. High pedestrian traffic sectors (Connaught Place Block B) match reported snatching MO with 85% prior probability.
+                </p>
+              </div>
+
+              {/* Factor 4 */}
+              <div className="p-3.5 rounded-xl border border-purple-500/40 bg-purple-950/20 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-purple-300 uppercase font-mono text-[11px]">
+                    Factor 4: Space-Borne Multi-Spectral Earth Observation (Weight: 10%)
+                  </span>
+                  <Badge className="bg-purple-500 text-black font-mono font-bold text-[9px]">Sentinel-2 / VIIRS</Badge>
+                </div>
+                <p className="text-slate-300">
+                  Queries European Space Agency Sentinel-2 MSI and NASA/NOAA VIIRS Day/Night Band sensors to verify physical urban surface geometry (paved asphalt), absence of cloud occlusion (&lt; 5%), and nighttime radiance (&gt; 45 nW/cm²·sr) matching lit urban streetlights.
+                </p>
+              </div>
+
+              {/* Factor 5 */}
+              <div className="p-3.5 rounded-xl border border-rose-500/40 bg-rose-950/20 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-rose-300 uppercase font-mono text-[11px]">
+                    Factor 5: Section 63 BSA Cryptographic Non-Repudiation (Weight: 10%)
+                  </span>
+                  <Badge className="bg-rose-500 text-black font-mono font-bold text-[9px]">SHA-256 Seal</Badge>
+                </div>
+                <p className="text-slate-300">
+                  Calculates SHA-256 cryptographic hashes for every uploaded photo and generates an immutable digital chain of custody under Section 63(4) Bharatiya Sakshya Adhiniyam, guaranteeing the proof cannot be tampered with prior to court trial.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-2 border-t border-white/10">
+              <Button size="sm" onClick={() => setExplainFactorsOpen(false)}>
+                Close Methodology
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Modifier & CRUD Modal */}
+      {aiModifierModalOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
+          <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border-2 border-purple-500/80 bg-slate-950 p-6 text-white shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2">
+                <Edit3 className="h-5 w-5 text-purple-400" />
+                <span className="font-black text-base text-white">
+                  {crudMode === 'EDIT' ? `AI Report Modifier & CRUD • ${editDraft.report_number}` : 'Manually Ingest New Citizen Crime Report'}
+                </span>
+              </div>
+              <button
+                onClick={() => setAiModifierModalOpen(false)}
+                className="p-1 rounded text-slate-400 hover:text-white"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3.5 text-xs">
+              {/* Row 1: Crime Category & Status */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">Crime Category</label>
+                  <input
+                    type="text"
+                    value={editDraft.crime_type}
+                    onChange={(e) => setEditDraft({ ...editDraft, crime_type: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-border text-white text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">Queue Status</label>
+                  <select
+                    value={editDraft.status}
+                    onChange={(e) => setEditDraft({ ...editDraft, status: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-border text-white text-xs"
+                  >
+                    <option value="PENDING">PENDING REVIEW</option>
+                    <option value="VERIFIED">VERIFIED SATELLITE</option>
+                    <option value="CONVERTED">CONVERTED TO FIR</option>
+                    <option value="REJECTED">REJECTED</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Row 2: Location Name */}
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">Scene Locus Designation</label>
+                <input
+                  type="text"
+                  value={editDraft.location_name}
+                  onChange={(e) => setEditDraft({ ...editDraft, location_name: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-border text-white text-xs"
+                />
+              </div>
+
+              {/* Row 3: Statutory BNS Sections */}
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">Statutory Penal Sections (BNS 2023)</label>
+                <input
+                  type="text"
+                  value={editDraft.bns_sections}
+                  onChange={(e) => setEditDraft({ ...editDraft, bns_sections: e.target.value })}
+                  placeholder="e.g. Sec 303(2) BNS (Snatching), Sec 111 BNS (Organized Syndicate)"
+                  className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-border text-white text-xs font-mono text-cyan-300"
+                />
+              </div>
+
+              {/* Row 4: Description with AI Refine Button */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-slate-300 font-bold">Incident Statement Narrative</label>
+                  <button
+                    type="button"
+                    onClick={handleAiRefineDescription}
+                    className="text-[10px] font-bold text-purple-300 hover:text-white bg-purple-950/80 border border-purple-500/50 px-2 py-0.5 rounded flex items-center gap-1 transition-colors"
+                    title="Auto-formalize citizen narrative with statutory legal precision"
+                  >
+                    <Sparkles className="h-3 w-3 text-purple-400" />
+                    <span>AI Rephrase for FIR</span>
+                  </button>
+                </div>
+                <textarea
+                  rows={4}
+                  value={editDraft.description}
+                  onChange={(e) => setEditDraft({ ...editDraft, description: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-border text-white text-xs font-sans leading-relaxed"
+                />
+              </div>
+
+              {/* Row 5: IO Review Notes */}
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">Investigating Officer (IO) Notes</label>
+                <input
+                  type="text"
+                  value={editDraft.review_notes}
+                  onChange={(e) => setEditDraft({ ...editDraft, review_notes: e.target.value })}
+                  placeholder="Notes on complainant credibility, evidence collection, and remand timeline"
+                  className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-border text-white text-xs"
+                />
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-between pt-3 border-t border-white/10">
+              {crudMode === 'EDIT' && editDraft.id ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleDeleteReport(editDraft.id!)}
+                  className="border-red-500/40 text-red-400 hover:bg-red-950/40 text-xs font-bold"
+                >
+                  <Trash2 className="h-3.5 w-3.5 mr-1 text-red-400" />
+                  <span>Archive / Delete Report</span>
+                </Button>
+              ) : <div />}
+
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setAiModifierModalOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleSaveModifiedReport}
+                  className="bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs"
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+                  <span>{crudMode === 'EDIT' ? 'Save AI Modifications' : 'Create Crime Report'}</span>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1790,77 +1790,16 @@ export function MapIntelligencePage() {
         });
     }
 
-    // Plot Correlated Timeline Waypoint Markers (Criminal sightings in RED with CRIM-01 ID)
-    timelineWaypoints.forEach((wp, idx) => {
-      const isCriminalSighting = wp.type === 'ANPR_SIGHTING' || wp.entity.includes('TS 09') || wp.location_name.includes('KM 48') || idx === timelineWaypoints.length - 1;
-      const el = document.createElement('div');
-
-      if (isCriminalSighting) {
-        el.className = 'wanted-vehicle-pulsing-marker cursor-pointer transition-transform hover:scale-110 z-20';
-        el.title = `CRIMINAL SIGHTING: [CRIM-01] • Vikram Malhotra (${wp.entity}) @ ${wp.location_name}`;
-        el.innerHTML = `
-          <div style="position: relative; display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 4px 14px rgba(220,38,38,0.95));">
-            <div style="background: linear-gradient(135deg, #991b1b, #ef4444); border: 2px solid #f87171; border-radius: 18px; padding: 4px 9px 4px 5px; display: flex; align-items: center; gap: 6px; box-shadow: 0 0 24px rgba(239,68,68,0.95); white-space: nowrap;">
-              <span style="background: #450a0a; color: #ffffff; font-family: monospace; font-weight: 900; font-size: 11px; padding: 2px 6px; border-radius: 8px; border: 1.5px solid #fca5a5;">CRIM-01</span>
-              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150" alt="Vikram Malhotra" style="width: 24px; height: 24px; border-radius: 9999px; object-fit: cover; border: 2px solid #ffffff;" />
-              <div style="text-align: left; line-height: 1.15;">
-                <div style="font-size: 10.5px; font-weight: 900; color: #ffffff;">🚨 V. MALHOTRA (CRIMINAL)</div>
-                <div style="font-size: 8px; color: #fecaca; font-family: monospace; font-weight: 700;">WANTED • ${wp.entity}</div>
-              </div>
-            </div>
-            <div style="width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid #dc2626;"></div>
-            <div style="position: relative; width: 30px; height: 30px; margin-top: -3px; display: flex; align-items: center; justify-content: center;">
-              <div style="position: absolute; width: 30px; height: 30px; border-radius: 9999px; background-color: rgba(239,68,68,0.5); animation: ping 1.2s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
-              <div style="position: absolute; width: 20px; height: 20px; border-radius: 9999px; background-color: #dc2626; border: 2px solid #ffffff; box-shadow: 0 0 12px #ef4444; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: bold;">
-                🚨
-              </div>
-            </div>
-          </div>
-        `;
-      } else {
-        el.className = 'timeline-marker flex items-center justify-center h-8 w-8 rounded-full border-2 border-amber-400 font-extrabold text-[11px] text-white cursor-pointer shadow-xl transition-transform hover:scale-125';
-        el.style.backgroundColor = '#d97706';
-        el.innerText = `${idx + 1}`;
-      }
-
-      el.addEventListener('click', () => {
-        setActiveWaypointIdx(idx);
-        setSelectedLocation({
-          id: `wp-${idx + 1}`,
-          title: wp.title,
-          locationType: wp.type === 'ANPR_SIGHTING' ? 'VEHICLE_DETECTION' : 'PHONE_CELL_TOWER',
-          entityType: wp.type === 'ANPR_SIGHTING' ? 'VEHICLE' : 'PHONE',
-          latitude: wp.latitude,
-          longitude: wp.longitude,
-          address: wp.location_name,
-          timestamp: wp.timestamp,
-          caseId: 'CASE-2026-DEMO',
-          entityName: wp.entity,
-          metadata: {
-            details: wp.details,
-            stepOrder: `${idx + 1} of ${timelineWaypoints.length}`,
-            source: wp.type === 'ANPR_SIGHTING' ? 'CCTNS / VAHAN ANPR (Criminal Vehicle Track)' : 'Telecom Multi-Carrier CDR (Suspect Ping)'
-          }
-        });
-        map.flyTo({ center: [wp.longitude, wp.latitude], zoom: 13, duration: 800 });
-      });
-
-      const marker = new maplibregl.Marker({ element: el })
-        .setLngLat([wp.longitude, wp.latitude])
-        .addTo(map);
-      markersRef.current.push(marker);
-    });
-
-    // Primary Active Criminal Target Pin (Guaranteed Red Marker with CRIM-01 ID at Yamuna Toll KM 48)
+    // Primary Active Criminal Target Pin: ONLY CRIM-03 with photo displayed on map as required
     const crimLat = 28.1402;
     const crimLon = 77.5510;
     const crimEl = document.createElement('div');
     crimEl.className = 'wanted-criminal-primary-marker cursor-pointer transition-transform hover:scale-110 z-30';
-    crimEl.title = 'ACTIVE TARGET: [CRIM-01] Vikram Malhotra (Black Scorpio TS 09 AB 1234)';
+    crimEl.title = 'ACTIVE TARGET: [CRIM-03] Vikram Malhotra (Black Scorpio TS 09 AB 1234)';
     crimEl.innerHTML = `
       <div style="position: relative; display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 4px 16px rgba(220,38,38,0.95));">
         <div style="background: linear-gradient(135deg, #991b1b, #ef4444); border: 2px solid #f87171; border-radius: 18px; padding: 4px 10px 4px 6px; display: flex; align-items: center; gap: 6px; box-shadow: 0 0 24px rgba(239,68,68,0.95); white-space: nowrap;">
-          <span style="background: #450a0a; color: #ffffff; font-family: monospace; font-weight: 900; font-size: 11px; padding: 2px 6px; border-radius: 8px; border: 1.5px solid #fca5a5;">CRIM-01</span>
+          <span style="background: #450a0a; color: #ffffff; font-family: monospace; font-weight: 900; font-size: 11px; padding: 2px 6px; border-radius: 8px; border: 1.5px solid #fca5a5;">CRIM-03</span>
           <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150" alt="Vikram Malhotra" style="width: 24px; height: 24px; border-radius: 9999px; object-fit: cover; border: 2px solid #ffffff;" />
           <div style="text-align: left; line-height: 1.15;">
             <div style="font-size: 10.5px; font-weight: 900; color: #ffffff;">🚨 V. MALHOTRA (CRIMINAL)</div>
@@ -1878,8 +1817,8 @@ export function MapIntelligencePage() {
     `;
     crimEl.addEventListener('click', () => {
       setSelectedLocation({
-        id: 'crim-01',
-        title: '[CRIM-01] Wanted Suspect: Vikram Malhotra',
+        id: 'crim-03',
+        title: '[CRIM-03] Wanted Suspect: Vikram Malhotra',
         locationType: 'VEHICLE_DETECTION',
         entityType: 'PERSON',
         latitude: crimLat,
@@ -1889,7 +1828,7 @@ export function MapIntelligencePage() {
         caseId: 'CASE-2026-8812',
         entityName: 'Vikram Malhotra @ Vicky (Scorpio TS 09 AB 1234)',
         metadata: {
-          criminalId: 'CRIM-01',
+          criminalId: 'CRIM-03',
           alias: 'Vicky Syndicate Leader',
           charges: 'Hawala Layering (PMLA), Extortion (Sec 111 BNS)',
           vehicle: 'Mahindra Scorpio (TS 09 AB 1234)',
@@ -1948,8 +1887,10 @@ export function MapIntelligencePage() {
     }
 
     // Plot Jurisdictional Police Stations (Blue Color with Short Police ID)
+    // As required by user: in map display, ONLY POL-01 (Jewar PS) and CRIM-03 are plotted with photos
     if (showPoliceStations) {
-      OSM_POLICE_STATIONS.forEach((stn) => {
+      const targetStations = OSM_POLICE_STATIONS.filter(stn => stn.policeId === 'POL-01');
+      targetStations.forEach((stn) => {
         const cleanStationName = (stn as any).shortName || stn.name.split('(')[0].replace('Police Station', 'PS').replace('Police Post', 'Post').trim();
         const policeId = (stn as any).policeId || 'POL-01';
         const officerName = (stn as any).officer || 'Insp. Rajesh Varma';
@@ -2838,7 +2779,7 @@ export function MapIntelligencePage() {
               POLICE ID & OFFICER DIRECTORY
             </span>
             <Badge variant="outline" className="text-[10px] text-cyan-400 border-cyan-500/40 bg-cyan-950/30">
-              9 Police Commands (POL-01 to POL-09) • 1 Active Criminal Target (CRIM-01)
+              9 Police Commands (POL-01 to POL-09) • 1 Active Criminal Target (CRIM-03)
             </Badge>
           </div>
           <div className="flex items-center gap-2">
@@ -2872,9 +2813,9 @@ export function MapIntelligencePage() {
                 }
               }}
               className="px-2 py-0.5 rounded-full bg-red-950/80 border border-red-500 text-red-200 text-[10px] font-mono font-bold hover:bg-red-900 transition-colors shrink-0 flex items-center gap-1 shadow-sm"
-              title="Target CRIM-01: Vikram Malhotra (Scorpio TS 09 AB 1234)"
+              title="Target CRIM-03: Vikram Malhotra (Scorpio TS 09 AB 1234)"
             >
-              <span>🎯 CRIM-01: Vikram (118 km/h)</span>
+              <span>🎯 CRIM-03: Vikram (118 km/h)</span>
             </button>
             {OSM_POLICE_STATIONS.map((stn) => (
               <button
@@ -2898,13 +2839,13 @@ export function MapIntelligencePage() {
         {isPoliceDirectoryOpen && (
           <div className="space-y-2.5 pt-1 animate-in fade-in slide-in-from-top-1">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
-              {/* Target CRIM-01: Vikram Malhotra */}
+              {/* Target CRIM-03: Vikram Malhotra */}
               <div className="p-2.5 rounded-lg bg-red-950/40 border-2 border-red-500/60 hover:border-red-400 transition-all flex flex-col justify-between space-y-1.5 shadow-lg shadow-red-950/30">
                 <div className="flex items-start justify-between gap-1">
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 mb-0.5">
                       <span className="bg-red-900 text-red-200 border border-red-500 font-mono font-black text-[9px] px-1.5 py-0.2 rounded">
-                        CRIM-01
+                        CRIM-03
                       </span>
                       <span className="text-[10px] font-extrabold text-white truncate">Vikram Malhotra</span>
                     </div>
@@ -2937,7 +2878,7 @@ export function MapIntelligencePage() {
                     }
                   }}
                 >
-                  🎯 Lock Target (CRIM-01)
+                  🎯 Lock Target (CRIM-03)
                 </Button>
               </div>
 
@@ -3026,6 +2967,142 @@ export function MapIntelligencePage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-3 space-y-4">
+          {/* PAGE NOTIFICATION BANNERS (Rendered at map page, OUTSIDE the map display portion) */}
+          {queryPlate && !dismissQueryPlate && (
+            <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-slate-900/95 border-2 border-amber-500 text-white shadow-xl text-xs font-mono animate-in fade-in">
+              <span className="h-2.5 w-2.5 rounded-full bg-amber-400 animate-ping shrink-0" />
+              <div className="flex-1 truncate">
+                <span className="font-bold text-amber-300">ANPR SIGHTING: {queryPlate}</span>
+                <span className="text-[11px] text-slate-300 block truncate">
+                  {querySuspect ? `Linked: ${querySuspect} • ` : ''}Yamuna Toll KM 48 | 118 km/h
+                </span>
+              </div>
+              <button
+                onClick={() => {
+                  sound.playClickSound();
+                  navigate(`/live-tracking?plate=${encodeURIComponent(queryPlate)}&suspect=${encodeURIComponent(querySuspect || '')}`);
+                }}
+                className="px-2.5 py-1 rounded bg-red-600 hover:bg-red-700 text-white text-[10px] font-black uppercase tracking-wider transition-colors shrink-0 flex items-center gap-1 shadow-md"
+              >
+                <span>Pursuit ➔</span>
+              </button>
+              <button
+                onClick={() => {
+                  sound.playClickSound();
+                  setDismissQueryPlate(true);
+                }}
+                className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition-colors shrink-0"
+                title="Close ANPR Sighting banner"
+                aria-label="Close ANPR Sighting banner"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
+
+          {measureMode && (
+            <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-slate-900/95 border-2 border-emerald-500 text-white shadow-xl text-xs font-mono animate-in fade-in">
+              <Ruler className="h-4 w-4 text-emerald-400 shrink-0 animate-pulse" />
+              <div className="flex-1 truncate">
+                {measurePoints.length === 0 && (
+                  <span>Click anywhere on the map to place Point 1</span>
+                )}
+                {measurePoints.length === 1 && (
+                  <span>Point 1 logged ({measurePoints[0][1].toFixed(4)}, {measurePoints[0][0].toFixed(4)}). Click Point 2 to calculate distance</span>
+                )}
+                {measurePoints.length >= 2 && measuredDistanceKm !== null && (
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-emerald-300">
+                      {measurePoints.length} Points: {measuredDistanceKm} km
+                    </span>
+                    <span className="text-slate-400 text-[10px]">
+                      (~{Math.round((measuredDistanceKm / 45) * 60)}m drive | ~{Math.round((measuredDistanceKm / 5) * 60)}m walk)
+                    </span>
+                  </div>
+                )}
+              </div>
+              {measurePoints.length > 0 && (
+                <button
+                  onClick={() => {
+                    sound.playClickSound();
+                    setMeasurePoints([]);
+                    setMeasuredDistanceKm(null);
+                  }}
+                  className="text-[10px] text-slate-300 hover:text-white px-2 py-0.5 rounded bg-slate-800 border border-slate-700 transition-colors"
+                  title="Clear logged points"
+                >
+                  Clear Points
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  sound.playClickSound();
+                  setMeasureMode(false);
+                  setMeasurePoints([]);
+                  setMeasuredDistanceKm(null);
+                }}
+                className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition-colors shrink-0"
+                title="Close distance measure tool"
+                aria-label="Close distance measure tool"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+
+          {interceptRoute && !measureMode && (!queryPlate || dismissQueryPlate) && (
+            <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-slate-900/95 border-2 border-cyan-400 text-white shadow-xl text-xs font-mono animate-in fade-in">
+              <span className="h-2.5 w-2.5 rounded-full bg-cyan-400 animate-ping shrink-0" />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-extrabold text-cyan-300">
+                    ⚡ TACTICAL INTERCEPT ROUTE: {interceptRoute.distance_km} km • ~{interceptRoute.duration_minutes}m
+                  </span>
+                  <span className="bg-cyan-950 text-cyan-300 text-[9px] px-1.5 py-0.2 rounded border border-cyan-500/40 shrink-0 font-bold">
+                    VECTOR LOCKED
+                  </span>
+                  {interceptRoute.distance_km > 100 && (
+                    <button
+                      onClick={handleInterceptFromPatrolUnit}
+                      className="px-2 py-0.5 rounded bg-amber-500/30 text-amber-200 border border-amber-400/50 hover:bg-amber-500/40 text-[9px] font-sans font-bold flex items-center gap-1 animate-pulse shrink-0"
+                      title="You are currently located far from Delhi/NCR. Click to snap tactical interceptor to on-scene squad PCR-04 at Yamuna Expressway (2.6 km)"
+                    >
+                      ⚡ Snap to NCR Squad (2.6 km)
+                    </button>
+                  )}
+                </div>
+                <div className="text-[11px] text-slate-300 mt-0.5 break-words">
+                  From <strong className="text-white">{interceptRoute.police_station}</strong> ➔ Target TS 09 AB 1234 (Scorpio)
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  sound.playClickSound();
+                  setInterceptRoute(null);
+                  if (liveDeviceMarkerRef.current) {
+                    try { liveDeviceMarkerRef.current.remove(); } catch {}
+                    liveDeviceMarkerRef.current = null;
+                  }
+                  if (interceptMarkerRef.current) {
+                    try { interceptMarkerRef.current.remove(); } catch {}
+                    interceptMarkerRef.current = null;
+                  }
+                  if (mapRef.current) {
+                    const layers = ['police-intercept-dashed', 'police-intercept-line', 'police-intercept-glow', 'route-direct-vector', 'route-direct-vector-backing', 'route', 'route-backing', 'route-glow'];
+                    layers.forEach(l => { if (mapRef.current?.getLayer(l)) { try { mapRef.current.removeLayer(l); } catch {} } });
+                    const sources = ['police-intercept-trajectory', 'route-direct-vector', 'route'];
+                    sources.forEach(s => { if (mapRef.current?.getSource(s)) { try { mapRef.current.removeSource(s); } catch {} } });
+                  }
+                }}
+                className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:text-white border border-slate-700 text-[10px] shrink-0 font-sans"
+                title="Clear tactical route from map"
+              >
+                ✕ Clear Line
+              </button>
+            </div>
+          )}
+
+          {/* Map Display Portion (Zero notifications inside) */}
           <Card className={`relative ${
             mapHeightPreset === 'compact'
               ? 'h-[350px] sm:h-[370px] lg:h-[390px]'
@@ -3033,142 +3110,6 @@ export function MapIntelligencePage() {
               ? 'h-[580px]'
               : 'h-[460px]'
           } overflow-hidden border-primary/30 bg-slate-950 transition-all duration-300`}>
-            {/* ANPR Vehicle Query Hit Floating Banner */}
-            {queryPlate && !dismissQueryPlate && (
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-4 py-2 rounded-xl bg-slate-900/95 border-2 border-amber-500 text-white shadow-2xl backdrop-blur-md text-xs font-mono animate-in fade-in max-w-lg">
-                <span className="h-2.5 w-2.5 rounded-full bg-amber-400 animate-ping shrink-0" />
-                <div className="flex-1 truncate">
-                  <span className="font-bold text-amber-300">ANPR SIGHTING: {queryPlate}</span>
-                  <span className="text-[10px] text-slate-300 block truncate">
-                    {querySuspect ? `Linked: ${querySuspect} • ` : ''}Yamuna Toll KM 48 | 118 km/h
-                  </span>
-                </div>
-                <button
-                  onClick={() => {
-                    sound.playClickSound();
-                    navigate(`/live-tracking?plate=${encodeURIComponent(queryPlate)}&suspect=${encodeURIComponent(querySuspect || '')}`);
-                  }}
-                  className="px-2.5 py-1 rounded bg-red-600 hover:bg-red-700 text-white text-[10px] font-black uppercase tracking-wider transition-colors shrink-0 flex items-center gap-1 shadow-md"
-                >
-                  <span>Pursuit ➔</span>
-                </button>
-                <button
-                  onClick={() => {
-                    sound.playClickSound();
-                    setDismissQueryPlate(true);
-                  }}
-                  className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition-colors shrink-0"
-                  title="Close ANPR Sighting banner"
-                  aria-label="Close ANPR Sighting banner"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            )}
-
-            {/* Google Maps-style Distance Measurement Floating Overlay */}
-            {measureMode && (
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 px-4 py-2.5 rounded-xl bg-slate-900/95 border-2 border-emerald-500 text-white shadow-2xl backdrop-blur-md flex items-center gap-3 animate-in fade-in zoom-in-95 text-xs font-mono max-w-lg">
-                <Ruler className="h-4 w-4 text-emerald-400 shrink-0 animate-pulse" />
-                <div className="flex-1 truncate">
-                  {measurePoints.length === 0 && (
-                    <span>Click anywhere on the map to place Point 1</span>
-                  )}
-                  {measurePoints.length === 1 && (
-                    <span>Point 1 logged ({measurePoints[0][1].toFixed(4)}, {measurePoints[0][0].toFixed(4)}). Click Point 2 to calculate distance</span>
-                  )}
-                  {measurePoints.length >= 2 && measuredDistanceKm !== null && (
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-emerald-300">
-                        {measurePoints.length} Points: {measuredDistanceKm} km
-                      </span>
-                      <span className="text-slate-400 text-[10px]">
-                        (~{Math.round((measuredDistanceKm / 45) * 60)}m drive | ~{Math.round((measuredDistanceKm / 5) * 60)}m walk)
-                      </span>
-                    </div>
-                  )}
-                </div>
-                {measurePoints.length > 0 && (
-                  <button
-                    onClick={() => {
-                      sound.playClickSound();
-                      setMeasurePoints([]);
-                      setMeasuredDistanceKm(null);
-                    }}
-                    className="text-[10px] text-slate-300 hover:text-white px-2 py-0.5 rounded bg-slate-800 border border-slate-700 transition-colors"
-                    title="Clear logged points"
-                  >
-                    Clear Points
-                  </button>
-                )}
-                <button
-                  onClick={() => {
-                    sound.playClickSound();
-                    setMeasureMode(false);
-                    setMeasurePoints([]);
-                    setMeasuredDistanceKm(null);
-                  }}
-                  className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition-colors shrink-0"
-                  title="Close distance measure tool"
-                  aria-label="Close distance measure tool"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            )}
-
-            {/* Active Tactical Route Status HUD Banner */}
-            {interceptRoute && !measureMode && (!queryPlate || dismissQueryPlate) && (
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 px-4 py-2 rounded-xl bg-slate-900/95 border-2 border-cyan-400 text-white shadow-2xl backdrop-blur-md flex items-center gap-3 animate-in fade-in zoom-in-95 text-xs font-mono max-w-2xl w-auto">
-                <span className="h-2.5 w-2.5 rounded-full bg-cyan-400 animate-ping shrink-0" />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-extrabold text-cyan-300">
-                      ⚡ TACTICAL INTERCEPT ROUTE: {interceptRoute.distance_km} km • ~{interceptRoute.duration_minutes}m
-                    </span>
-                    <span className="bg-cyan-950 text-cyan-300 text-[9px] px-1.5 py-0.2 rounded border border-cyan-500/40 shrink-0">
-                      VECTOR LOCKED
-                    </span>
-                    {interceptRoute.distance_km > 100 && (
-                      <button
-                        onClick={handleInterceptFromPatrolUnit}
-                        className="px-2 py-0.5 rounded bg-amber-500/30 text-amber-200 border border-amber-400/50 hover:bg-amber-500/40 text-[9px] font-sans font-bold flex items-center gap-1 animate-pulse shrink-0"
-                        title="You are currently located far from Delhi/NCR. Click to snap tactical interceptor to on-scene squad PCR-04 at Yamuna Expressway (2.6 km)"
-                      >
-                        ⚡ Snap to NCR Squad (2.6 km)
-                      </button>
-                    )}
-                  </div>
-                  <div className="text-[11px] text-slate-300 mt-0.5 break-words">
-                    From <strong className="text-white">{interceptRoute.police_station}</strong> ➔ Target TS 09 AB 1234 (Scorpio)
-                  </div>
-                </div>
-                <button
-                  onClick={() => {
-                    sound.playClickSound();
-                    setInterceptRoute(null);
-                    if (liveDeviceMarkerRef.current) {
-                      try { liveDeviceMarkerRef.current.remove(); } catch {}
-                      liveDeviceMarkerRef.current = null;
-                    }
-                    if (interceptMarkerRef.current) {
-                      try { interceptMarkerRef.current.remove(); } catch {}
-                      interceptMarkerRef.current = null;
-                    }
-                    if (mapRef.current) {
-                      const layers = ['police-intercept-dashed', 'police-intercept-line', 'police-intercept-glow', 'route-direct-vector', 'route-direct-vector-backing', 'route', 'route-backing', 'route-glow'];
-                      layers.forEach(l => { if (mapRef.current?.getLayer(l)) { try { mapRef.current.removeLayer(l); } catch {} } });
-                      const sources = ['police-intercept-trajectory', 'route-direct-vector', 'route'];
-                      sources.forEach(s => { if (mapRef.current?.getSource(s)) { try { mapRef.current.removeSource(s); } catch {} } });
-                    }
-                  }}
-                  className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:text-white border border-slate-700 text-[10px] shrink-0 font-sans"
-                  title="Clear tactical route from map"
-                >
-                  ✕ Clear Line
-                </button>
-              </div>
-            )}
 
             {/* Python Folium & Leaflet GIS Container (Kept in DOM to prevent tearing) */}
             <div className={`w-full h-full relative flex flex-col ${mapEngine === 'python' ? 'flex' : 'hidden'}`}>
