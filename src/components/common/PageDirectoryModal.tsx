@@ -235,11 +235,50 @@ export function PageDirectoryModal() {
       keywords: ['fir archive', 'multilingual', 'indicbert', 'trocr', 'handwritten', 'historical', 'suspect life status'],
       isHero: true,
     },
+    {
+      id: 'page-citizen-queue',
+      order: 14,
+      title: 'Citizen Reports Queue (Police Inbox)',
+      route: '/police-reports',
+      category: 'COMMAND_OPS',
+      categoryLabel: 'Command & Ops',
+      icon: ShieldCheck,
+      description: 'Triaged citizen complaints queue with 5W NLP assist, spam blocker, and 1-click conversion into official Section 173 BNSS FIRs.',
+      badge: 'QUEUE',
+      badgeColor: 'border-emerald-500/50 text-emerald-400 bg-emerald-950/40',
+      keywords: ['citizen reports', 'public queue', 'fir intake', 'triaged reports', 'complaints'],
+    },
+    {
+      id: 'page-citizen',
+      order: 15,
+      title: 'Citizen Sentinel Public Reporting',
+      route: '/citizen',
+      category: 'COMMAND_OPS',
+      categoryLabel: 'Command & Ops',
+      icon: ShieldAlert,
+      description: 'Public crime reporting portal with intelligent language detection (Indic/Hinglish), spam filter, and Section 173 statement auto-formatter.',
+      badge: 'CITIZEN',
+      badgeColor: 'border-sky-500/50 text-sky-400 bg-sky-950/40',
+      keywords: ['citizen portal', 'public crime report', 'anonymous complaint', 'sentinel'],
+    },
+    {
+      id: 'page-citizen-track',
+      order: 16,
+      title: 'Citizen Sentinel Incident Tracker',
+      route: '/citizen/track',
+      category: 'COMMAND_OPS',
+      categoryLabel: 'Command & Ops',
+      icon: Compass,
+      description: 'Citizen report status tracker, 2-way encrypted IO chat, Section 173 acknowledgment slip download, and witness protection cert.',
+      badge: 'TRACK',
+      badgeColor: 'border-cyan-500/50 text-cyan-400 bg-cyan-950/40',
+      keywords: ['track report', 'citizen status', 'police chat', 'receipt download', 'witness cert'],
+    },
 
     // --- 3. FIELD PURSUIT & SURVEILLANCE ---
     {
       id: 'page-map',
-      order: 13,
+      order: 17,
       title: 'GIS Spatial Map Intelligence',
       route: '/map',
       category: 'FIELD_PURSUIT',
@@ -252,7 +291,7 @@ export function PageDirectoryModal() {
     },
     {
       id: 'page-live-tracking',
-      order: 14,
+      order: 18,
       title: 'Live Real-Time Tactical Tracking',
       route: '/live-tracking',
       category: 'FIELD_PURSUIT',
@@ -265,7 +304,7 @@ export function PageDirectoryModal() {
     },
     {
       id: 'page-escape-demo',
-      order: 15,
+      order: 19,
       title: 'Operation Shatter Escape Simulation',
       route: '/escape-demo',
       category: 'FIELD_PURSUIT',
@@ -278,7 +317,7 @@ export function PageDirectoryModal() {
     },
     {
       id: 'page-digital-footprint',
-      order: 16,
+      order: 20,
       title: 'Omni-Trace 96-Feed Data Lake',
       route: '/digital-footprint',
       category: 'FIELD_PURSUIT',
@@ -291,7 +330,7 @@ export function PageDirectoryModal() {
     },
     {
       id: 'page-railway',
-      order: 17,
+      order: 21,
       title: 'Railway TC Biometric Face Verification',
       route: '/railway-verification',
       category: 'FIELD_PURSUIT',
@@ -304,7 +343,7 @@ export function PageDirectoryModal() {
     },
     {
       id: 'page-guardian-trace',
-      order: 18,
+      order: 22,
       title: 'Guardian Trace (Missing Persons Rescue)',
       route: '/guardian-trace',
       category: 'FIELD_PURSUIT',
@@ -320,7 +359,7 @@ export function PageDirectoryModal() {
     // --- 4. LEGAL COMPLIANCE & REPORTS ---
     {
       id: 'page-drafting',
-      order: 18,
+      order: 23,
       title: 'BNS / BNSS Legal Drafting Engine',
       route: '/drafting',
       category: 'LEGAL_REPORTS',
@@ -333,7 +372,7 @@ export function PageDirectoryModal() {
     },
     {
       id: 'page-reports',
-      order: 19,
+      order: 24,
       title: 'Court Dossiers & Intelligence Reports',
       route: '/reports',
       category: 'LEGAL_REPORTS',
@@ -346,7 +385,7 @@ export function PageDirectoryModal() {
     },
     {
       id: 'page-audit-logs',
-      order: 20,
+      order: 25,
       title: 'Station Judicial Audit Trail',
       route: '/audit-logs',
       category: 'LEGAL_REPORTS',
@@ -361,7 +400,7 @@ export function PageDirectoryModal() {
     // --- 5. SYSTEM ARCHITECTURE & ROADMAP ---
     {
       id: 'page-roadmap',
-      order: 21,
+      order: 26,
       title: '100 Technical Specs & Next 96 Roadmap',
       route: '/roadmap',
       category: 'SPECS_SYSTEM',
@@ -375,7 +414,7 @@ export function PageDirectoryModal() {
     },
     {
       id: 'page-about',
-      order: 22,
+      order: 27,
       title: '32 Capabilities & Platform Benchmark',
       route: '/about',
       category: 'SPECS_SYSTEM',
@@ -388,7 +427,7 @@ export function PageDirectoryModal() {
     },
     {
       id: 'page-lite',
-      order: 23,
+      order: 28,
       title: 'Thana 2 Mbps Low-Bandwidth Mode',
       route: '/lite',
       category: 'SPECS_SYSTEM',
@@ -401,7 +440,7 @@ export function PageDirectoryModal() {
     },
     {
       id: 'page-design-system',
-      order: 24,
+      order: 29,
       title: 'Figma Sovereign Design System',
       route: '/design-system',
       category: 'SPECS_SYSTEM',
@@ -414,7 +453,7 @@ export function PageDirectoryModal() {
     },
     {
       id: 'page-settings',
-      order: 25,
+      order: 30,
       title: 'Station Settings & RBAC Profiles',
       route: '/settings',
       category: 'SPECS_SYSTEM',
@@ -498,11 +537,11 @@ export function PageDirectoryModal() {
                     CRIMENEXUS Complete System Directory
                   </h2>
                   <Badge className="bg-primary text-black font-extrabold text-[10px] px-2">
-                    25 PAGES ORDERED
+                    30 PAGES ORDERED
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Complete directory of all 25 operational pages arranged in strict daily investigation usage sequence
+                  Complete directory of all 30 operational pages arranged in strict daily investigation usage sequence
                 </p>
               </div>
             </div>

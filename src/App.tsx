@@ -98,37 +98,80 @@ export function App() {
                 <Route path="/map-intelligence" element={<Navigate to="/map" replace />} />
                 <Route path="/live-tracking" element={<LiveTrackingPage />} />
                 <Route path="/tracking" element={<Navigate to="/live-tracking" replace />} />
+                {/* Core Tactical & Intelligence Modules */}
+                <Route path="/live-tracking" element={<LiveTrackingPage />} />
+                <Route path="/tracking" element={<Navigate to="/live-tracking" replace />} />
+                <Route path="/gps" element={<Navigate to="/live-tracking" replace />} />
                 <Route path="/escape-demo" element={<EscapeSimulationPage />} />
                 <Route path="/escape" element={<Navigate to="/escape-demo" replace />} />
+                <Route path="/pursuit" element={<Navigate to="/escape-demo" replace />} />
+                <Route path="/simulation" element={<Navigate to="/escape-demo" replace />} />
+                <Route path="/drone" element={<Navigate to="/escape-demo" replace />} />
                 <Route path="/digital-footprint" element={<DigitalFootprintPage />} />
                 <Route path="/footprint" element={<Navigate to="/digital-footprint" replace />} />
                 <Route path="/data-lake" element={<Navigate to="/digital-footprint" replace />} />
+                <Route path="/datalake" element={<Navigate to="/digital-footprint" replace />} />
+                <Route path="/iot" element={<Navigate to="/digital-footprint" replace />} />
                 <Route path="/forensics" element={<Navigate to="/live-tracking?tab=forensics" replace />} />
                 <Route path="/dossier" element={<Navigate to="/reports" replace />} />
+                <Route path="/dossiers" element={<Navigate to="/reports" replace />} />
+                <Route path="/court" element={<Navigate to="/reports" replace />} />
                 <Route path="/evidence-vault" element={<Navigate to="/evidence" replace />} />
                 <Route path="/intel" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/status" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/health" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/most-wanted" element={<MostWantedPage />} />
+                <Route path="/wanted" element={<Navigate to="/most-wanted" replace />} />
+                <Route path="/fugitives" element={<Navigate to="/most-wanted" replace />} />
+                <Route path="/watchlist" element={<Navigate to="/most-wanted" replace />} />
                 <Route path="/drafting" element={<DraftingPage />} />
+                <Route path="/remand" element={<Navigate to="/drafting" replace />} />
+                <Route path="/chargesheet" element={<Navigate to="/drafting" replace />} />
+                <Route path="/legal" element={<Navigate to="/drafting" replace />} />
                 <Route path="/ai-assistant" element={<AIAssistantPage />} />
+                <Route path="/assistant" element={<Navigate to="/ai-assistant" replace />} />
+                <Route path="/copilot" element={<Navigate to="/ai-assistant" replace />} />
                 <Route path="/reports" element={<ReportsPage />} />
                 <Route path="/audit-logs" element={<AuditLogsPage />} />
+                <Route path="/audit-trail" element={<Navigate to="/audit-logs" replace />} />
                 <Route path="/design-system" element={<DesignSystemPage />} />
+                <Route path="/tokens" element={<Navigate to="/design-system" replace />} />
+                <Route path="/palette" element={<Navigate to="/design-system" replace />} />
                 <Route path="/roadmap" element={<TechnicalRoadmapPage />} />
                 <Route path="/technical-specs" element={<Navigate to="/roadmap" replace />} />
                 <Route path="/improvements" element={<Navigate to="/roadmap" replace />} />
                 <Route path="/audit" element={<Navigate to="/roadmap" replace />} />
+                <Route path="/specs" element={<Navigate to="/roadmap" replace />} />
+                <Route path="/100-specs" element={<Navigate to="/roadmap" replace />} />
                 <Route path="/railway-verification" element={<RailwayVerificationPage />} />
                 <Route path="/railway" element={<Navigate to="/railway-verification" replace />} />
                 <Route path="/tc-verification" element={<Navigate to="/railway-verification" replace />} />
+                <Route path="/aadhaar" element={<Navigate to="/railway-verification" replace />} />
+                <Route path="/cctns" element={<Navigate to="/railway-verification" replace />} />
                 <Route path="/guardian-trace" element={<GuardianTracePage />} />
                 <Route path="/guardian" element={<Navigate to="/guardian-trace" replace />} />
                 <Route path="/missing-persons" element={<Navigate to="/guardian-trace" replace />} />
+                <Route path="/missing" element={<Navigate to="/guardian-trace" replace />} />
+                <Route path="/rescue" element={<Navigate to="/guardian-trace" replace />} />
+                <Route path="/sar" element={<Navigate to="/guardian-trace" replace />} />
+                <Route path="/amber-alert" element={<Navigate to="/guardian-trace" replace />} />
+                <Route path="/omnitrace" element={<Navigate to="/guardian-trace" replace />} />
+                <Route path="/satellite" element={<Navigate to="/guardian-trace" replace />} />
                 <Route path="/police-reports" element={<PublicReportsQueue />} />
                 <Route path="/citizen-reports" element={<Navigate to="/police-reports" replace />} />
+                <Route path="/public-reports" element={<Navigate to="/police-reports" replace />} />
+                <Route path="/citizen-queue" element={<Navigate to="/police-reports" replace />} />
                 <Route path="/fir-archive" element={<FIRArchivePage />} />
                 <Route path="/archive" element={<Navigate to="/fir-archive" replace />} />
+                <Route path="/firarchive" element={<Navigate to="/fir-archive" replace />} />
                 <Route path="/about" element={<AboutPlatformPage />} />
+                <Route path="/benchmarks" element={<Navigate to="/about" replace />} />
                 <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/preferences" element={<Navigate to="/settings" replace />} />
+                <Route path="/profile" element={<Navigate to="/settings" replace />} />
+                <Route path="/investigations" element={<Navigate to="/cases" replace />} />
+                <Route path="/firs" element={<Navigate to="/cases" replace />} />
+                <Route path="/fir" element={<Navigate to="/cases" replace />} />
               </Route>
 
               {/* Catch-all fallback */}

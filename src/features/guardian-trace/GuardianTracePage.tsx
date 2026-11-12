@@ -28,6 +28,26 @@ import {
   Sliders,
   ExternalLink,
   Volume2,
+  HeartPulse,
+  Battery,
+  Sun,
+  Moon,
+  Users,
+  Plus,
+  Activity,
+  ShieldCheck,
+  Check,
+  Copy,
+  FileSpreadsheet,
+  Download,
+  Car,
+  Zap,
+  FileCode,
+  CheckSquare,
+  VolumeX,
+  RadioTower,
+  EyeOff,
+  Globe,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -37,30 +57,31 @@ import { sound } from '../../utils/soundEffects';
 import { useToast } from '../../components/ui/Toast';
 import { DemoPlayer } from './DemoPlayer';
 import { DocumentPreviewModal } from '../../components/common/DocumentPreviewModal';
+import { OmniTraceSatelliteModal } from '../../components/common/OmniTraceSatelliteModal';
 
-// Carto Dark Matter Style with OpenStreetMap tiles fallback
+// 100% Free OpenStreetMap Raster Style (Guarantees zero API keys, no Carto 'KEY REQUIRED' watermark)
 const MAP_STYLE: maplibregl.StyleSpecification = {
   version: 8,
   sources: {
-    'carto-dark': {
+    'osm-tiles': {
       type: 'raster',
-      tiles: [
-        'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-        'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-        'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-        'https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-      ],
+      tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
       tileSize: 256,
-      attribution: '© CARTO, © OpenStreetMap contributors',
+      attribution: '© OpenStreetMap contributors',
     },
   },
   layers: [
     {
-      id: 'carto-dark-layer',
+      id: 'osm-tiles-layer',
       type: 'raster',
-      source: 'carto-dark',
+      source: 'osm-tiles',
       minzoom: 0,
-      maxzoom: 20,
+      maxzoom: 19,
+      paint: {
+        'raster-brightness-max': 0.72,
+        'raster-contrast': 0.18,
+        'raster-saturation': -0.82,
+      },
     },
   ],
 };
@@ -102,6 +123,7 @@ export function GuardianTracePage() {
   const [dossierModalOpen, setDossierModalOpen] = useState<boolean>(false);
   const [broadcastModalOpen, setBroadcastModalOpen] = useState<boolean>(false);
   const [foundModalOpen, setFoundModalOpen] = useState<boolean>(false);
+  const [satelliteModalOpen, setSatelliteModalOpen] = useState<boolean>(false);
 
   // Search Grid & Rings Toggle
   const [searchRingsVisible, setSearchRingsVisible] = useState<boolean>(true);
@@ -109,6 +131,39 @@ export function GuardianTracePage() {
   // Timeline Hour Slider (0 = last seen 18h ago, 18 = present time)
   const [timelineHour, setTimelineHour] = useState<number>(18);
   const [isPlayingTimeline, setIsPlayingTimeline] = useState<boolean>(false);
+
+  // Realistic Feature Additions: Filter, Squads, Audio, Register
+  const [selectedSignalSource, setSelectedSignalSource] = useState<string>('ALL');
+  const [registerModalOpen, setRegisterModalOpen] = useState<boolean>(false);
+  const [isSpeakingBriefing, setIsSpeakingBriefing] = useState<boolean>(false);
+
+  // Ground Search & Rescue Squads Grid
+  const [rescueSquads, setRescueSquads] = useState([
+    { id: 'ALPHA', name: 'Squad Alpha (Metro Picket)', sector: 'Sector 1 - Lajpat Exit', freq: '142.85 MHz', status: 'SEARCHING', personnel: 4, leader: 'SI Ankit Kumar' },
+    { id: 'BRAVO', name: 'Squad Bravo (NDLS Rail Unit)', sector: 'Sector 2 - Platform 1-4', freq: '143.20 MHz', status: 'EN_ROUTE', personnel: 6, leader: 'Insp. R. Varma' },
+    { id: 'CHARLIE', name: 'Squad Charlie (Paharganj Combing)', sector: 'Sector 3 - Main Bazaar', freq: '144.10 MHz', status: 'STAGING', personnel: 5, leader: 'HC Devendra' },
+  ]);
+
+  // Transit Intercept Chokepoints
+  const [chokepoints, setChokepoints] = useState([
+    { id: 'CK-1', name: 'NDLS Railway Gate 1', type: 'Railway Terminal', status: 'PICKET_ACTIVE', officers: 4 },
+    { id: 'CK-2', name: 'Rajiv Chowk Metro Gate 7', type: 'Metro Interchange', status: 'INTERCEPT_ALERT', officers: 3 },
+    { id: 'CK-3', name: 'Kashmere Gate ISBT Concourse', type: 'Inter-State Bus', status: 'PATROL_ASSIGNED', officers: 5 },
+    { id: 'CK-4', name: 'Paharganj Chowk Crossing', type: 'Vehicular Checkpost', status: 'SECTOR_SEALED', officers: 2 },
+  ]);
+
+  // Direct Case Registration Form State
+  const [newCaseForm, setNewCaseForm] = useState({
+    person_name: '',
+    age: '',
+    gender: 'Female',
+    description: '',
+    station_id: 'PS Lajpat Nagar',
+    mobile_number: '',
+    imei: '',
+    last_seen_location: '',
+    medical_notes: 'None',
+  });
 
   // Case Data State
   const [caseData, setCaseData] = useState<any>({
@@ -474,37 +529,194 @@ export function GuardianTracePage() {
     );
   };
 
+  const playTacticalAudioBrief = () => {
+    if (!('speechSynthesis' in window)) {
+      toast.warning('Synthetic voice dispatch is not supported on this browser.');
+      return;
+    }
+    if (isSpeakingBriefing) {
+      window.speechSynthesis.cancel();
+      setIsSpeakingBriefing(false);
+      return;
+    }
+    const brief = `Guardian Trace Tactical Alert. Missing subject: ${caseData.person_name}, age ${caseData.age}. Priority Critical. Last seen at ${caseData.last_seen_location}. Highest probability vector is New Delhi Railway Station concourse with 87 percent confidence. Dispatch Squad Alpha and Bravo immediately.`;
+    const utterance = new SpeechSynthesisUtterance(brief);
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    utterance.onend = () => setIsSpeakingBriefing(false);
+    utterance.onerror = () => setIsSpeakingBriefing(false);
+    setIsSpeakingBriefing(true);
+    window.speechSynthesis.speak(utterance);
+    toast.info('Broadcasting tactical audio briefing to field units...', 'Audio Dispatch');
+  };
+
+  const handleExportSARGeoJSON = () => {
+    sound.playSuccessChime();
+    const geojsonData = {
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          properties: { case_number: caseData.case_number, subject: caseData.person_name, type: 'trajectory' },
+          geometry: {
+            type: 'LineString',
+            coordinates: sightings.map((s) => [s.lon, s.lat]),
+          },
+        },
+        ...sightings.map((s, idx) => ({
+          type: 'Feature',
+          properties: { index: idx + 1, source: s.source, time: s.time, confidence: s.confidence, note: s.note },
+          geometry: { type: 'Point', coordinates: [s.lon, s.lat] },
+        })),
+        ...predictions.map((p, idx) => ({
+          type: 'Feature',
+          properties: { type: 'prediction', rank: idx + 1, name: p.name, confidence: p.confidence },
+          geometry: { type: 'Point', coordinates: [p.predicted_lon, p.predicted_lat] },
+        })),
+      ],
+    };
+    const blob = new Blob([JSON.stringify(geojsonData, null, 2)], { type: 'application/geo+json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Guardian_Trace_SAR_${caseData.case_number}.geojson`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success('SAR GeoJSON bundle downloaded for GPS units and DJI search drones.', 'Export Complete');
+  };
+
+  const handleRegisterNewCase = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCaseForm.person_name || !newCaseForm.age) {
+      toast.error('Please enter person name and age.');
+      return;
+    }
+    sound.playSuccessChime();
+    const generatedCaseNumber = `MP-2026-REG-${Math.floor(1000 + Math.random() * 9000)}`;
+    setCaseData({
+      case_number: generatedCaseNumber,
+      person_name: newCaseForm.person_name,
+      age: parseInt(newCaseForm.age, 10),
+      gender: newCaseForm.gender,
+      description: newCaseForm.description || 'Subject reported missing. Investigation underway.',
+      photo_url: 'https://images.unsplash.com/photo-1543332164-6e82f355badc?w=400',
+      last_seen_lat: 28.5665,
+      last_seen_lon: 77.2431,
+      last_seen_location: newCaseForm.last_seen_location || 'Lajpat Nagar Metro Station',
+      last_seen_time: 'Just now',
+      priority: parseInt(newCaseForm.age, 10) < 12 ? 'CRITICAL' : 'HIGH',
+      station_id: newCaseForm.station_id,
+      assigned_officer: 'Duty Inspector (Crime Branch)',
+      mobile_number: newCaseForm.mobile_number || '+91 98XXXX1100',
+      imei: newCaseForm.imei || '356789012349999',
+      status: 'ACTIVE',
+    });
+    setRegisterModalOpen(false);
+    toast.success(`Missing person docket ${generatedCaseNumber} created and active in HUD.`, 'Case Docket Registered');
+  };
+
+  const filteredSightings = selectedSignalSource === 'ALL'
+    ? sightings
+    : sightings.filter((s) => s.source === selectedSignalSource);
+
   return (
     <div className="space-y-4">
       {/* Top Banner: Emergency Mandate & Demo Quick Launcher */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border-2 border-red-500/50 bg-gradient-to-r from-red-950/40 via-slate-900 to-slate-950 shadow-xl">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-red-500/20 text-red-400 border border-red-500/40 animate-pulse">
-            <ShieldAlert className="h-6 w-6" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-base sm:text-lg font-black text-white tracking-wide">
-                Guardian Trace: Multimodal Missing Persons Search HUD
-              </h1>
-              <Badge className="bg-red-600 text-white font-mono font-black text-[10px] animate-pulse">
-                CRITICAL EMERGENCY (AGE &lt; 12)
-              </Badge>
+      <div className="p-4 sm:p-5 rounded-2xl border-2 border-red-500/60 bg-gradient-to-br from-red-950/40 via-slate-900 to-slate-950 shadow-2xl space-y-4">
+        {/* Row 1: Case Title, Emergency Badge & Live Case Status (Full Width - Zero Word Squishing) */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="p-2.5 rounded-xl bg-red-500/20 text-red-400 border border-red-500/40 animate-pulse shrink-0">
+              <ShieldAlert className="h-6 w-6" />
             </div>
-            <p className="text-xs text-red-200/90 mt-0.5">
-              Active Case: <strong className="text-white">Aanya Sharma (8)</strong> • Fused 12 sensor exhaust sightings across 18 hours.
-            </p>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <h1 className="text-lg sm:text-xl font-black text-white tracking-wide">
+                  Guardian Trace: Multimodal Missing Persons Search HUD
+                </h1>
+                <Badge className="bg-red-600 text-white font-mono font-black text-[10px] px-2 py-0.5 animate-pulse shrink-0">
+                  CRITICAL EMERGENCY (AGE &lt; 12)
+                </Badge>
+              </div>
+              <p className="text-xs text-red-200/90 mt-1 flex items-center gap-2 flex-wrap">
+                <span>Active Case: <strong className="text-white">Aanya Sharma (8)</strong></span>
+                <span className="text-red-400/60">•</span>
+                <span>Fused 12 sensor exhaust sightings across 18 hours</span>
+                <span className="text-red-400/60">•</span>
+                <span className="text-cyan-300 font-mono">PS Lajpat Nagar (NCT of Delhi)</span>
+              </p>
+            </div>
+          </div>
+
+          {/* Quick Case Summary Chip */}
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-red-950/60 border border-red-500/40 text-xs font-mono text-red-200 shrink-0 self-start lg:self-center">
+            <span className="h-2 w-2 rounded-full bg-red-500 animate-ping" />
+            <span>Search Window: 18h Elapsed</span>
+            <span className="text-red-400 font-bold">• 10 km Search Radius</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        {/* Row 2: Tactical Action Control Ribbon (Graceful Wrap, Zero Clipping, Zero Overflow) */}
+        <div className="pt-2.5 border-t border-red-500/20 flex items-center gap-2 flex-wrap">
+          <Button
+            size="sm"
+            onClick={playTacticalAudioBrief}
+            className={`h-9 text-xs font-bold flex items-center gap-1.5 transition-all ${
+              isSpeakingBriefing
+                ? 'bg-amber-600 hover:bg-amber-700 text-white animate-pulse'
+                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
+            }`}
+            title="Hands-free synthetic audio tactical briefing for field units"
+          >
+            {isSpeakingBriefing ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+            <span>{isSpeakingBriefing ? 'Stop Audio' : 'Voice Dispatch'}</span>
+          </Button>
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleExportSARGeoJSON}
+            className="h-9 text-xs font-bold border-cyan-500/40 text-cyan-300 hover:bg-cyan-950/30 flex items-center gap-1.5"
+            title="Export search and rescue GeoJSON coordinates for handheld Garmin GPS & drones"
+          >
+            <Download className="h-3.5 w-3.5" />
+            <span>Export SAR GeoJSON</span>
+          </Button>
+
+          <Button
+            size="sm"
+            onClick={() => {
+              sound.playClickSound();
+              setRegisterModalOpen(true);
+            }}
+            className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs h-9 px-3 flex items-center gap-1.5 shadow-md"
+            title="Register a new missing child or person docket"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            <span>Register Docket</span>
+          </Button>
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              sound.playClickSound();
+              setSatelliteModalOpen(true);
+            }}
+            className="h-9 text-xs font-bold border-cyan-500/40 text-cyan-300 hover:bg-cyan-950/30 flex items-center gap-1.5"
+            title="Inspect OmniTrace Satellite Earth Observation Locus"
+          >
+            <Globe className="h-3.5 w-3.5 text-cyan-400" />
+            <span>OmniTrace Satellite</span>
+          </Button>
+
           <Button
             size="sm"
             onClick={() => {
               sound.playRadarPing();
               setDemoPlayerOpen(true);
             }}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs h-9 px-3.5 flex items-center gap-1.5 shadow-lg shadow-emerald-950/50 animate-bounce"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs h-9 px-3.5 flex items-center gap-1.5 shadow-lg shadow-emerald-950/50"
             title="Launch interactive 90-second animated rescue presentation (Press P)"
           >
             <Play className="h-4 w-4 fill-current" />
@@ -528,6 +740,69 @@ export function GuardianTracePage() {
         </div>
       </div>
 
+      {/* Realistic Operational SAR Telemetry Ribbon (6 Live Sensors & Intelligence Feeds) */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2.5">
+        {/* Sensor 1: Battery Decay Model */}
+        <div className="p-3 rounded-xl border border-amber-500/40 bg-amber-950/20 text-xs font-mono space-y-1">
+          <div className="flex items-center justify-between text-[10px] text-amber-400 font-bold">
+            <span className="flex items-center gap-1"><Battery className="h-3.5 w-3.5" /> BATTERY DECAY</span>
+            <span>14%</span>
+          </div>
+          <div className="text-[11px] font-bold text-slate-200 truncate">1h 40m Remaining</div>
+          <div className="text-[9px] text-amber-200/70 truncate">Draw: 180mA • Cold Temp</div>
+        </div>
+
+        {/* Sensor 2: Day/Night Solar Illumination */}
+        <div className="p-3 rounded-xl border border-indigo-500/40 bg-indigo-950/20 text-xs font-mono space-y-1">
+          <div className="flex items-center justify-between text-[10px] text-indigo-400 font-bold">
+            <span className="flex items-center gap-1"><Sun className="h-3.5 w-3.5" /> ILLUMINATION</span>
+            <span>120 LUX</span>
+          </div>
+          <div className="text-[11px] font-bold text-slate-200 truncate">Civil Dusk: 18:14 IST</div>
+          <div className="text-[9px] text-indigo-200/70 truncate">Night Combing Active</div>
+        </div>
+
+        {/* Sensor 3: Offline Vector MBTiles Sync */}
+        <div className="p-3 rounded-xl border border-emerald-500/40 bg-emerald-950/20 text-xs font-mono space-y-1">
+          <div className="flex items-center justify-between text-[10px] text-emerald-400 font-bold">
+            <span className="flex items-center gap-1"><ShieldCheck className="h-3.5 w-3.5" /> OFFLINE CACHE</span>
+            <span>142 MB</span>
+          </div>
+          <div className="text-[11px] font-bold text-slate-200 truncate">MBTiles Synced</div>
+          <div className="text-[9px] text-emerald-200/70 truncate">Tunnel / Offline Ready</div>
+        </div>
+
+        {/* Sensor 4: CCTV Blind Spot Index */}
+        <div className="p-3 rounded-xl border border-red-500/40 bg-red-950/20 text-xs font-mono space-y-1">
+          <div className="flex items-center justify-between text-[10px] text-red-400 font-bold">
+            <span className="flex items-center gap-1"><EyeOff className="h-3.5 w-3.5" /> BLIND SPOT RISK</span>
+            <span>380m</span>
+          </div>
+          <div className="text-[11px] font-bold text-slate-200 truncate">Paharganj Lane 4</div>
+          <div className="text-[9px] text-red-200/70 truncate">Zero Optical CCTV Cover</div>
+        </div>
+
+        {/* Sensor 5: Vehicle ANPR Intercept */}
+        <div className="p-3 rounded-xl border border-sky-500/40 bg-sky-950/20 text-xs font-mono space-y-1">
+          <div className="flex items-center justify-between text-[10px] text-sky-400 font-bold">
+            <span className="flex items-center gap-1"><Car className="h-3.5 w-3.5" /> ANPR INTERCEPT</span>
+            <span>BOLO ALERT</span>
+          </div>
+          <div className="text-[11px] font-bold text-slate-200 truncate">White Swift (DL-10)</div>
+          <div className="text-[9px] text-sky-200/70 truncate">Spotted 12m ago at Gate 3</div>
+        </div>
+
+        {/* Sensor 6: Tri-State Inter-Agency Bridge */}
+        <div className="p-3 rounded-xl border border-purple-500/40 bg-purple-950/20 text-xs font-mono space-y-1">
+          <div className="flex items-center justify-between text-[10px] text-purple-400 font-bold">
+            <span className="flex items-center gap-1"><RadioTower className="h-3.5 w-3.5" /> TRI-STATE BRIDGE</span>
+            <span>NCR LIVE</span>
+          </div>
+          <div className="text-[11px] font-bold text-slate-200 truncate">Delhi ⇄ HR ⇄ UP STF</div>
+          <div className="text-[9px] text-purple-200/70 truncate">Border Patrols Active</div>
+        </div>
+      </div>
+
       {/* Main Split-Screen HUD: 60% Left (Map + Timeline) | 40% Right (Intel Panel) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* LEFT 60% (7 Cols): MapLibre Map Canvas + Timeline Scrubber */}
@@ -536,7 +811,7 @@ export function GuardianTracePage() {
             <div className="p-3 bg-slate-900 border-b border-border/80 flex items-center justify-between text-xs">
               <div className="flex items-center gap-2 font-mono">
                 <MapPin className="h-4 w-4 text-cyan-400" />
-                <span className="font-bold text-white">CartoCDN Dark Matter Geospatial Feed</span>
+                <span className="font-bold text-white">OpenStreetMap Sovereign Tactical Feed</span>
                 <span className="text-[10px] text-slate-400">Delhi-NCR Corridor</span>
               </div>
 
@@ -553,8 +828,8 @@ export function GuardianTracePage() {
               </div>
             </div>
 
-            {/* Map Container */}
-            <div className="h-[460px] sm:h-[520px] w-full relative">
+            {/* Map Container (Compact Tactical Height) */}
+            <div className="h-[380px] sm:h-[420px] lg:h-[450px] w-full relative">
               <div ref={mapContainerRef} className="w-full h-full" />
 
               {/* Map Overlay Legend */}
@@ -602,6 +877,7 @@ export function GuardianTracePage() {
                   <Button
                     size="sm"
                     variant="outline"
+                    aria-label="Auto-play timeline"
                     onClick={() => {
                       sound.playClickSound();
                       setIsPlayingTimeline(!isPlayingTimeline);
@@ -629,6 +905,7 @@ export function GuardianTracePage() {
                 min="0"
                 max="18"
                 step="1"
+                aria-label="Investigation Timeline Scrubber"
                 value={timelineHour}
                 onChange={(e) => {
                   setTimelineHour(parseInt(e.target.value, 10));
@@ -670,9 +947,17 @@ export function GuardianTracePage() {
                   <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
                     {caseData.description}
                   </p>
-                  <div className="text-[10px] text-red-400 font-mono mt-1 flex items-center gap-1">
-                    <span>Medical:</span>
-                    <span className="font-bold text-red-300">Asthma (carries inhaler)</span>
+                  <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                    <div className="text-[10px] text-red-400 font-mono flex items-center gap-1 bg-red-950/30 px-2 py-0.5 rounded border border-red-500/30">
+                      <HeartPulse className="h-3 w-3 text-red-400 animate-pulse" />
+                      <span>Medical Risk:</span>
+                      <span className="font-bold text-red-200">Asthma Inhaler (5h 50m window)</span>
+                    </div>
+                    <div className="text-[10px] text-emerald-400 font-mono flex items-center gap-1 bg-emerald-950/30 px-2 py-0.5 rounded border border-emerald-500/30">
+                      <Sparkles className="h-3 w-3 text-emerald-400" />
+                      <span>Face Match:</span>
+                      <span className="font-bold text-emerald-200">89.4% (CAM-METRO-04)</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -752,20 +1037,51 @@ export function GuardianTracePage() {
             </CardContent>
           </Card>
 
-          {/* Sighting Feed (Scrolling Audit Stream) */}
+          {/* Sighting Feed with Multimodal Sensor Signal Filter Pills */}
           <Card className="border border-border/80 bg-card shadow-xl">
-            <CardHeader className="pb-2 pt-3 px-4 flex flex-row items-center justify-between border-b border-border/60">
+            <CardHeader className="pb-2 pt-3 px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/60">
               <div className="flex items-center gap-2">
                 <Radio className="h-4 w-4 text-cyan-400" />
                 <CardTitle className="text-xs font-bold uppercase tracking-wider text-foreground">
-                  Multimodal Sighting Feed (12 Events)
+                  Multimodal Sighting &amp; Digital Exhaust Stream ({filteredSightings.length}/{sightings.length} Events)
                 </CardTitle>
               </div>
               <span className="text-[10px] font-mono text-emerald-400 font-bold">100% WORM Verified</span>
             </CardHeader>
-            <CardContent className="p-3">
+            <CardContent className="p-3 space-y-2.5">
+              {/* Sensor Filter Pills */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-[10px] font-mono">
+                {[
+                  { id: 'ALL', label: 'All Signals', count: sightings.length },
+                  { id: 'IMEI_PING', label: 'IMEI Ping', count: sightings.filter(s => s.source === 'IMEI_PING').length },
+                  { id: 'METRO_CARD', label: 'Metro AFC', count: sightings.filter(s => s.source === 'METRO_CARD').length },
+                  { id: 'CCTV', label: 'CCTV Optical', count: sightings.filter(s => s.source === 'CCTV').length },
+                  { id: 'WIFI_PROBE', label: 'WiFi Probe', count: sightings.filter(s => s.source === 'WIFI_PROBE').length },
+                  { id: 'UPI', label: 'UPI / POS', count: sightings.filter(s => s.source === 'UPI').length },
+                  { id: 'BLUETOOTH', label: 'BLE Beacon', count: sightings.filter(s => s.source === 'BLUETOOTH').length },
+                  { id: 'TRANSIT', label: 'Bus Transit', count: sightings.filter(s => s.source === 'TRANSIT').length },
+                  { id: 'CITIZEN', label: 'Citizen Tip', count: sightings.filter(s => s.source === 'CITIZEN').length },
+                ].map((flt) => (
+                  <button
+                    key={flt.id}
+                    onClick={() => {
+                      sound.playClickSound();
+                      setSelectedSignalSource(flt.id);
+                    }}
+                    className={`px-2 py-0.5 rounded-full border transition-colors shrink-0 whitespace-nowrap flex items-center gap-1 ${
+                      selectedSignalSource === flt.id
+                        ? 'bg-primary text-primary-foreground border-primary font-bold'
+                        : 'bg-background/80 text-muted-foreground border-border/60 hover:text-foreground'
+                    }`}
+                  >
+                    <span>{flt.label}</span>
+                    <span className="opacity-70 text-[9px]">({flt.count})</span>
+                  </button>
+                ))}
+              </div>
+
               <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                {sightings.map((s, idx) => (
+                {filteredSightings.map((s, idx) => (
                   <div
                     key={idx}
                     className="p-2 rounded-lg border border-border/60 bg-background/50 text-xs flex items-center justify-between gap-2"
@@ -787,6 +1103,112 @@ export function GuardianTracePage() {
                   </div>
                 ))}
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Ground Search & Rescue Squads Live Grid */}
+          <Card className="border border-border/80 bg-card shadow-xl">
+            <CardHeader className="pb-2 pt-3 px-4 flex flex-row items-center justify-between border-b border-border/60">
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-primary" />
+                <CardTitle className="text-xs font-bold uppercase tracking-wider text-foreground">
+                  SAR Ground Squads Live Roster (3 Units)
+                </CardTitle>
+              </div>
+              <span className="text-[10px] font-mono text-muted-foreground">Tactical Net VHF</span>
+            </CardHeader>
+            <CardContent className="p-3 space-y-2">
+              {rescueSquads.map((sq) => (
+                <div
+                  key={sq.id}
+                  className="p-2.5 rounded-xl border border-border/70 bg-background/60 flex items-center justify-between gap-2 text-xs"
+                >
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-foreground truncate">{sq.name}</span>
+                      <span className="text-[10px] font-mono text-cyan-400 bg-cyan-950/40 px-1.5 py-0.2 rounded border border-cyan-500/30">
+                        {sq.freq}
+                      </span>
+                    </div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                      {sq.sector} • Lead: {sq.leader} ({sq.personnel} Officers)
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      sound.playClickSound();
+                      setRescueSquads((prev) =>
+                        prev.map((item) =>
+                          item.id === sq.id
+                            ? {
+                                ...item,
+                                status:
+                                  item.status === 'SEARCHING'
+                                    ? 'EN_ROUTE'
+                                    : item.status === 'EN_ROUTE'
+                                    ? 'STAGING'
+                                    : 'SEARCHING',
+                              }
+                            : item
+                        )
+                      );
+                      toast.info(`${sq.name} status updated.`, 'Squad Roster Updated');
+                    }}
+                    className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg border transition-colors shrink-0 ${
+                      sq.status === 'SEARCHING'
+                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                        : sq.status === 'EN_ROUTE'
+                        ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                        : 'bg-slate-800 text-slate-300 border-slate-700'
+                    }`}
+                  >
+                    {sq.status}
+                  </button>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* Transit Intercept Chokepoints Grid */}
+          <Card className="border border-border/80 bg-card shadow-xl">
+            <CardHeader className="pb-2 pt-3 px-4 flex flex-row items-center justify-between border-b border-border/60">
+              <div className="flex items-center gap-2">
+                <Bus className="h-4 w-4 text-amber-400" />
+                <CardTitle className="text-xs font-bold uppercase tracking-wider text-foreground">
+                  Transit Intercept Chokepoints (4 Portals)
+                </CardTitle>
+              </div>
+              <span className="text-[10px] font-mono text-amber-400 font-bold">Containment Grid</span>
+            </CardHeader>
+            <CardContent className="p-3 space-y-2">
+              {chokepoints.map((ck) => (
+                <div
+                  key={ck.id}
+                  className="p-2 rounded-lg border border-border/60 bg-background/50 flex items-center justify-between gap-2 text-xs"
+                >
+                  <div className="min-w-0">
+                    <span className="font-bold text-foreground text-[11px] block truncate">{ck.name}</span>
+                    <span className="text-[10px] text-muted-foreground">{ck.type} • {ck.officers} Picket Officers</span>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      sound.playAlertBeep();
+                      setChokepoints(prev => prev.map(c => c.id === ck.id ? { ...c, status: c.status === 'PICKET_ACTIVE' ? 'SECTOR_SEALED' : 'PICKET_ACTIVE' } : c));
+                      toast.warning(`Chokepoint ${ck.name} status toggled. Sector containment alerted.`, 'Picket Alert');
+                    }}
+                    className={`h-6 text-[9px] font-mono font-bold px-2 ${
+                      ck.status === 'PICKET_ACTIVE'
+                        ? 'border-emerald-500/40 text-emerald-300 bg-emerald-950/20'
+                        : 'border-red-500/40 text-red-300 bg-red-950/20'
+                    }`}
+                  >
+                    {ck.status}
+                  </Button>
+                </div>
+              ))}
             </CardContent>
           </Card>
 
@@ -927,6 +1349,112 @@ export function GuardianTracePage() {
         </div>
       </Modal>
 
+      {/* Register New Missing Person Docket Modal */}
+      <Modal
+        isOpen={registerModalOpen}
+        onClose={() => setRegisterModalOpen(false)}
+        title="Register New Missing Person Docket (Guardian Trace)"
+      >
+        <form onSubmit={handleRegisterNewCase} className="space-y-3.5 text-xs font-sans text-slate-200">
+          <div className="p-3 rounded-xl bg-primary/10 border border-primary/30 text-primary-200 space-y-1">
+            <div className="font-bold text-white flex items-center gap-1.5">
+              <Plus className="h-4 w-4 text-primary" />
+              <span>Statutory Missing Person Entry (Section 173 BNSS)</span>
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              Registers immediate high-priority missing child/person docket. Automatically triggers cellular IMEI tracing and AI trajectory prediction across police grid.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="text-[11px] font-bold text-slate-300 block mb-1">Subject Full Name *</label>
+              <input
+                type="text"
+                required
+                value={newCaseForm.person_name}
+                onChange={(e) => setNewCaseForm({ ...newCaseForm, person_name: e.target.value })}
+                placeholder="e.g. Rahul Verma"
+                className="w-full h-8 px-2.5 rounded-lg border border-border bg-slate-900 text-xs text-white focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[11px] font-bold text-slate-300 block mb-1">Age *</label>
+                <input
+                  type="number"
+                  required
+                  min="1"
+                  max="120"
+                  value={newCaseForm.age}
+                  onChange={(e) => setNewCaseForm({ ...newCaseForm, age: e.target.value })}
+                  placeholder="e.g. 11"
+                  className="w-full h-8 px-2.5 rounded-lg border border-border bg-slate-900 text-xs text-white focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+
+              <div>
+                <label className="text-[11px] font-bold text-slate-300 block mb-1">Gender</label>
+                <select
+                  value={newCaseForm.gender}
+                  onChange={(e) => setNewCaseForm({ ...newCaseForm, gender: e.target.value })}
+                  className="w-full h-8 px-2 rounded-lg border border-border bg-slate-900 text-xs text-white focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  <option value="Female">Female</option>
+                  <option value="Male">Male</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="text-[11px] font-bold text-slate-300 block mb-1">Last Seen Location</label>
+              <input
+                type="text"
+                value={newCaseForm.last_seen_location}
+                onChange={(e) => setNewCaseForm({ ...newCaseForm, last_seen_location: e.target.value })}
+                placeholder="e.g. Rajiv Chowk Gate 2"
+                className="w-full h-8 px-2.5 rounded-lg border border-border bg-slate-900 text-xs text-white focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+
+            <div>
+              <label className="text-[11px] font-bold text-slate-300 block mb-1">Mobile / IMEI (For Signal Ping)</label>
+              <input
+                type="text"
+                value={newCaseForm.imei}
+                onChange={(e) => setNewCaseForm({ ...newCaseForm, imei: e.target.value })}
+                placeholder="e.g. 356789012349999"
+                className="w-full h-8 px-2.5 rounded-lg border border-border bg-slate-900 text-xs text-white focus:outline-none focus:ring-1 focus:ring-primary font-mono"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[11px] font-bold text-slate-300 block mb-1">Physical Clothing &amp; Identification Marks</label>
+            <textarea
+              rows={2}
+              value={newCaseForm.description}
+              onChange={(e) => setNewCaseForm({ ...newCaseForm, description: e.target.value })}
+              placeholder="e.g. Yellow t-shirt, blue denim jeans, black watch, scar on left eyebrow..."
+              className="w-full p-2 rounded-lg border border-border bg-slate-900 text-xs text-white focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
+            <Button size="sm" variant="ghost" type="button" onClick={() => setRegisterModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button size="sm" type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold">
+              Register Docket &amp; Launch Trace
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
       {/* Forensic Search Dossier Modal */}
       <DocumentPreviewModal
         isOpen={dossierModalOpen}
@@ -958,6 +1486,15 @@ export function GuardianTracePage() {
             });
           }
         }}
+      />
+      {/* OmniTrace Satellite Verification Modal */}
+      <OmniTraceSatelliteModal
+        isOpen={satelliteModalOpen}
+        onClose={() => setSatelliteModalOpen(false)}
+        latitude={caseData.last_seen_lat}
+        longitude={caseData.last_seen_lon}
+        locationName={caseData.last_seen_location}
+        reportNumber={caseData.case_number}
       />
     </div>
   );

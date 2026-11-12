@@ -63,10 +63,10 @@ export function EntityResolutionPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-extrabold text-foreground flex items-center gap-2">
-            <GitMerge className="h-6 w-6 text-amber-400" />
-            Human-in-the-Loop Entity Resolution Engine
+        <div className="min-w-0">
+          <h1 className="text-xl font-extrabold text-foreground flex items-center gap-2 flex-wrap">
+            <GitMerge className="h-6 w-6 text-amber-400 shrink-0" />
+            <span>Human-in-the-Loop Entity Resolution Engine</span>
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             Identify duplicate suspect profiles (e.g., &quot;Ramesh Kumar&quot; vs &quot;R. Kumar&quot;) with similarity scores and evidence matching.

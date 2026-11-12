@@ -39,6 +39,7 @@ import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Input } from '../../components/ui/Input';
 import { InsightCard, InsightItem } from './InsightCard';
+import { FALLBACK_25_ANALYTICS } from './fallbackAnalytics';
 import { FIRArchiveModal } from '../cases/FIRArchiveModal';
 import { sound } from '../../utils/soundEffects';
 import { useToast } from '../../components/ui/Toast';
@@ -61,7 +62,7 @@ interface HistoricalFIRRecord {
 export function FIRArchivePage() {
   const toast = useToast();
   const [firs, setFirs] = useState<HistoricalFIRRecord[]>([]);
-  const [analyticsList, setAnalyticsList] = useState<InsightItem[]>([]);
+  const [analyticsList, setAnalyticsList] = useState<InsightItem[]>(FALLBACK_25_ANALYTICS);
   const [selectedCaseForModal, setSelectedCaseForModal] = useState<HistoricalFIRRecord | null>(null);
 
   // Filters
@@ -96,11 +97,15 @@ export function FIRArchivePage() {
     axios
       .get(`${baseURL}/fir-archive/analytics/all`)
       .then((res) => {
-        if (res.data?.analytics) {
+        if (res.data?.analytics && Array.isArray(res.data.analytics) && res.data.analytics.length > 0) {
           setAnalyticsList(res.data.analytics);
+        } else {
+          setAnalyticsList(FALLBACK_25_ANALYTICS);
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        setAnalyticsList(FALLBACK_25_ANALYTICS);
+      });
   }, []);
 
   const handleRunAllAnalytics = () => {
@@ -174,8 +179,8 @@ export function FIRArchivePage() {
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="p-6 rounded-2xl border-2 border-primary/40 bg-gradient-to-r from-primary/10 via-slate-900 to-slate-950 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-1.5 max-w-3xl">
+      <div className="p-6 rounded-2xl border-2 border-primary/40 bg-gradient-to-r from-primary/10 via-slate-900 to-slate-950 shadow-xl flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+        <div className="space-y-1.5 max-w-3xl min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="px-3 py-0.5 rounded-full bg-primary/20 border border-primary/40 text-primary font-mono text-xs font-black uppercase">
               INSTITUTIONAL MEMORY

@@ -247,6 +247,12 @@ backend/data/osm_cache/*.tmp
 backend/data/mobile_evidence/
 backend/data/public_evidence/
 
+# Build caches & terminal artifacts
+.buildx-cache/
+*.buildinfo
+*.log
+
+
 
 
 

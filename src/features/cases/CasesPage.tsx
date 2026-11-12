@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Plus, Search, FolderGit2, Calendar, MapPin, Tag, UserCheck, Filter, Mic, MicOff, RefreshCw, Scale, FileText, Eye, ScrollText, LayoutGrid, Table as TableIcon } from 'lucide-react';
+import { Plus, Search, FolderGit2, Calendar, MapPin, Tag, UserCheck, Filter, Mic, MicOff, RefreshCw, Scale, FileText, Eye, ScrollText, LayoutGrid, Table as TableIcon, Shield } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -131,11 +131,11 @@ export function CasesPage() {
   return (
     <div className="space-y-6">
       {/* Top Action Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-extrabold text-foreground flex items-center gap-2">
-            <FolderGit2 className="h-6 w-6 text-primary" />
-            Investigations & Target Cases Workspace
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="text-xl font-extrabold text-foreground flex items-center gap-2 flex-wrap">
+            <FolderGit2 className="h-6 w-6 text-primary shrink-0" />
+            <span>Investigations &amp; Target Cases Workspace</span>
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             Active criminal investigations, priority tracking, and assigned intelligence dossiers.
@@ -194,6 +194,8 @@ export function CasesPage() {
               {st.replace(/_/g, ' ')}
             </button>
           ))}
+        </div>
+
         <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap justify-between sm:justify-end">
           <div className="flex items-center gap-1 bg-slate-900 border border-border p-0.5 rounded-lg">
             <button
@@ -217,6 +219,19 @@ export function CasesPage() {
               <span className="hidden sm:inline">Cards</span>
             </button>
           </div>
+
+          <Link to="/police-reports">
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-sky-500/40 bg-sky-500/10 text-sky-300 hover:bg-sky-500/20 text-xs font-bold flex items-center gap-1.5"
+              title="Open Citizen Reports Queue awaiting Section 173 BNSS FIR conversion"
+            >
+              <Shield className="h-3.5 w-3.5 text-sky-400" />
+              <span>Citizen Queue</span>
+              <span className="px-1 py-0.2 rounded-full bg-sky-400/20 text-sky-300 text-[9px] font-mono">NEW</span>
+            </Button>
+          </Link>
 
           <Link to="/fir-archive">
             <Button
@@ -272,7 +287,7 @@ export function CasesPage() {
             <tbody className="divide-y divide-border/60 text-slate-300 font-sans">
               {cases?.map((c) => {
                 // Determine whether case has past historical FIR linkages
-                const hasPastFIRs = c.caseNumber.includes('8812') || c.caseNumber.includes('890') || c.caseNumber.includes('101') || c.id === 1 || c.id === 2;
+                const hasPastFIRs = (c.caseNumber && (c.caseNumber.includes('8812') || c.caseNumber.includes('890') || c.caseNumber.includes('101'))) || String(c.id) === '1' || String(c.id) === '2';
                 return (
                   <tr key={c.id} className="hover:bg-slate-900/50 transition-colors">
                     <td className="p-3 font-mono font-extrabold text-primary whitespace-nowrap">
@@ -348,7 +363,7 @@ export function CasesPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {cases?.map((c) => {
-            const hasPastFIRs = c.caseNumber.includes('8812') || c.caseNumber.includes('890') || c.caseNumber.includes('101') || c.id === 1 || c.id === 2;
+            const hasPastFIRs = (c.caseNumber && (c.caseNumber.includes('8812') || c.caseNumber.includes('890') || c.caseNumber.includes('101'))) || String(c.id) === '1' || String(c.id) === '2';
             return (
               <Card key={c.id} className="flex flex-col justify-between hover:border-primary/50 transition-all group">
                 <CardHeader className="space-y-2">

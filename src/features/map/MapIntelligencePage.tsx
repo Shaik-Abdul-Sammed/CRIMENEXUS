@@ -209,6 +209,11 @@ const MAP_STYLES: Record<string, maplibregl.StyleSpecification> = {
         source: 'osm-tiles',
         minzoom: 0,
         maxzoom: 19,
+        paint: {
+          'raster-brightness-max': 0.65,
+          'raster-contrast': 0.22,
+          'raster-saturation': -0.88,
+        },
       },
     ],
   },
@@ -284,7 +289,9 @@ export function MapIntelligencePage() {
   const [selectedLocation, setSelectedLocation] = useState<MapLocation | null>(null);
   const [timelineWaypoints, setTimelineWaypoints] = useState<TimelineWaypoint[]>([]);
   const [activeWaypointIdx, setActiveWaypointIdx] = useState<number | null>(null);
-  const [anprAlertOpen, setAnprAlertOpen] = useState(true);
+  const [anprAlertOpen, setAnprAlertOpen] = useState(false);
+  const [isPoliceDirectoryOpen, setIsPoliceDirectoryOpen] = useState(false);
+  const [mapHeightPreset, setMapHeightPreset] = useState<'compact' | 'normal' | 'tall'>('compact');
   const [forecastData, setForecastData] = useState<ForecastResponse | null>(null);
   const [showHotspots, setShowHotspots] = useState(true);
   const [showPoliceStations, setShowPoliceStations] = useState(true);
@@ -2520,6 +2527,21 @@ export function MapIntelligencePage() {
             <span>Type Location</span>
           </Button>
 
+          {/* Map Display Height Cycle Toggle (Compact / Normal / Tall) */}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              sound.playClickSound();
+              setMapHeightPreset((prev) => (prev === 'compact' ? 'normal' : prev === 'normal' ? 'tall' : 'compact'));
+            }}
+            className="h-8 px-2.5 text-xs font-mono border-border text-muted-foreground hover:text-foreground flex items-center gap-1.5"
+            title={`Current Map View: ${mapHeightPreset.toUpperCase()} (Click to cycle height)`}
+          >
+            <Layers className="h-3.5 w-3.5 text-cyan-400" />
+            <span className="capitalize">{mapHeightPreset} Map</span>
+          </Button>
+
           {/* Feature 3: Fullscreen Toggle */}
           <Button
             size="sm"
@@ -2807,138 +2829,210 @@ export function MapIntelligencePage() {
         </div>
       )}
 
-      {/* Dedicated Police ID & Jurisdictional Units Directory: Which Police ID Represents Whom */}
-      <div className="p-3.5 rounded-xl border border-border/80 bg-card/95 shadow-md space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/40 pb-2.5">
+      {/* Dedicated Police ID & Jurisdictional Units Directory: Collapsible Open/Close Section */}
+      <div className="p-3 rounded-xl border border-border/80 bg-card/95 shadow-md space-y-2.5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/40 pb-2">
           <div className="flex items-center gap-2 flex-wrap">
             <Shield className="h-4 w-4 text-blue-400" />
             <span className="text-xs font-black text-foreground tracking-wide uppercase">
-              POLICE ID & OFFICER DIRECTORY • WHO EACH POLICE ID REPRESENTS
+              POLICE ID & OFFICER DIRECTORY
             </span>
             <Badge variant="outline" className="text-[10px] text-cyan-400 border-cyan-500/40 bg-cyan-950/30">
-              9 Verified Police Commands (POL-01 to POL-09) • 1 Active Criminal Target (CRIM-01)
+              9 Police Commands (POL-01 to POL-09) • 1 Active Criminal Target (CRIM-01)
             </Badge>
           </div>
-          <span className="text-[10px] text-muted-foreground hidden lg:inline font-mono">
-            Official CCTNS Jurisdictional Hierarchy • Click [📍 Locate] or [🚔 Intercept]
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
-          {/* Target CRIM-01: Vikram Malhotra */}
-          <div className="p-2.5 rounded-lg bg-red-950/40 border-2 border-red-500/60 hover:border-red-400 transition-all flex flex-col justify-between space-y-1.5 shadow-lg shadow-red-950/30">
-            <div className="flex items-start justify-between gap-1">
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5 mb-0.5">
-                  <span className="bg-red-900 text-red-200 border border-red-500 font-mono font-black text-[9px] px-1.5 py-0.2 rounded">
-                    CRIM-01
-                  </span>
-                  <span className="text-[10px] font-extrabold text-white truncate">Vikram Malhotra</span>
-                </div>
-                <div className="text-[9px] text-red-300 font-mono">Wanted Syndicate Lead</div>
-              </div>
-              <span className="text-sm">🚨</span>
-            </div>
-            <div className="text-[9px] text-slate-300 space-y-0.5">
-              <div className="flex justify-between">
-                <span>Vehicle:</span>
-                <span className="text-white font-mono font-bold">TS 09 AB 1234</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Locus:</span>
-                <span className="text-red-400 font-mono font-semibold">Yamuna KM 48</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Speed:</span>
-                <span className="text-red-300 font-mono font-bold">118 km/h</span>
-              </div>
-            </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-muted-foreground hidden xl:inline font-mono">
+              Official CCTNS Jurisdictional Units
+            </span>
             <Button
               size="sm"
               variant="outline"
-              className="h-6 text-[10px] w-full font-bold text-red-300 border-red-500/50 hover:bg-red-900/40"
+              onClick={() => {
+                sound.playClickSound();
+                setIsPoliceDirectoryOpen((prev) => !prev);
+              }}
+              className="h-7 text-xs font-bold border-cyan-500/40 text-cyan-300 hover:bg-cyan-950/40 flex items-center gap-1.5 shadow-sm"
+              title={isPoliceDirectoryOpen ? 'Collapse Directory Section' : 'Expand Full 10-Unit Officer Directory'}
+            >
+              <span>{isPoliceDirectoryOpen ? '▲ Close Section' : '▼ Open Station Directory (10)'}</span>
+            </Button>
+          </div>
+        </div>
+
+        {/* When Collapsed: Show compact 1-line horizontal pill preview to save ~250px vertical space */}
+        {!isPoliceDirectoryOpen && (
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5 scrollbar-thin">
+            <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold shrink-0">Quick Target & Units:</span>
+            <button
               onClick={() => {
                 sound.playClickSound();
                 if (mapRef.current) {
                   mapRef.current.flyTo({ center: [77.5510, 28.1402], zoom: 14.5, duration: 800 });
                 }
               }}
+              className="px-2 py-0.5 rounded-full bg-red-950/80 border border-red-500 text-red-200 text-[10px] font-mono font-bold hover:bg-red-900 transition-colors shrink-0 flex items-center gap-1 shadow-sm"
+              title="Target CRIM-01: Vikram Malhotra (Scorpio TS 09 AB 1234)"
             >
-              🎯 Lock Target (CRIM-01)
-            </Button>
+              <span>🎯 CRIM-01: Vikram (118 km/h)</span>
+            </button>
+            {OSM_POLICE_STATIONS.map((stn) => (
+              <button
+                key={stn.policeId}
+                onClick={() => {
+                  sound.playClickSound();
+                  if (mapRef.current) {
+                    mapRef.current.flyTo({ center: [stn.longitude, stn.latitude], zoom: 14.2, duration: 800 });
+                  }
+                }}
+                className="px-2 py-0.5 rounded-full bg-sky-950/60 border border-sky-500/40 text-sky-200 text-[10px] font-mono hover:bg-sky-900 transition-colors shrink-0 flex items-center gap-1"
+                title={`Center map on ${stn.policeId}: ${stn.name} (${stn.officer})`}
+              >
+                <span>🚔 {stn.policeId}: {stn.shortName}</span>
+              </button>
+            ))}
           </div>
+        )}
 
-          {/* Police Station Units: POL-01 to POL-09 */}
-          {OSM_POLICE_STATIONS.map((stn) => (
-            <div
-              key={stn.policeId}
-              className="p-2.5 rounded-lg bg-sky-950/20 border border-sky-500/30 hover:border-sky-400 transition-all flex flex-col justify-between space-y-1.5 shadow-sm"
-            >
-              <div className="flex items-start justify-between gap-1">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="bg-sky-900 text-sky-200 border border-sky-400 font-mono font-black text-[9px] px-1.5 py-0.2 rounded">
-                      {stn.policeId}
-                    </span>
-                    <span className="text-[10px] font-extrabold text-white truncate" title={stn.name}>
-                      {stn.shortName}
-                    </span>
+        {/* When Open: Show Full 10-Card Responsive Grid */}
+        {isPoliceDirectoryOpen && (
+          <div className="space-y-2.5 pt-1 animate-in fade-in slide-in-from-top-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
+              {/* Target CRIM-01: Vikram Malhotra */}
+              <div className="p-2.5 rounded-lg bg-red-950/40 border-2 border-red-500/60 hover:border-red-400 transition-all flex flex-col justify-between space-y-1.5 shadow-lg shadow-red-950/30">
+                <div className="flex items-start justify-between gap-1">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                      <span className="bg-red-900 text-red-200 border border-red-500 font-mono font-black text-[9px] px-1.5 py-0.2 rounded">
+                        CRIM-01
+                      </span>
+                      <span className="text-[10px] font-extrabold text-white truncate">Vikram Malhotra</span>
+                    </div>
+                    <div className="text-[9px] text-red-300 font-mono">Wanted Syndicate Lead</div>
                   </div>
-                  <div className="text-[9px] text-sky-300 font-sans font-semibold truncate" title={stn.officer}>
-                    👮 {stn.officer}
+                  <span className="text-sm">🚨</span>
+                </div>
+                <div className="text-[9px] text-slate-300 space-y-0.5">
+                  <div className="flex justify-between">
+                    <span>Vehicle:</span>
+                    <span className="text-white font-mono font-bold">TS 09 AB 1234</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Locus:</span>
+                    <span className="text-red-400 font-mono font-semibold">Yamuna KM 48</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Speed:</span>
+                    <span className="text-red-300 font-mono font-bold">118 km/h</span>
                   </div>
                 </div>
-                <span className="text-xs">🚔</span>
-              </div>
-              <div className="text-[9px] text-slate-300 space-y-0.5">
-                <div className="flex justify-between">
-                  <span>Callsign:</span>
-                  <span className="text-emerald-300 font-mono font-bold">{stn.callsign}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Role:</span>
-                  <span className="text-slate-400 truncate max-w-[100px]">{stn.rank}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>District:</span>
-                  <span className="text-sky-300 font-mono text-[8px]">{stn.district}</span>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-1 pt-0.5">
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-6 text-[9px] px-1 font-bold text-sky-300 border-sky-500/40 hover:bg-sky-900/40"
+                  className="h-6 text-[10px] w-full font-bold text-red-300 border-red-500/50 hover:bg-red-900/40"
                   onClick={() => {
                     sound.playClickSound();
                     if (mapRef.current) {
-                      mapRef.current.flyTo({ center: [stn.longitude, stn.latitude], zoom: 14.2, duration: 800 });
+                      mapRef.current.flyTo({ center: [77.5510, 28.1402], zoom: 14.5, duration: 800 });
                     }
                   }}
-                  title={`Center map on ${stn.policeId}: ${stn.shortName}`}
                 >
-                  📍 Locate
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-6 text-[9px] px-1 font-bold text-emerald-300 border-emerald-500/40 hover:bg-emerald-900/40"
-                  onClick={() => {
-                    fetchInterceptRoute(28.1402, 77.5510, stn);
-                  }}
-                  title={`Dispatch tactical intercept vector from ${stn.policeId}: ${stn.shortName} (${stn.officer})`}
-                >
-                  🚔 Intercept
+                  🎯 Lock Target (CRIM-01)
                 </Button>
               </div>
+
+              {/* Police Station Units: POL-01 to POL-09 */}
+              {OSM_POLICE_STATIONS.map((stn) => (
+                <div
+                  key={stn.policeId}
+                  className="p-2.5 rounded-lg bg-sky-950/20 border border-sky-500/30 hover:border-sky-400 transition-all flex flex-col justify-between space-y-1.5 shadow-sm"
+                >
+                  <div className="flex items-start justify-between gap-1">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <span className="bg-sky-900 text-sky-200 border border-sky-400 font-mono font-black text-[9px] px-1.5 py-0.2 rounded">
+                          {stn.policeId}
+                        </span>
+                        <span className="text-[10px] font-extrabold text-white truncate" title={stn.name}>
+                          {stn.shortName}
+                        </span>
+                      </div>
+                      <div className="text-[9px] text-sky-300 font-sans font-semibold truncate" title={stn.officer}>
+                        👮 {stn.officer}
+                      </div>
+                    </div>
+                    <span className="text-xs">🚔</span>
+                  </div>
+                  <div className="text-[9px] text-slate-300 space-y-0.5">
+                    <div className="flex justify-between">
+                      <span>Callsign:</span>
+                      <span className="text-emerald-300 font-mono font-bold">{stn.callsign}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Role:</span>
+                      <span className="text-slate-400 truncate max-w-[100px]">{stn.rank}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>District:</span>
+                      <span className="text-sky-300 font-mono text-[8px]">{stn.district}</span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1 pt-0.5">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-6 text-[9px] px-1 font-bold text-sky-300 border-sky-500/40 hover:bg-sky-900/40"
+                      onClick={() => {
+                        sound.playClickSound();
+                        if (mapRef.current) {
+                          mapRef.current.flyTo({ center: [stn.longitude, stn.latitude], zoom: 14.2, duration: 800 });
+                        }
+                      }}
+                      title={`Center map on ${stn.policeId}: ${stn.shortName}`}
+                    >
+                      📍 Locate
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-6 text-[9px] px-1 font-bold text-emerald-300 border-emerald-500/40 hover:bg-emerald-900/40"
+                      onClick={() => {
+                        fetchInterceptRoute(28.1402, 77.5510, stn);
+                      }}
+                      title={`Dispatch tactical intercept vector from ${stn.policeId}: ${stn.shortName} (${stn.officer})`}
+                    >
+                      🚔 Intercept
+                    </Button>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+            <div className="flex justify-end pt-1">
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  sound.playClickSound();
+                  setIsPoliceDirectoryOpen(false);
+                }}
+                className="h-6 text-[10px] text-muted-foreground hover:text-foreground"
+              >
+                ▲ Close Directory
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-3 space-y-4">
-          <Card className="relative h-[620px] max-h-[calc(100vh-14rem)] min-h-[480px] overflow-hidden border-primary/30 bg-slate-950">
+          <Card className={`relative ${
+            mapHeightPreset === 'compact'
+              ? 'h-[440px] sm:h-[460px] lg:h-[480px]'
+              : mapHeightPreset === 'tall'
+              ? 'h-[640px]'
+              : 'h-[540px]'
+          } overflow-hidden border-primary/30 bg-slate-950 transition-all duration-300`}>
             {/* ANPR Vehicle Query Hit Floating Banner */}
             {queryPlate && !dismissQueryPlate && (
               <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-4 py-2 rounded-xl bg-slate-900/95 border-2 border-amber-500 text-white shadow-2xl backdrop-blur-md text-xs font-mono animate-in fade-in max-w-lg">
@@ -3025,28 +3119,28 @@ export function MapIntelligencePage() {
 
             {/* Active Tactical Route Status HUD Banner */}
             {interceptRoute && !measureMode && (!queryPlate || dismissQueryPlate) && (
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 px-4 py-2 rounded-xl bg-slate-900/95 border-2 border-cyan-400 text-white shadow-2xl backdrop-blur-md flex items-center gap-3 animate-in fade-in zoom-in-95 text-xs font-mono max-w-xl">
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 px-4 py-2 rounded-xl bg-slate-900/95 border-2 border-cyan-400 text-white shadow-2xl backdrop-blur-md flex items-center gap-3 animate-in fade-in zoom-in-95 text-xs font-mono max-w-2xl w-auto">
                 <span className="h-2.5 w-2.5 rounded-full bg-cyan-400 animate-ping shrink-0" />
-                <div className="flex-1 truncate">
-                  <div className="flex items-center gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-extrabold text-cyan-300">
                       ⚡ TACTICAL INTERCEPT ROUTE: {interceptRoute.distance_km} km • ~{interceptRoute.duration_minutes}m
                     </span>
-                    <span className="bg-cyan-950 text-cyan-300 text-[9px] px-1.5 py-0.2 rounded border border-cyan-500/40">
+                    <span className="bg-cyan-950 text-cyan-300 text-[9px] px-1.5 py-0.2 rounded border border-cyan-500/40 shrink-0">
                       VECTOR LOCKED
                     </span>
                     {interceptRoute.distance_km > 100 && (
                       <button
                         onClick={handleInterceptFromPatrolUnit}
-                        className="px-2 py-0.5 rounded bg-amber-500/30 text-amber-200 border border-amber-400/50 hover:bg-amber-500/40 text-[9px] font-sans font-bold flex items-center gap-1 animate-pulse"
+                        className="px-2 py-0.5 rounded bg-amber-500/30 text-amber-200 border border-amber-400/50 hover:bg-amber-500/40 text-[9px] font-sans font-bold flex items-center gap-1 animate-pulse shrink-0"
                         title="You are currently located far from Delhi/NCR. Click to snap tactical interceptor to on-scene squad PCR-04 at Yamuna Expressway (2.6 km)"
                       >
                         ⚡ Snap to NCR Squad (2.6 km)
                       </button>
                     )}
                   </div>
-                  <div className="text-[10px] text-slate-300 truncate mt-0.5">
-                    From <strong className="text-white">{interceptRoute.police_station}</strong> ➔ Target Scorpio
+                  <div className="text-[11px] text-slate-300 mt-0.5 break-words">
+                    From <strong className="text-white">{interceptRoute.police_station}</strong> ➔ Target TS 09 AB 1234 (Scorpio)
                   </div>
                 </div>
                 <button

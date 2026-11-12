@@ -20,6 +20,22 @@ import {
   Scale,
   Shield,
   FileText,
+  BookOpen,
+  DollarSign,
+  Download,
+  Landmark,
+  FileSpreadsheet,
+  ShieldAlert,
+  Cpu,
+  AlertCircle,
+  Check,
+  Copy,
+  Printer,
+  Car,
+  Radio,
+  UserCheck,
+  Lock,
+  ChevronRight,
 } from 'lucide-react';
 import cytoscape from 'cytoscape';
 import { useInvestigationDetail, useCaseEvidence, useEntities, useNetworkGraph } from '../../hooks/useIntelligenceApi';
@@ -41,11 +57,37 @@ export function CaseDetailPage() {
   const { data: entities } = useEntities(id);
   const { data: network } = useNetworkGraph(id);
 
-  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'TIMELINE' | 'EVIDENCE' | 'ENTITIES' | 'GRAPH'>('OVERVIEW');
+  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'TIMELINE' | 'EVIDENCE' | 'ENTITIES' | 'GRAPH' | 'BNS_CONCORDANCE' | 'FINANCIAL_FLOW'>('OVERVIEW');
   const [downloadingBundle, setDownloadingBundle] = useState(false);
   const [previewManifestOpen, setPreviewManifestOpen] = useState(false);
   const [previewDossierOpen, setPreviewDossierOpen] = useState(false);
   const [assignedIO, setAssignedIO] = useState<string>('Inspector Rajesh Sharma (Cyber Cell)');
+
+  // Realistic Intelligence Modals & States
+  const [bnsSearchQuery, setBnsSearchQuery] = useState('');
+  const [chargesheetModalOpen, setChargesheetModalOpen] = useState(false);
+  const [bailOppositionModalOpen, setBailOppositionModalOpen] = useState(false);
+  const [debitFreezeModalOpen, setDebitFreezeModalOpen] = useState(false);
+
+  const BNS_CONCORDANCE_DATA = [
+    { bns: 'Section 303', ipc: 'Section 379', title: 'Theft (General & Snatching)', bailable: 'Non-Bailable', cognizable: 'Cognizable', sentence: 'Up to 3 years or fine or community service' },
+    { bns: 'Section 304', ipc: 'Section 380/382', title: 'Snatching & Extortion', bailable: 'Non-Bailable', cognizable: 'Cognizable', sentence: 'Up to 3 years rigorous imprisonment' },
+    { bns: 'Section 318', ipc: 'Section 420', title: 'Cheating & Dishonestly Inducing Delivery', bailable: 'Non-Bailable', cognizable: 'Cognizable', sentence: 'Up to 7 years imprisonment and fine' },
+    { bns: 'Section 111', ipc: 'MCOCA / Special Acts', title: 'Organized Crime & Syndicate Operations', bailable: 'Non-Bailable', cognizable: 'Cognizable', sentence: '5 years to Life or Death Penalty' },
+    { bns: 'Section 61', ipc: 'Section 120B', title: 'Criminal Conspiracy', bailable: 'Non-Bailable', cognizable: 'Cognizable', sentence: 'Same as substantive offense or 6 months' },
+    { bns: 'Section 115', ipc: 'Section 323', title: 'Voluntarily Causing Hurt', bailable: 'Bailable', cognizable: 'Non-Cognizable', sentence: 'Up to 1 year or ₹1,000 fine' },
+    { bns: 'Section 117', ipc: 'Section 325/326', title: 'Voluntarily Causing Grievous Hurt', bailable: 'Bailable (Non-weapon)', cognizable: 'Cognizable', sentence: 'Up to 7 years and fine' },
+    { bns: 'Section 137', ipc: 'Section 363', title: 'Kidnapping & Abduction', bailable: 'Non-Bailable', cognizable: 'Cognizable', sentence: 'Up to 7 years and fine' },
+    { bns: 'Section 85', ipc: 'Section 498A', title: 'Cruelty by Husband or Relatives', bailable: 'Non-Bailable', cognizable: 'Cognizable', sentence: 'Up to 3 years and fine' },
+    { bns: 'Section 324', ipc: 'Section 427', title: 'Mischief & Public Property Damage', bailable: 'Bailable', cognizable: 'Cognizable', sentence: 'Up to 2 years or fine' },
+  ];
+
+  const PMLA_TRANSACTIONS = [
+    { txId: 'TXN-9021-HDFC', from: 'Mule Account A (Sunil Verma)', to: 'Layering Current Acc (Apex Exports)', amount: '₹48,500', method: 'IMPS', time: '14:22 IST', flag: 'Smurfing (<₹50k threshold)' },
+    { txId: 'TXN-9022-ICICI', from: 'Mule Account B (Ravi Kishan)', to: 'Layering Current Acc (Apex Exports)', amount: '₹49,200', method: 'NEFT', time: '14:35 IST', flag: 'Smurfing (<₹50k threshold)' },
+    { txId: 'TXN-9023-SBI', from: 'Mule Account C (Pooja Gupta)', to: 'Layering Current Acc (Apex Exports)', amount: '₹47,800', method: 'UPI', time: '14:48 IST', flag: 'Smurfing (<₹50k threshold)' },
+    { txId: 'TXN-9024-AXIS', from: 'Layering Current Acc (Apex Exports)', to: 'Offshore Crypto Gateway', amount: '₹1,45,500', method: 'RTGS', time: '16:10 IST', flag: 'Funds Aggregation & Hawala Exfiltration' },
+  ];
 
   const cyInstanceRef = React.useRef<cytoscape.Core | null>(null);
   const embeddedGraphContainerRef = React.useRef<HTMLDivElement>(null);
@@ -218,6 +260,42 @@ export function CaseDetailPage() {
                 ⚡ Statutory FIR (BNSS)
               </Button>
             </Link>
+            <Button
+              variant="outline"
+              onClick={() => {
+                sound.playClickSound();
+                setChargesheetModalOpen(true);
+              }}
+              className="border-primary/40 text-primary-foreground bg-primary/20 hover:bg-primary/30 flex items-center gap-1.5 font-semibold"
+              title="Draft formal police chargesheet under Section 193 BNSS"
+            >
+              <FileSpreadsheet className="h-4 w-4 text-cyan-400" />
+              <span>Charge-Sheet (Sec 193)</span>
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                sound.playClickSound();
+                setBailOppositionModalOpen(true);
+              }}
+              className="border-red-500/40 text-red-300 hover:bg-red-950/20 flex items-center gap-1.5 font-semibold"
+              title="Generate Bail Opposition Fact Sheet for Public Prosecutor under Sec 480 BNSS"
+            >
+              <ShieldAlert className="h-4 w-4 text-red-400" />
+              <span>Bail Opposition Brief</span>
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                sound.playClickSound();
+                setDebitFreezeModalOpen(true);
+              }}
+              className="border-amber-500/40 text-amber-300 hover:bg-amber-950/20 flex items-center gap-1.5 font-semibold"
+              title="Issue Bank Debit Freeze Notice under Section 106 BNSS / 102 CrPC"
+            >
+              <Landmark className="h-4 w-4 text-amber-400" />
+              <span>Debit Freeze Directive</span>
+            </Button>
             <div className="h-5 w-px bg-border/60 mx-1 hidden sm:block" />
             <Button
               variant="outline"
@@ -317,6 +395,8 @@ export function CaseDetailPage() {
       <div className="flex items-center gap-2 border-b border-border overflow-x-auto whitespace-nowrap scrollbar-none pb-0.5">
         {[
           { id: 'OVERVIEW', label: 'Overview & Witness AI', icon: FolderGit2, count: null },
+          { id: 'BNS_CONCORDANCE', label: 'BNS ⇄ IPC Legal Concordance', icon: BookOpen, count: '10 Sections' },
+          { id: 'FINANCIAL_FLOW', label: 'PMLA Smurfing & Hawala Flow', icon: DollarSign, count: '4 Alerts' },
           { id: 'TIMELINE', label: 'Case History Timeline (WORM)', icon: Clock, count: null },
           { id: 'EVIDENCE', label: 'Evidence Ledger', icon: FileCheck2, count: evidence?.length ?? 0 },
           { id: 'ENTITIES', label: 'Target Entities', icon: Users2, count: entities?.length ?? 0 },
@@ -327,7 +407,7 @@ export function CaseDetailPage() {
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as 'OVERVIEW' | 'TIMELINE' | 'EVIDENCE' | 'ENTITIES' | 'GRAPH')}
+              onClick={() => setActiveTab(tab.id as 'OVERVIEW' | 'TIMELINE' | 'EVIDENCE' | 'ENTITIES' | 'GRAPH' | 'BNS_CONCORDANCE' | 'FINANCIAL_FLOW')}
               className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold rounded-t-lg border-b-2 transition-all shrink-0 ${
                 isActive
                   ? 'border-primary text-primary bg-primary/10 font-bold'
@@ -402,6 +482,61 @@ export function CaseDetailPage() {
 
             {/* Feature 5: Automated Witness Interview Summarizer & Feature 9: Voice Dictation */}
             <WitnessSummarizerModal caseNumber={caseDetail.caseNumber} />
+
+            {/* Cell Tower Azimuth & Highway ANPR Intercept Correlator */}
+            <Card className="border-border/70 shadow-lg">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-bold flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <Radio className="h-4 w-4 text-cyan-400" />
+                    Cell Tower Azimuth &amp; Highway ANPR Correlator
+                  </span>
+                  <Badge variant="outline" className="text-[10px] font-mono border-cyan-500/40 text-cyan-300">
+                    CDR FUSED
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] font-mono">
+                  <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
+                    <span className="text-muted-foreground block text-[9px] uppercase">Tower Triangulation</span>
+                    <span className="text-white font-bold block truncate">Sector 4 CP (Azimuth 120°)</span>
+                    <span className="text-[10px] text-emerald-400">Accuracy: ±42m</span>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
+                    <span className="text-muted-foreground block text-[9px] uppercase">FASTag ANPR Pass</span>
+                    <span className="text-white font-bold block truncate">Barakhamba Toll (Lane 3)</span>
+                    <span className="text-[10px] text-cyan-400">Plate: DL-10-CE-4412</span>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
+                    <span className="text-muted-foreground block text-[9px] uppercase">Burner SIM Detection</span>
+                    <span className="text-amber-300 font-bold block truncate">IMSI Swap Flagged</span>
+                    <span className="text-[10px] text-amber-400">New IMSI activated 14:10</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Witness Credibility & Statement Discrepancy Analyzer */}
+            <Card className="border-border/70 shadow-lg">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-bold flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <UserCheck className="h-4 w-4 text-emerald-400" />
+                    Witness Statement Credibility &amp; Discrepancy Analyzer
+                  </span>
+                  <span className="text-xs font-mono font-bold text-emerald-400">92% Concordance</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-xs">
+                <div className="p-2.5 rounded-lg bg-emerald-950/20 border border-emerald-500/30 text-emerald-200 text-[11px] leading-relaxed">
+                  <b>Cross-Corroboration Match:</b> Statement of Witness 01 (Shopkeeper, P-01) matches Witness 02 (Cab Driver, P-02) on incident time (14:32 IST) and 2 male suspects wearing black helmets.
+                </div>
+                <div className="p-2.5 rounded-lg bg-amber-950/20 border border-amber-500/30 text-amber-200 text-[11px] leading-relaxed">
+                  <b>Minor Discrepancy Flagged:</b> Witness 01 reported motorcycle as <i>"Matte Black Bajaj Pulsar"</i>; Witness 02 noted <i>"Midnight Navy Blue with alloy wheels"</i>. Optical CCTV enhancement confirms Midnight Navy Blue.
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           <div className="space-y-6">
@@ -451,6 +586,185 @@ export function CaseDetailPage() {
             </Card>
           </div>
         </div>
+      )}
+
+      {/* BNS ⇄ IPC Legal Concordance Tab */}
+      {activeTab === 'BNS_CONCORDANCE' && (
+        <Card className="p-6 space-y-5 border-border/80 shadow-xl">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5 text-primary" />
+                <h3 className="text-base font-extrabold text-foreground">
+                  Bharatiya Nyaya Sanhita (BNS 2023) ⇄ IPC Concordance Matrix
+                </h3>
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Statutory cross-reference tool for investigating officers and public prosecutors. Real-time section translation.
+              </p>
+            </div>
+
+            <div className="w-full sm:w-72">
+              <input
+                type="text"
+                value={bnsSearchQuery}
+                onChange={(e) => setBnsSearchQuery(e.target.value)}
+                placeholder="Search BNS section, IPC section or offense..."
+                className="w-full h-9 px-3 rounded-lg border border-border bg-slate-900 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs text-left">
+              <thead>
+                <tr className="border-b border-border/60 text-[11px] font-mono uppercase text-muted-foreground bg-muted/20">
+                  <th className="py-2.5 px-3">BNS 2023 Section</th>
+                  <th className="py-2.5 px-3">IPC 1860 Equiv.</th>
+                  <th className="py-2.5 px-3">Offense Classification</th>
+                  <th className="py-2.5 px-3">Cognizance</th>
+                  <th className="py-2.5 px-3">Bail Classification</th>
+                  <th className="py-2.5 px-3">Statutory Punishment</th>
+                  <th className="py-2.5 px-3 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/40">
+                {BNS_CONCORDANCE_DATA.filter((row) =>
+                  bnsSearchQuery === '' ||
+                  row.bns.toLowerCase().includes(bnsSearchQuery.toLowerCase()) ||
+                  row.ipc.toLowerCase().includes(bnsSearchQuery.toLowerCase()) ||
+                  row.title.toLowerCase().includes(bnsSearchQuery.toLowerCase())
+                ).map((row, idx) => (
+                  <tr key={idx} className="hover:bg-muted/30 transition-colors">
+                    <td className="py-3 px-3 font-mono font-bold text-primary">{row.bns}</td>
+                    <td className="py-3 px-3 font-mono text-cyan-400 font-semibold">{row.ipc}</td>
+                    <td className="py-3 px-3 font-semibold text-foreground">{row.title}</td>
+                    <td className="py-3 px-3">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-blue-950/40 border border-blue-500/30 text-blue-300">
+                        {row.cognizable}
+                      </span>
+                    </td>
+                    <td className="py-3 px-3">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
+                        row.bailable.includes('Non-Bailable')
+                          ? 'bg-red-950/40 border-red-500/40 text-red-300'
+                          : 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300'
+                      }`}>
+                        {row.bailable}
+                      </span>
+                    </td>
+                    <td className="py-3 px-3 text-slate-300 font-mono text-[11px]">{row.sentence}</td>
+                    <td className="py-3 px-3 text-right">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          sound.playSuccessChime();
+                          toast.success(`${row.bns} (${row.title}) appended to Case Chargesheet draft.`, 'Section Applied');
+                        }}
+                        className="h-7 text-[10px] font-bold text-primary hover:bg-primary/20"
+                      >
+                        + Add to Chargesheet
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
+
+      {/* PMLA Financial Smurfing & Hawala Flow Tab */}
+      {activeTab === 'FINANCIAL_FLOW' && (
+        <Card className="p-6 space-y-5 border-border/80 shadow-xl">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <DollarSign className="h-5 w-5 text-amber-400" />
+                <h3 className="text-base font-extrabold text-foreground">
+                  PMLA Financial Smurfing &amp; Hawala Flow Analyzer
+                </h3>
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Detects micro-structuring under ₹50,000 threshold to evade bank Cash Transaction Reporting (CTR). Section 3 &amp; 4 PMLA.
+              </p>
+            </div>
+
+            <Button
+              size="sm"
+              onClick={() => {
+                sound.playAlertBeep();
+                setDebitFreezeModalOpen(true);
+              }}
+              className="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-1.5"
+            >
+              <Landmark className="h-4 w-4" />
+              <span>Issue Sec 106 BNSS Freeze Notice</span>
+            </Button>
+          </div>
+
+          {/* Metric Cards Strip */}
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+              <span className="text-[10px] font-mono uppercase text-muted-foreground block">Total Laundered Volume</span>
+              <span className="text-base font-black text-amber-400 font-mono">₹2,91,000</span>
+            </div>
+            <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+              <span className="text-[10px] font-mono uppercase text-muted-foreground block">Identified Mule Accounts</span>
+              <span className="text-base font-black text-white font-mono">3 Mules (HDFC, ICICI, SBI)</span>
+            </div>
+            <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+              <span className="text-[10px] font-mono uppercase text-muted-foreground block">Layering Window</span>
+              <span className="text-base font-black text-cyan-400 font-mono">&lt; 1 Hour 48 Mins</span>
+            </div>
+            <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+              <span className="text-[10px] font-mono uppercase text-muted-foreground block">Exfiltration Endpoint</span>
+              <span className="text-base font-black text-red-400 font-mono">Offshore Crypto Gateway</span>
+            </div>
+          </div>
+
+          {/* Smurfing Ledger Table */}
+          <div className="space-y-3 pt-2">
+            <h4 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
+              <Scale className="h-4 w-4 text-amber-400" />
+              <span>Identified Structuring Transactions (Forensic Banking Audit)</span>
+            </h4>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs text-left font-mono">
+                <thead>
+                  <tr className="border-b border-border/60 text-[10px] uppercase text-muted-foreground bg-muted/20">
+                    <th className="py-2 px-3">Transaction ID</th>
+                    <th className="py-2 px-3">Origin Mule Entity</th>
+                    <th className="py-2 px-3">Destination Entity</th>
+                    <th className="py-2 px-3">Amount</th>
+                    <th className="py-2 px-3">Channel</th>
+                    <th className="py-2 px-3">Timestamp</th>
+                    <th className="py-2 px-3">AML / PMLA Flag</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/40">
+                  {PMLA_TRANSACTIONS.map((tx, idx) => (
+                    <tr key={idx} className="hover:bg-muted/20">
+                      <td className="py-2.5 px-3 font-bold text-primary">{tx.txId}</td>
+                      <td className="py-2.5 px-3 text-slate-300">{tx.from}</td>
+                      <td className="py-2.5 px-3 text-slate-300">{tx.to}</td>
+                      <td className="py-2.5 px-3 font-bold text-amber-400">{tx.amount}</td>
+                      <td className="py-2.5 px-3 text-slate-400">{tx.method}</td>
+                      <td className="py-2.5 px-3 text-slate-400">{tx.time}</td>
+                      <td className="py-2.5 px-3">
+                        <span className="px-2 py-0.5 rounded text-[10px] bg-red-950/40 border border-red-500/30 text-red-300">
+                          {tx.flag}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </Card>
       )}
 
       {/* Feature 4: Visual Case History Timeline Tab */}
@@ -658,6 +972,155 @@ Any alteration of encrypted zip contents will invalidate the cryptographic hash.
             crimeType: caseDetail.crimeType || 'Syndicate Investigation',
             suspectName: caseDetail.title,
             jurisdiction: caseDetail.locationName || 'Delhi NCR',
+          }}
+        />
+      )}
+
+      {/* Statutory Chargesheet Draft Modal (Section 193 BNSS) */}
+      {caseDetail && (
+        <DocumentPreviewModal
+          isOpen={chargesheetModalOpen}
+          onClose={() => setChargesheetModalOpen(false)}
+          title={`Police Final Report / Charge-Sheet (Sec 193 BNSS): ${caseDetail.caseNumber}`}
+          subtitle={`Before the Court of Chief Metropolitan Magistrate • Case: ${caseDetail.title}`}
+          documentType="chargesheet"
+          caseNumber={caseDetail.caseNumber}
+          fileName={`ChargeSheet_Sec193_BNSS_${caseDetail.caseNumber}.txt`}
+          textContent={`================================================================================
+IN THE COURT OF CHIEF METROPOLITAN MAGISTRATE, NEW DELHI
+FINAL REPORT / CHARGE-SHEET UNDER SECTION 193 BHARATIYA NAGARIK SURAKSHA SANHITA, 2023
+================================================================================
+1. POLICE STATION      : Cyber Crime Police Station, Sector 20
+2. FIR / CASE NO.      : ${caseDetail.caseNumber}
+3. DATE OF INCIDENT    : ${new Date(caseDetail.createdAt).toLocaleDateString('en-IN')}
+4. SECTIONS APPLIED    : Sections 303, 318, 111, 61 Bharatiya Nyaya Sanhita (BNS 2023)
+                         read with Section 66D Information Technology Act, 2000
+5. ACCUSED PERSONS     : 
+   (a) Sunil Verma (Mule Account Operative) - Custody Remand Active
+   (b) Ravi Kishan (Crypto Hawala Conduit) - Under Interception BOLO
+6. PARTICULARS OF VICTIM: State & Aggrieved Public Deposit Holders
+
+--------------------------------------------------------------------------------
+BRIEF FACTS & STATEMENT OF OFFENSE UNDER SEC 193(3) BNSS
+--------------------------------------------------------------------------------
+Investigation reveals that the accused entered into an organized criminal syndicate
+to defraud citizens through spoofed UPI gateways and subsequently laundered proceeds
+via smurfing into layering accounts. Digital forensic artifacts have been extracted,
+hashed with SHA-256, and certified under Section 63 Bharatiya Sakshya Adhiniyam, 2023.
+
+PROSECUTION WITNESSES:
+- PW-01: Duty Officer (Registration of FIR)
+- PW-02: Forensic Cyber Specialist (Digital Extraction & Spectrogram)
+- PW-03: Branch Manager (Bank Statement & Freeze Compliance)
+
+PRAYER:
+It is respectfully prayed that this Hon'ble Court may take cognizance of the offenses
+and issue process against the accused persons to stand trial in accordance with law.
+
+SUBMITTED BY:
+${assignedIO}
+Investigating Officer, Cyber Crime PS`}
+          metadata={{
+            ioName: assignedIO,
+            policeStation: caseDetail.locationName || 'Cyber Crime Police Station',
+            suspectName: caseDetail.title,
+            crimeType: 'Statutory Chargesheet (Sec 193 BNSS)',
+            hash: '7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d',
+          }}
+        />
+      )}
+
+      {/* Bail Opposition Fact Sheet Modal (Public Prosecutor Brief) */}
+      {caseDetail && (
+        <DocumentPreviewModal
+          isOpen={bailOppositionModalOpen}
+          onClose={() => setBailOppositionModalOpen(false)}
+          title={`Bail Opposition Fact Sheet (Public Prosecutor): ${caseDetail.caseNumber}`}
+          subtitle={`Statutory Opposition under Section 480 BNSS • High Tampering / Flight Risk`}
+          documentType="bail_opposition"
+          caseNumber={caseDetail.caseNumber}
+          fileName={`Bail_Opposition_Brief_${caseDetail.caseNumber}.txt`}
+          textContent={`================================================================================
+OFFICE OF THE DIRECTOR OF PROSECUTION • NCT OF DELHI
+STATUTORY BAIL OPPOSITION FACT SHEET (SECTION 480 BNSS 2023)
+================================================================================
+CASE REFERENCE   : ${caseDetail.caseNumber}
+ACCUSED TARGET   : Accused Syndicate Operatives
+HEARING BENCH    : Sessions Court / Special PMLA Court
+
+GROUNDS FOR IMMEDIATE BAIL REJECTION:
+1. FLIGHT RISK & DESTRUCTION OF DIGITAL EVIDENCE:
+   - The accused operates burner SIMs and has access to offshore Hawala accounts.
+   - High risk of fleeing the jurisdiction beyond Interpol Red Notice reach.
+
+2. SEVERITY OF ECONOMIC SYNDICATE OFFENSE:
+   - Offenses invoked under Section 111 BNS (Organized Crime) carry minimum 5 years
+     to Life Imprisonment. Supreme Court precedent mandates strict bail deterrence.
+
+3. WITNESS INTIMIDATION & EVIDENCE TAMPERING:
+   - Critical co-conspirators and bank branch mules are yet to undergo formal
+     Section 183 BNSS judicial statement recording. Liberty to accused would prejudice trial.
+
+4. PENDING RECOVERIES UNDER SECTION 23 BSA:
+   - The electronic ledger laptops and encrypted Cold Wallets are pending recovery
+     based on disclosure memos under Section 23 Bharatiya Sakshya Adhiniyam.
+
+RECOMMENDATION:
+Public Prosecutor to strongly object to regular or interim bail under Section 480 BNSS.`}
+          metadata={{
+            ioName: assignedIO,
+            policeStation: caseDetail.locationName || 'Cyber Crime Police Station',
+            suspectName: caseDetail.title,
+            crimeType: 'Bail Opposition Fact Sheet (Sec 480 BNSS)',
+            hash: '4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b',
+          }}
+        />
+      )}
+
+      {/* Bank Debit Freeze Directive Modal (Sec 106 BNSS / 102 CrPC) */}
+      {caseDetail && (
+        <DocumentPreviewModal
+          isOpen={debitFreezeModalOpen}
+          onClose={() => setDebitFreezeModalOpen(false)}
+          title={`Urgent Bank Debit Freeze Directive: ${caseDetail.caseNumber}`}
+          subtitle={`Statutory Order under Section 106 BNSS / Section 102 CrPC to Bank Branch Managers`}
+          documentType="debit_freeze"
+          caseNumber={caseDetail.caseNumber}
+          fileName={`Bank_Debit_Freeze_Notice_${caseDetail.caseNumber}.txt`}
+          textContent={`================================================================================
+OFFICE OF THE INVESTIGATING OFFICER • STATE CYBER CRIME CELL
+ORDER FOR SEIZURE / FREEZING OF BANK ACCOUNT UNDER SECTION 106 BNSS (102 CrPC)
+================================================================================
+TO:
+The Branch Manager,
+Authorized Scheduled Commercial Banks (HDFC, ICICI, State Bank of India, Axis Bank)
+
+SUBJECT: IMMEDIATE DEBIT-FREEZE OF PROCEEDS OF CRIME IN CASE ${caseDetail.caseNumber}
+
+Sir/Madam,
+Whereas investigation into the above-referenced criminal matter has established that
+illicit funds generated through organized cyber extortion have been structured and
+deposited into the following accounts:
+
+1. A/C NO: 501009823412 • HDFC Bank • Holder: Mule Account A
+2. A/C NO: 002901584912 • ICICI Bank • Holder: Mule Account B
+3. A/C NO: 389102948123 • State Bank of India • Holder: Mule Account C
+
+You are hereby DIRECTED under Section 106 of Bharatiya Nagarik Suraksha Sanhita, 2023
+to immediately mark a FULL DEBIT FREEZE on the aforementioned accounts with zero delay.
+
+Failure to comply with this statutory directive shall invite penal proceedings under
+Section 223 BNS (Disobedience to order duly promulgated by public servant).
+
+SEAL & SIGNATURE:
+${assignedIO}
+Investigating Officer, Cyber Crime PS`}
+          metadata={{
+            ioName: assignedIO,
+            policeStation: caseDetail.locationName || 'Cyber Crime Police Station',
+            suspectName: caseDetail.title,
+            crimeType: 'Bank Account Freeze Directive (Sec 106 BNSS)',
+            hash: '2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c',
           }}
         />
       )}

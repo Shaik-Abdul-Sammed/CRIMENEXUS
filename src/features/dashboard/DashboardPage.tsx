@@ -397,16 +397,16 @@ export function DashboardPage() {
 
           {/* Analytical & Compliance Workspaces */}
           <div className="flex items-center gap-2 flex-wrap">
-            <Link to="/roadmap">
+            <Link to="/guardian-trace">
               <Button
                 size="sm"
-                className="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50 font-bold text-xs flex items-center gap-1.5 whitespace-nowrap shrink-0 shadow-sm"
-                title="Explore 100 Sovereign Technical Specifications & Next 96 Engineering Roadmap"
+                className="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/50 font-bold text-xs flex items-center gap-1.5 whitespace-nowrap shrink-0 shadow-sm"
+                title="Open Guardian Trace Multimodal Missing Child Search & Rescue HUD"
               >
-                <Compass className="h-4 w-4 text-amber-400" />
-                <span>Next 96 Roadmap</span>
-                <span className="px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-200 text-[9px] font-mono font-black border border-amber-400/30">
-                  100 SPECS
+                <ShieldAlert className="h-4 w-4 text-emerald-400" />
+                <span>Guardian Trace</span>
+                <span className="px-1.5 py-0.2 rounded bg-emerald-400/20 text-emerald-200 text-[9px] font-mono font-black border border-emerald-400/30">
+                  RESCUE HUD
                 </span>
               </Button>
             </Link>
@@ -1034,7 +1034,7 @@ export function DashboardPage() {
         title="Court-Ready Forensic Dossier & Case Synthesis"
         subtitle="FIR-2026-CRIME-890 • Operation Shadow Vault • Section 63 BSA Certified"
         caseNumber="FIR-2026-CRIME-890"
-        pdfUrl={`${import.meta.env.VITE_API_BASE_URL || '/api/v1'}/cases/export/dossier-pdf?case_number=FIR-2026-CRIME-890&title=Illicit%20Hawala%20Financial%20Network%20%26%20Extortion%20Syndicate`}
+        pdfUrl="/CRIMENEXUS_Police_Department_Deployment_Dossier.pdf"
         fileName="Court_Ready_Dossier_FIR-2026-CRIME-890.pdf"
         metadata={{
           ioName: 'Inspector V. K. Sharma (Special Cell)',

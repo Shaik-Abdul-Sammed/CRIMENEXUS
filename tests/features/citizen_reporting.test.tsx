@@ -1,7 +1,6 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import axios from 'axios';
 import { CitizenReportingPage } from '../../src/features/citizen/CitizenReportingPage';
@@ -16,46 +15,48 @@ describe('CitizenReportingPage Feature Tests', () => {
     vi.clearAllMocks();
   });
 
-  it('renders the 6 primary crime categories and title', () => {
+  it('renders the crime categories and citizen sentinel title', () => {
     renderWithRouter(<CitizenReportingPage />);
 
-    expect(screen.getByText(/Report a Crime Safely & Anonymously/i)).toBeInTheDocument();
+    expect(screen.getByText(/Report a Crime Safely & Directly to Police/i)).toBeInTheDocument();
     expect(screen.getByText(/DPDP Act 2023 Compliant/i)).toBeInTheDocument();
 
-    // 6 Crime Category Cards
-    expect(screen.getByText('Theft / Burglary')).toBeInTheDocument();
-    expect(screen.getByText('Assault / Violence')).toBeInTheDocument();
-    expect(screen.getByText('Cyber Fraud')).toBeInTheDocument();
-    expect(screen.getByText('Harassment / Stalking')).toBeInTheDocument();
-    expect(screen.getByText('Vandalism / Property')).toBeInTheDocument();
-    expect(screen.getByText('Other Cognizable Offence')).toBeInTheDocument();
+    // Key Crime Category Cards
+    expect(screen.getByText('Theft & Snatching')).toBeInTheDocument();
+    expect(screen.getByText('Cyber Financial Fraud')).toBeInTheDocument();
+    expect(screen.getByText('Physical Assault & Hurt')).toBeInTheDocument();
+    expect(screen.getByText('Women Safety & Stalking')).toBeInTheDocument();
+    expect(screen.getByText('Public Property Damage')).toBeInTheDocument();
   });
 
-  it('toggles anonymous mode and hides personal contact fields', async () => {
+  it('toggles anonymous mode and reveals reporter contact fields', async () => {
     renderWithRouter(<CitizenReportingPage />);
 
-    // By default, anonymous mode is true (safety by default)
-    expect(screen.getByText(/Anonymous Reporting Active/i)).toBeInTheDocument();
-    expect(screen.queryByPlaceholderText(/Inspector Vikram or Civilian Name/i)).not.toBeInTheDocument();
+    // By default, anonymous mode is false (input unchecked)
+    expect(screen.getByPlaceholderText(/Your name/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/\+91 98765 43210/i)).toBeInTheDocument();
 
-    // Toggle anonymous mode off to reveal personal contact fields
-    const anonToggle = screen.getByRole('checkbox', { name: /toggle-anonymous-reporting/i });
+    // Toggle anonymous mode ON
+    const anonToggle = screen.getByRole('checkbox');
     fireEvent.click(anonToggle);
 
-    // Reporter contact fields should now be visible
-    expect(screen.getByPlaceholderText(/Inspector Vikram or Civilian Name/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/10-digit mobile number/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/your.email@example.com/i)).toBeInTheDocument();
+    // Reporter contact fields should now be concealed under informant privilege
+    expect(screen.getByText(/Informant Privilege Active/i)).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText(/Your name/i)).not.toBeInTheDocument();
   });
 
-  it('enforces character count and updates description', async () => {
+  it('runs intelligent NLP quality engine and updates description', async () => {
     renderWithRouter(<CitizenReportingPage />);
 
-    const textarea = screen.getByPlaceholderText(/Provide chronological details/i);
-    fireEvent.change(textarea, { target: { value: 'Suspicious vehicle observed near Sector 62 bank ATM.' } });
+    const textarea = screen.getByPlaceholderText(/Provide objective facts in any language or slang/i);
+    fireEvent.change(textarea, { target: { value: 'bhai mera phone chori ho gaya rajiv chowk gate 2 pe 3 baje' } });
 
-    expect(textarea).toHaveValue('Suspicious vehicle observed near Sector 62 bank ATM.');
-    expect(screen.getByText(/\/ 1000 characters/i)).toBeInTheDocument();
+    expect(textarea).toHaveValue('bhai mera phone chori ho gaya rajiv chowk gate 2 pe 3 baje');
+    // Verifies language detector detected Hinglish / Hindi or Indic keywords
+    await waitFor(() => {
+      expect(screen.getByText(/AI Legal Meaning Normalizer & Formal Police Abstract/i)).toBeInTheDocument();
+      expect(screen.getByText(/Investigative 5W Completeness/i)).toBeInTheDocument();
+    });
   });
 
   it('submits report and displays confirmation with PUB tracking number and nearest station', async () => {
@@ -64,42 +65,35 @@ describe('CitizenReportingPage Feature Tests', () => {
       data: {
         status: 'SUCCESS',
         report_number: 'PUB-2026-8812',
-        nearest_station: {
-          id: 'PS-NOIDA-SEC20',
-          name: 'Noida Sector 20 Police Station',
-          distance_km: 1.4,
-          phone: '0120-2525100',
+        submission_id: 1,
+        nearest_station_name: 'Noida Sector 20 Police Station',
+        distance_to_station_km: 1.4,
+        ai_verdict: 'SATELLITE_VERIFIED',
+        satellite_verified: true,
+        satellite_confidence: 0.94,
+        layers: {
+          exif: { notes: 'EXIF metadata verified' },
         },
-        satellite_verdict: {
-          verified: true,
-          confidence: 0.88,
-          verdict: 'SATELLITE_VERIFIED',
-          layers: {
-            exif: { score: 1.0, exif_found: true, distance_km: 0.05 },
-            timestamp: { score: 1.0, delta_hours: 1.2 },
-            location_type: { score: 0.9 },
-          },
-        },
-        tracking_url: '/citizen/track?ref=PUB-2026-8812',
+        submitted_at: new Date().toISOString(),
       },
     });
 
     renderWithRouter(<CitizenReportingPage />);
 
     // Fill minimum required fields
-    const addressInput = screen.getByPlaceholderText(/Street address, landmark/i);
+    const addressInput = screen.getByPlaceholderText(/e\.g\. Connaught Place Block B \/ Metro Gate 3/i);
     fireEvent.change(addressInput, { target: { value: 'Sector 62 Electronic City, Noida' } });
 
-    const textarea = screen.getByPlaceholderText(/Provide chronological details/i);
-    fireEvent.change(textarea, { target: { value: 'Black Scorpio TS 09 AB 1234 broke barrier and fled.' } });
+    const textarea = screen.getByPlaceholderText(/Provide objective facts in any language or slang/i);
+    fireEvent.change(textarea, { target: { value: 'Black Scorpio TS 09 AB 1234 broke barrier and fled at 14:00.' } });
 
-    const submitBtn = screen.getByRole('button', { name: /Transmit Crime Report to Nearest Station/i });
+    const submitBtn = screen.getByRole('button', { name: /Transmit Crime Report to Police Station/i });
     fireEvent.click(submitBtn);
 
     // Wait for submission confirmation screen
     await waitFor(() => {
       expect(screen.getByText('PUB-2026-8812')).toBeInTheDocument();
-      expect(screen.getByText(/Crime Report Successfully Dispatched/i)).toBeInTheDocument();
+      expect(screen.getByText(/Crime Report Successfully Submitted/i)).toBeInTheDocument();
       expect(screen.getByText(/Noida Sector 20 Police Station/i)).toBeInTheDocument();
       expect(screen.getByText(/Satellite Verified/i)).toBeInTheDocument();
     });

@@ -78,7 +78,34 @@ export function NotFoundPage() {
           </button>
         </div>
 
-        <div className="pt-4 border-t border-border/40 text-[10px] text-muted-foreground font-mono">
+        {/* Popular Active System Gateways */}
+        <div className="pt-3 border-t border-border/40 space-y-2">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground block">
+            Popular Operational Gateways
+          </span>
+          <div className="flex flex-wrap items-center justify-center gap-1.5 text-xs">
+            <Link to="/cases" className="px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors">
+              Investigations
+            </Link>
+            <Link to="/evidence" className="px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors">
+              Evidence Vault
+            </Link>
+            <Link to="/guardian-trace" className="px-2.5 py-1 rounded-md bg-emerald-950/50 border border-emerald-500/30 text-emerald-300 hover:text-white hover:bg-emerald-900/50 transition-colors">
+              Guardian Trace
+            </Link>
+            <Link to="/police-reports" className="px-2.5 py-1 rounded-md bg-sky-950/50 border border-sky-500/30 text-sky-300 hover:text-white hover:bg-sky-900/50 transition-colors">
+              Citizen Queue
+            </Link>
+            <Link to="/map" className="px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors">
+              GIS Maps
+            </Link>
+            <Link to="/citizen" className="px-2.5 py-1 rounded-md bg-amber-950/50 border border-amber-500/30 text-amber-300 hover:text-white hover:bg-amber-900/50 transition-colors">
+              Public Sentinel
+            </Link>
+          </div>
+        </div>
+
+        <div className="pt-3 border-t border-border/40 text-[10px] text-muted-foreground font-mono">
           System Verification: CRIMENEXUS v2.4 • Court Compliant
         </div>
       </div>

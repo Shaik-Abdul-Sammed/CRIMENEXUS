@@ -91,7 +91,7 @@ def export_dossier_pdf(
         io.BytesIO(pdf_bytes),
         media_type="application/pdf",
         headers={
-            "Content-Disposition": f"attachment; filename=Court_Ready_Dossier_{clean_num}.pdf",
+            "Content-Disposition": f"inline; filename=Court_Ready_Dossier_{clean_num}.pdf",
             "Access-Control-Expose-Headers": "Content-Disposition"
         }
     )

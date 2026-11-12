@@ -123,6 +123,11 @@ class SoundController {
     }
   }
 
+  /** Success sound alias for benchmarks and confirmations */
+  public playSuccessSound() {
+    this.playSuccessChime();
+  }
+
   /** Critical alert beep (e.g., financial tripwire or suspect hit) */
   public playAlertBeep() {
     if (!this.enabled) return;

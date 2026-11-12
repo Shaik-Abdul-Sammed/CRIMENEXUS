@@ -526,7 +526,7 @@ export function TechnicalRoadmapPage() {
         setBenchmarkProgress(100);
         clearInterval(interval);
         setIsBenchmarking(false);
-        sound.playSuccessSound();
+        sound.playSuccessChime();
         toast.success('All 100 AI/ML improvements audited successfully! SHA-256 Merkle Root: 0a3f892c90812bf7... PASS 100/100');
       } else {
         setBenchmarkProgress(current);
@@ -543,22 +543,22 @@ export function TechnicalRoadmapPage() {
   return (
     <div className="space-y-6 select-none">
       {/* Title & Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl border border-primary/40 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 shadow-xl">
-        <div className="flex items-center gap-3.5">
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 p-5 rounded-2xl border border-primary/40 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 shadow-xl">
+        <div className="flex items-center gap-3.5 min-w-0">
           <div className="p-3 rounded-2xl bg-gradient-to-br from-amber-500 to-primary text-black shadow-lg shadow-amber-500/20 shrink-0">
             <Sparkles className="h-6 w-6" />
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                CRIMENEXUS 100 AI/ML Improvements & Sovereign Engineering
+                CRIMENEXUS 100 AI/ML Improvements &amp; Sovereign Engineering
               </h1>
               <Badge className="bg-primary text-black font-extrabold text-xs">
                 100/100 AUDITED • SEC 63 BSA
               </Badge>
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Production-grade architectural blueprint & performance verification across all 100 forensic, neural, geospatial, RAG, and data pipeline technologies.
+            <p className="text-xs text-muted-foreground mt-1 max-w-3xl">
+              Production-grade architectural blueprint &amp; performance verification across all 100 forensic, neural, geospatial, RAG, and data pipeline technologies.
             </p>
           </div>
         </div>

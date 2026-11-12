@@ -382,20 +382,20 @@ CASE/ACCUSED: ${activeTab === 'BANK_NOTICE' ? bankAccount : locSuspect}
     <div className="space-y-6">
       {/* Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl border-2 border-indigo-500/40 bg-gradient-to-r from-indigo-950/40 via-card to-background shadow-xl">
-        <div className="flex items-start gap-4">
-          <div className="p-3 rounded-2xl bg-indigo-600/20 text-indigo-400 border border-indigo-500/40">
+        <div className="flex items-start gap-4 min-w-0">
+          <div className="p-3 rounded-2xl bg-indigo-600/20 text-indigo-400 border border-indigo-500/40 shrink-0">
             <Sparkles className="h-8 w-8 text-indigo-400 animate-pulse" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-xl font-black text-foreground tracking-tight">
-                AI Statutory Legal Drafting & Generative RAG
+                AI Statutory Legal Drafting &amp; Generative RAG
               </h2>
               <Badge variant="outline" className="text-[10px] border-indigo-400/50 text-indigo-300">
                 MahaCrimeOS Parity Engine
               </Badge>
             </div>
-            <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
+            <p className="text-xs text-muted-foreground mt-1 max-w-3xl">
               Automated synthesis of Court-Ready FIRs, Charge Sheets, Section 102 CrPC / Sec 106 BNSS Bank Freeze Notices, and
               Bureau of Immigration (BOI) Lookout Circulars powered by ChromaDB RAG.
             </p>

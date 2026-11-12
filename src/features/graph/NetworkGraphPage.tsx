@@ -1609,18 +1609,18 @@ export function NetworkGraphPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-extrabold text-foreground flex items-center gap-2">
-            <Network className="h-6 w-6 text-primary" />
-            {t('graph.title')}
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="text-xl font-extrabold text-foreground flex items-center gap-2 flex-wrap">
+            <Network className="h-6 w-6 text-primary shrink-0" />
+            <span>{t('graph.title')}</span>
           </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground mt-0.5 max-w-3xl">
             {t('graph.subtitle')}
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
           <Button size="sm" variant="outline" onClick={handleZoomIn} icon={<ZoomIn className="h-4 w-4" />}>
             {t('graph.zoomIn')}
           </Button>

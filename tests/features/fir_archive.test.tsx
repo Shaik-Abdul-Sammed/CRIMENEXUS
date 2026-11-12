@@ -2,9 +2,9 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import { FIRArchivePage } from '../../../src/features/fir-archive/FIRArchivePage';
-import { CasesPage } from '../../../src/features/cases/CasesPage';
-import { FIRArchiveModal } from '../../../src/features/cases/FIRArchiveModal';
+import { FIRArchivePage } from '../../src/features/fir-archive/FIRArchivePage';
+import { CasesPage } from '../../src/features/cases/CasesPage';
+import { FIRArchiveModal } from '../../src/features/cases/FIRArchiveModal';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 function renderWithProviders(ui: React.ReactElement) {

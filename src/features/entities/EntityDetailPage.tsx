@@ -53,9 +53,12 @@ export function EntityDetailPage() {
           {entity.notes && <p className="text-xs text-muted-foreground max-w-2xl">{entity.notes}</p>}
         </div>
 
-        <div className="flex gap-2 shrink-0">
-          <Link to="/network-graph">
-            <Button icon={<Network className="h-4 w-4" />}>Focus on Graph</Button>
+        <div className="flex items-center gap-2 shrink-0 flex-wrap">
+          <Link to={`/entity-resolution?query=${encodeURIComponent(entity.name)}`}>
+            <Button variant="outline" size="sm">Check Aliases (AI)</Button>
+          </Link>
+          <Link to={`/network-graph?focus=${entity.id}`}>
+            <Button size="sm" icon={<Network className="h-4 w-4" />}>Focus on Graph</Button>
           </Link>
         </div>
       </div>

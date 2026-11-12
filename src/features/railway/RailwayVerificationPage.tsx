@@ -206,12 +206,12 @@ LOCATION AT SCAN : KM 84 Marker near Jewar / Aligarh Outer (Speed: 92 km/h)
   return (
     <div className="space-y-6 select-none">
       {/* Header Banner */}
-      <div className="p-5 rounded-2xl border border-sky-500/40 bg-gradient-to-r from-slate-950 via-slate-900 to-sky-950/40 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
+      <div className="p-5 rounded-2xl border border-sky-500/40 bg-gradient-to-r from-slate-950 via-slate-900 to-sky-950/40 shadow-xl flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5 min-w-0">
           <div className="p-3 rounded-2xl bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/20 shrink-0">
             <Train className="h-6 w-6" />
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
                 Indian Railways TC Biometric Aadhaar Face Verification Terminal
@@ -220,7 +220,7 @@ LOCATION AT SCAN : KM 84 Marker near Jewar / Aligarh Outer (Speed: 92 km/h)
                 UIDAI FaceRD • CCTNS LIVE
               </Badge>
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground mt-1 max-w-3xl">
               Handheld Railway Ticket Examiner (TTE) facial authentication system cross-referencing Aadhaar biometrics against National Police CCTNS Look Out Circulars (LOC).
             </p>
           </div>

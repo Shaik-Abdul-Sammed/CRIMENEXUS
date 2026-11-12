@@ -20,6 +20,7 @@ import { Modal } from '../../components/ui/Modal';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { InsightCard, InsightItem } from '../fir-archive/InsightCard';
+import { FALLBACK_25_ANALYTICS } from '../fir-archive/fallbackAnalytics';
 import { sound } from '../../utils/soundEffects';
 import { useToast } from '../../components/ui/Toast';
 
@@ -40,7 +41,7 @@ export function FIRArchiveModal({
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'ANALYTICS'>('OVERVIEW');
   const [isLoading, setIsLoading] = useState(false);
   const [firData, setFirData] = useState<any>(null);
-  const [analyticsList, setAnalyticsList] = useState<InsightItem[]>([]);
+  const [analyticsList, setAnalyticsList] = useState<InsightItem[]>(FALLBACK_25_ANALYTICS);
   const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
@@ -53,7 +54,9 @@ export function FIRArchiveModal({
     axios
       .get(`${baseURL}/fir-archive/case/${encodeURIComponent(caseNumber)}`)
       .then((res) => {
-        setFirData(res.data);
+        if (res.data) {
+          setFirData(res.data);
+        }
       })
       .catch((err) => {
         console.warn('Could not load specific FIR detail, using fallback:', err);
@@ -100,12 +103,15 @@ export function FIRArchiveModal({
     axios
       .get(`${baseURL}/fir-archive/analytics/all`)
       .then((res) => {
-        if (res.data?.analytics) {
-          setAnalyticsList(res.data.analytics);
+        const list = Array.isArray(res.data?.analytics) ? res.data.analytics : Array.isArray(res.data) ? res.data : [];
+        if (list.length > 0) {
+          setAnalyticsList(list);
+        } else {
+          setAnalyticsList(FALLBACK_25_ANALYTICS);
         }
       })
       .catch(() => {
-        // Keeps graceful fallback
+        setAnalyticsList(FALLBACK_25_ANALYTICS);
       });
   }, [isOpen, caseNumber, caseTitle]);
 
@@ -367,12 +373,12 @@ export function FIRArchiveModal({
                 25 Expert Institutional Retrospective Analytics
               </span>
               <span className="font-mono text-[10px] text-primary font-bold">
-                {analyticsList.length} Insights Active
+                {(analyticsList.length > 0 ? analyticsList : FALLBACK_25_ANALYTICS).length} Insights Active
               </span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {analyticsList.map((insight) => (
+              {(analyticsList.length > 0 ? analyticsList : FALLBACK_25_ANALYTICS).map((insight) => (
                 <InsightCard key={insight.analytics_id} insight={insight} />
               ))}
             </div>

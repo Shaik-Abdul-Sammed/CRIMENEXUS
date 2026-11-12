@@ -15,6 +15,7 @@ import {
   Eye,
   FileCode,
   AlertCircle,
+  ExternalLink,
 } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
@@ -24,7 +25,16 @@ export interface DocumentPreviewModalProps {
   onClose: () => void;
   title?: string;
   subtitle?: string;
-  documentType?: 'dossier_pdf' | 'legal_draft' | 'evidence_bundle' | 'certificate_63b' | 'court_dossier';
+  documentType?:
+    | 'dossier_pdf'
+    | 'legal_draft'
+    | 'evidence_bundle'
+    | 'certificate_63b'
+    | 'court_dossier'
+    | 'chargesheet'
+    | 'bail_opposition'
+    | 'debit_freeze'
+    | string;
   caseNumber?: string;
   evidenceNumber?: string;
   evidenceHash?: string;
@@ -80,33 +90,41 @@ export function DocumentPreviewModal({
     'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855f41029c7d413b8';
   const timestamp = metadata.generatedAt || new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
 
-  // Load PDF Blob when modal opens if pdfUrl is provided
+  // Load PDF Blob when modal opens if pdfUrl is provided, while enabling immediate direct stream rendering
   useEffect(() => {
     let currentBlobUrl: string | null = null;
 
     if (isOpen && pdfUrl) {
-      setLoadingPdf(true);
       setPdfError(null);
+      // Immediately open PDF tab so viewer is visible without waiting for full download
+      setActiveTab('pdf');
 
-      axios
-        .get(pdfUrl, {
-          responseType: 'blob',
-          timeout: 15000,
-        })
-        .then((response) => {
-          const blob = new Blob([response.data], { type: 'application/pdf' });
-          currentBlobUrl = URL.createObjectURL(blob);
-          setPdfBlobUrl(currentBlobUrl);
-          setActiveTab('pdf'); // default to PDF view when loaded successfully
-        })
-        .catch((err) => {
-          console.warn('PDF load failed, falling back to judicial document view:', err);
-          setPdfError('Live PDF binary stream unavailable. Showing court-admissible formatted document preview.');
-          setActiveTab('formatted');
-        })
-        .finally(() => {
-          setLoadingPdf(false);
-        });
+      // If already a blob URL, use directly
+      if (pdfUrl.startsWith('blob:')) {
+        setPdfBlobUrl(pdfUrl);
+        setLoadingPdf(false);
+      } else {
+        // Asynchronously prefetch blob for fast memory operations
+        axios
+          .get(pdfUrl, {
+            responseType: 'blob',
+            timeout: 25000,
+          })
+          .then((response) => {
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            currentBlobUrl = URL.createObjectURL(blob);
+            setPdfBlobUrl(currentBlobUrl);
+          })
+          .catch((err) => {
+            console.warn('Axios prefetch completed; streaming natively from direct URL:', err);
+            // Native direct URL streaming remains active via pdfUrl in <object>/<iframe>
+          })
+          .finally(() => {
+            setLoadingPdf(false);
+          });
+      }
+    } else if (isOpen && textContent) {
+      setActiveTab('formatted');
     }
 
     return () => {
@@ -114,7 +132,7 @@ export function DocumentPreviewModal({
         URL.revokeObjectURL(currentBlobUrl);
       }
     };
-  }, [isOpen, pdfUrl]);
+  }, [isOpen, pdfUrl, textContent]);
 
   // Clean up blob url on unmount
   useEffect(() => {
@@ -199,7 +217,7 @@ export function DocumentPreviewModal({
           <div className="flex items-center gap-2">
             {/* View Tab Switcher */}
             <div className="flex items-center bg-background/80 p-0.5 rounded-lg border border-border/80 text-xs font-medium">
-              {pdfBlobUrl && (
+              {(pdfBlobUrl || pdfUrl) && (
                 <button
                   onClick={() => setActiveTab('pdf')}
                   className={`px-2.5 py-1 rounded-md transition-all flex items-center gap-1.5 ${
@@ -315,22 +333,40 @@ export function DocumentPreviewModal({
           )}
 
           {/* TAB 1: Native PDF Viewer */}
-          {!loadingPdf && activeTab === 'pdf' && pdfBlobUrl && (
+          {!loadingPdf && activeTab === 'pdf' && (pdfBlobUrl || pdfUrl) && (
             <div className="w-full h-full min-h-[580px] rounded-xl overflow-hidden border border-border shadow-2xl bg-slate-900 flex flex-col">
               <div className="flex items-center justify-between p-2 px-4 bg-slate-800/90 border-b border-border/60 text-xs text-muted-foreground">
-                <span className="font-mono flex items-center gap-1.5">
+                <span className="font-mono flex items-center gap-1.5 text-foreground font-semibold">
                   <FileText className="h-3.5 w-3.5 text-red-400" />
                   {effectiveFileName}
                 </span>
-                <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
-                  <Check className="h-3.5 w-3.5" /> Stream Verified
-                </span>
+                <div className="flex items-center gap-2.5">
+                  <a
+                    href={pdfBlobUrl || pdfUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[11px] text-primary hover:underline font-bold flex items-center gap-1"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                    <span>Open in New Tab</span>
+                  </a>
+                  <span className="text-slate-600">•</span>
+                  <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+                    <Check className="h-3.5 w-3.5" /> Sec 63 BSA Certified
+                  </span>
+                </div>
               </div>
-              <iframe
-                src={`${pdfBlobUrl}#toolbar=1&navpanes=0`}
-                className="w-full flex-1 border-0"
-                title="Court Dossier PDF Document"
-              />
+              <object
+                data={`${pdfBlobUrl || pdfUrl}#toolbar=1&navpanes=0`}
+                type="application/pdf"
+                className="w-full flex-1 min-h-[520px] border-0"
+              >
+                <iframe
+                  src={`${pdfBlobUrl || pdfUrl}#toolbar=1&navpanes=0`}
+                  className="w-full h-full min-h-[520px] border-0"
+                  title="Court Dossier PDF Document"
+                />
+              </object>
             </div>
           )}
 

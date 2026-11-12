@@ -580,11 +580,11 @@ export function EvidencePage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-extrabold text-foreground flex items-center gap-2">
-            <FileCheck2 className="h-6 w-6 text-primary" />
-            Evidence Vault & Chain of Custody
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="text-xl font-extrabold text-foreground flex items-center gap-2 flex-wrap">
+            <FileCheck2 className="h-6 w-6 text-primary shrink-0" />
+            <span>Evidence Vault &amp; Chain of Custody</span>
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             Cryptographically hashed multi-source intelligence artifacts, extract logs, and source references.

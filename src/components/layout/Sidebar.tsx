@@ -273,7 +273,7 @@ export function Sidebar() {
               >
                 <div className="flex items-center gap-1.5 truncate">
                   <Grid className="h-3.5 w-3.5 text-amber-400 shrink-0" />
-                  <span className="truncate">All 25 Pages</span>
+                  <span className="truncate">All 30 Pages</span>
                 </div>
                 <span className="px-1 py-0.2 rounded bg-amber-500/30 text-amber-300 text-[9px] font-mono shrink-0">
                   DIR
@@ -286,14 +286,14 @@ export function Sidebar() {
                   setFeaturesHubModalOpen(true);
                 }}
                 className="p-2 rounded-lg bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-primary/20 border border-cyan-500/50 text-cyan-300 hover:text-white flex items-center justify-between text-xs font-bold transition-all shadow-sm"
-                title="Open 10 Core AI Engines & Capabilities Hub"
+                title="Open 15 Core AI Engines & Capabilities Hub"
               >
                 <div className="flex items-center gap-1.5 truncate">
                   <Sparkles className="h-3.5 w-3.5 text-cyan-400 shrink-0 animate-pulse" />
                   <span className="truncate">Hub</span>
                 </div>
                 <span className="px-1 py-0.2 rounded bg-cyan-500/30 text-cyan-300 text-[9px] font-mono shrink-0">
-                  10
+                  15
                 </span>
               </button>
             </div>
@@ -305,7 +305,7 @@ export function Sidebar() {
                   setPageDirectoryOpen(true);
                 }}
                 className="w-10 h-10 rounded-lg bg-amber-500/20 border border-amber-500/50 text-amber-300 flex items-center justify-center hover:bg-amber-500/30 transition-all"
-                title="All 25 Pages Directory (⌘P)"
+                title="All 30 Pages Directory (⌘P)"
               >
                 <Grid className="h-4 w-4 text-amber-400" />
               </button>
@@ -315,7 +315,7 @@ export function Sidebar() {
                   setFeaturesHubModalOpen(true);
                 }}
                 className="w-10 h-10 rounded-lg bg-cyan-500/20 border border-cyan-500/50 text-cyan-300 flex items-center justify-center hover:bg-cyan-500/30 transition-all"
-                title="Features Hub (10 Engines)"
+                title="Features Hub (15 Engines)"
               >
                 <Sparkles className="h-4 w-4 text-cyan-400 animate-pulse" />
               </button>

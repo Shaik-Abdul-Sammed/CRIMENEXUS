@@ -166,7 +166,7 @@ def export_audit_pdf():
         return Response(
             content=pdf_bytes,
             media_type="application/pdf",
-            headers={"Content-Disposition": 'attachment; filename="CRIMENEXUS_100_Improvements_Audit_Sec63BSA.pdf"'}
+            headers={"Content-Disposition": 'inline; filename="CRIMENEXUS_100_Improvements_Audit_Sec63BSA.pdf"'}
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to generate audit PDF: {str(e)}")

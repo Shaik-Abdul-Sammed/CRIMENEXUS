@@ -2050,8 +2050,8 @@ export function LiveTrackingPage() {
         </div>
       </div>
 
-      {/* Main Map Canvas Area */}
-      <div className="relative h-[560px] w-full rounded-2xl border border-primary/30 overflow-hidden shadow-2xl bg-slate-950 shrink-0">
+      {/* Main Map Canvas Area (Responsive Compact Height) */}
+      <div className="relative h-[460px] sm:h-[480px] lg:h-[500px] w-full rounded-2xl border border-primary/30 overflow-hidden shadow-2xl bg-slate-950 shrink-0">
         {mapStyleType === 'python' ? (
           <iframe
             src="/api/v1/geo/tactical-map?case_id=CASE-2026-8812&lat=28.5850&lon=77.3180&zoom=13"

@@ -24,13 +24,15 @@ import {
   Building,
   CheckSquare,
   Square,
-  X
+  X,
+  Globe
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 import { useToast } from '../../components/ui/Toast';
+import { OmniTraceSatelliteModal } from '../../components/common/OmniTraceSatelliteModal';
 
 interface PublicReportItem {
   id: number;
@@ -79,6 +81,7 @@ export function PublicReportsQueue() {
   // Selected Report Detail Modal
   const [selectedReport, setSelectedReport] = useState<PublicReportItem | null>(null);
   const [isProcessingAction, setIsProcessingAction] = useState<boolean>(false);
+  const [satelliteModalOpen, setSatelliteModalOpen] = useState<boolean>(false);
 
   // Reject Modal State
   const [rejectModalOpen, setRejectModalOpen] = useState<boolean>(false);
@@ -339,13 +342,13 @@ export function PublicReportsQueue() {
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl border border-primary/40 bg-gradient-to-r from-primary/15 via-slate-900 to-slate-950 shadow-xl">
-        <div className="flex items-start gap-4">
-          <div className="p-3 rounded-2xl bg-primary/20 text-primary border border-primary/40">
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 p-5 rounded-2xl border border-primary/40 bg-gradient-to-r from-primary/15 via-slate-900 to-slate-950 shadow-xl">
+        <div className="flex items-start gap-4 min-w-0">
+          <div className="p-3 rounded-2xl bg-primary/20 text-primary border border-primary/40 shrink-0">
             <Shield className="h-8 w-8 text-emerald-400" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-xl font-black text-white tracking-tight">
                 Citizen Sentinel • Public Reports Verification Queue
               </h1>
@@ -353,13 +356,13 @@ export function PublicReportsQueue() {
                 AI SATELLITE TRIAGE ACTIVE
               </Badge>
             </div>
-            <p className="text-xs text-muted-foreground mt-1 max-w-2xl leading-relaxed">
+            <p className="text-xs text-muted-foreground mt-1 max-w-3xl leading-relaxed">
               Review public crime reports submitted with proof. Multi-layer AI validates EXIF GPS, timestamp freshness, and geospatial consistency before converting into formal FIRs under Section 173 BNSS.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
           <Link to="/citizen" target="_blank">
             <Button size="sm" variant="outline" className="border-cyan-500/40 text-cyan-300 font-bold text-xs flex items-center gap-1.5 hover:bg-cyan-950/40">
               <ExternalLink className="h-3.5 w-3.5" />
@@ -591,10 +594,22 @@ export function PublicReportsQueue() {
 
             {/* AI Satellite 3-Layer Breakdown */}
             <div className="space-y-2">
-              <span className="font-extrabold text-foreground uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-                <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
-                <span>AI Satellite & Geospatial Verification Layers:</span>
-              </span>
+              <div className="flex items-center justify-between">
+                <span className="font-extrabold text-foreground uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
+                  <span>AI Satellite & Geospatial Verification Layers:</span>
+                </span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setSatelliteModalOpen(true)}
+                  className="h-6 text-[10px] font-bold border-cyan-500/40 text-cyan-300 hover:bg-cyan-950/40 flex items-center gap-1"
+                  title="Inspect multi-spectral Earth observation satellite confirmation"
+                >
+                  <Globe className="h-3 w-3 text-cyan-400" />
+                  <span>Inspect OmniTrace Satellite</span>
+                </Button>
+              </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 {/* Layer 1: EXIF */}
@@ -769,6 +784,17 @@ export function PublicReportsQueue() {
           </div>
         </Modal>
       )}
+
+      {/* OmniTrace Multi-Spectral Satellite Verification Modal */}
+      <OmniTraceSatelliteModal
+        isOpen={satelliteModalOpen}
+        onClose={() => setSatelliteModalOpen(false)}
+        latitude={selectedReport?.latitude}
+        longitude={selectedReport?.longitude}
+        locationName={selectedReport?.location_name || 'Incident Scene'}
+        reportNumber={selectedReport?.report_number || 'PUB-POLICE-VERIFY'}
+        timestamp={selectedReport?.submitted_at}
+      />
     </div>
   );
 }

@@ -25,6 +25,9 @@ import {
   VolumeX,
   Train,
   Grid,
+  Shield,
+  ShieldAlert,
+  ShieldCheck,
 } from 'lucide-react';
 import { sound } from '../../utils/soundEffects';
 import { useAppStore, FigmaTheme } from '../../stores/appStore';
@@ -223,9 +226,9 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
 
   return (
     <>
-      <header className="sticky top-0 z-50 flex h-16 w-full max-w-full items-center justify-between border-b border-border bg-card/98 px-3 sm:px-4 md:px-6 shadow-sm gap-2">
+      <header className="sticky top-0 z-50 flex h-16 w-full max-w-full items-center justify-between border-b border-border bg-card/98 px-2 sm:px-4 shadow-sm gap-1.5 sm:gap-2.5 overflow-hidden select-none">
       {/* Left: Responsive Breadcrumbs with guaranteed full 'Home' visibility and no clipping */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 sm:gap-2 text-xs text-muted-foreground shrink-0 max-w-[200px] sm:max-w-[280px] md:max-w-[340px] overflow-hidden">
+      <nav aria-label="Breadcrumb" className="hidden sm:flex items-center gap-1 sm:gap-1.5 text-xs text-muted-foreground shrink min-w-0 max-w-[120px] md:max-w-[180px] lg:max-w-[240px] overflow-hidden truncate">
         <Link to="/dashboard" className="hover:text-foreground font-bold transition-colors shrink-0 flex items-center gap-1 text-primary">
           <span className="whitespace-nowrap font-extrabold text-xs">Home</span>
         </Link>
@@ -234,7 +237,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
             <ChevronRight className="h-3 w-3 text-border shrink-0" />
             <Link
               to={b.url}
-              className={`truncate max-w-[90px] sm:max-w-[130px] whitespace-nowrap ${
+              className={`truncate whitespace-nowrap ${
                 idx === breadcrumbs.length - 1
                   ? 'font-extrabold text-foreground'
                   : 'hover:text-foreground transition-colors'
@@ -248,7 +251,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
       </nav>
 
       {/* Right: Consolidated Tools & Actions (Streamlined, Zero Horizontal Overflow, Zero Stacking Traps) */}
-      <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 justify-end relative z-50">
+      <div className="flex items-center gap-1 sm:gap-1.5 justify-end relative z-50 min-w-0 flex-1">
         {/* 1. Global Intelligence Search Trigger (High Usage) */}
         <button
           onClick={() => setGlobalSearchOpen(true)}
@@ -257,7 +260,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           aria-label="Search cases, entities, and evidence"
         >
           <Search className="h-3.5 w-3.5 text-primary shrink-0" />
-          <span className="hidden xl:inline text-[11px] truncate">{t('actions.search')}</span>
+          <span className="hidden 2xl:inline text-[11px] truncate">{t('actions.search')}</span>
           <kbd className="hidden lg:inline-flex h-4 select-none items-center gap-0.5 rounded border border-border bg-muted px-1 font-mono text-[9px] font-medium text-muted-foreground">
             /
           </kbd>
@@ -274,8 +277,8 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           aria-label="All Pages Directory"
         >
           <Grid className="h-3.5 w-3.5 text-primary shrink-0" />
-          <span className="hidden md:inline text-[11px]">Pages</span>
-          <span className="px-1 py-0.2 rounded-full bg-primary/20 text-primary text-[9px] font-mono font-black">25</span>
+          <span className="hidden xl:inline text-[11px]">Pages</span>
+          <span className="px-1 py-0.2 rounded-full bg-primary/20 text-primary text-[9px] font-mono font-black">30</span>
         </button>
 
         {/* 3. 100 Technical Specifications & 100 AI/ML Improvements Roadmap */}
@@ -286,7 +289,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           aria-label="100 Specs Roadmap"
         >
           <Compass className="h-3.5 w-3.5 text-amber-400 shrink-0" />
-          <span className="hidden lg:inline text-[11px] font-black">100 Roadmap</span>
+          <span className="hidden xl:inline text-[11px] font-black">Roadmap</span>
           <span className="px-1.5 py-0.2 rounded-full bg-amber-400/25 text-amber-300 text-[9px] font-mono font-black border border-amber-400/40">100</span>
         </Link>
 
@@ -297,16 +300,16 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
             setFeaturesHubModalOpen(true);
           }}
           className="flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg border border-cyan-500/50 bg-cyan-950/50 hover:bg-cyan-900/50 text-cyan-300 text-xs font-bold transition-all shadow-sm shrink-0"
-          title="CRIMENEXUS 10 Core Pro Features & Capabilities Hub"
+          title="CRIMENEXUS 15 Core Pro Features & Capabilities Hub"
           aria-label="Features Showcase"
         >
           <Sparkles className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
-          <span className="hidden xl:inline text-[11px]">Features</span>
-          <span className="px-1 py-0.2 rounded-full bg-cyan-400/20 text-cyan-300 text-[9px] font-mono font-extrabold">10</span>
+          <span className="hidden 2xl:inline text-[11px]">Features</span>
+          <span className="px-1 py-0.2 rounded-full bg-cyan-400/20 text-cyan-300 text-[9px] font-mono font-extrabold">15</span>
         </button>
 
         {/* 5. 1-Click Vernacular Full Page Language Switcher (Directly on TopNav) */}
-        <div className="flex items-center gap-1 h-8 sm:h-9 px-2 rounded-lg border border-sky-500/40 bg-sky-950/40 text-xs shrink-0">
+        <div className="flex items-center gap-1 h-8 sm:h-9 px-1.5 sm:px-2 rounded-lg border border-sky-500/40 bg-sky-950/40 text-xs shrink-0">
           <Languages className="h-3.5 w-3.5 text-sky-400 shrink-0" />
           <select
             value={language}
@@ -314,15 +317,15 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
               sound.playClickSound();
               setLanguage(e.target.value as SupportedLanguage);
             }}
-            className="bg-transparent text-sky-200 font-bold text-xs focus:outline-none cursor-pointer pr-1"
+            className="bg-transparent text-sky-200 font-bold text-xs focus:outline-none cursor-pointer pr-0.5"
             aria-label="Switch Entire Application Language"
             title="Full Entire Page Translation (EN / हिन्दी / मराठी / ಕನ್ನಡ / తెలుగు)"
           >
-            <option value="en" className="bg-slate-900 text-slate-100">English (EN)</option>
-            <option value="hi" className="bg-slate-900 text-slate-100">हिन्दी (Hindi)</option>
-            <option value="mr" className="bg-slate-900 text-slate-100">मराठी (Marathi)</option>
-            <option value="kn" className="bg-slate-900 text-slate-100">ಕನ್ನಡ (Kannada)</option>
-            <option value="te" className="bg-slate-900 text-slate-100">తెలుగు (Telugu)</option>
+            <option value="en" className="bg-slate-900 text-slate-100">EN</option>
+            <option value="hi" className="bg-slate-900 text-slate-100">हिन्दी</option>
+            <option value="mr" className="bg-slate-900 text-slate-100">मराठी</option>
+            <option value="kn" className="bg-slate-900 text-slate-100">ಕನ್ನಡ</option>
+            <option value="te" className="bg-slate-900 text-slate-100">తెలుగు</option>
           </select>
         </div>
 
@@ -342,7 +345,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
             aria-label="Tactical Tools Menu"
           >
             <Zap className="h-3.5 w-3.5 text-amber-400 shrink-0" />
-            <span className="hidden sm:inline text-[11px]">Tactical</span>
+            <span className="hidden xl:inline text-[11px]">Tactical</span>
             <span className="px-1 py-0.2 rounded-full bg-amber-400/20 text-amber-300 text-[9px] font-mono font-bold">Tools</span>
           </button>
 
@@ -789,47 +792,45 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
                 </button>
               </div>
 
-              {/* Direct Jumps to 100 Specs Roadmap & All 25 Pages Directory */}
+              {/* Operational Module Direct Access Links */}
               <div className="pt-2 border-t border-border space-y-1">
                 <Link
-                  to="/roadmap"
+                  to="/guardian-trace"
                   onClick={() => setSettingsMenuOpen(false)}
-                  className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all"
+                  className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold transition-all"
                 >
                   <div className="flex items-center gap-2">
-                    <Compass className="h-3.5 w-3.5 text-amber-400 animate-spin-slow" />
-                    <span>100 Specs & Next 96 Roadmap</span>
+                    <ShieldAlert className="h-3.5 w-3.5 text-emerald-400" />
+                    <span>Guardian Trace Rescue HUD</span>
                   </div>
-                  <span className="text-[9px] font-mono font-black px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-300">
-                    96 NEW
+                  <span className="text-[9px] font-mono font-black px-1.5 py-0.2 rounded bg-emerald-400/20 text-emerald-300">
+                    SAR
                   </span>
                 </Link>
 
-                <button
-                  onClick={() => {
-                    setSettingsMenuOpen(false);
-                    setPageDirectoryOpen(true);
-                  }}
-                  className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 text-xs font-bold transition-all text-left"
+                <Link
+                  to="/police-reports"
+                  onClick={() => setSettingsMenuOpen(false)}
+                  className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 border border-sky-500/30 text-xs font-bold transition-all text-left"
                 >
                   <div className="flex items-center gap-2">
-                    <Grid className="h-3.5 w-3.5 text-primary" />
-                    <span>Complete 25 Pages Directory</span>
+                    <ShieldCheck className="h-3.5 w-3.5 text-sky-400" />
+                    <span>Citizen Reports Queue</span>
                   </div>
-                  <span className="text-[9px] font-mono font-black px-1.5 py-0.2 rounded bg-primary/20 text-primary">
-                    ⌘P
+                  <span className="text-[9px] font-mono font-black px-1.5 py-0.2 rounded bg-sky-400/20 text-sky-300">
+                    FIR 173
                   </span>
-                </button>
+                </Link>
               </div>
             </div>
           )}
         </div>
 
         {/* User Status Badge & Logout (No repeated name/role; full profile is in Sidebar) */}
-        <div className="flex items-center gap-2 pl-2 border-l border-border/60">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 pl-1 sm:pl-2 border-l border-border/60 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <span
-              className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold font-mono tracking-wide border ${
+              className={`hidden md:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold font-mono tracking-wide border ${
                 isServerOnline
                   ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400'
                   : 'bg-red-500/10 border-red-500/40 text-red-400 animate-pulse'
@@ -845,12 +846,12 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
                   isServerOnline ? 'bg-emerald-400 animate-pulse' : 'bg-red-500'
                 }`}
               />
-              {isServerOnline ? 'ONLINE' : 'OFFLINE'}
+              <span className="hidden lg:inline">{isServerOnline ? 'ONLINE' : 'OFFLINE'}</span>
             </span>
             <img
               src={currentUser?.avatar}
               alt={currentUser?.name || 'User'}
-              className="h-8 w-8 rounded-full object-cover border border-primary/30"
+              className="h-7 w-7 sm:h-8 sm:w-8 rounded-full object-cover border border-primary/30 shrink-0"
               title={`${currentUser?.name} (${activeRole})`}
             />
           </div>
@@ -858,7 +859,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
             variant="ghost"
             size="sm"
             onClick={logout}
-            className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+            className="p-1.5 sm:p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
             title="Logout"
             aria-label="Logout"
           >

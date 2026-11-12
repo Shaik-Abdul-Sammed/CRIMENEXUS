@@ -56,13 +56,13 @@ export function AIAssistantPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-extrabold text-foreground flex items-center gap-2">
-            <Bot className="h-6 w-6 text-primary" />
-            AI Investigation Assistant (Evidence-Grounded Local RAG)
+        <div className="min-w-0">
+          <h1 className="text-xl font-extrabold text-foreground flex items-center gap-2 flex-wrap">
+            <Bot className="h-6 w-6 text-primary shrink-0" />
+            <span>AI Investigation Assistant (Evidence-Grounded Local RAG)</span>
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Query criminal network intelligence using Hybrid BM25 + Vector Search & Cross-Encoder Re-ranking with Anti-Hallucination Guardrails.
+            Query criminal network intelligence using Hybrid BM25 + Vector Search &amp; Cross-Encoder Re-ranking with Anti-Hallucination Guardrails.
           </p>
         </div>
       </div>

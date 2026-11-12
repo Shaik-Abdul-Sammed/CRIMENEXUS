@@ -2,7 +2,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import { GuardianTracePage } from '../../../src/features/guardian-trace/GuardianTracePage';
+import { GuardianTracePage } from '../../src/features/guardian-trace/GuardianTracePage';
 
 // Mock maplibre-gl to avoid WebGL / Canvas errors in JSDOM
 vi.mock('maplibre-gl', () => {

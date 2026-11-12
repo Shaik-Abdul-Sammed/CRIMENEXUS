@@ -76,10 +76,10 @@ export function AuditLogsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-extrabold text-foreground flex items-center gap-2">
-            <History className="h-6 w-6 text-primary" />
-            Immutable System Security Audit Logs
+        <div className="min-w-0">
+          <h1 className="text-xl font-extrabold text-foreground flex items-center gap-2 flex-wrap">
+            <History className="h-6 w-6 text-primary shrink-0" />
+            <span>Immutable System Security Audit Logs</span>
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             Tamper-evident audit trail recording user logins, evidence access, entity merge confirmations, graph queries, and AI interactions.
@@ -89,6 +89,7 @@ export function AuditLogsPage() {
           variant="outline"
           onClick={handleExportCsv}
           icon={<Download className="h-4 w-4 text-emerald-400" />}
+          className="shrink-0 font-bold text-xs"
           title="Download signed CSV manifest of security audit trail for Section 63 BSA records"
         >
           Export Audit Ledger CSV

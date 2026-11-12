@@ -173,16 +173,16 @@ export function EntitiesPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-extrabold text-foreground flex items-center gap-2">
-            <Users2 className="h-6 w-6 text-primary" />
-            Extracted Entity Directory
+        <div className="min-w-0">
+          <h1 className="text-xl font-extrabold text-foreground flex items-center gap-2 flex-wrap">
+            <Users2 className="h-6 w-6 text-primary shrink-0" />
+            <span>Extracted Entity Directory</span>
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             Structured entities cataloged across investigations with confidence scores and verification status.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap shrink-0">
           <Button
             variant="outline"
             onClick={handleExportCsv}

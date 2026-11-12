@@ -23,6 +23,7 @@ from app.services.streaming.redis_streams import get_redis_client
 _ACTIVE_DEVICE_SHIFT_TOKENS: Dict[str, str] = {}
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -98,6 +99,27 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     if not user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user account")
     return user
+
+
+def get_optional_current_user(
+    token: Optional[str] = Depends(oauth2_scheme_optional),
+    db: Session = Depends(get_db)
+) -> Optional[User]:
+    """
+    FastAPI dependency: decodes JWT if present; returns User if valid, or None if unauthenticated.
+    """
+    if not token:
+        return None
+    try:
+        payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
+        user_id = payload.get("sub")
+        if user_id is not None:
+            user = db.query(User).filter(User.id == int(user_id)).first()
+            if user and user.is_active:
+                return user
+    except Exception:
+        return None
+    return None
 
 
 def create_shift_token(data: Dict[str, Any], device_id: str, expires_delta: Optional[timedelta] = None) -> str:

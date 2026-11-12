@@ -191,24 +191,24 @@ export function TimelinePage() {
   return (
     <div className="space-y-6">
       {/* Header and Strategic Narrative */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-2 border-b border-border/60">
-        <div>
-          <div className="flex items-center gap-2">
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 pb-2 border-b border-border/60">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-xl font-black text-foreground flex items-center gap-2">
-              <Clock className="h-6 w-6 text-primary" />
-              Chronological Forensic Investigation Stream
+              <Clock className="h-6 w-6 text-primary shrink-0" />
+              <span>Chronological Forensic Investigation Stream</span>
             </h1>
             <Badge variant="outline" className="border-cyan-500/40 text-cyan-400 font-mono text-[10px]">
               TEMPORAL FUSION
             </Badge>
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs text-muted-foreground mt-1 max-w-3xl">
             Correlated sequence of CDR cellular pings, Hawala smurfing transfers, highway ANPR checkpoints, and police proximity interdictions under Section 63 BSA.
           </p>
         </div>
 
         {/* Quick Statutory Reference */}
-        <div className="flex items-center gap-2 bg-slate-900/80 border border-slate-800 p-2 rounded-lg text-[11px]">
+        <div className="flex items-center gap-2 bg-slate-900/80 border border-slate-800 p-2 rounded-lg text-[11px] shrink-0">
           <Shield className="h-4 w-4 text-emerald-400 shrink-0" />
           <div className="text-slate-300">
             <span className="font-bold text-white">BSA Sec 63 Hash-Chained:</span> Immutable chronological admissibility
