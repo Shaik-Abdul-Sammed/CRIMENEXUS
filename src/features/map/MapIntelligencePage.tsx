@@ -3028,10 +3028,10 @@ export function MapIntelligencePage() {
         <div className="lg:col-span-3 space-y-4">
           <Card className={`relative ${
             mapHeightPreset === 'compact'
-              ? 'h-[440px] sm:h-[460px] lg:h-[480px]'
+              ? 'h-[350px] sm:h-[370px] lg:h-[390px]'
               : mapHeightPreset === 'tall'
-              ? 'h-[640px]'
-              : 'h-[540px]'
+              ? 'h-[580px]'
+              : 'h-[460px]'
           } overflow-hidden border-primary/30 bg-slate-950 transition-all duration-300`}>
             {/* ANPR Vehicle Query Hit Floating Banner */}
             {queryPlate && !dismissQueryPlate && (
@@ -3217,7 +3217,9 @@ export function MapIntelligencePage() {
                   role="region"
                   aria-label="Interactive MapLibre Spatial Telemetry Map"
                   tabIndex={0}
-                  className="w-full h-full focus:ring-2 focus:ring-primary focus:outline-none"
+                  className={`w-full h-full focus:ring-2 focus:ring-primary focus:outline-none ${
+                    selectedStyle !== 'satellite' ? 'tactical-dark-map' : ''
+                  }`}
                 />
               </ErrorBoundary>
             </div>

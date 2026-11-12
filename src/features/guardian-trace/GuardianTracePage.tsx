@@ -830,7 +830,7 @@ export function GuardianTracePage() {
 
             {/* Map Container (Compact Tactical Height) */}
             <div className="h-[380px] sm:h-[420px] lg:h-[450px] w-full relative">
-              <div ref={mapContainerRef} className="w-full h-full" />
+              <div ref={mapContainerRef} className="w-full h-full tactical-dark-map" />
 
               {/* Map Overlay Legend */}
               <div className="absolute top-3 left-3 z-10 p-2.5 rounded-xl bg-slate-950/90 border border-slate-700/80 text-[10px] space-y-1 font-mono text-slate-300 shadow-2xl backdrop-blur-md">
@@ -999,7 +999,14 @@ export function GuardianTracePage() {
               {predictions.map((p, idx) => (
                 <div
                   key={idx}
-                  className="p-3 rounded-xl border border-border/80 bg-background/80 hover:border-emerald-500/60 transition-all space-y-1.5"
+                  onClick={() => {
+                    sound.playRadarPing();
+                    if (mapRef.current) {
+                      mapRef.current.flyTo({ center: [p.predicted_lon, p.predicted_lat], zoom: 14.5, duration: 800 });
+                    }
+                  }}
+                  className="p-3 rounded-xl border border-border/80 bg-background/80 hover:border-emerald-500/80 hover:bg-emerald-950/20 cursor-pointer transition-all space-y-1.5"
+                  title="Click to zoom map to this predicted destination"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
@@ -1025,7 +1032,10 @@ export function GuardianTracePage() {
                     </span>
                     <Button
                       size="sm"
-                      onClick={() => handleDispatchPCR(p)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDispatchPCR(p);
+                      }}
                       className="h-6 text-[10px] bg-red-600 hover:bg-red-700 text-white font-bold px-2 flex items-center gap-1 shadow-sm"
                     >
                       <Navigation className="h-2.5 w-2.5" />
@@ -1084,7 +1094,14 @@ export function GuardianTracePage() {
                 {filteredSightings.map((s, idx) => (
                   <div
                     key={idx}
-                    className="p-2 rounded-lg border border-border/60 bg-background/50 text-xs flex items-center justify-between gap-2"
+                    onClick={() => {
+                      sound.playRadarPing();
+                      if (mapRef.current) {
+                        mapRef.current.flyTo({ center: [s.lon, s.lat], zoom: 15, duration: 800 });
+                      }
+                    }}
+                    className="p-2 rounded-lg border border-border/60 bg-background/50 hover:border-cyan-500/70 hover:bg-cyan-950/20 cursor-pointer transition-all text-xs flex items-center justify-between gap-2"
+                    title={`Click to focus map on sensor event #${idx + 1}`}
                   >
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="font-mono text-[10px] font-bold text-primary shrink-0">

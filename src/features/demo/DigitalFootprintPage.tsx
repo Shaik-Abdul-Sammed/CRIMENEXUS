@@ -40,7 +40,7 @@ import { DocumentPreviewModal } from '../../components/common/DocumentPreviewMod
 import { sound } from '../../utils/soundEffects';
 import { useToast } from '../../components/ui/Toast';
 
-// 100% Free OpenStreetMap Raster Basemap
+// 100% Free OpenStreetMap Raster Basemap with Tactical Dark Mode Paint
 const MAP_STYLE: maplibregl.StyleSpecification = {
   version: 8,
   sources: {
@@ -58,6 +58,11 @@ const MAP_STYLE: maplibregl.StyleSpecification = {
       source: 'osm-tiles',
       minzoom: 0,
       maxzoom: 19,
+      paint: {
+        'raster-brightness-max': 0.65,
+        'raster-contrast': 0.25,
+        'raster-saturation': -0.92,
+      },
     },
   ],
 };
@@ -259,6 +264,66 @@ export function DigitalFootprintPage() {
           'circle-stroke-opacity': 0.85,
         },
       });
+
+      // Render Initial Mobile Data & Digital Footprint on load
+      const initialCoords = [
+        [77.1900, 28.6520],
+        [77.2197, 28.6328],
+        [77.2885, 28.6110],
+        [77.3265, 28.5710],
+        [77.3649, 28.6280],
+      ];
+      const routeSrc = map.getSource('uber-route') as maplibregl.GeoJSONSource | undefined;
+      if (routeSrc) {
+        routeSrc.setData({
+          type: 'Feature',
+          properties: {},
+          geometry: { type: 'LineString', coordinates: initialCoords },
+        });
+      }
+
+      // Initial Cell Mast Marker
+      const mastEl = document.createElement('div');
+      mastEl.className = 'cursor-pointer';
+      mastEl.innerHTML = `
+        <div style="display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 0 10px rgba(6,182,212,0.9));">
+          <div style="background: #0891b2; color: white; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; border: 1px solid #22d3ee; white-space: nowrap; margin-bottom: 2px;">
+            📡 NOIDA-62 CELL TOWER (IMEI PINNED)
+          </div>
+          <div style="width: 26px; height: 26px; border-radius: 9999px; background: #06b6d4; border: 2px solid white; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+            📱
+          </div>
+        </div>
+      `;
+      const mastMarker = new maplibregl.Marker({ element: mastEl })
+        .setLngLat([77.3620, 28.6275])
+        .setPopup(new maplibregl.Popup({ offset: 12 }).setHTML('<b>Cell Mast Sector 62 #04</b><br/>Static IMEI 358912093847291<br/>Timing Advance TA=340m'))
+        .addTo(map);
+      markersRef.current.push(mastMarker);
+
+      // Initial Safehouse Target Marker
+      const safehouseEl = document.createElement('div');
+      safehouseEl.className = 'cursor-pointer';
+      safehouseEl.innerHTML = `
+        <div style="display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 0 14px rgba(239,68,68,0.95));">
+          <div style="background: #dc2626; color: white; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; border: 1px solid #fca5a5; white-space: nowrap; margin-bottom: 2px;">
+            🏚️ RAJAN SAFEHOUSE (C-402)
+          </div>
+          <div style="width: 28px; height: 28px; border-radius: 9999px; background: #b91c1c; border: 2.5px solid white; display: flex; align-items: center; justify-content: center; font-size: 13px;">
+            🎯
+          </div>
+        </div>
+      `;
+      const safehouseMarker = new maplibregl.Marker({ element: safehouseEl })
+        .setLngLat([77.3649, 28.6280])
+        .setPopup(new maplibregl.Popup({ offset: 15 }).setHTML('<b>Fugitive Safehouse</b><br/>Flat 402, Green View Apts, Sec 62<br/>Smart Meter: +420% kWh Surge'))
+        .addTo(map);
+      markersRef.current.push(safehouseMarker);
+
+      // Fit bounds to corridor
+      const b = new maplibregl.LngLatBounds();
+      initialCoords.forEach((c) => b.extend(c as [number, number]));
+      map.fitBounds(b, { padding: 60, duration: 800, maxZoom: 13.5 });
     });
 
     mapRef.current = map;
@@ -697,7 +762,7 @@ export function DigitalFootprintPage() {
             </div>
 
             <div className="h-[360px] w-full relative">
-              <div ref={mapContainerRef} className="w-full h-full" />
+              <div ref={mapContainerRef} className="w-full h-full tactical-dark-map" />
 
               {/* Map Floating HUD Legend */}
               <div className="absolute bottom-3 left-3 z-10 p-2.5 rounded-lg bg-slate-950/90 border border-slate-700/80 text-[10px] space-y-1 font-mono text-slate-300 shadow-xl backdrop-blur-md">

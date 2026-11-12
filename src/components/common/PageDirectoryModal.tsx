@@ -32,11 +32,13 @@ import {
   FileSearch,
   ExternalLink,
   ScrollText,
+  Brain,
 } from 'lucide-react';
 import { useAppStore } from '../../stores/appStore';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { sound } from '../../utils/soundEffects';
+import { ForensicAlgorithmsHubModal } from './ForensicAlgorithmsHubModal';
 
 export interface AppDirectoryPage {
   id: string;
@@ -57,6 +59,7 @@ export function PageDirectoryModal() {
   const { pageDirectoryOpen, setPageDirectoryOpen } = useAppStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
+  const [algoModalOpen, setAlgoModalOpen] = useState(false);
   const navigate = useNavigate();
 
   // 25 Comprehensive Application Pages in Logical Operational Sequence
@@ -539,6 +542,17 @@ export function PageDirectoryModal() {
                   <Badge className="bg-primary text-black font-extrabold text-[10px] px-2">
                     30 PAGES ORDERED
                   </Badge>
+                  <button
+                    onClick={() => {
+                      sound.playClickSound();
+                      setAlgoModalOpen(true);
+                    }}
+                    className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg border border-purple-500/50 bg-purple-950/60 hover:bg-purple-900/60 text-purple-200 text-[11px] font-bold transition-all shadow-sm"
+                    title="Open 20 Deep AI & Mathematical Algorithms Directory"
+                  >
+                    <Brain className="h-3 w-3 text-purple-400" />
+                    <span>⚡ 20 Deep AI Models</span>
+                  </button>
                 </div>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Complete directory of all 30 operational pages arranged in strict daily investigation usage sequence
@@ -725,6 +739,10 @@ export function PageDirectoryModal() {
           </div>
         </div>
       </div>
+      <ForensicAlgorithmsHubModal
+        isOpen={algoModalOpen}
+        onClose={() => setAlgoModalOpen(false)}
+      />
     </div>
   );
 

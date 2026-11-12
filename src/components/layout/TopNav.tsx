@@ -28,6 +28,7 @@ import {
   Shield,
   ShieldAlert,
   ShieldCheck,
+  Brain,
 } from 'lucide-react';
 import { sound } from '../../utils/soundEffects';
 import { useAppStore, FigmaTheme } from '../../stores/appStore';
@@ -42,6 +43,7 @@ import { KeyboardShortcutsModal } from '../common/KeyboardShortcutsModal';
 import { PanicLockModal } from '../common/PanicLockModal';
 import { AccessibilityBar } from '../common/AccessibilityBar';
 import { WhatsNewChangelogModal } from '../common/WhatsNewChangelogModal';
+import { ForensicAlgorithmsHubModal } from '../common/ForensicAlgorithmsHubModal';
 import { Lock } from 'lucide-react';
 
 export function TopNav() {
@@ -75,6 +77,7 @@ export function TopNav() {
   const [isPanicLocked, setIsPanicLocked] = useState(false);
   const [isServerOnline, setIsServerOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
   const [whatsNewOpen, setWhatsNewOpen] = useState(false);
+  const [algoHubOpen, setAlgoHubOpen] = useState(false);
 
   useEffect(() => {
     const handleOnline = () => setIsServerOnline(true);
@@ -306,6 +309,21 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           <Sparkles className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
           <span className="hidden 2xl:inline text-[11px]">Features</span>
           <span className="px-1 py-0.2 rounded-full bg-cyan-400/20 text-cyan-300 text-[9px] font-mono font-extrabold">15</span>
+        </button>
+
+        {/* 4b. 20 Deep AI Models & Forensic Algorithms Hub */}
+        <button
+          onClick={() => {
+            sound.playClickSound();
+            setAlgoHubOpen(true);
+          }}
+          className="flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg border border-purple-500/50 bg-purple-950/50 hover:bg-purple-900/50 text-purple-200 text-xs font-bold transition-all shadow-sm shrink-0"
+          title="20 Deep Mathematical & Forensic AI Algorithms Hub (LaTeX Formulas & Live Real-Time Calculators)"
+          aria-label="20 Deep AI Models"
+        >
+          <Brain className="h-3.5 w-3.5 text-purple-400 shrink-0" />
+          <span className="hidden xl:inline text-[11px] font-black">20 AI Models</span>
+          <span className="px-1.5 py-0.2 rounded-full bg-purple-500/30 text-purple-200 text-[9px] font-mono font-black border border-purple-400/40">20</span>
         </button>
 
         {/* 5. 1-Click Vernacular Full Page Language Switcher (Directly on TopNav) */}
@@ -885,6 +903,10 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
     <WhatsNewChangelogModal
       isOpen={whatsNewOpen}
       onClose={() => setWhatsNewOpen(false)}
+    />
+    <ForensicAlgorithmsHubModal
+      isOpen={algoHubOpen}
+      onClose={() => setAlgoHubOpen(false)}
     />
   </>
 );

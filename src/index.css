@@ -223,6 +223,24 @@
   }
 }
 
+/* Tactical Dark Mode Inversion for OpenStreetMap Raster Tiles - 100% Watermark-Free & Dark Cyber Aesthetic */
+.tactical-dark-map canvas.maplibregl-canvas {
+  filter: invert(90%) hue-rotate(180deg) brightness(85%) contrast(115%) saturate(80%);
+}
+
+.tactical-dark-map .maplibregl-ctrl-bottom-right {
+  opacity: 0.65;
+}
+
+.tactical-dark-map .maplibregl-ctrl-attrib {
+  background-color: rgba(15, 23, 42, 0.75) !important;
+  color: #94a3b8 !important;
+}
+
+.tactical-dark-map .maplibregl-ctrl-attrib a {
+  color: #38bdf8 !important;
+}
+
 /* High Contrast Mode for Field Officers in Harsh Sunlight */
 .high-contrast {
   filter: contrast(130%) brightness(105%) !important;

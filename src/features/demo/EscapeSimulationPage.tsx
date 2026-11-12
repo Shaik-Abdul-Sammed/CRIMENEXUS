@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import * as maplibregl from 'maplibre-gl';
 import {
@@ -39,7 +39,7 @@ import { sound } from '../../utils/soundEffects';
 import { useToast } from '../../components/ui/Toast';
 import { Link } from 'react-router-dom';
 
-// Free OpenStreetMap Raster Style (Guarantees zero API keys, no black screens)
+// Free OpenStreetMap Raster Style with Tactical Dark Mode Paint (Zero API keys, zero watermarks)
 const MAP_STYLE: maplibregl.StyleSpecification = {
   version: 8,
   sources: {
@@ -57,9 +57,44 @@ const MAP_STYLE: maplibregl.StyleSpecification = {
       source: 'osm-tiles',
       minzoom: 0,
       maxzoom: 19,
+      paint: {
+        'raster-brightness-max': 0.65,
+        'raster-contrast': 0.25,
+        'raster-saturation': -0.92,
+      },
     },
   ],
 };
+
+// Spatial Ground Truth Constants for Instant Offline-Resilient Tactical Rendering
+const ESCAPE_CORRIDOR_COORDS: Array<[number, number]> = [
+  [77.2197, 28.6328], // Connaught Place (Origin)
+  [77.3265, 28.5710], // Sector 18 (Plate Swap Locus)
+  [77.4100, 28.5800], // Greater Noida Expressway
+  [77.5510, 28.1402], // Yamuna Toll KM 48 (FASTag Checkpoint)
+  [77.4500, 28.5200], // Expressway Return Link
+  [77.3649, 28.6280], // Sector 62 Safehouse (Rajan Destination)
+];
+
+const SMURFING_MULES_NODES = [
+  { id: 'MULE-01', bank: 'HDFC Bank ATM', lon: 77.3280, lat: 28.5720, amount: '₹49,000' },
+  { id: 'MULE-02', bank: 'SBI e-Corner', lon: 77.3350, lat: 28.5780, amount: '₹48,500' },
+  { id: 'MULE-03', bank: 'ICICI Sector 18', lon: 77.3210, lat: 28.5690, amount: '₹49,000' },
+  { id: 'MULE-04', bank: 'Axis Bank CP', lon: 77.2210, lat: 28.6310, amount: '₹49,500' },
+  { id: 'MULE-05', bank: 'PNB Lajpat Nagar', lon: 77.2410, lat: 28.5680, amount: '₹48,000' },
+  { id: 'MULE-06', bank: 'Kotak Gr. Noida', lon: 77.4120, lat: 28.5820, amount: '₹49,000' },
+  { id: 'MULE-07', bank: 'Bank of Baroda', lon: 77.3680, lat: 28.6190, amount: '₹47,500' },
+  { id: 'MULE-08', bank: 'IndusInd Sec 62', lon: 77.3610, lat: 28.6250, amount: '₹49,000' },
+  { id: 'MULE-09', bank: 'Yes Bank Atta', lon: 77.3290, lat: 28.5660, amount: '₹49,000' },
+  { id: 'MULE-10', bank: 'Canara Sec 16', lon: 77.3190, lat: 28.5810, amount: '₹48,800' },
+];
+
+const QAOA_INTERCEPT_ROUTE_COORDS: Array<[number, number]> = [
+  [77.3550, 28.6050], // PCR Unit Alpha-04 (Sector 58)
+  [77.3580, 28.6110], // Fortis Hospital Crossing
+  [77.3615, 28.6200], // Electronic City Underpass
+  [77.3649, 28.6280], // Sector 62 Safehouse Intercept Locus
+];
 
 interface Step1Data {
   status: string;
@@ -158,6 +193,250 @@ export function EscapeSimulationPage() {
     return () => clearInterval(interval);
   }, [simulationCompleted]);
 
+  // Render Initial Active Tactical Corridor on Map Load or Reset
+  const renderInitialTacticalOverview = useCallback((mapInstance?: maplibregl.Map | null) => {
+    const targetMap = mapInstance || mapRef.current;
+    if (!targetMap || !targetMap.isStyleLoaded()) return;
+
+    // Clear existing markers
+    markersRef.current.forEach((m) => m.remove());
+    markersRef.current = [];
+
+    // 1. Draw Getaway Trajectory Corridor
+    const corridorSrc = targetMap.getSource('corridor-line-source') as maplibregl.GeoJSONSource | undefined;
+    if (corridorSrc) {
+      corridorSrc.setData({
+        type: 'Feature',
+        properties: {},
+        geometry: { type: 'LineString', coordinates: ESCAPE_CORRIDOR_COORDS },
+      });
+    }
+
+    // Reset Intercept Line
+    const interceptSrc = targetMap.getSource('intercept-line-source') as maplibregl.GeoJSONSource | undefined;
+    if (interceptSrc) {
+      interceptSrc.setData({
+        type: 'Feature',
+        properties: {},
+        geometry: { type: 'LineString', coordinates: [] },
+      });
+    }
+
+    // 2. Drop Rajan Getaway Vehicle Marker at Origin (Connaught Place -> Sector 18)
+    const rajanEl = document.createElement('div');
+    rajanEl.className = 'cursor-pointer';
+    rajanEl.innerHTML = `
+      <div style="display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 0 14px rgba(239,68,68,0.9));">
+        <div style="background: #dc2626; color: white; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 4px; border: 1.5px solid white; white-space: nowrap; margin-bottom: 2px;">
+          🎯 TARGET: TS 09 AB 1234 (Rajan)
+        </div>
+        <div style="width: 32px; height: 32px; border-radius: 9999px; background: #b91c1c; border: 2.5px solid white; display: flex; align-items: center; justify-content: center; font-size: 15px; animation: pulse 1.5s infinite;">
+          🚗
+        </div>
+      </div>
+    `;
+    const rajanMarker = new maplibregl.Marker({ element: rajanEl })
+      .setLngLat([77.2197, 28.6328])
+      .setPopup(new maplibregl.Popup({ offset: 15 }).setHTML('<b>Rajan Verma (Target)</b><br/>Scorpio TS 09 AB 1234<br/>Speed: 118 km/h'))
+      .addTo(targetMap);
+    markersRef.current.push(rajanMarker);
+
+    // 3. Drop FASTag ANPR Toll Camera Checkpoint (Yamuna Toll KM 48)
+    const tollEl = document.createElement('div');
+    tollEl.className = 'cursor-pointer';
+    tollEl.innerHTML = `
+      <div style="display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 0 12px rgba(245,158,11,0.9));">
+        <div style="background: #d97706; color: white; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; border: 1px solid white; white-space: nowrap; margin-bottom: 2px;">
+          📡 FASTag RFID: Yamuna Toll KM 48
+        </div>
+        <div style="width: 26px; height: 26px; border-radius: 9999px; background: #b45309; border: 2px solid white; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+          📷
+        </div>
+      </div>
+    `;
+    const tollMarker = new maplibregl.Marker({ element: tollEl })
+      .setLngLat([77.5510, 28.1402])
+      .setPopup(new maplibregl.Popup({ offset: 15 }).setHTML('<b>Yamuna Expressway Toll KM 48</b><br/>ANPR Camera Cam-04 & FASTag Antenna'))
+      .addTo(targetMap);
+    markersRef.current.push(tollMarker);
+
+    // 4. Drop Sector 62 Safehouse Beacon
+    const safehouseEl = document.createElement('div');
+    safehouseEl.className = 'cursor-pointer';
+    safehouseEl.innerHTML = `
+      <div style="display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 0 14px rgba(168,85,247,0.9));">
+        <div style="background: #9333ea; color: white; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; border: 1px solid white; white-space: nowrap; margin-bottom: 2px;">
+          🏚️ Unmapped Safehouse (Sector 62)
+        </div>
+        <div style="width: 26px; height: 26px; border-radius: 9999px; background: #7e22ce; border: 2px solid white; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+          📍
+        </div>
+      </div>
+    `;
+    const safehouseMarker = new maplibregl.Marker({ element: safehouseEl })
+      .setLngLat([77.3649, 28.6280])
+      .setPopup(new maplibregl.Popup({ offset: 15 }).setHTML('<b>Predicted Safehouse</b><br/>Sector 62, Noida<br/>Smart Meter Draw: +420%'))
+      .addTo(targetMap);
+    markersRef.current.push(safehouseMarker);
+
+    // 5. Drop PCR Patrol Unit Alpha-04 (Sector 58 Noida)
+    const pcrEl = document.createElement('div');
+    pcrEl.className = 'cursor-pointer';
+    pcrEl.innerHTML = `
+      <div style="display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 0 14px rgba(37,99,235,0.9));">
+        <div style="background: #2563eb; color: white; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; border: 1px solid white; white-space: nowrap; margin-bottom: 2px;">
+          👮 PCR PATROL ALPHA-04
+        </div>
+        <div style="width: 28px; height: 28px; border-radius: 9999px; background: #1d4ed8; border: 2px solid white; display: flex; align-items: center; justify-content: center; font-size: 13px;">
+          🚔
+        </div>
+      </div>
+    `;
+    const pcrMarker = new maplibregl.Marker({ element: pcrEl })
+      .setLngLat([77.3550, 28.6050])
+      .setPopup(new maplibregl.Popup({ offset: 15 }).setHTML('<b>PCR Patrol Unit Alpha-04</b><br/>Ch-04 VHF Tactical Standby'))
+      .addTo(targetMap);
+    markersRef.current.push(pcrMarker);
+
+    // Auto-fit camera to frame entire tactical corridor
+    const bounds = new maplibregl.LngLatBounds();
+    ESCAPE_CORRIDOR_COORDS.forEach((c) => bounds.extend(c));
+    bounds.extend([77.3550, 28.6050]);
+    targetMap.fitBounds(bounds, { padding: 70, duration: 900, maxZoom: 13 });
+  }, []);
+
+  // Step 1 Visual Map Renderer (Vehicle Swap & FASTag Fusion)
+  const renderStep1Map = useCallback(() => {
+    if (!mapRef.current) return;
+    markersRef.current.forEach((m) => m.remove());
+    markersRef.current = [];
+
+    const tollCoords = [77.5510, 28.1402] as [number, number];
+    mapRef.current.flyTo({ center: tollCoords, zoom: 14.5, duration: 1100 });
+
+    const el = document.createElement('div');
+    el.innerHTML = `
+      <div style="display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 0 18px rgba(239,68,68,1));">
+        <div style="background: #dc2626; color: white; font-size: 10px; font-weight: 900; padding: 3px 10px; border-radius: 6px; border: 2px solid white; white-space: nowrap; margin-bottom: 4px; box-shadow: 0 0 15px rgba(239,68,68,0.8);">
+          🚨 CLONED PLATE SWAP: DL 01 XY 9876 (Rajan)
+        </div>
+        <div style="position: relative; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+          <div style="position: absolute; width: 40px; height: 40px; border-radius: 9999px; background: rgba(239,68,68,0.4); animation: ping 1s infinite;"></div>
+          <div style="width: 28px; height: 28px; border-radius: 9999px; background: #b91c1c; border: 3px solid white; display: flex; align-items: center; justify-content: center; font-size: 14px;">
+            🚗
+          </div>
+        </div>
+        <div style="background: #1e293b; color: #f59e0b; border: 1px solid #f59e0b; font-size: 9px; font-family: monospace; font-weight: bold; padding: 1px 6px; border-radius: 3px; margin-top: 2px;">
+          FASTag: 34161FA890 (Chassis Matched)
+        </div>
+      </div>
+    `;
+    const marker = new maplibregl.Marker({ element: el })
+      .setLngLat(tollCoords)
+      .setPopup(new maplibregl.Popup({ offset: 20 }).setHTML('<b>ANPR + FASTag Fused!</b><br/>Plate switched from TS 09 AB 1234 to DL 01 XY 9876.<br/>Chassis Match: 99.4%'))
+      .addTo(mapRef.current);
+    markersRef.current.push(marker);
+  }, []);
+
+  // Step 2 Visual Map Renderer (Smurfing Liquidation & ATM Mules Freeze)
+  const renderStep2Map = useCallback(() => {
+    const curMap = mapRef.current;
+    if (!curMap) return;
+    markersRef.current.forEach((m) => m.remove());
+    markersRef.current = [];
+
+    const bounds = new maplibregl.LngLatBounds();
+    SMURFING_MULES_NODES.forEach((node) => {
+      bounds.extend([node.lon, node.lat]);
+      const el = document.createElement('div');
+      el.className = 'cursor-pointer';
+      el.innerHTML = `
+        <div style="display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 0 10px rgba(220,38,38,0.9));">
+          <div style="background: #991b1b; color: white; font-size: 9px; font-weight: 800; padding: 1px 6px; border-radius: 4px; border: 1px solid #f87171; white-space: nowrap; margin-bottom: 2px;">
+            🔒 FROZEN ${node.amount}
+          </div>
+          <div style="width: 24px; height: 24px; border-radius: 9999px; background: #b91c1c; border: 2px solid white; display: flex; align-items: center; justify-content: center; font-size: 11px;">
+            🏧
+          </div>
+        </div>
+      `;
+      const marker = new maplibregl.Marker({ element: el })
+        .setLngLat([node.lon, node.lat])
+        .setPopup(new maplibregl.Popup({ offset: 12 }).setHTML(`<b>${node.id} — ${node.bank}</b><br/>Amount Frozen: ${node.amount}<br/>Statutory Order: Sec 106 BNSS`))
+        .addTo(curMap);
+      markersRef.current.push(marker);
+    });
+
+    curMap.fitBounds(bounds, { padding: 60, duration: 1000, maxZoom: 14 });
+  }, []);
+
+  // Step 3 Visual Map Renderer (Safehouse & Green Glowing QAOA Intercept Vector)
+  const renderStep3Map = useCallback(() => {
+    if (!mapRef.current) return;
+    markersRef.current.forEach((m) => m.remove());
+    markersRef.current = [];
+
+    const safehouseCoords = [77.3649, 28.6280] as [number, number];
+    const pcrCoords = [77.3550, 28.6050] as [number, number];
+
+    // Draw Green Dashed QAOA Intercept Line
+    const src = mapRef.current.getSource('intercept-line-source') as maplibregl.GeoJSONSource | undefined;
+    if (src) {
+      src.setData({
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'LineString',
+          coordinates: QAOA_INTERCEPT_ROUTE_COORDS,
+        },
+      });
+    }
+
+    // Drop Pulsing Red Marker for Rajan Safehouse
+    const rajanEl = document.createElement('div');
+    rajanEl.innerHTML = `
+      <div style="display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 0 20px rgba(220,38,38,1));">
+        <div style="background: #dc2626; color: white; font-size: 10px; font-weight: 900; padding: 3px 8px; border-radius: 5px; border: 2px solid white; white-space: nowrap; margin-bottom: 2px;">
+          🎯 RAJAN SAFEHOUSE (SECTOR 62)
+        </div>
+        <div style="position: relative; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;">
+          <div style="position: absolute; width: 38px; height: 38px; border-radius: 9999px; background: rgba(220,38,38,0.5); animation: ping 1.2s infinite;"></div>
+          <div style="width: 26px; height: 26px; border-radius: 9999px; background: #b91c1c; border: 3px solid white; display: flex; align-items: center; justify-content: center; font-size: 14px;">
+            🚨
+          </div>
+        </div>
+      </div>
+    `;
+    const rajanMarker = new maplibregl.Marker({ element: rajanEl })
+      .setLngLat(safehouseCoords)
+      .addTo(mapRef.current);
+    markersRef.current.push(rajanMarker);
+
+    // Drop Blue Marker for PCR-04 Intercept Squad
+    const pcrEl = document.createElement('div');
+    pcrEl.innerHTML = `
+      <div style="display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 0 18px rgba(37,99,235,1));">
+        <div style="background: #2563eb; color: white; font-size: 10px; font-weight: 900; padding: 3px 8px; border-radius: 5px; border: 2px solid white; white-space: nowrap; margin-bottom: 2px;">
+          👮 PCR VAN ALPHA-04 (INTERCEPTING)
+        </div>
+        <div style="width: 30px; height: 30px; border-radius: 9999px; background: #1d4ed8; border: 2.5px solid white; display: flex; align-items: center; justify-content: center; font-size: 14px;">
+          🚔
+        </div>
+      </div>
+    `;
+    const pcrMarker = new maplibregl.Marker({ element: pcrEl })
+      .setLngLat(pcrCoords)
+      .addTo(mapRef.current);
+    markersRef.current.push(pcrMarker);
+
+    // Frame both points with smooth zoom
+    const bounds = new maplibregl.LngLatBounds();
+    bounds.extend(safehouseCoords);
+    bounds.extend(pcrCoords);
+    QAOA_INTERCEPT_ROUTE_COORDS.forEach((c) => bounds.extend(c));
+    mapRef.current.fitBounds(bounds, { padding: 80, duration: 1100, maxZoom: 15 });
+  }, []);
+
   // Initialize MapLibre GL Map
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -166,13 +445,47 @@ export function EscapeSimulationPage() {
       container: mapContainerRef.current,
       style: MAP_STYLE,
       center: [77.4000, 28.3800], // NCR Yamuna Corridor overview
-      zoom: 10.2,
+      zoom: 10.4,
       pitch: 0,
       bearing: 0,
     });
 
     map.on('load', () => {
-      // Empty GeoJSON line source for intercept route
+      // 1. Getaway Path Corridor Source & Glow Layers
+      map.addSource('corridor-line-source', {
+        type: 'geojson',
+        data: {
+          type: 'Feature',
+          properties: {},
+          geometry: { type: 'LineString', coordinates: ESCAPE_CORRIDOR_COORDS },
+        },
+      });
+
+      map.addLayer({
+        id: 'corridor-glow',
+        type: 'line',
+        source: 'corridor-line-source',
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: {
+          'line-color': '#06b6d4',
+          'line-width': 8,
+          'line-opacity': 0.35,
+        },
+      });
+
+      map.addLayer({
+        id: 'corridor-dashed',
+        type: 'line',
+        source: 'corridor-line-source',
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: {
+          'line-color': '#22d3ee',
+          'line-width': 3,
+          'line-dasharray': [2, 1],
+        },
+      });
+
+      // 2. QAOA Intercept Route Source & Glowing Green Layers
       map.addSource('intercept-line-source', {
         type: 'geojson',
         data: {
@@ -182,7 +495,6 @@ export function EscapeSimulationPage() {
         },
       });
 
-      // Green Outer Glow
       map.addLayer({
         id: 'intercept-glow',
         type: 'line',
@@ -195,7 +507,6 @@ export function EscapeSimulationPage() {
         },
       });
 
-      // Green Dashed Intercept Line
       map.addLayer({
         id: 'intercept-dashed',
         type: 'line',
@@ -207,6 +518,9 @@ export function EscapeSimulationPage() {
           'line-dasharray': [3, 2],
         },
       });
+
+      // Render Initial Active Corridor & Markers immediately on load!
+      renderInitialTacticalOverview(map);
     });
 
     mapRef.current = map;
@@ -217,24 +531,7 @@ export function EscapeSimulationPage() {
       map.remove();
       mapRef.current = null;
     };
-  }, []);
-
-  // Clear Map Markers & Trajectories
-  const clearMapEles = () => {
-    markersRef.current.forEach((m) => m.remove());
-    markersRef.current = [];
-
-    if (mapRef.current && mapRef.current.isStyleLoaded()) {
-      const src = mapRef.current.getSource('intercept-line-source') as maplibregl.GeoJSONSource | undefined;
-      if (src) {
-        src.setData({
-          type: 'Feature',
-          properties: {},
-          geometry: { type: 'LineString', coordinates: [] },
-        });
-      }
-    }
-  };
+  }, [renderInitialTacticalOverview]);
 
   // Step 1: Execute The Vehicle Swap
   const handleExecuteStep1 = async () => {
@@ -242,37 +539,33 @@ export function EscapeSimulationPage() {
     setActiveStep(1);
     setPlateFlipped(true);
 
+    // Immediately update map to Toll Plaza with plate flip graphic
+    renderStep1Map();
+
     try {
       const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
       const res = await axios.get(`${baseURL}/escape-demo/step/1`);
       setStep1Data(res.data);
       toast.success(res.data.toast_message, 'Fusion Engine Triggered');
-
-      // Update MapLibre Marker for Yamuna Toll Plaza
-      if (mapRef.current) {
-        clearMapEles();
-        const coords = res.data.coordinates || { lat: 28.1402, lon: 77.5510 };
-        mapRef.current.flyTo({ center: [coords.lon, coords.lat], zoom: 13.5, duration: 1000 });
-
-        const el = document.createElement('div');
-        el.className = 'marker-scorpio-swap';
-        el.innerHTML = `
-          <div style="display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 0 12px rgba(239,68,68,0.95));">
-            <div style="background: #dc2626; color: white; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 4px; border: 1.5px solid white; white-space: nowrap; margin-bottom: 3px;">
-              🚨 CLONED PLATE: DL 01 XY 9876 (Rajan)
-            </div>
-            <div style="width: 32px; height: 32px; border-radius: 9999px; background: #b91c1c; border: 3px solid white; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; animation: bounce 1s infinite;">
-              🚗
-            </div>
-          </div>
-        `;
-        const marker = new maplibregl.Marker({ element: el })
-          .setLngLat([coords.lon, coords.lat])
-          .addTo(mapRef.current);
-        markersRef.current.push(marker);
-      }
-    } catch (err) {
-      console.warn('Fallback step 1', err);
+    } catch {
+      // Robust offline fallback data
+      const fallbackStep1: Step1Data = {
+        status: 'SUCCESS',
+        step: 1,
+        attempt_name: 'The Vehicle Swap',
+        criminal_action: 'Swapped plates from TS 09 AB 1234 to DL 01 XY 9876 at Sector 18 flyover.',
+        countermeasure: 'ANPR camera at Yamuna Expressway KM 48 read the cloned plate; FASTag matched physical chassis.',
+        fusion_alert: 'FASTag 34161FA890 matched chassis VIN-9941. Cloned plate DL 01 XY 9876 flagged as stolen.',
+        fastag_id: '34161FA890',
+        original_plate: 'TS 09 AB 1234',
+        cloned_plate: 'DL 01 XY 9876',
+        chassis_match_confidence: 99.4,
+        camera_location: 'Yamuna Expressway Toll KM 48 Checkpoint',
+        coordinates: { lat: 28.1402, lon: 77.5510, name: 'Yamuna Expressway KM 48' },
+        toast_message: 'FASTag + ANPR Fusion: Cloned plate DL 01 XY 9876 linked to TS 09 AB 1234.',
+      };
+      setStep1Data(fallbackStep1);
+      toast.success(fallbackStep1.toast_message, 'Fusion Engine Triggered');
     }
   };
 
@@ -281,13 +574,39 @@ export function EscapeSimulationPage() {
     sound.playRadarPing();
     setActiveStep(2);
 
+    // Immediately render all 10 frozen ATM mule nodes on the map
+    renderStep2Map();
+
     try {
       const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
       const res = await axios.get(`${baseURL}/escape-demo/step/2`);
       setStep2Data(res.data);
       toast.error(res.data.toast_message, 'Smurfing Ring Frozen');
-    } catch (err) {
-      console.warn('Fallback step 2', err);
+    } catch {
+      // Robust offline fallback data
+      const fallbackStep2: Step2Data = {
+        status: 'SUCCESS',
+        step: 2,
+        attempt_name: 'The Smurfing Liquidation',
+        criminal_action: 'Triggered 10 parallel withdrawals under ₹50,000 threshold to evade IT alert.',
+        countermeasure: 'Isolation Forest detected 10 coordinated transactions in 4 mins; statutory freeze dispatched.',
+        hud_message: '10 Mule Accounts Debit-Frozen Under Section 106 BNSS / 102 CrPC.',
+        isolation_forest_score: -0.842,
+        accounts_frozen_count: 10,
+        total_frozen_amount_inr: 490000,
+        target_crypto_wallet: '0x71C...89B1 (USDT TRC-20)',
+        statutory_mandate: 'Section 106 BNSS (Seizure of proceeds of crime)',
+        freeze_notice_id: 'SEC106-2026-DEL-8812',
+        mule_accounts: SMURFING_MULES_NODES.map((n) => ({
+          account_number: `A/C-98${Math.floor(1000 + Math.random() * 9000)}`,
+          bank: n.bank,
+          amount_inr: 49000,
+          status: 'FROZEN',
+        })),
+        toast_message: 'Isolation Forest: 10 mule accounts debit-frozen under Section 106 BNSS.',
+      };
+      setStep2Data(fallbackStep2);
+      toast.error(fallbackStep2.toast_message, 'Smurfing Ring Frozen');
     }
   };
 
@@ -297,80 +616,59 @@ export function EscapeSimulationPage() {
     setActiveStep(3);
     setSimulationCompleted(true);
 
+    // Immediately render Sector 62 Safehouse and green glowing QAOA line
+    renderStep3Map();
+
+    setTimeout(() => {
+      setShowInterceptModal(true);
+    }, 1400);
+
     try {
       const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
       const res = await axios.get(`${baseURL}/escape-demo/step/3`);
       setStep3Data(res.data);
       toast.success(res.data.finale.toast_message, 'Link Prediction Active');
-
-      // Update MapLibre: Red Target Marker, Blue PCR Marker, Green Dashed Line
-      if (mapRef.current && res.data.spatial_data) {
-        clearMapEles();
-        const { rajan_target, pcr_unit, intercept_route } = res.data.spatial_data;
-
-        // Render Green Dashed Intercept Line
-        const src = mapRef.current.getSource('intercept-line-source') as maplibregl.GeoJSONSource | undefined;
-        if (src) {
-          src.setData({
-            type: 'Feature',
-            properties: {},
-            geometry: {
-              type: 'LineString',
-              coordinates: intercept_route.coordinates,
-            },
-          });
-        }
-
-        // Drop Red Pulsing Marker for Rajan
-        const rajanEl = document.createElement('div');
-        rajanEl.innerHTML = `
-          <div style="display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 0 16px rgba(220,38,38,1));">
-            <div style="background: #dc2626; color: white; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; border: 1.5px solid white; white-space: nowrap; margin-bottom: 2px;">
-              🎯 RAJAN SAFEHOUSE (SECTOR 62)
-            </div>
-            <div style="position: relative; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;">
-              <div style="position: absolute; width: 34px; height: 34px; border-radius: 9999px; background: rgba(220,38,38,0.5); animation: ping 1.2s infinite;"></div>
-              <div style="width: 24px; height: 24px; border-radius: 9999px; background: #b91c1c; border: 3px solid white; display: flex; align-items: center; justify-content: center; font-size: 13px;">
-                🚨
-              </div>
-            </div>
-          </div>
-        `;
-        const rajanMarker = new maplibregl.Marker({ element: rajanEl })
-          .setLngLat([rajan_target.longitude, rajan_target.latitude])
-          .addTo(mapRef.current);
-        markersRef.current.push(rajanMarker);
-
-        // Drop Blue Marker for PCR-04
-        const pcrEl = document.createElement('div');
-        pcrEl.innerHTML = `
-          <div style="display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 0 14px rgba(37,99,235,1));">
-            <div style="background: #2563eb; color: white; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; border: 1.5px solid white; white-space: nowrap; margin-bottom: 2px;">
-              👮 PCR VAN ALPHA-04
-            </div>
-            <div style="width: 26px; height: 26px; border-radius: 9999px; background: #1d4ed8; border: 2.5px solid white; display: flex; align-items: center; justify-content: center; font-size: 12px;">
-              🚔
-            </div>
-          </div>
-        `;
-        const pcrMarker = new maplibregl.Marker({ element: pcrEl })
-          .setLngLat([pcr_unit.longitude, pcr_unit.latitude])
-          .addTo(mapRef.current);
-        markersRef.current.push(pcrMarker);
-
-        // Auto-fit bounds
-        const bounds = new maplibregl.LngLatBounds();
-        bounds.extend([rajan_target.longitude, rajan_target.latitude]);
-        bounds.extend([pcr_unit.longitude, pcr_unit.latitude]);
-        mapRef.current.fitBounds(bounds, { padding: 90, duration: 1100, maxZoom: 15 });
-
-        // Trigger Intercept Modal after brief delay
-        setTimeout(() => {
-          setShowInterceptModal(true);
-        }, 1500);
-      }
-    } catch (err) {
-      console.warn('Fallback step 3', err);
+    } catch {
+      // Robust offline fallback data
+      const fallbackStep3: Step3Data = {
+        status: 'SUCCESS',
+        step: 3,
+        attempt_name: 'The Safehouse Hideout & Intercept',
+        criminal_action: 'Powered down mobile devices; drove via back-alleys to unmapped Sector 62 safehouse.',
+        countermeasure: 'Adamic-Adar link prediction identified hideout; QAOA router calculated 4.2 min intercept.',
+        link_prediction: {
+          algorithm: 'Adamic-Adar Graph Link Prediction (arXiv:2403.0112)',
+          predicted_destination: 'Sector 62 Safehouse (Noida)',
+          confidence_percentage: 94.6,
+          shared_triangles: ['Adnan Merchant', 'Vicky Shell', 'Mule A/C 9811'],
+          explainability_card: 'Co-occurrence across 3 shared shell entities predicts Sector 62 as primary hideout.',
+        },
+        quantum_optimization: {
+          algorithm: 'QAOA Multi-Unit Tactical Intercept Router',
+          evaluations: 2048,
+          state: 'OPTIMAL_INTERCEPT_CONVERGED',
+          responding_unit: 'PCR Patrol Unit Alpha-04',
+          distance_km: 2.8,
+          duration_minutes: 4.2,
+        },
+        spatial_data: {
+          rajan_target: { latitude: 28.6280, longitude: 77.3649, label: 'Sector 62 Safehouse', pin_color: '#dc2626' },
+          pcr_unit: { latitude: 28.6050, longitude: 77.3550, label: 'PCR Patrol Unit Alpha-04', pin_color: '#2563eb' },
+          intercept_route: {
+            coordinates: QAOA_INTERCEPT_ROUTE_COORDS,
+            distance_km: 2.8,
+            duration_minutes: 4.2,
+          },
+        },
+        finale: {
+          contained_in_minutes: 11.4,
+          remand_clock_hours: 24,
+          banner_message: 'Suspect Contained at Sector 62 Safehouse. 24-Hour Remand Clock Initiated.',
+          toast_message: 'QAOA Intercept: PCR-04 dispatched. Target locked at Sector 62 safehouse.',
+        },
+      };
+      setStep3Data(fallbackStep3);
+      toast.success(fallbackStep3.finale.toast_message, 'Link Prediction Active');
     }
   };
 
@@ -404,10 +702,7 @@ export function EscapeSimulationPage() {
     setStep1Data(null);
     setStep2Data(null);
     setStep3Data(null);
-    clearMapEles();
-    if (mapRef.current) {
-      mapRef.current.flyTo({ center: [77.4000, 28.3800], zoom: 10.2, duration: 800 });
-    }
+    renderInitialTacticalOverview();
     toast.info('Operation Shatter simulation reset to initial standby.', 'Scenario Reset');
   };
 
@@ -830,7 +1125,7 @@ export function EscapeSimulationPage() {
         </div>
 
         <div className="h-[360px] w-full relative">
-          <div ref={mapContainerRef} className="w-full h-full" />
+          <div ref={mapContainerRef} className="w-full h-full tactical-dark-map" />
 
           {/* Bottom HUD Legend */}
           <div className="absolute bottom-3 left-3 z-10 p-2.5 rounded-lg bg-slate-950/90 border border-slate-700/80 text-[10px] space-y-1 font-mono text-slate-300 shadow-xl backdrop-blur-md">

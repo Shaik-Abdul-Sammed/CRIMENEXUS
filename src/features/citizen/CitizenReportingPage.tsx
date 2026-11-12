@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import * as maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
 import {
   Shield,
   ShieldCheck,
@@ -28,6 +30,7 @@ import {
   X,
   Globe,
   MessageSquare,
+  Crosshair,
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
@@ -39,6 +42,37 @@ import {
   analyzeCompleteness,
   generateFormalPoliceDraft,
 } from './citizenNlpEngine';
+
+// Jurisdictional Police Stations for Instant Citizen-to-Thana Haversine Proximity
+const DELHI_POLICE_STATIONS = [
+  { name: 'Connaught Place Police Station', shortName: 'Connaught Place PS', lat: 28.6328, lon: 77.2197, district: 'New Delhi', callsign: 'POL-03' },
+  { name: 'Karol Bagh Police Station', shortName: 'Karol Bagh PS', lat: 28.6520, lon: 77.1900, district: 'Central Delhi', callsign: 'POL-01' },
+  { name: 'Parliament Street Police Station', shortName: 'Parliament St PS', lat: 28.6234, lon: 77.2110, district: 'New Delhi', callsign: 'POL-04' },
+  { name: 'Hauz Khas Police Station', shortName: 'Hauz Khas PS', lat: 28.5494, lon: 77.2001, district: 'South Delhi', callsign: 'POL-05' },
+  { name: 'Noida Sector 20 Police Station', shortName: 'Noida Sec 20 PS', lat: 28.5815, lon: 77.3308, district: 'Gautam Buddha Nagar', callsign: 'POL-02' },
+  { name: 'Noida Sector 62 Police Station', shortName: 'Noida Sec 62 PS', lat: 28.6280, lon: 77.3649, district: 'Gautam Buddha Nagar', callsign: 'POL-06' },
+  { name: 'Gurugram DLF Phase 1 Police Station', shortName: 'Gurugram DLF-1 PS', lat: 28.4795, lon: 77.0980, district: 'Gurugram', callsign: 'POL-08' },
+  { name: 'Yamuna Expressway Jewar Police Station', shortName: 'Jewar PS', lat: 28.1285, lon: 77.5562, district: 'Yamuna Authority', callsign: 'POL-09' },
+];
+
+function getNearestPoliceStation(lat: number, lon: number) {
+  let nearest = DELHI_POLICE_STATIONS[0];
+  let minDistance = Infinity;
+  for (const stn of DELHI_POLICE_STATIONS) {
+    const dLat = ((stn.lat - lat) * Math.PI) / 180;
+    const dLon = ((stn.lon - lon) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat * Math.PI) / 180) * Math.cos((stn.lat * Math.PI) / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const dist = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    if (dist < minDistance) {
+      minDistance = dist;
+      nearest = stn;
+    }
+  }
+  return { station: nearest, distanceKm: minDistance.toFixed(1) };
+}
 
 interface EvidencePreview {
   file: File;
@@ -89,6 +123,111 @@ export function CitizenReportingPage() {
   } | null>(null);
   const [copied, setCopied] = useState<boolean>(false);
   const [satelliteModalOpen, setSatelliteModalOpen] = useState<boolean>(false);
+
+  // MapLibre Interactive Pin-Drop Map State
+  const mapContainerRef = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<maplibregl.Map | null>(null);
+  const markerRef = useRef<maplibregl.Marker | null>(null);
+
+  const currentNearest = getNearestPoliceStation(latitude || 28.6315, longitude || 77.2167);
+
+  // Initialize Interactive MapLibre Pin-Drop Map
+  useEffect(() => {
+    if (!mapContainerRef.current) return;
+    if (mapRef.current) return;
+
+    const initialLng = longitude || 77.2167;
+    const initialLat = latitude || 28.6315;
+
+    const map = new maplibregl.Map({
+      container: mapContainerRef.current,
+      style: {
+        version: 8,
+        sources: {
+          'osm-tiles': {
+            type: 'raster',
+            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+            tileSize: 256,
+            attribution: '© OpenStreetMap contributors',
+          },
+        },
+        layers: [
+          {
+            id: 'osm-tiles-layer',
+            type: 'raster',
+            source: 'osm-tiles',
+            minzoom: 0,
+            maxzoom: 19,
+          },
+        ],
+      },
+      center: [initialLng, initialLat],
+      zoom: 13.5,
+    });
+
+    map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right');
+
+    // Create Draggable Crime Scene Pin
+    const pinEl = document.createElement('div');
+    pinEl.className = 'cursor-grab active:cursor-grabbing';
+    pinEl.innerHTML = `
+      <div style="display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 0 12px rgba(239,68,68,0.95));">
+        <div style="background: #dc2626; color: white; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; border: 1px solid #fca5a5; white-space: nowrap; margin-bottom: 2px;">
+          📍 CRIME SCENE PIN
+        </div>
+        <div style="width: 26px; height: 26px; border-radius: 9999px; background: #ef4444; border: 2.5px solid white; display: flex; align-items: center; justify-content: center; font-size: 13px;">
+          ⚠️
+        </div>
+      </div>
+    `;
+
+    const marker = new maplibregl.Marker({ element: pinEl, draggable: true })
+      .setLngLat([initialLng, initialLat])
+      .addTo(map);
+
+    marker.on('dragend', () => {
+      const lngLat = marker.getLngLat();
+      const newLat = Number(lngLat.lat.toFixed(5));
+      const newLng = Number(lngLat.lng.toFixed(5));
+      setLatitude(newLat);
+      setLongitude(newLng);
+      const stn = getNearestPoliceStation(newLat, newLng);
+      setLocationName(`Incident Pin: Near ${stn.station.shortName} (${newLat}°N, ${newLng}°E)`);
+      sound.playClickSound();
+    });
+
+    map.on('click', (e: any) => {
+      marker.setLngLat(e.lngLat);
+      const newLat = Number(e.lngLat.lat.toFixed(5));
+      const newLng = Number(e.lngLat.lng.toFixed(5));
+      setLatitude(newLat);
+      setLongitude(newLng);
+      const stn = getNearestPoliceStation(newLat, newLng);
+      setLocationName(`Incident Pin: Near ${stn.station.shortName} (${newLat}°N, ${newLng}°E)`);
+      sound.playClickSound();
+    });
+
+    mapRef.current = map;
+    markerRef.current = marker;
+
+    return () => {
+      map.remove();
+      mapRef.current = null;
+      markerRef.current = null;
+    };
+  }, []);
+
+  const handleSelectPresetLocation = (name: string, lat: number, lon: number) => {
+    sound.playClickSound();
+    setLatitude(lat);
+    setLongitude(lon);
+    setLocationName(name);
+    setLocationSuccess(true);
+    if (mapRef.current && markerRef.current) {
+      markerRef.current.setLngLat([lon, lat]);
+      mapRef.current.flyTo({ center: [lon, lat], zoom: 14.5, duration: 800 });
+    }
+  };
 
   // Real-time NLP computations on citizen description
   const detectedLang = detectLanguage(description);
@@ -182,16 +321,23 @@ export function CitizenReportingPage() {
     setIsLocating(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setLatitude(Number(pos.coords.latitude.toFixed(5)));
-        setLongitude(Number(pos.coords.longitude.toFixed(5)));
-        setLocationName(`GPS: ${pos.coords.latitude.toFixed(4)}°N, ${pos.coords.longitude.toFixed(4)}°E`);
+        const lat = Number(pos.coords.latitude.toFixed(5));
+        const lng = Number(pos.coords.longitude.toFixed(5));
+        setLatitude(lat);
+        setLongitude(lng);
+        const stn = getNearestPoliceStation(lat, lng);
+        setLocationName(`GPS Locus: Near ${stn.station.shortName} (${lat}°N, ${lng}°E)`);
         setIsLocating(false);
         setLocationSuccess(true);
+        if (mapRef.current && markerRef.current) {
+          markerRef.current.setLngLat([lng, lat]);
+          mapRef.current.flyTo({ center: [lng, lat], zoom: 14.5, duration: 800 });
+        }
       },
       (err) => {
         console.warn('Geolocation error:', err);
         setIsLocating(false);
-        alert('Could not retrieve GPS location. Please type the location manually.');
+        alert('Could not retrieve GPS location. Please select a preset locus or click on the map.');
       },
       { timeout: 10000, enableHighAccuracy: true }
     );
@@ -603,6 +749,65 @@ export function CitizenReportingPage() {
                       <span>{latitude ? `${latitude}° N, ${longitude}° E` : 'Pin GPS coordinates'}</span>
                       <span className="text-[10px] text-muted-foreground font-mono">Haversine</span>
                     </div>
+                  </div>
+                </div>
+
+                {/* Interactive MapLibre Tactical Crime Scene Pin-Drop Map */}
+                <div className="space-y-2 pt-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-white flex items-center gap-1.5">
+                      <Crosshair className="h-3.5 w-3.5 text-cyan-400" />
+                      <span>Interactive Scene Locus Pin-Drop (Click map or drag pin)</span>
+                    </span>
+                    <span className="text-[10px] text-cyan-400 font-mono font-bold">
+                      Nearest Thana: {currentNearest.station.shortName} ({currentNearest.distanceKm} km away • {currentNearest.station.callsign})
+                    </span>
+                  </div>
+
+                  <div className="h-56 sm:h-64 w-full rounded-xl border border-cyan-500/40 relative overflow-hidden bg-slate-950 shadow-inner">
+                    <div ref={mapContainerRef} className="w-full h-full tactical-dark-map" />
+
+                    {/* Floating Station Dispatch Banner */}
+                    <div className="absolute top-2.5 left-2.5 z-10 p-2 rounded-lg bg-slate-950/90 border border-slate-700/80 text-[10px] space-y-0.5 font-mono text-slate-300 shadow-xl backdrop-blur-md max-w-xs pointer-events-none">
+                      <div className="flex items-center gap-1 text-emerald-400 font-bold">
+                        <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping shrink-0" />
+                        <span>DIRECT JURISDICTIONAL ROUTING</span>
+                      </div>
+                      <div className="text-white font-bold truncate">
+                        🚔 {currentNearest.station.name}
+                      </div>
+                      <div className="text-[9px] text-cyan-300">
+                        {currentNearest.distanceKm} km radius • {currentNearest.station.district}
+                      </div>
+                    </div>
+
+                    {/* Bottom Map Helper Instruction */}
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 px-3 py-1 rounded-full bg-slate-950/85 border border-slate-700/60 text-[10px] text-slate-300 font-mono shadow-md backdrop-blur-sm pointer-events-none">
+                      📍 Click anywhere on map or drag pin to position exact scene
+                    </div>
+                  </div>
+
+                  {/* Quick Preset Loci Chips */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
+                    <span className="text-[10px] text-muted-foreground font-mono shrink-0">Quick Loci:</span>
+                    {[
+                      { name: 'Connaught Place Block B', lat: 28.6328, lon: 77.2197 },
+                      { name: 'Karol Bagh Metro Gate 2', lat: 28.6520, lon: 77.1900 },
+                      { name: 'Sector 62 Noida Cyber Hub', lat: 28.6280, lon: 77.3649 },
+                      { name: 'Gurugram DLF CyberCity', lat: 28.4950, lon: 77.0878 },
+                      { name: 'Hauz Khas Village', lat: 28.5494, lon: 77.2001 },
+                      { name: 'Jewar Yamuna Toll KM 48', lat: 28.1402, lon: 77.5510 },
+                    ].map((loc) => (
+                      <button
+                        key={loc.name}
+                        type="button"
+                        onClick={() => handleSelectPresetLocation(loc.name, loc.lat, loc.lon)}
+                        className="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700/60 text-[10px] font-mono shrink-0 transition-colors flex items-center gap-1"
+                      >
+                        <span>📍</span>
+                        <span>{loc.name.split(' ')[0]} {loc.name.split(' ')[1]}</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
 

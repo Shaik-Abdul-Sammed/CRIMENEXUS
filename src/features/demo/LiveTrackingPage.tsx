@@ -2059,7 +2059,7 @@ export function LiveTrackingPage() {
             title="Python Tactical GIS Map"
           />
         ) : (
-          <div ref={mapContainerRef} className="w-full h-full" />
+          <div ref={mapContainerRef} className="w-full h-full tactical-dark-map" />
         )}
 
         {/* Active Target Banner when Navigated from Most Wanted Watchlist */}
