@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400">
+  <defs>
+    <linearGradient id="anpr-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#020617"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="400" fill="url(#anpr-bg)"/>
+  <!-- Highway asphalt & lane markings -->
+  <path d="M0 400 L220 200 L380 200 L600 400 Z" fill="#1e293b"/>
+  <line x1="300" y1="200" x2="300" y2="400" stroke="#f59e0b" stroke-width="4" stroke-dasharray="15 15"/>
+  <!-- Scorpio Getaway Vehicle Silhouette -->
+  <path d="M160 270 L200 170 L400 170 L440 270 L470 290 L470 330 L430 330 C430 305 380 305 380 330 L220 330 C220 305 170 305 170 330 L130 330 L130 290 Z" fill="#0f172a" stroke="#475569" stroke-width="2"/>
+  <!-- Tail lights -->
+  <rect x="150" y="260" width="45" height="18" rx="4" fill="#ef4444" filter="drop-shadow(0 0 8px #ef4444)"/>
+  <rect x="405" y="260" width="45" height="18" rx="4" fill="#ef4444" filter="drop-shadow(0 0 8px #ef4444)"/>
+  <!-- ANPR Recognition Box -->
+  <rect x="230" y="270" width="140" height="45" rx="4" fill="#fef08a" stroke="#ca8a04" stroke-width="2"/>
+  <text x="240" y="300" fill="#000000" font-family="monospace" font-size="18" font-weight="900" letter-spacing="2">DL 10 CK 4492</text>
+  <circle cx="236" cy="277" r="3" fill="#1d4ed8"/>
+  <text x="234" y="279" fill="#ffffff" font-family="sans-serif" font-size="3" font-weight="bold">IND</text>
+  <!-- Optical ANPR Overlay Header -->
+  <rect x="20" y="20" width="320" height="50" rx="6" fill="#0f172a" fill-opacity="0.9" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="35" y="42" fill="#fbbf24" font-family="monospace" font-size="13" font-weight="bold">HIGHWAY ANPR OPTICAL SENSOR 09</text>
+  <text x="35" y="58" fill="#cbd5e1" font-family="monospace" font-size="10">SPEED: 118 KM/H • FASTag ANOMALY: CLONED</text>
+  <!-- Target Tag -->
+  <rect x="380" y="20" width="200" height="50" rx="6" fill="#7f1d1d" fill-opacity="0.9" stroke="#ef4444" stroke-width="1.5"/>
+  <text x="395" y="42" fill="#fca5a5" font-family="monospace" font-size="12" font-weight="bold">CRITICAL BOLO ACTIVE</text>
+  <text x="395" y="58" fill="#fecaca" font-family="monospace" font-size="10">Mahindra Scorpio (Black)</text>
+</svg>

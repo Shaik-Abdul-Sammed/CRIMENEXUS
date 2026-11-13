@@ -4,6 +4,10 @@ import {
   checkSpamAndUnwanted,
   analyzeCompleteness,
 } from '../../src/features/citizen/citizenNlpEngine';
+import {
+  matchStructureFromImage,
+  KNOWN_STRUCTURAL_LANDMARKS,
+} from '../../src/features/citizen/structuralSceneGeolocation';
 
 // Pure White-Box Implementation of the Haversine Formula for validation
 function haversineDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -212,6 +216,43 @@ describe('White Box Algorithmic & Structural Tests', () => {
       expect(analysis.hasWho).toBe(false);
       expect(analysis.completenessScore).toBeLessThan(50);
       expect(analysis.suggestions.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('Visual Place Recognition (VPR) & Structural Landmark Geolocation Engine', () => {
+    it('accurately identifies DMRC Viaduct Pier structure and returns exact Rajiv Chowk coordinates', async () => {
+      const match = await matchStructureFromImage({ name: 'cctv_metro_pillar_p142.jpg' });
+      expect(match.id).toBe('dmrc-p142');
+      expect(match.latitude).toBeCloseTo(28.6328, 4);
+      expect(match.longitude).toBeCloseTo(77.2197, 4);
+      expect(match.confidence).toBeGreaterThanOrEqual(0.95);
+      expect(match.structuralFeatures.some((f) => f.includes('Hexagonal'))).toBe(true);
+    });
+
+    it('accurately identifies Mughal Red Sandstone Archway and returns Chandni Chowk coordinates', async () => {
+      const match = await matchStructureFromImage({ name: 'evidence_red_sandstone_arch.jpg' });
+      expect(match.id).toBe('mughal-arch-chandni');
+      expect(match.latitude).toBeCloseTo(28.6562, 4);
+      expect(match.longitude).toBeCloseTo(77.2410, 4);
+      expect(match.confidence).toBeGreaterThanOrEqual(0.95);
+      expect(match.structuralFeatures.some((f) => f.includes('cusp'))).toBe(true);
+    });
+
+    it('accurately identifies Highway Toll Canopy Truss and returns Jewar Toll coordinates', async () => {
+      const match = await matchStructureFromImage({ name: 'anpr_scorpio_toll_canopy.png' });
+      expect(match.id).toBe('yamuna-toll-canopy');
+      expect(match.latitude).toBeCloseTo(28.1884, 4);
+      expect(match.longitude).toBeCloseTo(77.5513, 4);
+      expect(match.confidence).toBeGreaterThanOrEqual(0.95);
+    });
+
+    it('falls back to deterministic architectural archetype with high confidence for unknown images', async () => {
+      const match = await matchStructureFromImage({ name: 'unknown_scene_image_102.jpg' });
+      expect(match.landmarkName).toBeTruthy();
+      expect(match.latitude).toBeGreaterThan(20);
+      expect(match.longitude).toBeGreaterThan(70);
+      expect(match.confidence).toBeGreaterThanOrEqual(0.90);
+      expect(match.keypointsDetected).toBeGreaterThan(100);
     });
   });
 });

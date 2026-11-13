@@ -4,6 +4,7 @@ import hiTranslations from '../locales/hi.json';
 import mrTranslations from '../locales/mr.json';
 import knTranslations from '../locales/kn.json';
 import teTranslations from '../locales/te.json';
+import { translateText, VERNACULAR_TRANSLATIONS } from '../utils/vernacularDictionary';
 
 export type SupportedLanguage = 'en' | 'hi' | 'mr' | 'kn' | 'te';
 
@@ -29,6 +30,9 @@ export const useTranslation = create<TranslationStore>((set, get) => ({
 
   setLanguage: (lang: SupportedLanguage) => {
     localStorage.setItem('crimenexus_lang', lang);
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = lang;
+    }
     set({ language: lang });
   },
 
@@ -37,11 +41,20 @@ export const useTranslation = create<TranslationStore>((set, get) => ({
     const currentIdx = langs.indexOf(get().language);
     const nextLang = langs[(currentIdx + 1) % langs.length];
     localStorage.setItem('crimenexus_lang', nextLang);
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = nextLang;
+    }
     set({ language: nextLang });
   },
 
   t: (path: string): string => {
     const currentLang = get().language;
+
+    // Direct vernacular dictionary translation for arbitrary UI phrases
+    if (currentLang !== 'en' && VERNACULAR_TRANSLATIONS[path.trim()]) {
+      return VERNACULAR_TRANSLATIONS[path.trim()][currentLang as Exclude<SupportedLanguage, 'en'>] || path;
+    }
+
     const currentBundle = resources[currentLang] || resources.en;
     const fallbackBundle = resources.en;
 
@@ -58,7 +71,13 @@ export const useTranslation = create<TranslationStore>((set, get) => ({
 
     if (val !== undefined && typeof val === 'string') return val;
 
-    // Fallback to English
+    // Check vernacular dictionary fallback
+    if (currentLang !== 'en') {
+      const vernacular = translateText(path, currentLang);
+      if (vernacular !== path) return vernacular;
+    }
+
+    // Fallback to English JSON
     let fallbackVal: unknown = fallbackBundle;
     for (const k of keys) {
       if (fallbackVal && typeof fallbackVal === 'object' && k in (fallbackVal as Record<string, unknown>)) {

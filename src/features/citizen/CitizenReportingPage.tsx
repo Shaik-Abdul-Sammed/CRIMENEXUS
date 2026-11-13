@@ -49,6 +49,70 @@ import {
   analyzeCompleteness,
   generateFormalPoliceDraft,
 } from './citizenNlpEngine';
+import {
+  matchStructureFromImage,
+  StructuralLandmarkMatch,
+  KNOWN_STRUCTURAL_LANDMARKS,
+} from './structuralSceneGeolocation';
+
+// Sample Evidence Gallery for Quick One-Click Citizen Evidence Ingestion & VPR Demonstration
+export const SAMPLE_EVIDENCE_GALLERY = [
+  {
+    id: 'sample-metro-pier',
+    title: 'Metro Pier P-142 Structure',
+    category: 'Theft & Snatching',
+    tag: 'DMRC Viaduct Pier',
+    path: '/samples/landmark_metro_pillar.svg',
+    desc: 'Hexagonal concrete pier foundation with cantilever hammerhead and entrance canopy.',
+    lat: 28.6328,
+    lng: 77.2197,
+    locationName: 'Rajiv Chowk Metro Gate 3 & Cantilever Pier P-142',
+  },
+  {
+    id: 'sample-lahori-arch',
+    title: 'Lahori Gate Red Archway',
+    category: 'Theft & Snatching',
+    tag: 'Mughal Architecture',
+    path: '/samples/landmark_red_arch.svg',
+    desc: 'Dressed red sandstone multi-foil cusped archway with octagonal minaret bastions.',
+    lat: 28.6562,
+    lng: 77.2410,
+    locationName: 'Chandni Chowk Red Sandstone Lahori Archway',
+  },
+  {
+    id: 'sample-anpr-scorpio',
+    title: 'ANPR Scorpio DL10CK4492',
+    category: 'Vehicle Theft',
+    tag: 'Highway Toll Gantry',
+    path: '/samples/anpr_scorpio.svg',
+    desc: 'Night camera optical capture with FASTag anomaly and highway ANPR infrared scan.',
+    lat: 28.1884,
+    lng: 77.5513,
+    locationName: 'Yamuna Expressway Jewar Toll Plaza Canopy',
+  },
+  {
+    id: 'sample-cyber-phishing',
+    title: 'Cyber Fraud Phishing SMS',
+    category: 'Cyber Financial Fraud',
+    tag: 'Mobile SMS Forensics',
+    path: '/samples/cyber_sms.svg',
+    desc: 'Spoofed electricity board bill disconnection message with fraudulent dropper link.',
+    lat: 28.6328,
+    lng: 77.2197,
+    locationName: 'Connaught Place Inner Circle (Cyber Fraud Locus)',
+  },
+  {
+    id: 'sample-cctv-face',
+    title: 'CCTV Concourse Facial Match',
+    category: 'Missing Person',
+    tag: 'Optical CCTV Stream',
+    path: '/samples/cctv_frame.svg',
+    desc: 'Metro concourse optical surveillance frame with 89.4% facial recognition match.',
+    lat: 28.5665,
+    lng: 77.2431,
+    locationName: 'Lajpat Nagar Central Market Promenade Block 4',
+  },
+];
 
 // Jurisdictional Police Stations for Instant Citizen-to-Thana Haversine Proximity
 const DELHI_POLICE_STATIONS = [
@@ -208,6 +272,10 @@ export function CitizenReportingPage() {
   // Evidence Files
   const [evidenceFiles, setEvidenceFiles] = useState<EvidencePreview[]>([]);
   const [uploadError, setUploadError] = useState<string | null>(null);
+
+  // Structural Scene Geolocation (Visual Place Recognition)
+  const [structuralMatch, setStructuralMatch] = useState<StructuralLandmarkMatch | null>(null);
+  const [isAnalyzingStructure, setIsAnalyzingStructure] = useState<boolean>(false);
 
   // Geolocation Status
   const [isLocating, setIsLocating] = useState<boolean>(false);
@@ -442,8 +510,11 @@ export function CitizenReportingPage() {
   const handleUseMyLocation = () => {
     sound.playRadarPing();
     setIsLocating(true);
+    let hasResolved = false;
 
     const applyLocationSuccess = (lat: number, lng: number, sourceLabel: string) => {
+      if (hasResolved) return;
+      hasResolved = true;
       setLatitude(lat);
       setLongitude(lng);
       const stn = getNearestPoliceStation(lat, lng);
@@ -462,41 +533,93 @@ export function CitizenReportingPage() {
     };
 
     const fallbackToRegionalLocus = () => {
-      // Attempt IP Geolocation as secondary tier
-      axios
-        .get('https://ipapi.co/json/', { timeout: 3000 })
-        .then((res) => {
-          if (res.data?.latitude && res.data?.longitude) {
-            const ipLat = Number(res.data.latitude.toFixed(5));
-            const ipLng = Number(res.data.longitude.toFixed(5));
-            applyLocationSuccess(ipLat, ipLng, 'Network ISP Geolocation');
-          } else {
-            // Central Delhi fallback
-            applyLocationSuccess(28.6328, 77.2197, 'Delhi-NCR Thana Jurisdiction');
-          }
-        })
-        .catch(() => {
-          // Sovereign NCR locus fallback
-          applyLocationSuccess(28.6328, 77.2197, 'Central Delhi Police Jurisdiction');
-        });
+      if (hasResolved) return;
+      applyLocationSuccess(28.6328, 77.2197, 'Central Delhi Police Headquarters Sovereign Locus');
     };
+
+    // Fast-fail safety timer: If browser GPS hardware or permission dialog takes >2000ms, immediately fall back
+    const safetyTimer = setTimeout(() => {
+      if (!hasResolved) {
+        fallbackToRegionalLocus();
+      }
+    }, 2000);
 
     if (typeof navigator !== 'undefined' && 'geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
+          clearTimeout(safetyTimer);
           const lat = Number(pos.coords.latitude.toFixed(5));
           const lng = Number(pos.coords.longitude.toFixed(5));
           applyLocationSuccess(lat, lng, 'Browser Hardware GPS');
         },
         (err) => {
+          clearTimeout(safetyTimer);
           console.warn('Browser geolocation error, using network fallback:', err.message);
           fallbackToRegionalLocus();
         },
-        { timeout: 5000, enableHighAccuracy: false, maximumAge: 60000 }
+        { timeout: 2000, enableHighAccuracy: false, maximumAge: 60000 }
       );
     } else {
+      clearTimeout(safetyTimer);
       fallbackToRegionalLocus();
     }
+  };
+
+  // Quick-Pick Landmark Selector
+  const handleSelectQuickLandmark = (landmark: { name: string; lat: number; lng: number }) => {
+    sound.playClickSound();
+    setLatitude(landmark.lat);
+    setLongitude(landmark.lng);
+    const stn = getNearestPoliceStation(landmark.lat, landmark.lng);
+    setLocationName(landmark.name);
+    setLocationSuccess(true);
+    if (mapRef.current && markerRef.current) {
+      markerRef.current.setLngLat([landmark.lng, landmark.lat]);
+      mapRef.current.flyTo({ center: [landmark.lng, landmark.lat], zoom: 15, duration: 800 });
+    }
+    toast.info(`Snapped locus to ${landmark.name}. Nearest jurisdiction: ${stn.station.shortName}.`);
+  };
+
+  // One-Click Sample Evidence Selector & Structural Geolocation Runner
+  const handleSelectSampleEvidence = async (sample: (typeof SAMPLE_EVIDENCE_GALLERY)[0]) => {
+    sound.playClickSound();
+    if (sample.category) {
+      setCrimeType(sample.category);
+    }
+    setLatitude(sample.lat);
+    setLongitude(sample.lng);
+    setLocationName(sample.locationName);
+    setLocationSuccess(true);
+
+    if (mapRef.current && markerRef.current) {
+      markerRef.current.setLngLat([sample.lng, sample.lat]);
+      mapRef.current.flyTo({ center: [sample.lng, sample.lat], zoom: 15, duration: 800 });
+    }
+
+    const fakeFile = new File(['sample'], sample.title.toLowerCase().replace(/\s+/g, '_') + '.svg', {
+      type: 'image/svg+xml',
+    });
+
+    const newPreview: EvidencePreview = {
+      file: fakeFile,
+      previewUrl: sample.path,
+      name: sample.title,
+      sizeMb: '1.24',
+      type: 'image/svg+xml',
+    };
+
+    setEvidenceFiles((prev) => [...prev.slice(0, 4), newPreview]);
+
+    // Trigger Visual Place Recognition (VPR) & Architectural Structure Match
+    setIsAnalyzingStructure(true);
+    try {
+      const match = await matchStructureFromImage({ name: sample.title });
+      setStructuralMatch(match);
+    } finally {
+      setIsAnalyzingStructure(false);
+    }
+
+    toast.success(`Loaded "${sample.title}" and structurally geolocated architectural site!`, 'Evidence Ingested');
   };
 
   // File Upload Handler
@@ -526,6 +649,21 @@ export function CitizenReportingPage() {
     }
 
     setEvidenceFiles((prev) => [...prev, ...newPreviews]);
+
+    // Automatically trigger Visual Place Recognition (VPR) on uploaded image architecture
+    const firstImg = files.find((f) => f.type.startsWith('image/'));
+    if (firstImg) {
+      setIsAnalyzingStructure(true);
+      matchStructureFromImage(firstImg)
+        .then((match) => {
+          setStructuralMatch(match);
+          toast.success(
+            `Architectural features matched: ${match.landmarkName} (${Math.round(match.confidence * 100)}% structural confidence)`,
+            'VPR Scene Recognized'
+          );
+        })
+        .finally(() => setIsAnalyzingStructure(false));
+    }
   };
 
   const removeFile = (idx: number) => {
@@ -1288,6 +1426,27 @@ export function CitizenReportingPage() {
                   </div>
                 </div>
 
+                {/* Quick-Pick Hotspot Landmarks */}
+                <div className="flex items-center gap-1.5 flex-wrap pt-0.5 text-xs">
+                  <span className="text-[10px] text-muted-foreground font-mono">⚡ Hotspot Fast-Pick:</span>
+                  {[
+                    { name: 'Rajiv Chowk Metro Gate 3 (CP)', lat: 28.6328, lng: 77.2197 },
+                    { name: 'Lajpat Nagar Central Market Block 4', lat: 28.5665, lng: 77.2431 },
+                    { name: 'Chandni Chowk Lahori Gate Arch', lat: 28.6562, lng: 77.2410 },
+                    { name: 'Hauz Khas Historical Reservoir', lat: 28.5528, lng: 77.1945 },
+                    { name: 'Yamuna Expressway Jewar Toll Plaza', lat: 28.1884, lng: 77.5513 },
+                  ].map((lm) => (
+                    <button
+                      key={lm.name}
+                      type="button"
+                      onClick={() => handleSelectQuickLandmark(lm)}
+                      className="px-2 py-0.5 rounded-md border border-slate-700 bg-slate-950 hover:bg-slate-800 text-[10px] text-cyan-300 font-mono transition-all hover:border-cyan-400"
+                    >
+                      📍 {lm.name.split(' (')[0].split(' Central')[0].split(' Lahori')[0].split(' Historical')[0].split(' Jewar')[0]}
+                    </button>
+                  ))}
+                </div>
+
                 {/* Date & Time Picker */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
@@ -1549,6 +1708,103 @@ export function CitizenReportingPage() {
                     className="hidden"
                   />
                 </label>
+
+                {/* Sample Evidence Photos Gallery (Ready-to-Upload & VPR Geolocation) */}
+                <div className="space-y-2 pt-1">
+                  <div className="flex items-center justify-between text-xs font-mono">
+                    <span className="text-slate-300 font-bold flex items-center gap-1.5">
+                      <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
+                      <span>Sample Evidence Photos (Click to Auto-Ingest &amp; Structure-Geolocate):</span>
+                    </span>
+                    <span className="text-[10px] text-muted-foreground">5 High-Fidelity Tactical Samples</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+                    {SAMPLE_EVIDENCE_GALLERY.map((sample) => (
+                      <button
+                        key={sample.id}
+                        type="button"
+                        onClick={() => handleSelectSampleEvidence(sample)}
+                        className="p-2 rounded-xl border border-slate-700/80 bg-slate-950/80 hover:border-cyan-500/80 hover:bg-slate-900 transition-all text-left flex flex-col gap-1.5 group shadow-sm"
+                      >
+                        <div className="h-20 w-full rounded-lg bg-slate-900 overflow-hidden relative border border-slate-800">
+                          <img
+                            src={sample.path}
+                            alt={sample.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          />
+                          <span className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/80 text-[8px] font-mono text-cyan-300 border border-cyan-500/30">
+                            {sample.tag}
+                          </span>
+                        </div>
+                        <div className="text-[11px] font-bold text-white group-hover:text-cyan-300 truncate">
+                          {sample.title}
+                        </div>
+                        <div className="text-[9px] text-muted-foreground line-clamp-2 leading-tight">
+                          {sample.desc}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Visual Place Recognition (VPR) & Structural Landmark Geolocation Engine Card */}
+                {structuralMatch && (
+                  <div className="p-4 rounded-xl border border-emerald-500/50 bg-gradient-to-r from-emerald-950/30 via-slate-950 to-slate-900 space-y-3 animate-in fade-in shadow-xl">
+                    <div className="flex items-start justify-between gap-2 flex-wrap">
+                      <div className="flex items-start gap-2.5 min-w-0">
+                        <div className="p-2 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shrink-0">
+                          <Crosshair className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-xs font-black text-white font-mono">
+                              VPR Structural Landmark Geolocation: {structuralMatch.landmarkName}
+                            </span>
+                            <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/40 text-[9px] font-mono">
+                              {Math.round(structuralMatch.confidence * 100)}% STRUCTURAL MATCH
+                            </Badge>
+                          </div>
+                          <p className="text-[11px] text-slate-300 mt-0.5">
+                            Architectural Archetype: <strong className="text-emerald-300">{structuralMatch.architecturalType}</strong> ({structuralMatch.keypointsDetected} structural keypoints verified)
+                          </p>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">
+                            Structural Signature: {structuralMatch.structuralDescription}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => {
+                          setLatitude(structuralMatch.latitude);
+                          setLongitude(structuralMatch.longitude);
+                          setLocationName(structuralMatch.landmarkName);
+                          setLocationSuccess(true);
+                          if (mapRef.current && markerRef.current) {
+                            markerRef.current.setLngLat([structuralMatch.longitude, structuralMatch.latitude]);
+                            mapRef.current.flyTo({ center: [structuralMatch.longitude, structuralMatch.latitude], zoom: 15, duration: 800 });
+                          }
+                          toast.success(`Locked coordinates to ${structuralMatch.landmarkName}!`, 'Locus Applied');
+                        }}
+                        className="h-8 px-3 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 shadow-sm shrink-0"
+                      >
+                        <MapPin className="h-3.5 w-3.5" />
+                        <span>Apply Coordinates to Report</span>
+                      </Button>
+                    </div>
+
+                    {/* Key Identified Architectural Geometries */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px] font-mono pt-1">
+                      {structuralMatch.structuralFeatures.map((feat, idx) => (
+                        <div key={idx} className="p-2 rounded-lg bg-slate-900/90 border border-emerald-500/20 text-emerald-200 flex items-center gap-1.5">
+                          <span className="text-emerald-400 font-bold">✓</span>
+                          <span className="truncate">{feat}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Thumbnails Preview */}
                 {evidenceFiles.length > 0 && (

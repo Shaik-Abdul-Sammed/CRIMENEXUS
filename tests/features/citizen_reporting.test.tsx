@@ -147,4 +147,31 @@ describe('CitizenReportingPage Feature Tests', () => {
       expect(screen.getByText(/Satellite Verified/i)).toBeInTheDocument();
     });
   });
+
+  it('allows citizen to click Quick-Pick Hotspot Landmarks to auto-snap GPS coordinates', async () => {
+    renderWithRouter(<CitizenReportingPage />);
+
+    // Click Rajiv Chowk hotspot fast-pick
+    const hotspotBtn = screen.getByRole('button', { name: /📍 Rajiv Chowk/i });
+    fireEvent.click(hotspotBtn);
+
+    // Verify address input received the hotspot location
+    const addressInput = screen.getByPlaceholderText(/e\.g\. Connaught Place Block B \/ Metro Gate 3/i);
+    expect(addressInput).toHaveValue('Rajiv Chowk Metro Gate 3 (CP)');
+  });
+
+  it('allows citizen to select a sample evidence photo and triggers Visual Place Recognition (VPR) structural geolocation', async () => {
+    renderWithRouter(<CitizenReportingPage />);
+
+    // Click sample photo
+    const sampleBtn = screen.getByRole('button', { name: /Metro Pier P-142 Structure/i });
+    fireEvent.click(sampleBtn);
+
+    // Verify structural geolocation card is revealed with confidence badge
+    await waitFor(() => {
+      expect(screen.getByText(/VPR Structural Landmark Geolocation:/i)).toBeInTheDocument();
+      expect(screen.getByText(/STRUCTURAL MATCH/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Apply Coordinates to Report/i })).toBeInTheDocument();
+    });
+  });
 });
