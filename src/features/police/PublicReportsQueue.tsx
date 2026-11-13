@@ -285,7 +285,7 @@ export function PublicReportsQueue() {
           crime_type: crimeTypeFilter === 'ALL' ? undefined : crimeTypeFilter
         }
       });
-      setReports(res.data);
+      setReports(Array.isArray(res.data) ? res.data : []);
       setLoading(false);
     } catch (err: any) {
       console.warn('Failed fetching police reports queue, using fallback records:', err);
@@ -512,7 +512,7 @@ export function PublicReportsQueue() {
   };
 
   // Filtered List
-  const filteredReports = reports.filter((r) => {
+  const filteredReports = (reports || []).filter((r) => {
     const matchesSearch =
       !searchTerm.trim() ||
       r.report_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -574,14 +574,14 @@ export function PublicReportsQueue() {
           <span className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-wider block">
             Total Incoming Reports
           </span>
-          <span className="text-2xl font-black text-white font-mono">{reports.length}</span>
+          <span className="text-2xl font-black text-white font-mono">{(reports || []).length}</span>
         </div>
         <div className="p-4 rounded-xl border border-emerald-500/40 bg-emerald-950/20 space-y-1">
           <span className="text-[10px] font-mono font-bold text-emerald-400 uppercase tracking-wider block">
             AI Satellite Verified
           </span>
           <span className="text-2xl font-black text-emerald-300 font-mono">
-            {reports.filter((r) => r.satellite_verified).length}
+            {(reports || []).filter((r) => r.satellite_verified).length}
           </span>
         </div>
         <div className="p-4 rounded-xl border border-amber-500/40 bg-amber-950/20 space-y-1">
@@ -753,7 +753,7 @@ export function PublicReportsQueue() {
           isOpen={!!selectedReport}
           onClose={() => setSelectedReport(null)}
           title={`Citizen Crime Report • ${selectedReport.report_number}`}
-          size="lg"
+          size="xl"
         >
           <div className="space-y-5 text-xs">
             {/* Top Overview Banner */}
@@ -786,12 +786,12 @@ export function PublicReportsQueue() {
 
             {/* AI Satellite 3-Layer Breakdown */}
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <span className="font-extrabold text-foreground uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-                  <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
+                  <Sparkles className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
                   <span>AI Satellite & Geospatial Verification Layers:</span>
                 </span>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap shrink-0">
                   <Button
                     size="sm"
                     variant="outline"

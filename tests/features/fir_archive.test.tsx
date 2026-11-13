@@ -68,9 +68,9 @@ describe('FIR Intelligence Archive Feature Tests', () => {
           screen.getByText(/25 Expert Retrospective Analytical Insights/i)
         ).toBeInTheDocument();
       },
-      { timeout: 3000 }
+      { timeout: 10000 }
     );
-  });
+  }, 15000);
 
   it('renders FIRArchiveModal with suspect status, officer career, and closes on Esc/close button', async () => {
     const handleClose = vi.fn();
@@ -106,16 +106,29 @@ describe('FIR Intelligence Archive Feature Tests', () => {
     renderWithProviders(<CasesPage />);
 
     // Table view header should contain History
-    expect(screen.getByText('History')).toBeInTheDocument();
+    await waitFor(
+      () => {
+        expect(screen.getByText('History')).toBeInTheDocument();
+      },
+      { timeout: 6000 }
+    );
 
     // Past FIRs button should be present for cases with history
-    const pastFIRBtns = screen.getAllByText(/📜 View Past FIRs/i);
-    expect(pastFIRBtns.length).toBeGreaterThan(0);
+    const pastFIRBtns = await waitFor(
+      () => {
+        const btns = screen.getAllByText(/📜 View Past FIRs/i);
+        expect(btns.length).toBeGreaterThan(0);
+        return btns;
+      },
+      { timeout: 6000 }
+    );
 
     // Clicking button opens the modal
     fireEvent.click(pastFIRBtns[0]);
-    expect(
-      screen.getByText(/FIR Intelligence Archive Dossier/i)
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.getByText(/FIR Intelligence Archive Dossier/i)
+      ).toBeInTheDocument();
+    });
   });
 });

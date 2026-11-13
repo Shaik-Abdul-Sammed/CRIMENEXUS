@@ -298,13 +298,13 @@ export function TacticalCommandHUD() {
     <>
       <Card className="border border-primary/40 bg-slate-950/95 shadow-2xl overflow-hidden space-y-0">
         {/* Top Command Header */}
-        <CardHeader className="p-4 border-b border-border/80 bg-gradient-to-r from-slate-950 via-slate-900 to-primary/10 flex flex-row items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-primary/20 border border-primary/40 text-primary">
+        <CardHeader className="p-4 border-b border-border/80 bg-gradient-to-r from-slate-950 via-slate-900 to-primary/10 flex flex-col xl:flex-row xl:items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <div className="p-2 rounded-xl bg-primary/20 border border-primary/40 text-primary shrink-0">
               <Zap className="h-5 w-5 animate-pulse" />
             </div>
-            <div>
-              <CardTitle className="text-base font-black text-foreground flex items-center gap-2">
+            <div className="min-w-0 flex-1">
+              <CardTitle className="text-base font-black text-foreground flex items-center gap-2 flex-wrap">
                 <span>Tactical Multi-Stream Command HUD</span>
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
@@ -314,14 +314,14 @@ export function TacticalCommandHUD() {
                   REAL-TIME FUSION ACTIVE
                 </Badge>
               </CardTitle>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-[11px] text-muted-foreground truncate">
                 Synchronized ANPR Optical Scans, Multi-Carrier Telecom CDRs, and Core Banking Stream
               </p>
             </div>
           </div>
 
           {/* Action Toolbar */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap shrink-0">
             <Button
               size="sm"
               variant="outline"

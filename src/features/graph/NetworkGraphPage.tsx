@@ -1609,70 +1609,22 @@ export function NetworkGraphPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
-        <div className="min-w-0">
+      {/* Top Header Row: Full-width title + primary operational triggers */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 w-full border-b border-border/60 pb-3">
+        <div className="min-w-0 flex-1">
           <h1 className="text-xl font-extrabold text-foreground flex items-center gap-2 flex-wrap">
             <Network className="h-6 w-6 text-primary shrink-0" />
             <span>{t('graph.title')}</span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30 font-mono font-bold shrink-0">
+              Cytoscape.js Engine
+            </span>
           </h1>
-          <p className="text-xs text-muted-foreground mt-0.5 max-w-3xl">
+          <p className="text-xs text-muted-foreground mt-0.5">
             {t('graph.subtitle')}
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 shrink-0">
-          <Button size="sm" variant="outline" onClick={handleZoomIn} icon={<ZoomIn className="h-4 w-4" />}>
-            {t('graph.zoomIn')}
-          </Button>
-          <Button size="sm" variant="outline" onClick={handleZoomOut} icon={<ZoomOut className="h-4 w-4" />}>
-            {t('graph.zoomOut')}
-          </Button>
-          <Button size="sm" variant="outline" onClick={handleFit} icon={<Maximize2 className="h-4 w-4" />}>
-            {t('graph.fitView')}
-          </Button>
-          <Button size="sm" variant="outline" onClick={handleReset} icon={<RefreshCw className="h-4 w-4" />}>
-            {t('graph.resetLayout')}
-          </Button>
-          <Button size="sm" variant="outline" onClick={handleExportPNG} icon={<Download className="h-4 w-4" />}>
-            {t('graph.exportPng')}
-          </Button>
-          <Button
-            size="sm"
-            variant={shortestPathMode ? 'primary' : 'outline'}
-            onClick={handleToggleShortestPath}
-            className={`flex items-center gap-1.5 ${shortestPathMode ? 'bg-cyan-600 hover:bg-cyan-700 text-white' : 'border-cyan-500/50 hover:bg-cyan-950/30 text-cyan-400'}`}
-            title="Find shortest link between two suspect entities (aStar algorithm)"
-          >
-            <Route className="h-4 w-4" />
-            <span>{shortestPathMode ? 'Shortest Path: Active' : 'Shortest Path'}</span>
-          </Button>
-          <Button
-            size="sm"
-            variant={communityClusteringActive ? 'primary' : 'outline'}
-            onClick={handleToggleClustering}
-            className={`flex items-center gap-1.5 ${communityClusteringActive ? 'bg-purple-600 hover:bg-purple-700 text-white' : 'border-purple-500/50 hover:bg-purple-950/30 text-purple-400'}`}
-            title="Color-code entities by syndicate cell / community"
-          >
-            <Users className="h-4 w-4" />
-            <span>{communityClusteringActive ? 'Clusters: Active' : 'Clusters'}</span>
-          </Button>
-          <Button
-            size="sm"
-            variant={unifiedGraphActive ? 'primary' : 'outline'}
-            onClick={() => {
-              sound.playClickSound();
-              setUnifiedGraphActive(!unifiedGraphActive);
-            }}
-            className={`flex items-center gap-1.5 ${
-              unifiedGraphActive
-                ? 'bg-cyan-600 hover:bg-cyan-700 text-white border-cyan-400 shadow-md shadow-cyan-950/40'
-                : 'border-cyan-500/50 hover:bg-cyan-950/30 text-cyan-400'
-            }`}
-            title="Unify all 4 disjoint components into one connected cohesive syndicate graph"
-          >
-            <Sparkles className="h-4 w-4" />
-            <span>{unifiedGraphActive ? 'Unified Syndicate: ON' : 'Show Disjoint Clusters'}</span>
-          </Button>
+        <div className="flex items-center gap-2 flex-wrap shrink-0">
           <Button
             size="sm"
             variant="outline"
@@ -1680,12 +1632,113 @@ export function NetworkGraphPage() {
               sound.playClickSound();
               setShowGlobalImpactModal(true);
             }}
-            className="border-emerald-500/60 text-emerald-400 bg-emerald-950/20 hover:bg-emerald-900/40 flex items-center gap-1.5 font-bold"
+            className="border-emerald-500/60 text-emerald-400 bg-emerald-950/20 hover:bg-emerald-900/40 flex items-center gap-1.5 font-bold text-xs shadow-sm"
             title="View how graph intelligence reduces crime worldwide (NYPD, London Met, Interpol, Singapore)"
           >
             <Globe className="h-4 w-4 text-emerald-400" />
-            <span>Global Impact (Abroad)</span>
+            <span>Global Impact</span>
           </Button>
+
+          <Button
+            size="sm"
+            variant={showAiSummary ? 'secondary' : 'outline'}
+            onClick={handleExplainGraph}
+            disabled={isExplaining}
+            className="border-primary/40 text-primary hover:bg-primary/10 flex items-center gap-1.5 font-bold text-xs shadow-sm"
+            title="Synthesize AI explanation with automatic voice briefing speaker"
+          >
+            <Bot className={`h-4 w-4 ${isSpeaking ? 'text-emerald-400 animate-pulse' : 'text-primary'}`} />
+            <span>{isSpeaking ? 'Speaking Briefing...' : isExplaining ? 'Explaining...' : 'Explain Graph'}</span>
+            {isSpeaking && <Volume2 className="h-3.5 w-3.5 text-emerald-400 animate-bounce" />}
+          </Button>
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleExportPNG}
+            className="border-slate-700 hover:bg-slate-800 text-slate-200 text-xs font-bold flex items-center gap-1.5"
+            title="Export high-resolution PNG of the graph canvas"
+          >
+            <Download className="h-4 w-4 text-sky-400" />
+            <span>Export PNG</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* Primary Tactical Toolbar Ribbon (Canvas Controls + Algorithmic Modes) */}
+      <div className="p-2.5 rounded-xl border border-border/80 bg-slate-900/90 backdrop-blur-md flex flex-wrap items-center justify-between gap-2 text-xs shadow-sm">
+        {/* Group 1: Canvas Navigation & View */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-[10px] font-mono text-muted-foreground uppercase font-bold px-1">Canvas:</span>
+          <Button size="sm" variant="outline" onClick={handleZoomIn} className="h-8 px-2.5 text-xs">
+            <ZoomIn className="h-3.5 w-3.5 mr-1" />
+            <span>In</span>
+          </Button>
+          <Button size="sm" variant="outline" onClick={handleZoomOut} className="h-8 px-2.5 text-xs">
+            <ZoomOut className="h-3.5 w-3.5 mr-1" />
+            <span>Out</span>
+          </Button>
+          <Button size="sm" variant="outline" onClick={handleFit} className="h-8 px-2.5 text-xs">
+            <Maximize2 className="h-3.5 w-3.5 mr-1" />
+            <span>Fit</span>
+          </Button>
+          <Button size="sm" variant="outline" onClick={handleReset} className="h-8 px-2.5 text-xs">
+            <RefreshCw className="h-3.5 w-3.5 mr-1" />
+            <span>Reset</span>
+          </Button>
+        </div>
+
+        {/* Group 2: Tactical & Topological Intelligence Modes */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-[10px] font-mono text-muted-foreground uppercase font-bold px-1">Modes:</span>
+          <Button
+            size="sm"
+            variant={shortestPathMode ? 'primary' : 'outline'}
+            onClick={handleToggleShortestPath}
+            className={`h-8 text-xs font-bold flex items-center gap-1.5 transition-all ${
+              shortestPathMode
+                ? 'bg-cyan-600 hover:bg-cyan-700 text-white shadow-md shadow-cyan-900/40'
+                : 'border-cyan-500/50 hover:bg-cyan-950/30 text-cyan-400'
+            }`}
+            title="Find shortest link between two suspect entities (aStar algorithm)"
+          >
+            <Route className="h-3.5 w-3.5" />
+            <span>{shortestPathMode ? 'Shortest Path: Active' : 'Shortest Path'}</span>
+          </Button>
+
+          <Button
+            size="sm"
+            variant={communityClusteringActive ? 'primary' : 'outline'}
+            onClick={handleToggleClustering}
+            className={`h-8 text-xs font-bold flex items-center gap-1.5 transition-all ${
+              communityClusteringActive
+                ? 'bg-purple-600 hover:bg-purple-700 text-white shadow-md shadow-purple-900/40'
+                : 'border-purple-500/50 hover:bg-purple-950/30 text-purple-400'
+            }`}
+            title="Color-code entities by syndicate cell / community"
+          >
+            <Users className="h-3.5 w-3.5" />
+            <span>{communityClusteringActive ? 'Clusters: Active' : 'Clusters'}</span>
+          </Button>
+
+          <Button
+            size="sm"
+            variant={unifiedGraphActive ? 'primary' : 'outline'}
+            onClick={() => {
+              sound.playClickSound();
+              setUnifiedGraphActive(!unifiedGraphActive);
+            }}
+            className={`h-8 text-xs font-bold flex items-center gap-1.5 transition-all ${
+              unifiedGraphActive
+                ? 'bg-cyan-600 hover:bg-cyan-700 text-white border-cyan-400 shadow-md shadow-cyan-950/40'
+                : 'border-cyan-500/50 hover:bg-cyan-950/30 text-cyan-400'
+            }`}
+            title="Unify all 4 disjoint components into one connected cohesive syndicate graph"
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            <span>{unifiedGraphActive ? 'Unified Syndicate: ON' : 'Show Disjoint'}</span>
+          </Button>
+
           <Button
             size="sm"
             variant={autoSpeakOnSelect ? 'primary' : 'outline'}
@@ -1693,36 +1746,24 @@ export function NetworkGraphPage() {
               sound.playClickSound();
               setAutoSpeakOnSelect(!autoSpeakOnSelect);
             }}
-            className={`flex items-center gap-1.5 font-bold ${
+            className={`h-8 text-xs font-bold flex items-center gap-1.5 ${
               autoSpeakOnSelect
-                ? 'bg-amber-600 hover:bg-amber-700 text-white border-amber-400 shadow-md shadow-amber-950/40'
+                ? 'bg-amber-600 hover:bg-amber-700 text-white border-amber-400'
                 : 'border-amber-500/50 hover:bg-amber-950/30 text-amber-400'
             }`}
-            title="When active, clicking any node triggers speech synthesis voice narration by default"
+            title="When active, clicking any node triggers speech synthesis voice narration"
           >
             {autoSpeakOnSelect ? (
               <>
-                <Volume2 className="h-4 w-4 animate-pulse text-amber-200" />
-                <span>Speaker: Default ON</span>
+                <Volume2 className="h-3.5 w-3.5 animate-pulse text-amber-200" />
+                <span>Speaker: ON</span>
               </>
             ) : (
               <>
-                <VolumeX className="h-4 w-4 text-amber-400" />
+                <VolumeX className="h-3.5 w-3.5 text-amber-400" />
                 <span>Speaker: OFF</span>
               </>
             )}
-          </Button>
-          <Button
-            size="sm"
-            variant={showAiSummary ? 'secondary' : 'outline'}
-            onClick={handleExplainGraph}
-            disabled={isExplaining}
-            className="border-primary/40 text-primary hover:bg-primary/10 flex items-center gap-1.5 font-bold"
-            title="Synthesize AI explanation with automatic voice briefing speaker"
-          >
-            <Bot className={`h-4 w-4 ${isSpeaking ? 'text-emerald-400 animate-pulse' : 'text-primary'}`} />
-            <span>{isSpeaking ? 'Speaking Briefing...' : isExplaining ? 'Explaining...' : 'Explain this graph (Voice)'}</span>
-            {isSpeaking && <Volume2 className="h-3.5 w-3.5 text-emerald-400 animate-bounce" />}
           </Button>
         </div>
       </div>

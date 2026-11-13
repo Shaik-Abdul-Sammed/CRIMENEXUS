@@ -229,9 +229,9 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
 
   return (
     <>
-      <header className="sticky top-0 z-50 flex h-16 w-full max-w-full items-center justify-between border-b border-border bg-card/98 px-2 sm:px-4 shadow-sm gap-1.5 sm:gap-2.5 overflow-hidden select-none">
-      {/* Left: Responsive Breadcrumbs with guaranteed full 'Home' visibility and no clipping */}
-      <nav aria-label="Breadcrumb" className="hidden sm:flex items-center gap-1 sm:gap-1.5 text-xs text-muted-foreground shrink min-w-0 max-w-[120px] md:max-w-[180px] lg:max-w-[240px] overflow-hidden truncate">
+      <header className="sticky top-0 z-40 flex h-16 w-full max-w-full items-center justify-between border-b border-border bg-card/98 px-2 sm:px-4 shadow-sm gap-2 overflow-hidden select-none">
+      {/* Left: Responsive Breadcrumbs with protected width, zero collision, and guaranteed full 'Home' visibility */}
+      <nav aria-label="Breadcrumb" className="hidden sm:flex items-center gap-1 sm:gap-1.5 text-xs text-muted-foreground shrink-0 min-w-fit max-w-[180px] lg:max-w-[280px] mr-2 lg:mr-3 overflow-hidden truncate">
         <Link to="/dashboard" className="hover:text-foreground font-bold transition-colors shrink-0 flex items-center gap-1 text-primary">
           <span className="whitespace-nowrap font-extrabold text-xs">Home</span>
         </Link>
@@ -254,7 +254,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
       </nav>
 
       {/* Right: Consolidated Tools & Actions (Streamlined, Zero Horizontal Overflow, Zero Stacking Traps) */}
-      <div className="flex items-center gap-1 sm:gap-1.5 justify-end relative z-50 min-w-0 flex-1">
+      <div className="flex items-center gap-1 sm:gap-1.5 justify-end ml-auto min-w-0 overflow-x-auto scrollbar-none py-1">
         {/* 1. Global Intelligence Search Trigger (High Usage) */}
         <button
           onClick={() => setGlobalSearchOpen(true)}
@@ -264,19 +264,19 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
         >
           <Search className="h-3.5 w-3.5 text-primary shrink-0" />
           <span className="hidden 2xl:inline text-[11px] truncate">{t('actions.search')}</span>
-          <kbd className="hidden lg:inline-flex h-4 select-none items-center gap-0.5 rounded border border-border bg-muted px-1 font-mono text-[9px] font-medium text-muted-foreground">
+          <kbd className="hidden 2xl:inline-flex h-4 select-none items-center gap-0.5 rounded border border-border bg-muted px-1 font-mono text-[9px] font-medium text-muted-foreground">
             /
           </kbd>
         </button>
 
-        {/* 2. All 25 Pages Directory & Quick Navigator (High Priority) */}
+        {/* 2. All 30 Pages Directory & Quick Navigator (High Priority) */}
         <button
           onClick={() => {
             sound.playClickSound();
             setPageDirectoryOpen(true);
           }}
           className="flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold transition-all shadow-sm shrink-0"
-          title="Open complete 25 Pages System Directory (Press ⌘P / Ctrl+P)"
+          title="Open complete 30 Pages System Directory (Press ⌘P / Ctrl+P)"
           aria-label="All Pages Directory"
         >
           <Grid className="h-3.5 w-3.5 text-primary shrink-0" />
@@ -296,7 +296,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           <span className="px-1.5 py-0.2 rounded-full bg-amber-400/25 text-amber-300 text-[9px] font-mono font-black border border-amber-400/40">100</span>
         </Link>
 
-        {/* 4. 10 Core Pro Features Hub Modal Trigger */}
+        {/* 4. 15 Core Pro Features Hub Modal Trigger */}
         <button
           onClick={() => {
             sound.playClickSound();
@@ -322,7 +322,8 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           aria-label="20 Deep AI Models"
         >
           <Brain className="h-3.5 w-3.5 text-purple-400 shrink-0" />
-          <span className="hidden xl:inline text-[11px] font-black">20 AI Models</span>
+          <span className="hidden 2xl:inline text-[11px] font-black">20 AI Models</span>
+          <span className="hidden xl:inline 2xl:hidden text-[11px] font-black">20 AI</span>
           <span className="px-1.5 py-0.2 rounded-full bg-purple-500/30 text-purple-200 text-[9px] font-mono font-black border border-purple-400/40">20</span>
         </button>
 
@@ -864,7 +865,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
                   isServerOnline ? 'bg-emerald-400 animate-pulse' : 'bg-red-500'
                 }`}
               />
-              <span className="hidden lg:inline">{isServerOnline ? 'ONLINE' : 'OFFLINE'}</span>
+              <span className="hidden xl:inline">{isServerOnline ? 'ONLINE' : 'OFFLINE'}</span>
             </span>
             <img
               src={currentUser?.avatar}

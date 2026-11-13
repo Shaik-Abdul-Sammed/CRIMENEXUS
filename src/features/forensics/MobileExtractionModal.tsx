@@ -129,7 +129,7 @@ export function MobileExtractionModal({
             </Button>
           </div>
         ) : (
-          <form onSubmit={handleValidateGate} className="space-y-4 text-xs">
+          <form noValidate onSubmit={handleValidateGate} className="space-y-4 text-xs">
             {/* Legal Basis Selector */}
             <div className="space-y-1.5">
               <label className="font-bold text-slate-200 flex items-center justify-between">

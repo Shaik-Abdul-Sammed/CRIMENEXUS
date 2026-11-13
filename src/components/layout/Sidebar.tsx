@@ -271,11 +271,11 @@ export function Sidebar() {
                 className="p-2 rounded-lg bg-gradient-to-r from-amber-500/20 via-primary/20 to-amber-500/10 border border-amber-500/50 text-amber-300 hover:text-white flex items-center justify-between text-xs font-bold transition-all shadow-sm"
                 title="Open complete 25 Pages Directory & Navigation Hub (Press ⌘P / Ctrl+P)"
               >
-                <div className="flex items-center gap-1.5 truncate">
+                <div className="flex items-center gap-1.5 min-w-0 flex-1">
                   <Grid className="h-3.5 w-3.5 text-amber-400 shrink-0" />
-                  <span className="truncate">All 30 Pages</span>
+                  <span className="truncate text-xs">30 Pages</span>
                 </div>
-                <span className="px-1 py-0.2 rounded bg-amber-500/30 text-amber-300 text-[9px] font-mono shrink-0">
+                <span className="px-1 py-0.2 rounded bg-amber-500/30 text-amber-300 text-[9px] font-mono shrink-0 ml-1">
                   DIR
                 </span>
               </button>
@@ -288,11 +288,11 @@ export function Sidebar() {
                 className="p-2 rounded-lg bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-primary/20 border border-cyan-500/50 text-cyan-300 hover:text-white flex items-center justify-between text-xs font-bold transition-all shadow-sm"
                 title="Open 15 Core AI Engines & Capabilities Hub"
               >
-                <div className="flex items-center gap-1.5 truncate">
+                <div className="flex items-center gap-1.5 min-w-0 flex-1">
                   <Sparkles className="h-3.5 w-3.5 text-cyan-400 shrink-0 animate-pulse" />
-                  <span className="truncate">Hub</span>
+                  <span className="truncate text-xs">Hub</span>
                 </div>
-                <span className="px-1 py-0.2 rounded bg-cyan-500/30 text-cyan-300 text-[9px] font-mono shrink-0">
+                <span className="px-1 py-0.2 rounded bg-cyan-500/30 text-cyan-300 text-[9px] font-mono shrink-0 ml-1">
                   15
                 </span>
               </button>

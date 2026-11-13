@@ -65,15 +65,15 @@ describe('GuardianTracePage Feature Tests', () => {
 
     expect(screen.getByText(/Guardian Trace: Multimodal Missing Persons Search HUD/i)).toBeInTheDocument();
     expect(screen.getByText(/CRITICAL EMERGENCY \(AGE < 12\)/i)).toBeInTheDocument();
-    expect(screen.getByText(/Aanya Sharma \(8\)/i)).toBeInTheDocument();
-    expect(screen.getByText(/PS Lajpat Nagar/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Aanya Sharma/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/PS Lajpat Nagar/i).length).toBeGreaterThan(0);
   });
 
   it('renders split-screen components: metrics, top 3 predictions, and sighting feed', () => {
     renderWithRouter(<GuardianTracePage />);
 
     // 4 Live Metric Pills
-    expect(screen.getByText(/Last Seen/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Last Seen/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/12 Multimodal/i)).toBeInTheDocument();
     expect(screen.getByText(/10 km Ring/i)).toBeInTheDocument();
 

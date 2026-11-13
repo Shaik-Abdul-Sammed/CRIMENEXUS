@@ -35,13 +35,19 @@ export interface FormalLegalCorrection {
 }
 
 // Common spam / greeting dictionary
+const COMMON_GREETING_WORDS = new Set([
+  'hi', 'hello', 'hey', 'namaste', 'pranam', 'good', 'morning', 'evening',
+  'afternoon', 'police', 'bhai', 'sunno', 'suno', 'kya', 'haal', 'how', 'are',
+  'you', 'sup', 'yo', 'sir', 'ji', 'help', 'me', 'bolo', 'kripya'
+]);
+
 const COMMON_GREETINGS = [
   'hi', 'hello', 'hey', 'namaste', 'pranam', 'good morning', 'good evening',
   'good afternoon', 'police bhai', 'sunno police', 'kya haal', 'how are you',
-  'sup', 'yo', 'bhai sun', 'suno', 'hello sir', 'sir ji', 'help me'
+  'sup', 'yo', 'bhai sun', 'suno', 'hello sir', 'sir ji', 'help me', 'namaste police bhai'
 ];
 
-const GIBBERISH_REGEX = /^([a-z0-9])\1{4,}$|^(asdf|qwerty|zxcv|1234|test|testing)+$/i;
+const GIBBERISH_REGEX = /^([a-z0-9])\1{4,}$|^(asdf|qwerty|zxcv|1234|test|testing)+$|asdfgh|ghjkl|qwertyuiop|[bcdfghjklmnpqrstvwxyz]{6,}/i;
 
 // Slang and colloquial mapping dictionary
 const SLANG_DICTIONARY: Record<string, string> = {
@@ -165,7 +171,10 @@ export function checkSpamAndUnwanted(text: string): SpamCheckResult {
     (g) => lower === g || lower === `${g} sir` || lower === `${g} police` || lower === `${g}ji`
   );
 
-  if (isGreetingOnly || (trimmed.split(/\s+/).length <= 2 && /^(hi|hello|namaste|hey|yo)\b/i.test(lower))) {
+  const cleanWords = lower.replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(Boolean);
+  const isAllGreetingWords = cleanWords.length > 0 && cleanWords.length <= 4 && cleanWords.every(w => COMMON_GREETING_WORDS.has(w));
+
+  if (isGreetingOnly || isAllGreetingWords || (trimmed.split(/\s+/).length <= 2 && /^(hi|hello|namaste|hey|yo)\b/i.test(lower))) {
     return {
       isSpamOrUnwanted: true,
       category: 'GREETING',

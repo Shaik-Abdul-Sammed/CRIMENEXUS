@@ -43,6 +43,7 @@ import {
   Car,
   Zap,
   FileCode,
+  X,
   CheckSquare,
   VolumeX,
   RadioTower,
@@ -124,6 +125,17 @@ export function GuardianTracePage() {
   const [broadcastModalOpen, setBroadcastModalOpen] = useState<boolean>(false);
   const [foundModalOpen, setFoundModalOpen] = useState<boolean>(false);
   const [satelliteModalOpen, setSatelliteModalOpen] = useState<boolean>(false);
+
+  // Collapsible Section State (Allows closing any box via X symbol or dropdown)
+  const [isHeaderExpanded, setIsHeaderExpanded] = useState<boolean>(true);
+  const [isTelemetryOpen, setIsTelemetryOpen] = useState<boolean>(true);
+  const [isDossierCollapsed, setIsDossierCollapsed] = useState<boolean>(false);
+  const [isPredictionsCollapsed, setIsPredictionsCollapsed] = useState<boolean>(false);
+  const [isSquadsCollapsed, setIsSquadsCollapsed] = useState<boolean>(false);
+  const [isChokepointsCollapsed, setIsChokepointsCollapsed] = useState<boolean>(false);
+
+  // Realistic CCTV Live Camera Intercept Simulation Overlay
+  const [showLiveCctvOverlay, setShowLiveCctvOverlay] = useState<boolean>(true);
 
   // Search Grid & Rings Toggle
   const [searchRingsVisible, setSearchRingsVisible] = useState<boolean>(true);
@@ -621,187 +633,271 @@ export function GuardianTracePage() {
 
   return (
     <div className="space-y-4">
-      {/* Top Banner: Emergency Mandate & Demo Quick Launcher */}
-      <div className="p-4 sm:p-5 rounded-2xl border-2 border-red-500/60 bg-gradient-to-br from-red-950/40 via-slate-900 to-slate-950 shadow-2xl space-y-4">
-        {/* Row 1: Case Title, Emergency Badge & Live Case Status (Full Width - Zero Word Squishing) */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="p-2.5 rounded-xl bg-red-500/20 text-red-400 border border-red-500/40 animate-pulse shrink-0">
-              <ShieldAlert className="h-6 w-6" />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <h1 className="text-lg sm:text-xl font-black text-white tracking-wide">
-                  Guardian Trace: Multimodal Missing Persons Search HUD
-                </h1>
-                <Badge className="bg-red-600 text-white font-mono font-black text-[10px] px-2 py-0.5 animate-pulse shrink-0">
-                  CRITICAL EMERGENCY (AGE &lt; 12)
-                </Badge>
+      {/* Top Banner: Emergency Mandate & Demo Quick Launcher (Collapsible via X / Dropdown) */}
+      {!isHeaderExpanded ? (
+        <div className="p-3 rounded-xl border border-red-500/40 bg-red-950/40 flex items-center justify-between gap-3 text-xs shadow-md">
+          <div className="flex items-center gap-2.5">
+            <ShieldAlert className="h-4 w-4 text-red-400 shrink-0 animate-pulse" />
+            <span className="font-extrabold text-white">Guardian Trace: Aanya Sharma (8)</span>
+            <Badge className="bg-red-600 text-white font-mono text-[9px]">CRITICAL</Badge>
+            <span className="text-[11px] text-red-300 font-mono hidden sm:inline">18h Elapsed • 10 km Radius</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                sound.playRadarPing();
+                setDemoPlayerOpen(true);
+              }}
+              className="h-7 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white border-none px-2"
+            >
+              ▶ Play Demo
+            </Button>
+            <button
+              onClick={() => setIsHeaderExpanded(true)}
+              className="px-2 py-1 rounded bg-red-900/60 hover:bg-red-800 text-red-200 text-xs font-bold transition-colors"
+              title="Expand emergency header card"
+            >
+              ▼ Expand Header
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="p-4 sm:p-5 rounded-2xl border-2 border-red-500/60 bg-gradient-to-br from-red-950/40 via-slate-900 to-slate-950 shadow-2xl space-y-4 relative">
+          {/* Collapse X Button */}
+          <button
+            onClick={() => setIsHeaderExpanded(false)}
+            className="absolute top-3.5 right-3.5 p-1 rounded-lg text-red-300 hover:text-white hover:bg-red-900/40 transition-colors"
+            title="Collapse emergency header (X)"
+            aria-label="Collapse emergency header"
+          >
+            <X className="h-4 w-4" />
+          </button>
+
+          {/* Row 1: Case Title, Emergency Badge & Live Case Status */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pr-8">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="p-2.5 rounded-xl bg-red-500/20 text-red-400 border border-red-500/40 animate-pulse shrink-0">
+                <ShieldAlert className="h-6 w-6" />
               </div>
-              <p className="text-xs text-red-200/90 mt-1 flex items-center gap-2 flex-wrap">
-                <span>Active Case: <strong className="text-white">Aanya Sharma (8)</strong></span>
-                <span className="text-red-400/60">•</span>
-                <span>Fused 12 sensor exhaust sightings across 18 hours</span>
-                <span className="text-red-400/60">•</span>
-                <span className="text-cyan-300 font-mono">PS Lajpat Nagar (NCT of Delhi)</span>
-              </p>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <h1 className="text-lg sm:text-xl font-black text-white tracking-wide">
+                    Guardian Trace: Multimodal Missing Persons Search HUD
+                  </h1>
+                  <Badge className="bg-red-600 text-white font-mono font-black text-[10px] px-2 py-0.5 animate-pulse shrink-0">
+                    CRITICAL EMERGENCY (AGE &lt; 12)
+                  </Badge>
+                </div>
+                <p className="text-xs text-red-200/90 mt-1 flex items-center gap-2 flex-wrap">
+                  <span>Active Case: <strong className="text-white">Aanya Sharma (8)</strong></span>
+                  <span className="text-red-400/60">•</span>
+                  <span>Fused 12 sensor exhaust sightings across 18 hours</span>
+                  <span className="text-red-400/60">•</span>
+                  <span className="text-cyan-300 font-mono">PS Lajpat Nagar (NCT of Delhi)</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Quick Case Summary Chip */}
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-red-950/60 border border-red-500/40 text-xs font-mono text-red-200 shrink-0 self-start lg:self-center">
+              <span className="h-2 w-2 rounded-full bg-red-500 animate-ping" />
+              <span>Search Window: 18h Elapsed</span>
+              <span className="text-red-400 font-bold">• 10 km Search Radius</span>
             </div>
           </div>
 
-          {/* Quick Case Summary Chip */}
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-red-950/60 border border-red-500/40 text-xs font-mono text-red-200 shrink-0 self-start lg:self-center">
-            <span className="h-2 w-2 rounded-full bg-red-500 animate-ping" />
-            <span>Search Window: 18h Elapsed</span>
-            <span className="text-red-400 font-bold">• 10 km Search Radius</span>
+          {/* Row 2: Tactical Action Control Ribbon (Graceful Wrap, Zero Clipping, Zero Overflow) */}
+          <div className="pt-2.5 border-t border-red-500/20 flex items-center gap-2 flex-wrap">
+            <Button
+              size="sm"
+              onClick={playTacticalAudioBrief}
+              className={`h-9 text-xs font-bold flex items-center gap-1.5 transition-all ${
+                isSpeakingBriefing
+                  ? 'bg-amber-600 hover:bg-amber-700 text-white animate-pulse'
+                  : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
+              }`}
+              title="Hands-free synthetic audio tactical briefing for field units"
+            >
+              {isSpeakingBriefing ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+              <span>{isSpeakingBriefing ? 'Stop Audio' : 'Voice Dispatch'}</span>
+            </Button>
+
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleExportSARGeoJSON}
+              className="h-9 text-xs font-bold border-cyan-500/40 text-cyan-300 hover:bg-cyan-950/30 flex items-center gap-1.5"
+              title="Export search and rescue GeoJSON coordinates for handheld Garmin GPS & drones"
+            >
+              <Download className="h-3.5 w-3.5" />
+              <span>Export SAR GeoJSON</span>
+            </Button>
+
+            <Button
+              size="sm"
+              onClick={() => {
+                sound.playClickSound();
+                setRegisterModalOpen(true);
+              }}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs h-9 px-3 flex items-center gap-1.5 shadow-md"
+              title="Register a new missing child or person docket"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>Register Docket</span>
+            </Button>
+
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                sound.playClickSound();
+                setSatelliteModalOpen(true);
+              }}
+              className="h-9 text-xs font-bold border-cyan-500/40 text-cyan-300 hover:bg-cyan-950/30 flex items-center gap-1.5"
+              title="Inspect OmniTrace Satellite Earth Observation Locus"
+            >
+              <Globe className="h-3.5 w-3.5 text-cyan-400" />
+              <span>OmniTrace Satellite</span>
+            </Button>
+
+            <Button
+              size="sm"
+              onClick={() => {
+                sound.playRadarPing();
+                setDemoPlayerOpen(true);
+              }}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs h-9 px-3.5 flex items-center gap-1.5 shadow-lg shadow-emerald-950/50"
+              title="Launch interactive 90-second animated rescue presentation (Press P)"
+            >
+              <Play className="h-4 w-4 fill-current" />
+              <span>▶ Play Live Demo</span>
+            </Button>
+
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={toggleSearchRings}
+              className={`h-9 text-xs font-bold flex items-center gap-1.5 transition-all ${
+                searchRingsVisible
+                  ? 'border-amber-400 bg-amber-500/20 text-amber-300'
+                  : 'border-slate-700 bg-slate-800 text-slate-300'
+              }`}
+              title="Toggle Ring Search concentric police grid (1km, 3km, 10km) (Press T)"
+            >
+              <Layers className="h-3.5 w-3.5" />
+              <span>Ring Search ({searchRingsVisible ? 'ON' : 'OFF'})</span>
+            </Button>
+
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsHeaderExpanded(false)}
+              className="h-9 text-xs font-semibold border-slate-700 text-slate-300 hover:text-white ml-auto"
+            >
+              ▲ Minimize
+            </Button>
           </div>
         </div>
+      )}
 
-        {/* Row 2: Tactical Action Control Ribbon (Graceful Wrap, Zero Clipping, Zero Overflow) */}
-        <div className="pt-2.5 border-t border-red-500/20 flex items-center gap-2 flex-wrap">
-          <Button
-            size="sm"
-            onClick={playTacticalAudioBrief}
-            className={`h-9 text-xs font-bold flex items-center gap-1.5 transition-all ${
-              isSpeakingBriefing
-                ? 'bg-amber-600 hover:bg-amber-700 text-white animate-pulse'
-                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
-            }`}
-            title="Hands-free synthetic audio tactical briefing for field units"
+      {/* Realistic Operational SAR Telemetry Ribbon (Collapsible via X / Dropdown) */}
+      {!isTelemetryOpen ? (
+        <div className="p-2.5 rounded-xl border border-amber-500/30 bg-slate-900/80 flex items-center justify-between text-xs font-mono text-slate-300">
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-0.5">
+            <span className="font-bold text-amber-400 uppercase text-[10px]">SAR Telemetry:</span>
+            <span className="px-2 py-0.5 rounded bg-amber-950/40 border border-amber-500/30 text-[10px]">🔋 14% Battery (1h40m)</span>
+            <span className="px-2 py-0.5 rounded bg-indigo-950/40 border border-indigo-500/30 text-[10px]">☀️ 120 LUX (Civil Dusk)</span>
+            <span className="px-2 py-0.5 rounded bg-emerald-950/40 border border-emerald-500/30 text-[10px]">💾 142 MB Cached</span>
+            <span className="px-2 py-0.5 rounded bg-red-950/40 border border-red-500/30 text-[10px]">👁️ 380m Blind Spot</span>
+            <span className="px-2 py-0.5 rounded bg-sky-950/40 border border-sky-500/30 text-[10px]">🚗 Swift BOLO Alert</span>
+          </div>
+          <button
+            onClick={() => setIsTelemetryOpen(true)}
+            className="px-2.5 py-1 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs font-bold shrink-0 ml-2"
           >
-            {isSpeakingBriefing ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
-            <span>{isSpeakingBriefing ? 'Stop Audio' : 'Voice Dispatch'}</span>
-          </Button>
-
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleExportSARGeoJSON}
-            className="h-9 text-xs font-bold border-cyan-500/40 text-cyan-300 hover:bg-cyan-950/30 flex items-center gap-1.5"
-            title="Export search and rescue GeoJSON coordinates for handheld Garmin GPS & drones"
-          >
-            <Download className="h-3.5 w-3.5" />
-            <span>Export SAR GeoJSON</span>
-          </Button>
-
-          <Button
-            size="sm"
-            onClick={() => {
-              sound.playClickSound();
-              setRegisterModalOpen(true);
-            }}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs h-9 px-3 flex items-center gap-1.5 shadow-md"
-            title="Register a new missing child or person docket"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            <span>Register Docket</span>
-          </Button>
-
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              sound.playClickSound();
-              setSatelliteModalOpen(true);
-            }}
-            className="h-9 text-xs font-bold border-cyan-500/40 text-cyan-300 hover:bg-cyan-950/30 flex items-center gap-1.5"
-            title="Inspect OmniTrace Satellite Earth Observation Locus"
-          >
-            <Globe className="h-3.5 w-3.5 text-cyan-400" />
-            <span>OmniTrace Satellite</span>
-          </Button>
-
-          <Button
-            size="sm"
-            onClick={() => {
-              sound.playRadarPing();
-              setDemoPlayerOpen(true);
-            }}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs h-9 px-3.5 flex items-center gap-1.5 shadow-lg shadow-emerald-950/50"
-            title="Launch interactive 90-second animated rescue presentation (Press P)"
-          >
-            <Play className="h-4 w-4 fill-current" />
-            <span>▶ Play Live Demo</span>
-          </Button>
-
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={toggleSearchRings}
-            className={`h-9 text-xs font-bold flex items-center gap-1.5 transition-all ${
-              searchRingsVisible
-                ? 'border-amber-400 bg-amber-500/20 text-amber-300'
-                : 'border-slate-700 bg-slate-800 text-slate-300'
-            }`}
-            title="Toggle Ring Search concentric police grid (1km, 3km, 10km) (Press T)"
-          >
-            <Layers className="h-3.5 w-3.5" />
-            <span>Ring Search ({searchRingsVisible ? 'ON' : 'OFF'})</span>
-          </Button>
+            ▼ Expand Telemetry (6)
+          </button>
         </div>
-      </div>
-
-      {/* Realistic Operational SAR Telemetry Ribbon (6 Live Sensors & Intelligence Feeds) */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2.5">
-        {/* Sensor 1: Battery Decay Model */}
-        <div className="p-3 rounded-xl border border-amber-500/40 bg-amber-950/20 text-xs font-mono space-y-1">
-          <div className="flex items-center justify-between text-[10px] text-amber-400 font-bold">
-            <span className="flex items-center gap-1"><Battery className="h-3.5 w-3.5" /> BATTERY DECAY</span>
-            <span>14%</span>
+      ) : (
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between px-1">
+            <span className="text-[10px] font-mono text-muted-foreground uppercase font-bold tracking-wider">
+              Live Sensor Telemetry Feeds (6 Active Streams)
+            </span>
+            <button
+              onClick={() => setIsTelemetryOpen(false)}
+              className="text-xs text-muted-foreground hover:text-white flex items-center gap-1 font-mono"
+              title="Close Telemetry Box (X)"
+            >
+              <span>▲ Close</span>
+              <X className="h-3 w-3" />
+            </button>
           </div>
-          <div className="text-[11px] font-bold text-slate-200 truncate">1h 40m Remaining</div>
-          <div className="text-[9px] text-amber-200/70 truncate">Draw: 180mA • Cold Temp</div>
-        </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2.5">
+            {/* Sensor 1: Battery Decay Model */}
+            <div className="p-3 rounded-xl border border-amber-500/40 bg-amber-950/20 text-xs font-mono space-y-1">
+              <div className="flex items-center justify-between text-[10px] text-amber-400 font-bold">
+                <span className="flex items-center gap-1"><Battery className="h-3.5 w-3.5" /> BATTERY DECAY</span>
+                <span>14%</span>
+              </div>
+              <div className="text-[11px] font-bold text-slate-200 truncate">1h 40m Remaining</div>
+              <div className="text-[9px] text-amber-200/70 truncate">Draw: 180mA • Cold Temp</div>
+            </div>
 
-        {/* Sensor 2: Day/Night Solar Illumination */}
-        <div className="p-3 rounded-xl border border-indigo-500/40 bg-indigo-950/20 text-xs font-mono space-y-1">
-          <div className="flex items-center justify-between text-[10px] text-indigo-400 font-bold">
-            <span className="flex items-center gap-1"><Sun className="h-3.5 w-3.5" /> ILLUMINATION</span>
-            <span>120 LUX</span>
-          </div>
-          <div className="text-[11px] font-bold text-slate-200 truncate">Civil Dusk: 18:14 IST</div>
-          <div className="text-[9px] text-indigo-200/70 truncate">Night Combing Active</div>
-        </div>
+            {/* Sensor 2: Day/Night Solar Illumination */}
+            <div className="p-3 rounded-xl border border-indigo-500/40 bg-indigo-950/20 text-xs font-mono space-y-1">
+              <div className="flex items-center justify-between text-[10px] text-indigo-400 font-bold">
+                <span className="flex items-center gap-1"><Sun className="h-3.5 w-3.5" /> ILLUMINATION</span>
+                <span>120 LUX</span>
+              </div>
+              <div className="text-[11px] font-bold text-slate-200 truncate">Civil Dusk: 18:14 IST</div>
+              <div className="text-[9px] text-indigo-200/70 truncate">Night Combing Active</div>
+            </div>
 
-        {/* Sensor 3: Offline Vector MBTiles Sync */}
-        <div className="p-3 rounded-xl border border-emerald-500/40 bg-emerald-950/20 text-xs font-mono space-y-1">
-          <div className="flex items-center justify-between text-[10px] text-emerald-400 font-bold">
-            <span className="flex items-center gap-1"><ShieldCheck className="h-3.5 w-3.5" /> OFFLINE CACHE</span>
-            <span>142 MB</span>
-          </div>
-          <div className="text-[11px] font-bold text-slate-200 truncate">MBTiles Synced</div>
-          <div className="text-[9px] text-emerald-200/70 truncate">Tunnel / Offline Ready</div>
-        </div>
+            {/* Sensor 3: Offline Vector MBTiles Sync */}
+            <div className="p-3 rounded-xl border border-emerald-500/40 bg-emerald-950/20 text-xs font-mono space-y-1">
+              <div className="flex items-center justify-between text-[10px] text-emerald-400 font-bold">
+                <span className="flex items-center gap-1"><ShieldCheck className="h-3.5 w-3.5" /> OFFLINE CACHE</span>
+                <span>142 MB</span>
+              </div>
+              <div className="text-[11px] font-bold text-slate-200 truncate">MBTiles Synced</div>
+              <div className="text-[9px] text-emerald-200/70 truncate">Tunnel / Offline Ready</div>
+            </div>
 
-        {/* Sensor 4: CCTV Blind Spot Index */}
-        <div className="p-3 rounded-xl border border-red-500/40 bg-red-950/20 text-xs font-mono space-y-1">
-          <div className="flex items-center justify-between text-[10px] text-red-400 font-bold">
-            <span className="flex items-center gap-1"><EyeOff className="h-3.5 w-3.5" /> BLIND SPOT RISK</span>
-            <span>380m</span>
-          </div>
-          <div className="text-[11px] font-bold text-slate-200 truncate">Paharganj Lane 4</div>
-          <div className="text-[9px] text-red-200/70 truncate">Zero Optical CCTV Cover</div>
-        </div>
+            {/* Sensor 4: CCTV Blind Spot Index */}
+            <div className="p-3 rounded-xl border border-red-500/40 bg-red-950/20 text-xs font-mono space-y-1">
+              <div className="flex items-center justify-between text-[10px] text-red-400 font-bold">
+                <span className="flex items-center gap-1"><EyeOff className="h-3.5 w-3.5" /> BLIND SPOT RISK</span>
+                <span>380m</span>
+              </div>
+              <div className="text-[11px] font-bold text-slate-200 truncate">Paharganj Lane 4</div>
+              <div className="text-[9px] text-red-200/70 truncate">Zero Optical CCTV Cover</div>
+            </div>
 
-        {/* Sensor 5: Vehicle ANPR Intercept */}
-        <div className="p-3 rounded-xl border border-sky-500/40 bg-sky-950/20 text-xs font-mono space-y-1">
-          <div className="flex items-center justify-between text-[10px] text-sky-400 font-bold">
-            <span className="flex items-center gap-1"><Car className="h-3.5 w-3.5" /> ANPR INTERCEPT</span>
-            <span>BOLO ALERT</span>
-          </div>
-          <div className="text-[11px] font-bold text-slate-200 truncate">White Swift (DL-10)</div>
-          <div className="text-[9px] text-sky-200/70 truncate">Spotted 12m ago at Gate 3</div>
-        </div>
+            {/* Sensor 5: Vehicle ANPR Intercept */}
+            <div className="p-3 rounded-xl border border-sky-500/40 bg-sky-950/20 text-xs font-mono space-y-1">
+              <div className="flex items-center justify-between text-[10px] text-sky-400 font-bold">
+                <span className="flex items-center gap-1"><Car className="h-3.5 w-3.5" /> ANPR INTERCEPT</span>
+                <span>BOLO ALERT</span>
+              </div>
+              <div className="text-[11px] font-bold text-slate-200 truncate">White Swift (DL-10)</div>
+              <div className="text-[9px] text-sky-200/70 truncate">Spotted 12m ago at Gate 3</div>
+            </div>
 
-        {/* Sensor 6: Tri-State Inter-Agency Bridge */}
-        <div className="p-3 rounded-xl border border-purple-500/40 bg-purple-950/20 text-xs font-mono space-y-1">
-          <div className="flex items-center justify-between text-[10px] text-purple-400 font-bold">
-            <span className="flex items-center gap-1"><RadioTower className="h-3.5 w-3.5" /> TRI-STATE BRIDGE</span>
-            <span>NCR LIVE</span>
+            {/* Sensor 6: Tri-State Inter-Agency Bridge */}
+            <div className="p-3 rounded-xl border border-purple-500/40 bg-purple-950/20 text-xs font-mono space-y-1">
+              <div className="flex items-center justify-between text-[10px] text-purple-400 font-bold">
+                <span className="flex items-center gap-1"><RadioTower className="h-3.5 w-3.5" /> TRI-STATE BRIDGE</span>
+                <span>NCR LIVE</span>
+              </div>
+              <div className="text-[11px] font-bold text-slate-200 truncate">Delhi ⇄ HR ⇄ UP STF</div>
+              <div className="text-[9px] text-purple-200/70 truncate">Border Patrols Active</div>
+            </div>
           </div>
-          <div className="text-[11px] font-bold text-slate-200 truncate">Delhi ⇄ HR ⇄ UP STF</div>
-          <div className="text-[9px] text-purple-200/70 truncate">Border Patrols Active</div>
         </div>
-      </div>
+      )}
 
       {/* Main Split-Screen HUD: 60% Left (Map + Timeline) | 40% Right (Intel Panel) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
@@ -855,6 +951,46 @@ export function GuardianTracePage() {
                 </div>
               </div>
 
+              {/* Realistic CCTV Live Optical Face Match Simulation Overlay */}
+              {showLiveCctvOverlay && (
+                <div className="absolute bottom-3 left-3 z-10 p-2.5 rounded-xl bg-slate-950/95 border-2 border-emerald-500/80 shadow-2xl backdrop-blur-md max-w-xs text-xs font-mono text-white animate-in fade-in zoom-in-95">
+                  <div className="flex items-center justify-between pb-1.5 border-b border-white/10 mb-2">
+                    <div className="flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full bg-red-500 animate-ping" />
+                      <span className="font-bold text-[10px] text-emerald-400 uppercase tracking-wider">
+                        CAM-04 METRO GATE 3 • LIVE CCTV
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setShowLiveCctvOverlay(false)}
+                      className="p-0.5 rounded text-slate-400 hover:text-white"
+                      title="Close CCTV Preview (X)"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                  <div className="relative rounded-lg overflow-hidden border border-white/10 bg-black h-28 flex items-center justify-center">
+                    <img
+                      src={caseData.photo_url || 'https://images.unsplash.com/photo-1543332164-6e82f355badc?w=400'}
+                      alt="CCTV Capture"
+                      className="h-full w-full object-cover opacity-80"
+                    />
+                    <div className="absolute inset-0 border-2 border-emerald-400/80 rounded m-2 pointer-events-none animate-pulse">
+                      <div className="absolute top-1 left-1 px-1 rounded bg-emerald-600 text-[8px] font-bold text-white">
+                        MATCH: 89.4%
+                      </div>
+                    </div>
+                    <div className="absolute bottom-1 right-1 text-[8px] bg-black/80 px-1.5 py-0.5 rounded text-cyan-300">
+                      REC 15:32:10 IST
+                    </div>
+                  </div>
+                  <div className="mt-1.5 flex items-center justify-between text-[10px]">
+                    <span className="text-slate-300">Aanya Sharma (8)</span>
+                    <span className="text-emerald-400 font-bold">Corridor Verified</span>
+                  </div>
+                </div>
+              )}
+
               {/* Map Floating Dispatch Quick Status */}
               <div className="absolute bottom-3 right-3 z-10 p-2 rounded-lg bg-emerald-950/80 border border-emerald-500/50 text-[11px] font-mono text-emerald-300 shadow-xl backdrop-blur-md flex items-center gap-2">
                 <Navigation className="h-3.5 w-3.5 text-emerald-400 animate-spin-slow" />
@@ -864,7 +1000,7 @@ export function GuardianTracePage() {
 
             {/* Bottom Horizontal Timeline Slider */}
             <div className="p-3 bg-slate-900 border-t border-border/80 space-y-2">
-              <div className="flex items-center justify-between text-xs font-mono">
+              <div className="flex items-center justify-between text-xs font-mono flex-wrap gap-2">
                 <div className="flex items-center gap-2 text-slate-300 font-bold">
                   <Clock className="h-4 w-4 text-primary" />
                   <span>Incident Timeline: {timelineHour} Hours Elapsed</span>
@@ -925,63 +1061,75 @@ export function GuardianTracePage() {
 
         {/* RIGHT 40% (5 Cols): Intel Panel, Predictions & Sighting Feed */}
         <div className="lg:col-span-5 space-y-3">
-          {/* Missing Person Profile Header Card */}
+          {/* Missing Person Profile Header Card (Collapsible via X / Dropdown) */}
           <Card className="border border-border/80 bg-card shadow-xl overflow-hidden">
-            <CardContent className="p-4 space-y-3">
-              <div className="flex items-start gap-3.5">
-                <img
-                  src={caseData.photo_url || 'https://images.unsplash.com/photo-1543332164-6e82f355badc?w=400'}
-                  alt={caseData.person_name}
-                  className="w-20 h-20 rounded-xl object-cover border-2 border-red-500 shadow-md shrink-0"
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-1">
-                    <span className="font-mono text-xs font-bold text-primary">{caseData.case_number}</span>
-                    <Badge className="bg-red-600 text-white font-extrabold text-[9px] px-1.5 py-0.2">
-                      {caseData.priority}
-                    </Badge>
-                  </div>
-                  <h3 className="text-base font-black text-foreground truncate mt-0.5">
-                    {caseData.person_name} ({caseData.age} Years, {caseData.gender})
-                  </h3>
-                  <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
-                    {caseData.description}
-                  </p>
-                  <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                    <div className="text-[10px] text-red-400 font-mono flex items-center gap-1 bg-red-950/30 px-2 py-0.5 rounded border border-red-500/30">
-                      <HeartPulse className="h-3 w-3 text-red-400 animate-pulse" />
-                      <span>Medical Risk:</span>
-                      <span className="font-bold text-red-200">Asthma Inhaler (5h 50m window)</span>
+            <div className="px-4 py-2 bg-slate-900/60 border-b border-border/40 flex items-center justify-between text-xs">
+              <span className="font-mono text-[10px] font-bold text-muted-foreground uppercase">Target Subject Dossier</span>
+              <button
+                onClick={() => setIsDossierCollapsed(!isDossierCollapsed)}
+                className="text-slate-400 hover:text-white flex items-center gap-1 text-[11px]"
+                title={isDossierCollapsed ? 'Expand Dossier' : 'Collapse Dossier'}
+              >
+                <span>{isDossierCollapsed ? '▼ Expand' : '▲ Minimize'}</span>
+              </button>
+            </div>
+            {!isDossierCollapsed && (
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-start gap-3.5">
+                  <img
+                    src={caseData.photo_url || 'https://images.unsplash.com/photo-1543332164-6e82f355badc?w=400'}
+                    alt={caseData.person_name}
+                    className="w-20 h-20 rounded-xl object-cover border-2 border-red-500 shadow-md shrink-0"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="font-mono text-xs font-bold text-primary">{caseData.case_number}</span>
+                      <Badge className="bg-red-600 text-white font-extrabold text-[9px] px-1.5 py-0.2">
+                        {caseData.priority}
+                      </Badge>
                     </div>
-                    <div className="text-[10px] text-emerald-400 font-mono flex items-center gap-1 bg-emerald-950/30 px-2 py-0.5 rounded border border-emerald-500/30">
-                      <Sparkles className="h-3 w-3 text-emerald-400" />
-                      <span>Face Match:</span>
-                      <span className="font-bold text-emerald-200">89.4% (CAM-METRO-04)</span>
+                    <h3 className="text-base font-black text-foreground truncate mt-0.5">
+                      {caseData.person_name} ({caseData.age} Years, {caseData.gender})
+                    </h3>
+                    <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
+                      {caseData.description}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                      <div className="text-[10px] text-red-400 font-mono flex items-center gap-1 bg-red-950/30 px-2 py-0.5 rounded border border-red-500/30">
+                        <HeartPulse className="h-3 w-3 text-red-400 animate-pulse" />
+                        <span>Medical Risk:</span>
+                        <span className="font-bold text-red-200">Asthma Inhaler (5h 50m window)</span>
+                      </div>
+                      <div className="text-[10px] text-emerald-400 font-mono flex items-center gap-1 bg-emerald-950/30 px-2 py-0.5 rounded border border-emerald-500/30">
+                        <Sparkles className="h-3 w-3 text-emerald-400" />
+                        <span>Face Match:</span>
+                        <span className="font-bold text-emerald-200">89.4% (CAM-METRO-04)</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* 4 Live Metric Pills */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-border/60 text-center font-mono">
-                <div className="p-2 rounded-lg bg-background/60 border border-border/60">
-                  <span className="text-[9px] uppercase text-muted-foreground block">Last Seen</span>
-                  <span className="text-xs font-bold text-white">18 Hours Ago</span>
+                {/* 4 Live Metric Pills */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-border/60 text-center font-mono">
+                  <div className="p-2 rounded-lg bg-background/60 border border-border/60">
+                    <span className="text-[9px] uppercase text-muted-foreground block">Last Seen</span>
+                    <span className="text-xs font-bold text-white">18 Hours Ago</span>
+                  </div>
+                  <div className="p-2 rounded-lg bg-background/60 border border-border/60">
+                    <span className="text-[9px] uppercase text-muted-foreground block">Sightings</span>
+                    <span className="text-xs font-bold text-cyan-400">12 Multimodal</span>
+                  </div>
+                  <div className="p-2 rounded-lg bg-background/60 border border-border/60">
+                    <span className="text-[9px] uppercase text-muted-foreground block">Radius</span>
+                    <span className="text-xs font-bold text-amber-400">10 km Ring</span>
+                  </div>
+                  <div className="p-2 rounded-lg bg-background/60 border border-border/60">
+                    <span className="text-[9px] uppercase text-muted-foreground block">Station</span>
+                    <span className="text-[11px] font-bold text-emerald-400 truncate block">PS Lajpat Nagar</span>
+                  </div>
                 </div>
-                <div className="p-2 rounded-lg bg-background/60 border border-border/60">
-                  <span className="text-[9px] uppercase text-muted-foreground block">Sightings</span>
-                  <span className="text-xs font-bold text-cyan-400">12 Multimodal</span>
-                </div>
-                <div className="p-2 rounded-lg bg-background/60 border border-border/60">
-                  <span className="text-[9px] uppercase text-muted-foreground block">Radius</span>
-                  <span className="text-xs font-bold text-amber-400">10 km Ring</span>
-                </div>
-                <div className="p-2 rounded-lg bg-background/60 border border-border/60">
-                  <span className="text-[9px] uppercase text-muted-foreground block">Station</span>
-                  <span className="text-[11px] font-bold text-emerald-400 truncate block">PS Lajpat Nagar</span>
-                </div>
-              </div>
-            </CardContent>
+              </CardContent>
+            )}
           </Card>
 
           {/* Top-3 Predicted Next Locations */}
@@ -993,9 +1141,19 @@ export function GuardianTracePage() {
                   AI Next-Location Predictions (Top 3)
                 </CardTitle>
               </div>
-              <span className="text-[10px] font-mono text-muted-foreground">Markov &amp; Transit Vector</span>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono text-muted-foreground hidden sm:inline">Markov &amp; Transit Vector</span>
+                <button
+                  onClick={() => setIsPredictionsCollapsed(!isPredictionsCollapsed)}
+                  className="text-xs text-slate-400 hover:text-white font-mono"
+                  title={isPredictionsCollapsed ? 'Expand Predictions' : 'Collapse Predictions'}
+                >
+                  {isPredictionsCollapsed ? '▼ Expand' : '▲ Close'}
+                </button>
+              </div>
             </CardHeader>
-            <CardContent className="p-3 space-y-2">
+            {!isPredictionsCollapsed && (
+              <CardContent className="p-3 space-y-2">
               {predictions.map((p, idx) => (
                 <div
                   key={idx}
@@ -1045,6 +1203,7 @@ export function GuardianTracePage() {
                 </div>
               ))}
             </CardContent>
+            )}
           </Card>
 
           {/* Sighting Feed with Multimodal Sensor Signal Filter Pills */}

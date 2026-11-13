@@ -158,6 +158,7 @@ CRIMENEXUS Geospatial AI & Forensic Earth Observation Division
       isOpen={isOpen}
       onClose={onClose}
       title="OmniTrace: AI Satellite Earth Observation Verification"
+      size="2xl"
     >
       <div className="space-y-4 text-xs font-sans text-slate-200">
         {/* Top Header Card */}

@@ -5,6 +5,55 @@ import { BrowserRouter } from 'react-router-dom';
 import axios from 'axios';
 import { CitizenReportingPage } from '../../src/features/citizen/CitizenReportingPage';
 
+// Mock maplibre-gl to avoid WebGL / Canvas errors in JSDOM
+vi.mock('maplibre-gl', () => {
+  const mockMarker = {
+    setLngLat: vi.fn().mockReturnThis(),
+    setPopup: vi.fn().mockReturnThis(),
+    addTo: vi.fn().mockReturnThis(),
+    remove: vi.fn(),
+    on: vi.fn().mockReturnThis(),
+    getLngLat: vi.fn(() => ({ lng: 77.2197, lat: 28.6328 })),
+  };
+
+  const mockMap = {
+    on: vi.fn((event, callback) => {
+      if (event === 'load') callback();
+    }),
+    remove: vi.fn(),
+    addControl: vi.fn(),
+    getSource: vi.fn(),
+    addSource: vi.fn(),
+    getLayer: vi.fn(),
+    addLayer: vi.fn(),
+    flyTo: vi.fn(),
+    isStyleLoaded: vi.fn(() => true),
+    setLayoutProperty: vi.fn(),
+    setPaintProperty: vi.fn(),
+  };
+
+  return {
+    default: {
+      Map: vi.fn(() => mockMap),
+      Marker: vi.fn(() => mockMarker),
+      Popup: vi.fn(() => ({
+        setHTML: vi.fn().mockReturnThis(),
+        setLngLat: vi.fn().mockReturnThis(),
+        addTo: vi.fn().mockReturnThis(),
+      })),
+      NavigationControl: vi.fn(),
+    },
+    Map: vi.fn(() => mockMap),
+    Marker: vi.fn(() => mockMarker),
+    Popup: vi.fn(() => ({
+      setHTML: vi.fn().mockReturnThis(),
+      setLngLat: vi.fn().mockReturnThis(),
+      addTo: vi.fn().mockReturnThis(),
+    })),
+    NavigationControl: vi.fn(),
+  };
+});
+
 // Wrap component in BrowserRouter for routing
 function renderWithRouter(ui: React.ReactElement) {
   return render(<BrowserRouter>{ui}</BrowserRouter>);
@@ -19,7 +68,7 @@ describe('CitizenReportingPage Feature Tests', () => {
     renderWithRouter(<CitizenReportingPage />);
 
     expect(screen.getByText(/Report a Crime Safely & Directly to Police/i)).toBeInTheDocument();
-    expect(screen.getByText(/DPDP Act 2023 Compliant/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/DPDP Act 2023 Compliant/i).length).toBeGreaterThan(0);
 
     // Key Crime Category Cards
     expect(screen.getByText('Theft & Snatching')).toBeInTheDocument();
@@ -87,7 +136,7 @@ describe('CitizenReportingPage Feature Tests', () => {
     const textarea = screen.getByPlaceholderText(/Provide objective facts in any language or slang/i);
     fireEvent.change(textarea, { target: { value: 'Black Scorpio TS 09 AB 1234 broke barrier and fled at 14:00.' } });
 
-    const submitBtn = screen.getByRole('button', { name: /Transmit Crime Report to Police Station/i });
+    const submitBtn = screen.getByRole('button', { name: /Submit Crime Report/i });
     fireEvent.click(submitBtn);
 
     // Wait for submission confirmation screen

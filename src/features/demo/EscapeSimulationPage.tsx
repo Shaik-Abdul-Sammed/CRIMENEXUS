@@ -28,7 +28,8 @@ import {
   Lock,
   Navigation,
   Eye,
-  FileCheck2
+  FileCheck2,
+  X
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
@@ -737,28 +738,36 @@ export function EscapeSimulationPage() {
               <FileText className="h-4 w-4" />
               <span>Inspect Intercept Dossier</span>
             </Button>
+            <button
+              onClick={() => setSimulationCompleted(false)}
+              className="p-1 rounded text-slate-400 hover:text-white transition-colors"
+              title="Close Banner (X)"
+              aria-label="Close Banner"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
         </div>
       )}
 
       {/* Header and Step Sequence Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-border bg-card/90 backdrop-blur-md shadow-lg">
-        <div>
-          <div className="flex items-center gap-2">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 p-4 rounded-xl border border-border bg-card/90 backdrop-blur-md shadow-lg">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-xl font-black tracking-tight text-foreground flex items-center gap-2">
-              <ShieldAlert className="h-5 w-5 text-red-500" />
-              <span>Operation Shatter: Criminal Escape Simulation</span>
+              <ShieldAlert className="h-5 w-5 text-red-500 shrink-0" />
+              <span className="truncate">Operation Shatter: Criminal Escape Simulation</span>
             </h1>
-            <Badge variant="outline" className="border-red-500/40 text-red-400 bg-red-950/30 text-[10px] font-mono font-bold">
+            <Badge variant="outline" className="border-red-500/40 text-red-400 bg-red-950/30 text-[10px] font-mono font-bold shrink-0">
               LIVE AI INTERCEPT
             </Badge>
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground mt-0.5 truncate">
             Demonstrating real-time AI neutralization of Vehicle Cloning, Financial Smurfing, and RF Silence Evasion.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap shrink-0">
           <Button
             size="sm"
             onClick={handlePlayFullScenario}

@@ -316,7 +316,7 @@ export function DashboardPage() {
       {/* Rapid Operational Action Bar (Tiered Sequence & Zero-Overflow Layout) */}
       <div className="flex flex-col gap-3 w-full p-4 rounded-xl border border-primary/30 bg-card/85 backdrop-blur-sm shadow-md">
         {/* Tier 1: Target Case Status, Global Date Range Filter, and Court Dossier Export */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full border-b border-border/50 pb-3">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 w-full border-b border-border/50 pb-3">
           <div className="flex-1 min-w-0">
             <h2 className="text-xl font-black text-white truncate flex items-center gap-2">
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-ping shrink-0" />
@@ -327,7 +327,7 @@ export function DashboardPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5 shrink-0">
+          <div className="flex items-center gap-2 flex-wrap shrink-0">
             {/* Date Range Global Filter */}
             <div className="flex items-center rounded-lg border border-border bg-background/80 p-0.5 text-xs">
               {(['TODAY', 'WEEK', 'MONTH'] as const).map((r) => (

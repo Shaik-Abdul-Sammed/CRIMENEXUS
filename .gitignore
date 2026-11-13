@@ -264,8 +264,21 @@ backend/data/public_evidence/
 .docs/
 docs/audits/
 docs/*.pdf
+*.pdf
 docs/*_AUDIT*.md
 docs/*_REPORT*.md
+
+# Testing & E2E Artifacts
+playwright-report/
+test-results/
+.vitest/
+coverage/
+*.lcov
+
+# IDE Configurations
+.vscode/
+.idea/
+
 
 
 
