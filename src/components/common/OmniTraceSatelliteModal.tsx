@@ -335,7 +335,7 @@ CRIMENEXUS Geospatial AI & Forensic Earth Observation Division
 
         {/* Certificate Preview Modal Dialog */}
         {showCertPreview && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
+          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
             <div className="relative w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl border-2 border-emerald-500/80 bg-slate-950 p-6 text-white shadow-2xl space-y-4 font-mono">
               <div className="flex items-center justify-between border-b border-white/20 pb-3">
                 <div className="flex items-center gap-2">

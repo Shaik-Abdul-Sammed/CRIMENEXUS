@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Brain,
   Cpu,
@@ -878,8 +879,8 @@ export function ForensicAlgorithmsHubModal({ isOpen, onClose, initialAlgorithmId
 
   const activeResult = liveResult || currentAlgo.computeFn(currentAlgo.defaultParams);
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-md animate-in fade-in">
+  const modalContent = (
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-md animate-in fade-in select-none">
       <div className="relative w-full max-w-6xl max-h-[92vh] flex flex-col rounded-2xl border-2 border-primary/50 bg-slate-950 text-white shadow-2xl overflow-hidden">
         {/* Header Ribbon */}
         <div className="px-5 py-4 border-b border-border/80 bg-slate-900/90 flex items-center justify-between gap-4">
@@ -1160,4 +1161,6 @@ export function ForensicAlgorithmsHubModal({ isOpen, onClose, initialAlgorithmId
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent;
 }

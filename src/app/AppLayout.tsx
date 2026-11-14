@@ -28,10 +28,10 @@ export function AppLayout() {
       {/* Collapsible Sidebar */}
       <Sidebar />
 
-      {/* Main Content Area with Strict Z-Index Layering to Prevent Menus Appearing Behind Content */}
-      <div className="flex flex-1 flex-col overflow-hidden relative z-0">
-        {/* Top Header firmly anchored on top of all page elements */}
-        <div className="relative z-50 shrink-0">
+      {/* Main Content Area with Unclipped Dropdown Flow & Clean Layering */}
+      <div className="flex flex-1 flex-col overflow-hidden relative">
+        {/* Top Header firmly anchored on top of all workspace elements */}
+        <div className="relative z-40 shrink-0">
           <TopNav />
         </div>
 

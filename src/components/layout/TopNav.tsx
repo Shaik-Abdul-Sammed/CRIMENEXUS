@@ -229,9 +229,9 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
 
   return (
     <>
-      <header className="sticky top-0 z-40 flex h-16 w-full max-w-full items-center justify-between border-b border-border bg-card/98 px-2 sm:px-4 shadow-sm gap-2 overflow-hidden select-none">
+      <header className="sticky top-0 z-40 flex h-16 w-full max-w-full items-center justify-between border-b border-border bg-card/98 px-2 sm:px-4 shadow-sm gap-2 overflow-visible select-none">
       {/* Left: Responsive Breadcrumbs with protected width, zero collision, and guaranteed full 'Home' visibility */}
-      <nav aria-label="Breadcrumb" className="hidden sm:flex items-center gap-1 sm:gap-1.5 text-xs text-muted-foreground shrink-0 min-w-fit max-w-[180px] lg:max-w-[280px] mr-2 lg:mr-3 overflow-hidden truncate">
+      <nav aria-label="Breadcrumb" className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground shrink-0 max-w-[260px] lg:max-w-[340px] mr-2 overflow-hidden">
         <Link to="/dashboard" className="hover:text-foreground font-bold transition-colors shrink-0 flex items-center gap-1 text-primary">
           <span className="whitespace-nowrap font-extrabold text-xs">Home</span>
         </Link>
@@ -254,7 +254,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
       </nav>
 
       {/* Right: Consolidated Tools & Actions (Streamlined, Zero Horizontal Overflow, Zero Stacking Traps) */}
-      <div className="flex items-center gap-1 sm:gap-1.5 justify-end ml-auto min-w-0 overflow-x-auto scrollbar-none py-1">
+      <div className="flex items-center gap-1 sm:gap-1.5 justify-end ml-auto min-w-0 py-1">
         {/* 1. Global Intelligence Search Trigger (High Usage) */}
         <button
           onClick={() => setGlobalSearchOpen(true)}
@@ -369,7 +369,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           </button>
 
           {tacticalMenuOpen && (
-            <div className="absolute right-0 mt-2 w-72 rounded-2xl border border-border bg-slate-900/98 backdrop-blur-xl p-3 shadow-2xl z-[999] animate-in fade-in zoom-in-95 space-y-2 select-none">
+            <div className="absolute right-0 top-full mt-2 w-72 rounded-2xl border border-border bg-slate-900/98 backdrop-blur-xl p-3 shadow-2xl z-[1000] animate-in fade-in zoom-in-95 space-y-2 select-none">
               <div className="flex items-center justify-between pb-2 border-b border-border/60">
                 <div className="flex items-center gap-1.5">
                   <Zap className="h-3.5 w-3.5 text-amber-400" />
@@ -511,7 +511,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           </button>
 
           {notifMenuOpen && (
-            <div className="absolute right-0 mt-2 w-[92vw] max-w-sm sm:w-96 rounded-2xl border border-border/80 bg-slate-900/98 backdrop-blur-xl p-4 shadow-2xl z-[999] animate-in fade-in zoom-in-95 select-none">
+            <div className="absolute right-0 top-full mt-2 w-[92vw] max-w-sm sm:w-96 rounded-2xl border border-border/80 bg-slate-900/98 backdrop-blur-xl p-4 shadow-2xl z-[1000] animate-in fade-in zoom-in-95 select-none">
               <div className="flex items-center justify-between pb-3 border-b border-border/60 mb-3">
                 <div className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
@@ -640,7 +640,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           </button>
 
           {settingsMenuOpen && (
-            <div className="absolute right-0 mt-2 w-[90vw] max-w-xs sm:w-80 rounded-xl border border-border bg-card/98 backdrop-blur-xl p-3 shadow-2xl z-[999] space-y-3 animate-in fade-in zoom-in-95 max-h-[85vh] overflow-y-auto">
+            <div className="absolute right-0 top-full mt-2 w-[90vw] max-w-xs sm:w-80 rounded-xl border border-border bg-card/98 backdrop-blur-xl p-3 shadow-2xl z-[1000] space-y-3 animate-in fade-in zoom-in-95 max-h-[85vh] overflow-y-auto">
               <div className="flex items-center justify-between border-b border-border pb-2">
                 <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
                   <SettingsIcon className="h-3.5 w-3.5 text-primary" />
