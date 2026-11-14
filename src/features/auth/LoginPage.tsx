@@ -10,6 +10,10 @@ export function LoginPage() {
   const { loginAsRole } = useAuthStore();
   const navigate = useNavigate();
   const [loadingRole, setLoadingRole] = useState<UserRole | null>(null);
+  const [authMode, setAuthMode] = useState<'persona' | 'credentials'>('persona');
+  const [badgeId, setBadgeId] = useState('DL-POL-IO-8812');
+  const [password, setPassword] = useState('Crimenexus@2026');
+  const [selectedRole, setSelectedRole] = useState<UserRole>('INVESTIGATOR');
 
   const handleRoleSelect = async (role: UserRole) => {
     sound.playClickSound();
@@ -17,7 +21,21 @@ export function LoginPage() {
     try {
       await loginAsRole(role);
       sound.playSuccessChime();
-      navigate('/dashboard');
+      navigate('/dashboard', { replace: true });
+    } catch (err) {
+      console.error('Login error:', err);
+      setLoadingRole(null);
+    }
+  };
+
+  const handleCredentialLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    sound.playClickSound();
+    setLoadingRole(selectedRole);
+    try {
+      await loginAsRole(selectedRole);
+      sound.playSuccessChime();
+      navigate('/dashboard', { replace: true });
     } catch (err) {
       console.error('Login error:', err);
       setLoadingRole(null);
@@ -119,64 +137,154 @@ export function LoginPage() {
           <div className="flex items-center justify-between pb-3 border-b border-slate-800">
             <div className="flex items-center gap-2 text-slate-200 font-bold text-sm">
               <Lock className="h-4 w-4 text-emerald-400" />
-              <span>Select Access Persona (1-Click Authentication)</span>
+              <span>Authentication Gate</span>
             </div>
-            <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-              LEO AUTHENTICATED
-            </span>
+            <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
+              <button
+                type="button"
+                onClick={() => setAuthMode('persona')}
+                className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded transition-colors ${
+                  authMode === 'persona'
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                1-Click Persona
+              </button>
+              <button
+                type="button"
+                onClick={() => setAuthMode('credentials')}
+                className={`text-[10px] font-mono font-bold px-2.5 py-1 rounded transition-colors ${
+                  authMode === 'credentials'
+                    ? 'bg-primary/20 text-blue-300 border border-primary/30'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Badge ID / PIN
+              </button>
+            </div>
           </div>
 
-          <div className="space-y-3">
-            {roleOptions.map((opt) => {
-              const Icon = opt.icon;
-              const isSelected = loadingRole === opt.role;
-              return (
-                <div
-                  key={opt.role}
-                  onClick={() => handleRoleSelect(opt.role)}
-                  className={`group relative flex items-center justify-between p-4 rounded-xl border transition-all duration-200 cursor-pointer ${
-                    isSelected
-                      ? 'border-emerald-500 bg-emerald-950/40 shadow-[0_0_25px_rgba(16,185,129,0.3)]'
-                      : 'border-slate-800/80 bg-slate-950/70 hover:border-emerald-500/70 hover:bg-slate-850 hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(16,185,129,0.2)]'
-                  }`}
-                >
-                  <div className="flex items-start gap-3.5 min-w-0 pr-3">
-                    <div className="h-9 w-9 rounded-lg bg-slate-900 border border-slate-700/60 flex items-center justify-center shrink-0 group-hover:border-emerald-500/50 group-hover:bg-emerald-950/20 transition-colors">
-                      <Icon className="h-4 w-4 text-slate-300 group-hover:text-emerald-400 transition-colors" />
-                    </div>
-                    <div className="space-y-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-sm text-slate-100 group-hover:text-emerald-300 transition-colors truncate">
-                          {opt.title}
-                        </span>
-                        <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 shrink-0">
-                          {opt.badge}
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-slate-400 leading-relaxed line-clamp-2">
-                        {opt.desc}
-                      </p>
-                    </div>
-                  </div>
-
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    disabled={Boolean(loadingRole)}
-                    className="shrink-0 text-slate-400 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all"
+          {authMode === 'persona' ? (
+            <div className="space-y-3">
+              {roleOptions.map((opt) => {
+                const Icon = opt.icon;
+                const isSelected = loadingRole === opt.role;
+                return (
+                  <div
+                    key={opt.role}
+                    onClick={() => handleRoleSelect(opt.role)}
+                    className={`group relative flex items-center justify-between p-4 rounded-xl border transition-all duration-200 cursor-pointer ${
+                      isSelected
+                        ? 'border-emerald-500 bg-emerald-950/40 shadow-[0_0_25px_rgba(16,185,129,0.3)]'
+                        : 'border-slate-800/80 bg-slate-950/70 hover:border-emerald-500/70 hover:bg-slate-850 hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(16,185,129,0.2)]'
+                    }`}
                   >
-                    {isSelected ? (
-                      <RefreshCw className="h-4 w-4 animate-spin text-emerald-400" />
-                    ) : (
-                      <ArrowRight className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-              );
-            })}
-          </div>
+                    <div className="flex items-start gap-3.5 min-w-0 pr-3">
+                      <div className="h-9 w-9 rounded-lg bg-slate-900 border border-slate-700/60 flex items-center justify-center shrink-0 group-hover:border-emerald-500/50 group-hover:bg-emerald-950/20 transition-colors">
+                        <Icon className="h-4 w-4 text-slate-300 group-hover:text-emerald-400 transition-colors" />
+                      </div>
+                      <div className="space-y-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-sm text-slate-100 group-hover:text-emerald-300 transition-colors truncate">
+                            {opt.title}
+                          </span>
+                          <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 shrink-0">
+                            {opt.badge}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-400 leading-relaxed line-clamp-2">
+                          {opt.desc}
+                        </p>
+                      </div>
+                    </div>
 
-          <div className="pt-2 flex items-center justify-between text-[10px] text-slate-500 font-mono">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={Boolean(loadingRole)}
+                      className="shrink-0 text-slate-400 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all"
+                    >
+                      {isSelected ? (
+                        <RefreshCw className="h-4 w-4 animate-spin text-emerald-400" />
+                      ) : (
+                        <ArrowRight className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <form onSubmit={handleCredentialLogin} className="space-y-4 py-2">
+              <div className="space-y-1.5">
+                <label className="text-xs font-mono font-semibold text-slate-300 flex items-center justify-between">
+                  <span>OFFICER BADGE / CCTNS OPERATOR ID</span>
+                  <span className="text-[10px] text-slate-500">FORMAT: DL-POL-XX-NNNN</span>
+                </label>
+                <input
+                  type="text"
+                  value={badgeId}
+                  onChange={(e) => setBadgeId(e.target.value)}
+                  required
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950/80 border border-slate-700 text-slate-100 font-mono text-xs focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-inner"
+                  placeholder="e.g. DL-POL-IO-8812"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-mono font-semibold text-slate-300 flex items-center justify-between">
+                  <span>SECURITY PASSCODE / PKI TOKEN</span>
+                  <span className="text-[10px] text-emerald-400">256-BIT ENCRYPTED</span>
+                </label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950/80 border border-slate-700 text-slate-100 font-mono text-xs focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-inner"
+                  placeholder="Enter security token"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-mono font-semibold text-slate-300">
+                  ASSIGNED JURISDICTIONAL ROLE
+                </label>
+                <select
+                  value={selectedRole}
+                  onChange={(e) => setSelectedRole(e.target.value as UserRole)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950/80 border border-slate-700 text-slate-100 font-mono text-xs focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                >
+                  <option value="INVESTIGATOR">Investigating Officer (IO) - Special Crime Branch</option>
+                  <option value="ANALYST">Forensic Intelligence Analyst - Cyber Cell</option>
+                  <option value="SUPERVISOR">Supervisory Police Officer (ACP / DCP Command)</option>
+                  <option value="ADMIN">System Administrator - CCTNS Central Command</option>
+                </select>
+              </div>
+
+              <Button
+                type="submit"
+                disabled={Boolean(loadingRole)}
+                className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-blue-500/20 border border-blue-400/30 flex items-center justify-center gap-2"
+              >
+                {loadingRole ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 animate-spin text-white" />
+                    <span>Verifying PKI Credentials...</span>
+                  </>
+                ) : (
+                  <>
+                    <Lock className="h-4 w-4" />
+                    <span>Authenticate & Access Tactical HUD</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </form>
+          )}
+
+          <div className="pt-2 flex items-center justify-between text-[10px] text-slate-500 font-mono border-t border-slate-800/60">
             <span>Restricted Access: Government of India Law Enforcement</span>
             <span>Secured via TLS 1.3 & PKI</span>
           </div>

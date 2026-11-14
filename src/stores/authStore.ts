@@ -20,17 +20,53 @@ const ROLE_HIERARCHY: Record<UserRole, number> = {
   ADMIN: 4,
 };
 
+const getInitialAuth = () => {
+  if (typeof localStorage === 'undefined') {
+    return {
+      currentUser: MOCK_USERS[0],
+      isAuthenticated: true,
+      activeRole: 'INVESTIGATOR' as UserRole,
+    };
+  }
+  try {
+    const stored = localStorage.getItem('crimenexus_auth_user');
+    if (stored) {
+      const user = JSON.parse(stored);
+      return {
+        currentUser: user,
+        isAuthenticated: true,
+        activeRole: user.role || 'INVESTIGATOR',
+      };
+    }
+  } catch (e) {
+    console.warn('Failed to parse auth user from localStorage:', e);
+  }
+  return {
+    currentUser: MOCK_USERS[0],
+    isAuthenticated: true,
+    activeRole: 'INVESTIGATOR' as UserRole,
+  };
+};
+
+const initialAuth = getInitialAuth();
+
 export const useAuthStore = create<AuthState>((set, get) => ({
-  currentUser: MOCK_USERS[0],
-  isAuthenticated: true,
-  activeRole: 'INVESTIGATOR',
+  currentUser: initialAuth.currentUser,
+  isAuthenticated: initialAuth.isAuthenticated,
+  activeRole: initialAuth.activeRole,
 
   setCurrentUser: (user: User) => {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('crimenexus_auth_user', JSON.stringify(user));
+    }
     set({ currentUser: user, isAuthenticated: true, activeRole: user.role });
   },
 
   loginAsRole: async (role: UserRole) => {
     const user = await api.login(role);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('crimenexus_auth_user', JSON.stringify(user));
+    }
     set({ currentUser: user, isAuthenticated: true, activeRole: role });
   },
 
@@ -44,6 +80,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         target: 'System Session',
         ipAddress: '127.0.0.1',
       });
+    }
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('crimenexus_auth_user');
     }
     set({ currentUser: null, isAuthenticated: false, activeRole: 'INVESTIGATOR' });
   },
