@@ -31,6 +31,8 @@ import {
   Layers,
   Eye,
   EyeOff,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
@@ -307,15 +309,33 @@ export function DemoPlayer({ isOpen, onClose, onStepChange }: DemoPlayerProps) {
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [activeStepIndex, setActiveStepIndex] = useState<number>(0);
   const [speedMultiplier, setSpeedMultiplier] = useState<number>(1);
+  const [voiceDispatchEnabled, setVoiceDispatchEnabled] = useState<boolean>(true);
   const [dossierPreviewOpen, setDossierPreviewOpen] = useState<boolean>(false);
   const [satelliteModalOpen, setSatelliteModalOpen] = useState<boolean>(false);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Synthesized Voice Dispatch Narration via Web Speech API
+  const speakDispatchNarration = (text: string) => {
+    if (!voiceDispatchEnabled || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    try {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.05;
+      utterance.pitch = 1.0;
+      window.speechSynthesis.speak(utterance);
+    } catch (e) {
+      // Speech synthesis unsupported or suppressed in environment
+    }
+  };
+
   // Synchronized step sequence driven by seconds counter (up to 180s = 3 minutes)
   useEffect(() => {
     if (!isOpen) {
       if (timerRef.current) clearInterval(timerRef.current);
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
       return;
     }
 
@@ -345,13 +365,23 @@ export function DemoPlayer({ isOpen, onClose, onStepChange }: DemoPlayerProps) {
     if (matchingStepIndex !== -1 && matchingStepIndex !== activeStepIndex) {
       setActiveStepIndex(matchingStepIndex);
       const step = DEMO_STEPS[matchingStepIndex];
-      sound.playRadarPing();
+      
+      // Dynamic audio cue based on severity
+      if (step.second === 180) {
+        sound.playSuccessChime();
+      } else if (step.second === 0 || step.second === 70 || step.second === 100) {
+        sound.playAlertBeep();
+      } else {
+        sound.playRadarPing();
+      }
+
+      speakDispatchNarration(step.toastMsg);
       toast.info(step.toastMsg, step.title);
       if (onStepChange) {
         onStepChange(step);
       }
     }
-  }, [currentSecond, activeStepIndex, onStepChange, toast]);
+  }, [currentSecond, activeStepIndex, onStepChange, toast, voiceDispatchEnabled]);
 
   if (!isOpen) return null;
 
@@ -399,6 +429,39 @@ export function DemoPlayer({ isOpen, onClose, onStepChange }: DemoPlayerProps) {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Synthetic Voice Dispatch Narration Toggle */}
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                const next = !voiceDispatchEnabled;
+                setVoiceDispatchEnabled(next);
+                if (!next && typeof window !== 'undefined' && 'speechSynthesis' in window) {
+                  window.speechSynthesis.cancel();
+                } else {
+                  sound.playClickSound();
+                }
+              }}
+              className={`h-8 text-xs font-bold flex items-center gap-1.5 transition-colors ${
+                voiceDispatchEnabled
+                  ? 'border-emerald-500/50 bg-emerald-950/40 text-emerald-300'
+                  : 'border-slate-700 bg-slate-800 text-slate-400'
+              }`}
+              title="Toggle Hands-Free Synthetic Voice Dispatch Narration"
+            >
+              {voiceDispatchEnabled ? (
+                <>
+                  <Volume2 className="h-3.5 w-3.5 text-emerald-400 animate-pulse" />
+                  <span className="hidden sm:inline">Voice Dispatch: ON</span>
+                </>
+              ) : (
+                <>
+                  <VolumeX className="h-3.5 w-3.5 text-slate-400" />
+                  <span className="hidden sm:inline">Voice Dispatch: OFF</span>
+                </>
+              )}
+            </Button>
+
             {/* Speed Selector */}
             <div className="flex items-center gap-1 bg-slate-800 p-1 rounded-lg border border-slate-700 text-[10px] font-mono">
               {[1, 2, 4].map((spd) => (
@@ -474,18 +537,30 @@ export function DemoPlayer({ isOpen, onClose, onStepChange }: DemoPlayerProps) {
             />
           </div>
 
-          {/* 20 Milestone mini-markers */}
-          <div className="flex justify-between text-[8px] font-mono text-slate-500 pt-1 overflow-x-auto scrollbar-none">
-            <span>0s: Intake</span>
-            <span>20s: Satellite</span>
-            <span>40s: Optical</span>
-            <span>60s: WiFi</span>
-            <span>80s: UPI</span>
-            <span>100s: BlindSpot</span>
-            <span>120s: Bus</span>
-            <span>140s: Markov</span>
-            <span>160s: Squads</span>
-            <span>180s: Found Safe</span>
+          {/* Quick-Jump Tactical Waypoints */}
+          <div className="flex items-center gap-1.5 pt-2 overflow-x-auto scrollbar-none">
+            <span className="text-[10px] font-bold text-muted-foreground uppercase font-mono mr-1 shrink-0">
+              Tactical Jump:
+            </span>
+            {[
+              { sec: 0, label: '0s: Intake', color: 'border-red-500/40 text-red-300 bg-red-950/30' },
+              { sec: 20, label: '20s: Satellite EO', color: 'border-emerald-500/40 text-emerald-300 bg-emerald-950/30' },
+              { sec: 40, label: '40s: CCTV Hit', color: 'border-purple-500/40 text-purple-300 bg-purple-950/30' },
+              { sec: 50, label: '50s: Ring Search', color: 'border-amber-500/40 text-amber-300 bg-amber-950/30' },
+              { sec: 140, label: '140s: NDLS Prediction', color: 'border-cyan-500/40 text-cyan-300 bg-cyan-950/30' },
+              { sec: 180, label: '180s: Safe Recovery', color: 'border-emerald-400 text-emerald-200 bg-emerald-900/40 font-bold' },
+            ].map((jump) => (
+              <button
+                key={jump.sec}
+                onClick={() => {
+                  sound.playClickSound();
+                  setCurrentSecond(jump.sec);
+                }}
+                className={`px-2 py-0.5 rounded text-[10px] font-mono border transition-all whitespace-nowrap hover:scale-105 active:scale-95 ${jump.color}`}
+              >
+                {jump.label}
+              </button>
+            ))}
           </div>
         </div>
 

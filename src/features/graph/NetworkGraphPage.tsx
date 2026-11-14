@@ -28,6 +28,9 @@ import {
   Square,
   Sparkles,
   Globe,
+  PanelRight,
+  ChevronUp,
+  ChevronDown,
 } from 'lucide-react';
 import { useNetworkGraph } from '../../hooks/useIntelligenceApi';
 import { Entity, Relationship } from '../../types';
@@ -94,6 +97,13 @@ export function NetworkGraphPage() {
   // DNS Metrics: Centrality & Kingpins State
   const [topKingpins, setTopKingpins] = useState<Array<{ id: string; name: string; type: string; degree: number; betweenness: number }>>([]);
   const [showKingpinsPanel, setShowKingpinsPanel] = useState<boolean>(true);
+  
+  // Collapsible & Minimizable Boxes in Network Graph Sidebar
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
+  const [isKingpinsMinimized, setIsKingpinsMinimized] = useState<boolean>(false);
+  const [isAiSummaryMinimized, setIsAiSummaryMinimized] = useState<boolean>(false);
+  const [isSelectedNodeMinimized, setIsSelectedNodeMinimized] = useState<boolean>(false);
+  const [isSelectedEdgeMinimized, setIsSelectedEdgeMinimized] = useState<boolean>(false);
 
   // 5 Advanced Features State
   const [communityClusteringActive, setCommunityClusteringActive] = useState<boolean>(true);
@@ -1769,7 +1779,7 @@ export function NetworkGraphPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div className="lg:col-span-3 space-y-4">
+        <div className={isSidebarCollapsed ? "lg:col-span-4 space-y-4" : "lg:col-span-3 space-y-4"}>
           <div className="flex flex-col md:flex-row items-center justify-between gap-3 p-3 rounded-xl border border-border bg-card">
             <div className="w-full md:w-64">
               <Input
@@ -1832,6 +1842,22 @@ export function NetworkGraphPage() {
                 >
                   {hideLowConfidence ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                   <span>{t('graph.minConfidence')} {(minConfidence * 100).toFixed(0)}%</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    sound.playClickSound();
+                    setIsSidebarCollapsed(!isSidebarCollapsed);
+                  }}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs border font-semibold transition-all ${
+                    isSidebarCollapsed
+                      ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300'
+                      : 'bg-background border-border text-muted-foreground hover:text-foreground'
+                  }`}
+                  title={isSidebarCollapsed ? 'Show Intelligence Sidebar' : 'Collapse Sidebar for Full Canvas View'}
+                >
+                  <PanelRight className="h-3.5 w-3.5" />
+                  <span>{isSidebarCollapsed ? 'Show Sidebar' : 'Hide Sidebar'}</span>
                 </button>
                 {hideLowConfidence && (
                   <input
@@ -2300,451 +2326,554 @@ export function NetworkGraphPage() {
           </Card>
         </div>
 
-        <div className="space-y-6 sticky top-4 h-fit max-h-[calc(100vh-6rem)] overflow-y-auto pr-1">
-          {/* DNS Centrality & Top 3 Kingpins Panel */}
-          {topKingpins.length > 0 && showKingpinsPanel ? (
-            <Card className="border-amber-500/40 bg-gradient-to-b from-amber-950/20 via-card to-card shadow-lg animate-in fade-in">
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-amber-400">👑</span>
-                    <CardTitle className="text-xs font-bold text-amber-300 uppercase tracking-wider">
-                      DNS Network Centrality
-                    </CardTitle>
+        {!isSidebarCollapsed && (
+          <div className="space-y-4 sticky top-4 h-fit max-h-[calc(100vh-6rem)] overflow-y-auto pr-1">
+            {/* DNS Centrality & Top 3 Kingpins Panel */}
+            {topKingpins.length > 0 && showKingpinsPanel ? (
+              <Card className="border-amber-500/40 bg-gradient-to-b from-amber-950/20 via-card to-card shadow-lg animate-in fade-in">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-amber-400">👑</span>
+                      <CardTitle className="text-xs font-bold text-amber-300 uppercase tracking-wider">
+                        DNS Network Centrality
+                      </CardTitle>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Badge variant="outline" className="text-[9px] bg-amber-500/10 border-amber-500/30 text-amber-400 font-bold">
+                        TOP 3
+                      </Badge>
+                      <button
+                        onClick={() => setIsKingpinsMinimized(!isKingpinsMinimized)}
+                        className="text-[10px] text-muted-foreground hover:text-white px-1.5 py-0.5 rounded hover:bg-slate-800 transition-colors flex items-center gap-0.5"
+                        title={isKingpinsMinimized ? "Expand Kingpins Box" : "Minimize Kingpins Box"}
+                      >
+                        {isKingpinsMinimized ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />}
+                        <span>{isKingpinsMinimized ? "Expand" : "Minimize"}</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          sound.playClickSound();
+                          setShowKingpinsPanel(false);
+                        }}
+                        className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                        title="Close Kingpins Box (X)"
+                        aria-label="Close Kingpins Panel"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </div>
+                </CardHeader>
+                {!isKingpinsMinimized ? (
+                  <CardContent className="space-y-2 text-xs">
+                    <p className="text-[11px] text-muted-foreground leading-snug">
+                      Key syndicates identified via degree centrality & betweenness routing. Golden border indicates primary criminal hubs.
+                    </p>
+                    <div className="space-y-2 pt-1">
+                      {topKingpins.map((kp, idx) => (
+                        <div
+                          key={kp.id}
+                          onClick={() => {
+                            sound.playRadarPing();
+                            if (cyRef.current) {
+                              const ele = cyRef.current.getElementById(kp.id);
+                              if (ele && ele.length > 0) {
+                                ele.style('display', 'element');
+                                cyRef.current.animate({ center: { eles: ele }, zoom: 1.8, duration: 500 });
+                                ele.select();
+                                const raw = ele.data('raw');
+                                if (raw) setSelectedNode(raw);
+
+                                // Highlight neighborhood & spotlight
+                                cyRef.current.elements().removeClass('focused-node focused-neighbor focused-edge dimmed-node');
+                                ele.addClass('focused-node');
+                                const nh = ele.neighborhood();
+                                nh.nodes().addClass('focused-neighbor');
+                                nh.edges().addClass('focused-edge');
+                                cyRef.current.elements().not(ele).not(nh).addClass('dimmed-node');
+                                setFocusedEntity({
+                                  id: ele.id(),
+                                  name: raw?.name || kp.name,
+                                  count: nh.nodes().length,
+                                });
+                              }
+                            }
+                          }}
+                          className="p-2.5 rounded-lg border-2 border-amber-500/50 bg-amber-950/20 hover:bg-amber-950/40 transition-colors cursor-pointer flex items-center justify-between gap-2 shadow-sm"
+                          title="Click to center and highlight on graph"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="h-5 w-5 rounded-full bg-amber-500 text-slate-950 font-black text-[10px] flex items-center justify-center shrink-0">
+                              #{idx + 1}
+                            </span>
+                            <div className="truncate">
+                              <span className="font-bold text-foreground block truncate">{kp.name}</span>
+                              <span className="text-[10px] text-muted-foreground font-mono">{kp.type}</span>
+                            </div>
+                          </div>
+                          <div className="text-right shrink-0 font-mono text-[10px]">
+                            <div className="text-amber-400 font-bold">Deg: {kp.degree}</div>
+                            <div className="text-slate-400 text-[9px]">BC: {kp.betweenness}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                ) : (
+                  <div className="px-4 pb-3 text-[11px] font-mono text-amber-300/80 flex items-center justify-between">
+                    <span>👑 {topKingpins[0]?.name} (Deg {topKingpins[0]?.degree}) • 3 Identified</span>
+                    <button
+                      onClick={() => setIsKingpinsMinimized(false)}
+                      className="text-[10px] text-amber-400 underline font-bold"
+                    >
+                      View Details
+                    </button>
+                  </div>
+                )}
+              </Card>
+            ) : (
+              topKingpins.length > 0 && (
+                <button
+                  onClick={() => {
+                    sound.playClickSound();
+                    setShowKingpinsPanel(true);
+                    setIsKingpinsMinimized(false);
+                  }}
+                  className="w-full text-xs text-amber-400 hover:text-amber-300 flex items-center justify-between px-3 py-2 rounded-lg border border-amber-500/40 bg-slate-900/80 shadow-md transition-all hover:bg-slate-900"
+                >
+                  <span className="flex items-center gap-1.5 font-bold">
+                    <span>👑</span>
+                    DNS Network Centrality (Top 3 Kingpins)
+                  </span>
+                  <span className="text-[10px] text-slate-400">Restore ➔</span>
+                </button>
+              )
+            )}
+
+            {/* Collapsible AI Graph Summary Panel */}
+            {showAiSummary && (
+              <Card className="border-primary/50 bg-gradient-to-b from-primary/10 via-card to-card shadow-lg animate-in fade-in slide-in-from-top-2">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-[9px] bg-amber-500/10 border-amber-500/30 text-amber-400 font-bold">
-                      TOP 3 KINGPINS
-                    </Badge>
+                    <Bot className="h-4 w-4 text-primary" />
+                    <CardTitle className="text-xs font-bold text-primary">AI Graph Summary</CardTitle>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={handleToggleSpeech}
+                      className={`h-7 px-2 rounded-md flex items-center gap-1 text-[11px] font-semibold border transition-all ${
+                        isSpeaking
+                          ? 'bg-amber-500/20 border-amber-500/60 text-amber-300 animate-pulse'
+                          : 'bg-primary/10 border-primary/40 text-primary hover:bg-primary/20'
+                      }`}
+                      title={isSpeaking ? 'Mute Voice Briefing' : 'Read Voice Briefing Aloud'}
+                    >
+                      {isSpeaking ? <VolumeX className="h-3 w-3 text-amber-400" /> : <Volume2 className="h-3 w-3 text-primary" />}
+                      <span>{isSpeaking ? 'Mute' : 'Speaker'}</span>
+                    </button>
+                    <button
+                      onClick={() => setIsAiSummaryMinimized(!isAiSummaryMinimized)}
+                      className="text-[10px] text-muted-foreground hover:text-white px-1.5 py-0.5 rounded hover:bg-slate-800 transition-colors flex items-center gap-0.5"
+                      title={isAiSummaryMinimized ? "Expand AI Summary" : "Minimize AI Summary"}
+                    >
+                      {isAiSummaryMinimized ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />}
+                      <span>{isAiSummaryMinimized ? "Expand" : "Minimize"}</span>
+                    </button>
                     <button
                       onClick={() => {
-                        sound.playClickSound();
-                        setShowKingpinsPanel(false);
+                        if (isSpeaking && typeof window !== 'undefined' && 'speechSynthesis' in window) {
+                          window.speechSynthesis.cancel();
+                          setIsSpeaking(false);
+                        }
+                        setShowAiSummary(false);
                       }}
-                      className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-                      title="Close Kingpins Panel"
-                      aria-label="Close Kingpins Panel"
+                      className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-slate-800"
+                      aria-label="Close AI Summary"
                     >
                       <X className="h-3.5 w-3.5" />
                     </button>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-2 text-xs">
-                <p className="text-[11px] text-muted-foreground leading-snug">
-                  Key syndicates identified via degree centrality & betweenness routing. Golden border indicates primary criminal hubs.
-                </p>
-                <div className="space-y-2 pt-1">
-                  {topKingpins.map((kp, idx) => (
-                    <div
-                      key={kp.id}
-                      onClick={() => {
-                        sound.playRadarPing();
-                        if (cyRef.current) {
-                          const ele = cyRef.current.getElementById(kp.id);
-                          if (ele && ele.length > 0) {
-                            ele.style('display', 'element');
-                            cyRef.current.animate({ center: { eles: ele }, zoom: 1.8, duration: 500 });
-                            ele.select();
-                            const raw = ele.data('raw');
-                            if (raw) setSelectedNode(raw);
+                </CardHeader>
+                {!isAiSummaryMinimized ? (
+                  <CardContent className="space-y-3 text-xs">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-[10px] bg-primary/10 border-primary/40 text-primary font-semibold">
+                          GEMINI GRAPH SYNTHESIS
+                        </Badge>
+                        <span className="text-[10px] text-muted-foreground font-mono">Topological Inference</span>
+                      </div>
+                      {isSpeaking && (
+                        <div className="flex items-center gap-1 text-[10px] text-amber-400 font-mono animate-pulse">
+                          <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-ping" />
+                          <span>Transmitting Audio...</span>
+                        </div>
+                      )}
+                    </div>
 
-                            // Highlight neighborhood & spotlight
-                            cyRef.current.elements().removeClass('focused-node focused-neighbor focused-edge dimmed-node');
-                            ele.addClass('focused-node');
-                            const nh = ele.neighborhood();
-                            nh.nodes().addClass('focused-neighbor');
-                            nh.edges().addClass('focused-edge');
-                            cyRef.current.elements().not(ele).not(nh).addClass('dimmed-node');
-                            setFocusedEntity({
-                              id: ele.id(),
-                              name: raw?.name || kp.name,
-                              count: nh.nodes().length,
-                            });
-                          }
-                        }
-                      }}
-                      className="p-2.5 rounded-lg border-2 border-amber-500/50 bg-amber-950/20 hover:bg-amber-950/40 transition-colors cursor-pointer flex items-center justify-between gap-2 shadow-sm"
-                      title="Click to center and highlight on graph"
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="h-5 w-5 rounded-full bg-amber-500 text-slate-950 font-black text-[10px] flex items-center justify-center shrink-0">
-                          #{idx + 1}
-                        </span>
+                    {/* Speaker Audio Player Banner */}
+                    <div className="p-2.5 rounded-lg border border-border/80 bg-slate-950/70 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <button
+                          onClick={handleToggleSpeech}
+                          className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 transition-transform ${
+                            isSpeaking
+                              ? 'bg-amber-500 text-slate-950 scale-105 shadow-md shadow-amber-500/20'
+                              : 'bg-primary text-primary-foreground hover:scale-105'
+                          }`}
+                          title={isSpeaking ? 'Stop voice readout' : 'Play audio intelligence readout'}
+                        >
+                          {isSpeaking ? <Square className="h-3.5 w-3.5 fill-current" /> : <Play className="h-3.5 w-3.5 fill-current ml-0.5" />}
+                        </button>
                         <div className="truncate">
-                          <span className="font-bold text-foreground block truncate">{kp.name}</span>
-                          <span className="text-[10px] text-muted-foreground font-mono">{kp.type}</span>
+                          <div className="text-[11px] font-bold text-foreground flex items-center gap-1.5">
+                            <span>Voice Intelligence Briefing</span>
+                            {isSpeaking ? (
+                              <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/40 text-[9px] px-1 py-0 font-mono">
+                                LIVE
+                              </Badge>
+                            ) : (
+                              <Badge className="bg-slate-800 text-slate-400 border-slate-700 text-[9px] px-1 py-0 font-mono">
+                                READY
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-[10px] text-muted-foreground truncate">
+                            {isSpeaking ? 'Reading tactical synthesis via Web Speech API...' : 'Click to stream forensic graph narration'}
+                          </p>
                         </div>
                       </div>
-                      <div className="text-right shrink-0 font-mono text-[10px]">
-                        <div className="text-amber-400 font-bold">Deg: {kp.degree}</div>
-                        <div className="text-slate-400 text-[9px]">BC: {kp.betweenness}</div>
+
+                      {/* Audio Equalizer Waveform Bars Animation */}
+                      {isSpeaking ? (
+                        <div className="flex items-end gap-0.5 h-4 shrink-0 px-1">
+                          <span className="w-1 bg-amber-400 rounded-full animate-bounce [animation-delay:-0.3s] h-3" />
+                          <span className="w-1 bg-amber-400 rounded-full animate-bounce [animation-delay:-0.15s] h-4" />
+                          <span className="w-1 bg-amber-400 rounded-full animate-bounce h-2" />
+                          <span className="w-1 bg-amber-400 rounded-full animate-bounce [animation-delay:-0.25s] h-3.5" />
+                        </div>
+                      ) : (
+                        <Volume2 className="h-4 w-4 text-muted-foreground/60 shrink-0" />
+                      )}
+                    </div>
+
+                    {/* Visual Photographic Intelligence Cards */}
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      {/* Card 1: Primary Syndicate Kingpin */}
+                      <div className="rounded-xl border border-red-500/40 bg-slate-900/90 p-2 space-y-1.5 flex flex-col justify-between overflow-hidden shadow-sm">
+                        <div className="flex items-center gap-2">
+                          <img
+                            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+                            alt="Rajan Verma"
+                            className="w-10 h-10 rounded-lg object-cover border-2 border-red-500 shrink-0"
+                          />
+                          <div className="min-w-0">
+                            <span className="text-[11px] font-black text-white truncate block">Rajan Verma</span>
+                            <span className="text-[9px] font-mono text-red-400 font-bold block">Syndicate Kingpin</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between text-[10px] font-mono pt-1 border-t border-white/10 text-muted-foreground">
+                          <span>Degree 8 Hub</span>
+                          <span className="text-red-400 font-black">92% Risk</span>
+                        </div>
+                      </div>
+
+                      {/* Card 2: Getaway Vehicle ANPR */}
+                      <div className="rounded-xl border border-amber-500/40 bg-slate-900/90 p-2 space-y-1.5 flex flex-col justify-between overflow-hidden shadow-sm">
+                        <div className="flex items-center gap-2">
+                          <img
+                            src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=400"
+                            alt="Scorpio ANPR"
+                            className="w-10 h-10 rounded-lg object-cover border-2 border-amber-500 shrink-0"
+                          />
+                          <div className="min-w-0">
+                            <span className="text-[11px] font-black text-white truncate block">TS 09 AB 1234</span>
+                            <span className="text-[9px] font-mono text-amber-300 font-bold block">Black Scorpio</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between text-[10px] font-mono pt-1 border-t border-white/10 text-muted-foreground">
+                          <span>118 km/h</span>
+                          <span className="text-amber-400 font-bold">KM 48 Toll</span>
+                        </div>
+                      </div>
+
+                      {/* Card 3: Smurfing Bank Mule */}
+                      <div className="rounded-xl border border-cyan-500/40 bg-slate-900/90 p-2 space-y-1.5 flex flex-col justify-between overflow-hidden shadow-sm">
+                        <div className="flex items-center gap-2">
+                          <img
+                            src="https://images.unsplash.com/photo-1563986768609-322da13575f3?w=400"
+                            alt="HDFC Bank"
+                            className="w-10 h-10 rounded-lg object-cover border-2 border-cyan-500 shrink-0"
+                          />
+                          <div className="min-w-0">
+                            <span className="text-[11px] font-black text-white truncate block">ACC-908122</span>
+                            <span className="text-[9px] font-mono text-cyan-300 font-bold block">HDFC Mule</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between text-[10px] font-mono pt-1 border-t border-white/10 text-muted-foreground">
+                          <span>₹48,500 Flows</span>
+                          <span className="text-cyan-400 font-bold">Sec 102 CrPC</span>
+                        </div>
+                      </div>
+
+                      {/* Card 4: Telecom Tower Azimuth */}
+                      <div className="rounded-xl border border-purple-500/40 bg-slate-900/90 p-2 space-y-1.5 flex flex-col justify-between overflow-hidden shadow-sm">
+                        <div className="flex items-center gap-2">
+                          <img
+                            src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400"
+                            alt="Telecom Tower"
+                            className="w-10 h-10 rounded-lg object-cover border-2 border-purple-500 shrink-0"
+                          />
+                          <div className="min-w-0">
+                            <span className="text-[11px] font-black text-white truncate block">DL-TWR-8812</span>
+                            <span className="text-[9px] font-mono text-purple-300 font-bold block">Airtel Azimuth</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between text-[10px] font-mono pt-1 border-t border-white/10 text-muted-foreground">
+                          <span>142° Sector</span>
+                          <span className="text-purple-400 font-bold">Sec 39 BNSS</span>
+                        </div>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            topKingpins.length > 0 && (
+
+                    <div className="p-3 rounded-lg bg-background/60 border border-border text-xs space-y-1.5 leading-relaxed">
+                      <div className="flex items-center gap-1.5 text-primary font-bold text-[11px]">
+                        <Sparkles className="h-3.5 w-3.5" />
+                        <span>Topological Synthesis:</span>
+                      </div>
+                      <p className="text-foreground/90 font-medium text-[11px]">
+                        {aiGraphExplanation}
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 pt-1 text-center font-mono text-[10px]">
+                      <div className="p-2 rounded bg-background/60 border border-border">
+                        <span className="text-muted-foreground block">Entities</span>
+                        <span className="text-sm font-bold text-foreground">{graphData?.nodes?.length || 0}</span>
+                      </div>
+                      <div className="p-2 rounded bg-background/60 border border-border">
+                        <span className="text-muted-foreground block">Links</span>
+                        <span className="text-sm font-bold text-foreground">{graphData?.edges?.length || 0}</span>
+                      </div>
+                      <div className="p-2 rounded bg-background/60 border border-border">
+                        <span className="text-muted-foreground block">Threat</span>
+                        <span className="text-sm font-bold text-red-400">CRITICAL</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                ) : (
+                  <div className="px-4 pb-3 text-[11px] font-mono text-cyan-300/80 flex items-center justify-between">
+                    <span>Gemini Synthesis • 4 Photo Artifacts Ready</span>
+                    <button
+                      onClick={() => setIsAiSummaryMinimized(false)}
+                      className="text-[10px] text-primary underline font-bold"
+                    >
+                      Expand Summary
+                    </button>
+                  </div>
+                )}
+              </Card>
+            )}
+
+            {!showAiSummary && (
               <button
                 onClick={() => {
                   sound.playClickSound();
-                  setShowKingpinsPanel(true);
+                  setShowAiSummary(true);
+                  setIsAiSummaryMinimized(false);
                 }}
-                className="w-full text-xs text-amber-400 hover:text-amber-300 flex items-center justify-between px-3 py-2 rounded-lg border border-amber-500/40 bg-slate-900/80 shadow-md transition-all hover:bg-slate-900"
+                className="w-full text-xs text-primary hover:text-white flex items-center justify-between px-3 py-2 rounded-lg border border-primary/40 bg-slate-900/80 shadow-md transition-all hover:bg-slate-900"
               >
                 <span className="flex items-center gap-1.5 font-bold">
-                  <span>👑</span>
-                  DNS Network Centrality (Top 3 Kingpins)
+                  <Bot className="h-3.5 w-3.5 text-primary" />
+                  <span>AI Graph Summary & Gemini Synthesis</span>
                 </span>
-                <span className="text-[10px] text-slate-400">Restore ➔</span>
+                <span className="text-[10px] text-slate-400 font-mono">Expand ➔</span>
               </button>
-            )
-          )}
+            )}
 
-          {/* Collapsible AI Graph Summary Panel */}
-          {showAiSummary && (
-            <Card className="border-primary/50 bg-gradient-to-b from-primary/10 via-card to-card shadow-lg animate-in fade-in slide-in-from-top-2">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <div className="flex items-center gap-2">
-                  <Bot className="h-4 w-4 text-primary" />
-                  <CardTitle className="text-sm font-bold text-primary">AI Graph Summary</CardTitle>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={handleToggleSpeech}
-                    className={`h-7 px-2.5 rounded-md flex items-center gap-1 text-[11px] font-semibold border transition-all ${
-                      isSpeaking
-                        ? 'bg-amber-500/20 border-amber-500/60 text-amber-300 animate-pulse'
-                        : 'bg-primary/10 border-primary/40 text-primary hover:bg-primary/20'
-                    }`}
-                    title={isSpeaking ? 'Mute / Stop Voice Briefing' : 'Read Voice Briefing Aloud (Audio Speaker)'}
-                    aria-label={isSpeaking ? 'Stop Audio Briefing' : 'Play Audio Briefing'}
-                  >
-                    {isSpeaking ? (
-                      <>
-                        <VolumeX className="h-3.5 w-3.5 text-amber-400" />
-                        <span>Mute</span>
-                      </>
-                    ) : (
-                      <>
-                        <Volume2 className="h-3.5 w-3.5 text-primary" />
-                        <span>Speaker</span>
-                      </>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (isSpeaking && typeof window !== 'undefined' && 'speechSynthesis' in window) {
-                        window.speechSynthesis.cancel();
-                        setIsSpeaking(false);
-                      }
-                      setShowAiSummary(false);
-                    }}
-                    className="p-1 rounded text-muted-foreground hover:text-foreground"
-                    aria-label="Close AI Summary"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3 text-xs">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-[10px] bg-primary/10 border-primary/40 text-primary font-semibold">
-                      GEMINI GRAPH SYNTHESIS
+            {selectedNode ? (
+              <Card className="border-primary/40">
+                <CardHeader className="flex flex-row items-center justify-between pb-3">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Badge variant="outline" className="text-[10px] font-mono bg-black/60 border-primary/50 text-primary font-bold shrink-0">
+                      {selectedNode.type}
                     </Badge>
-                    <span className="text-[10px] text-muted-foreground font-mono">Topological Inference</span>
+                    <CardTitle className="text-xs font-bold text-foreground truncate max-w-[140px]">
+                      {selectedNode.name}
+                    </CardTitle>
                   </div>
-                  {isSpeaking && (
-                    <div className="flex items-center gap-1 text-[10px] text-amber-400 font-mono animate-pulse">
-                      <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-ping" />
-                      <span>Transmitting Audio...</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Speaker Audio Player Banner */}
-                <div className="p-2.5 rounded-lg border border-border/80 bg-slate-950/70 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="flex items-center gap-1.5 shrink-0">
                     <button
-                      onClick={handleToggleSpeech}
-                      className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 transition-transform ${
-                        isSpeaking
-                          ? 'bg-amber-500 text-slate-950 scale-105 shadow-md shadow-amber-500/20'
-                          : 'bg-primary text-primary-foreground hover:scale-105'
-                      }`}
-                      title={isSpeaking ? 'Stop voice readout' : 'Play audio intelligence readout'}
+                      onClick={() => setIsSelectedNodeMinimized(!isSelectedNodeMinimized)}
+                      className="text-[10px] text-muted-foreground hover:text-white px-1.5 py-0.5 rounded hover:bg-slate-800 transition-colors flex items-center gap-0.5"
+                      title={isSelectedNodeMinimized ? "Expand Inspector" : "Minimize Inspector"}
                     >
-                      {isSpeaking ? <Square className="h-3.5 w-3.5 fill-current" /> : <Play className="h-3.5 w-3.5 fill-current ml-0.5" />}
+                      {isSelectedNodeMinimized ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />}
+                      <span>{isSelectedNodeMinimized ? "Expand" : "Minimize"}</span>
                     </button>
-                    <div className="truncate">
-                      <div className="text-[11px] font-bold text-foreground flex items-center gap-1.5">
-                        <span>Voice Intelligence Briefing</span>
-                        {isSpeaking ? (
-                          <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/40 text-[9px] px-1 py-0 font-mono">
-                            LIVE
+                    <button
+                      onClick={() => setSelectedNode(null)}
+                      className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-slate-800 transition-colors"
+                      title="Close Inspector (X)"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </CardHeader>
+                {!isSelectedNodeMinimized ? (
+                  <CardContent className="space-y-3 text-xs">
+                    {/* Visual Photographic Banner for Selected Entity */}
+                    <div className="relative rounded-xl overflow-hidden border border-border/80 bg-slate-950">
+                      <img
+                        src={
+                          selectedNode.type === 'PERSON'
+                            ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300'
+                            : selectedNode.type === 'VEHICLE'
+                            ? 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=400'
+                            : selectedNode.type === 'BANK_ACCOUNT'
+                            ? 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=400'
+                            : 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400'
+                        }
+                        alt={selectedNode.name}
+                        className="w-full h-28 object-cover opacity-85"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+                      <div className="absolute bottom-2 left-2.5 right-2.5 flex items-end justify-between">
+                        <div>
+                          <Badge variant="outline" className="text-[10px] font-mono bg-black/60 border-primary/50 text-primary font-bold">
+                            {selectedNode.type}
                           </Badge>
-                        ) : (
-                          <Badge className="bg-slate-800 text-slate-400 border-slate-700 text-[9px] px-1 py-0 font-mono">
-                            READY
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-[10px] text-muted-foreground truncate">
-                        {isSpeaking ? 'Reading tactical synthesis via Web Speech API...' : 'Click to stream forensic graph narration'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Audio Equalizer Waveform Bars Animation */}
-                  {isSpeaking ? (
-                    <div className="flex items-end gap-0.5 h-4 shrink-0 px-1">
-                      <span className="w-1 bg-amber-400 rounded-full animate-bounce [animation-delay:-0.3s] h-3" />
-                      <span className="w-1 bg-amber-400 rounded-full animate-bounce [animation-delay:-0.15s] h-4" />
-                      <span className="w-1 bg-amber-400 rounded-full animate-bounce h-2" />
-                      <span className="w-1 bg-amber-400 rounded-full animate-bounce [animation-delay:-0.25s] h-3.5" />
-                    </div>
-                  ) : (
-                    <Volume2 className="h-4 w-4 text-muted-foreground/60 shrink-0" />
-                  )}
-                </div>
-
-                {/* Visual Photographic Intelligence Cards (Replaces Dense Wordy Text) */}
-                <div className="grid grid-cols-2 gap-2 pt-1">
-                  {/* Card 1: Primary Syndicate Kingpin */}
-                  <div className="rounded-xl border border-red-500/40 bg-slate-900/90 p-2 space-y-1.5 flex flex-col justify-between overflow-hidden shadow-sm">
-                    <div className="flex items-center gap-2">
-                      <img
-                        src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
-                        alt="Rajan Verma"
-                        className="w-10 h-10 rounded-lg object-cover border-2 border-red-500 shrink-0"
-                      />
-                      <div className="min-w-0">
-                        <span className="text-[11px] font-black text-white truncate block">Rajan Verma</span>
-                        <span className="text-[9px] font-mono text-red-400 font-bold block">Syndicate Kingpin</span>
+                          <h3 className="text-sm font-black text-white mt-0.5 truncate">{selectedNode.name}</h3>
+                        </div>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-red-500/30 text-red-300 border border-red-500/50 font-bold">
+                          {selectedNode.riskLevel || 'HIGH'} RISK
+                        </span>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between text-[10px] font-mono pt-1 border-t border-white/10 text-muted-foreground">
-                      <span>Degree 8 Hub</span>
-                      <span className="text-red-400 font-black">92% Risk</span>
-                    </div>
-                  </div>
 
-                  {/* Card 2: Getaway Vehicle ANPR */}
-                  <div className="rounded-xl border border-amber-500/40 bg-slate-900/90 p-2 space-y-1.5 flex flex-col justify-between overflow-hidden shadow-sm">
-                    <div className="flex items-center gap-2">
-                      <img
-                        src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=400"
-                        alt="Scorpio ANPR"
-                        className="w-10 h-10 rounded-lg object-cover border-2 border-amber-500 shrink-0"
-                      />
-                      <div className="min-w-0">
-                        <span className="text-[11px] font-black text-white truncate block">TS 09 AB 1234</span>
-                        <span className="text-[9px] font-mono text-amber-300 font-bold block">Black Scorpio</span>
-                      </div>
+                    <div className="p-3 rounded-lg bg-background/60 border border-border space-y-1 text-[11px]">
+                      {Object.entries(selectedNode.attributes).map(([k, v]) => (
+                        <div key={k} className="flex justify-between border-b border-border/40 pb-1">
+                          <span className="text-muted-foreground capitalize">{k}:</span>
+                          <span className="font-semibold text-foreground truncate max-w-[120px]">{String(v)}</span>
+                        </div>
+                      ))}
                     </div>
-                    <div className="flex items-center justify-between text-[10px] font-mono pt-1 border-t border-white/10 text-muted-foreground">
-                      <span>118 km/h</span>
-                      <span className="text-amber-400 font-bold">KM 48 Toll</span>
-                    </div>
-                  </div>
 
-                  {/* Card 3: Smurfing Bank Mule */}
-                  <div className="rounded-xl border border-cyan-500/40 bg-slate-900/90 p-2 space-y-1.5 flex flex-col justify-between overflow-hidden shadow-sm">
-                    <div className="flex items-center gap-2">
-                      <img
-                        src="https://images.unsplash.com/photo-1563986768609-322da13575f3?w=400"
-                        alt="HDFC Bank"
-                        className="w-10 h-10 rounded-lg object-cover border-2 border-cyan-500 shrink-0"
-                      />
-                      <div className="min-w-0">
-                        <span className="text-[11px] font-black text-white truncate block">ACC-908122</span>
-                        <span className="text-[9px] font-mono text-cyan-300 font-bold block">HDFC Mule</span>
-                      </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">Confidence Score:</span>
+                      <span className="font-bold text-foreground">{(selectedNode.confidence * 100).toFixed(0)}%</span>
                     </div>
-                    <div className="flex items-center justify-between text-[10px] font-mono pt-1 border-t border-white/10 text-muted-foreground">
-                      <span>₹48,500 Flows</span>
-                      <span className="text-cyan-400 font-bold">Sec 102 CrPC</span>
-                    </div>
-                  </div>
 
-                  {/* Card 4: Telecom Tower Azimuth */}
-                  <div className="rounded-xl border border-purple-500/40 bg-slate-900/90 p-2 space-y-1.5 flex flex-col justify-between overflow-hidden shadow-sm">
-                    <div className="flex items-center gap-2">
-                      <img
-                        src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400"
-                        alt="Telecom Tower"
-                        className="w-10 h-10 rounded-lg object-cover border-2 border-purple-500 shrink-0"
-                      />
-                      <div className="min-w-0">
-                        <span className="text-[11px] font-black text-white truncate block">DL-TWR-8812</span>
-                        <span className="text-[9px] font-mono text-purple-300 font-bold block">Airtel Azimuth</span>
-                      </div>
+                    <div className="space-y-2 pt-2 border-t border-border">
+                      <Button className="w-full" size="sm" onClick={handleExpandNeighbors} isLoading={isExpanding}>
+                        {isExpanding ? 'Querying Neo4j Multi-Hop...' : 'Expand Immediate Neighbors'}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full border-cyan-500/50 text-cyan-300 hover:bg-cyan-950/40 flex items-center justify-center gap-1.5 font-bold"
+                        onClick={() => {
+                          const text = `Entity ${selectedNode.name}, categorized as ${selectedNode.type} with ${(selectedNode.confidence * 100).toFixed(0)} percent confidence score and ${selectedNode.riskLevel || 'HIGH'} risk priority. Verified via police knowledge graph linkage.`;
+                          speakText(text);
+                        }}
+                      >
+                        <Volume2 className="h-4 w-4 text-cyan-400 animate-pulse" />
+                        <span>Audio Explain Node (Speaker)</span>
+                      </Button>
                     </div>
-                    <div className="flex items-center justify-between text-[10px] font-mono pt-1 border-t border-white/10 text-muted-foreground">
-                      <span>142° Sector</span>
-                      <span className="text-purple-400 font-bold">Sec 39 BNSS</span>
-                    </div>
+                  </CardContent>
+                ) : (
+                  <div className="px-4 pb-3 text-[11px] font-mono text-slate-300 flex items-center justify-between">
+                    <span>{(selectedNode.confidence * 100).toFixed(0)}% Confidence • {selectedNode.riskLevel || 'HIGH'} RISK</span>
+                    <button
+                      onClick={() => setIsSelectedNodeMinimized(false)}
+                      className="text-[10px] text-primary underline font-bold"
+                    >
+                      View Attributes
+                    </button>
                   </div>
-                </div>
-
-                <div className="p-3 rounded-lg bg-background/60 border border-border text-xs space-y-1.5 leading-relaxed">
-                  <div className="flex items-center gap-1.5 text-primary font-bold text-[11px]">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    <span>Topological Synthesis:</span>
+                )}
+              </Card>
+            ) : selectedEdge ? (
+              <Card className="border-amber-500/40">
+                <CardHeader className="flex flex-row items-center justify-between pb-3">
+                  <CardTitle className="text-sm">{t('graph.edgeInspector')}</CardTitle>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => setIsSelectedEdgeMinimized(!isSelectedEdgeMinimized)}
+                      className="text-[10px] text-muted-foreground hover:text-white px-1.5 py-0.5 rounded hover:bg-slate-800 transition-colors flex items-center gap-0.5"
+                      title={isSelectedEdgeMinimized ? "Expand Inspector" : "Minimize Inspector"}
+                    >
+                      {isSelectedEdgeMinimized ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />}
+                      <span>{isSelectedEdgeMinimized ? "Expand" : "Minimize"}</span>
+                    </button>
+                    <button
+                      onClick={() => setSelectedEdge(null)}
+                      className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-slate-800 transition-colors"
+                      title="Close Inspector (X)"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
                   </div>
-                  <p className="text-foreground/90 font-medium text-[11px]">
-                    {aiGraphExplanation}
-                  </p>
-                </div>
-                <div className="grid grid-cols-3 gap-2 pt-1 text-center font-mono text-[10px]">
-                  <div className="p-2 rounded bg-background/60 border border-border">
-                    <span className="text-muted-foreground block">Entities</span>
-                    <span className="text-sm font-bold text-foreground">{graphData?.nodes?.length || 0}</span>
-                  </div>
-                  <div className="p-2 rounded bg-background/60 border border-border">
-                    <span className="text-muted-foreground block">Links</span>
-                    <span className="text-sm font-bold text-foreground">{graphData?.edges?.length || 0}</span>
-                  </div>
-                  <div className="p-2 rounded bg-background/60 border border-border">
-                    <span className="text-muted-foreground block">Threat</span>
-                    <span className="text-sm font-bold text-red-400">CRITICAL</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {selectedNode ? (
-            <Card className="border-primary/40">
-              <CardHeader className="flex flex-row items-center justify-between pb-3">
-                <CardTitle className="text-sm">{t('graph.selectedInspector')}</CardTitle>
-                <button
-                  onClick={() => setSelectedNode(null)}
-                  className="p-1 rounded text-muted-foreground hover:text-foreground"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </CardHeader>
-              <CardContent className="space-y-3 text-xs">
-                {/* Visual Photographic Banner for Selected Entity */}
-                <div className="relative rounded-xl overflow-hidden border border-border/80 bg-slate-950">
-                  <img
-                    src={
-                      selectedNode.type === 'PERSON'
-                        ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300'
-                        : selectedNode.type === 'VEHICLE'
-                        ? 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=400'
-                        : selectedNode.type === 'BANK_ACCOUNT'
-                        ? 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=400'
-                        : 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400'
-                    }
-                    alt={selectedNode.name}
-                    className="w-full h-28 object-cover opacity-85"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
-                  <div className="absolute bottom-2 left-2.5 right-2.5 flex items-end justify-between">
+                </CardHeader>
+                {!isSelectedEdgeMinimized ? (
+                  <CardContent className="space-y-4 text-xs">
                     <div>
-                      <Badge variant="outline" className="text-[10px] font-mono bg-black/60 border-primary/50 text-primary font-bold">
-                        {selectedNode.type}
-                      </Badge>
-                      <h3 className="text-sm font-black text-white mt-0.5 truncate">{selectedNode.name}</h3>
+                      <span className="font-mono text-xs text-amber-400 font-bold block">{selectedEdge.type}</span>
+                      <h4 className="text-sm font-semibold text-foreground mt-1">
+                        {selectedEdge.sourceEntityName || 'Source'} &rarr; {selectedEdge.targetEntityName || 'Target'}
+                      </h4>
                     </div>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-red-500/30 text-red-300 border border-red-500/50 font-bold">
-                      {selectedNode.riskLevel || 'HIGH'} RISK
-                    </span>
-                  </div>
-                </div>
 
-                <div className="p-3 rounded-lg bg-background/60 border border-border space-y-1 text-[11px]">
-                  {Object.entries(selectedNode.attributes).map(([k, v]) => (
-                    <div key={k} className="flex justify-between border-b border-border/40 pb-1">
-                      <span className="text-muted-foreground capitalize">{k}:</span>
-                      <span className="font-semibold text-foreground truncate max-w-[120px]">{String(v)}</span>
+                    <div className="p-3 rounded-lg bg-background/60 border border-border space-y-1.5 text-[11px]">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Confidence Score:</span>
+                        <span className="font-bold text-foreground">
+                          {(selectedEdge.confidenceScore * 100).toFixed(0)}%
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Verification:</span>
+                        <span className="font-semibold text-emerald-400">{selectedEdge.reviewStatus}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Logged Date:</span>
+                        <span className="text-foreground">{new Date(selectedEdge.timestamp).toLocaleDateString()}</span>
+                      </div>
                     </div>
-                  ))}
-                </div>
 
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">Confidence Score:</span>
-                  <span className="font-bold text-foreground">{(selectedNode.confidence * 100).toFixed(0)}%</span>
-                </div>
-
-                <div className="space-y-2 pt-2 border-t border-border">
-                  <Button className="w-full" size="sm" onClick={handleExpandNeighbors} isLoading={isExpanding}>
-                    {isExpanding ? 'Querying Neo4j Multi-Hop...' : 'Expand Immediate Neighbors'}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="w-full border-cyan-500/50 text-cyan-300 hover:bg-cyan-950/40 flex items-center justify-center gap-1.5 font-bold"
-                    onClick={() => {
-                      const text = `Entity ${selectedNode.name}, categorized as ${selectedNode.type} with ${(selectedNode.confidence * 100).toFixed(0)} percent confidence score and ${selectedNode.riskLevel || 'HIGH'} risk priority. Verified via police knowledge graph linkage.`;
-                      speakText(text);
-                    }}
-                  >
-                    <Volume2 className="h-4 w-4 text-cyan-400 animate-pulse" />
-                    <span>Audio Explain Node (Speaker)</span>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ) : selectedEdge ? (
-            <Card className="border-amber-500/40">
-              <CardHeader className="flex flex-row items-center justify-between pb-3">
-                <CardTitle className="text-sm">{t('graph.edgeInspector')}</CardTitle>
-                <button
-                  onClick={() => setSelectedEdge(null)}
-                  className="p-1 rounded text-muted-foreground hover:text-foreground"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </CardHeader>
-              <CardContent className="space-y-4 text-xs">
-                <div>
-                  <span className="font-mono text-xs text-amber-400 font-bold block">{selectedEdge.type}</span>
-                  <h4 className="text-sm font-semibold text-foreground mt-1">
-                    {selectedEdge.sourceEntityName || 'Source'} &rarr; {selectedEdge.targetEntityName || 'Target'}
-                  </h4>
-                </div>
-
-                <div className="p-3 rounded-lg bg-background/60 border border-border space-y-1.5 text-[11px]">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Confidence Score:</span>
-                    <span className="font-bold text-foreground">
-                      {(selectedEdge.confidenceScore * 100).toFixed(0)}%
-                    </span>
+                    <div className="space-y-1">
+                      <span className="font-semibold text-foreground block">Linked Evidence Artifacts:</span>
+                      <div className="flex items-center gap-1 text-[11px] text-primary">
+                        <FileCheck2 className="h-3.5 w-3.5" />
+                        <span>{selectedEdge.evidenceIds.join(', ')}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                ) : (
+                  <div className="px-4 pb-3 text-[11px] font-mono text-amber-300 flex items-center justify-between">
+                    <span>{selectedEdge.type} ({(selectedEdge.confidenceScore * 100).toFixed(0)}% Score)</span>
+                    <button
+                      onClick={() => setIsSelectedEdgeMinimized(false)}
+                      className="text-[10px] text-amber-400 underline font-bold"
+                    >
+                      View Link
+                    </button>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Verification:</span>
-                    <span className="font-semibold text-emerald-400">{selectedEdge.reviewStatus}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Logged Date:</span>
-                    <span className="text-foreground">{new Date(selectedEdge.timestamp).toLocaleDateString()}</span>
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <span className="font-semibold text-foreground block">Linked Evidence Artifacts:</span>
-                  <div className="flex items-center gap-1 text-[11px] text-primary">
-                    <FileCheck2 className="h-3.5 w-3.5" />
-                    <span>{selectedEdge.evidenceIds.join(', ')}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card className="p-6 text-center space-y-3 text-muted-foreground">
-              <Network className="h-8 w-8 text-primary mx-auto opacity-50" />
-              <p className="text-xs">
-                Click any node or relationship edge in the Cytoscape canvas to inspect properties, confidence scores, and grounded evidence.
-              </p>
-            </Card>
-          )}
-        </div>
+                )}
+              </Card>
+            ) : (
+              <Card className="p-4 text-center space-y-2 text-muted-foreground border-dashed border-border/80">
+                <Network className="h-6 w-6 text-primary mx-auto opacity-50" />
+                <p className="text-[11px]">
+                  Click any node or relationship edge in the Cytoscape canvas to inspect properties, confidence scores, and grounded evidence.
+                </p>
+              </Card>
+            )}
+          </div>
+        )}
       </div>
 
       {/* International Precedents & Global Crime Reduction Showcase */}

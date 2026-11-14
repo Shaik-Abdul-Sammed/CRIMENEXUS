@@ -49,6 +49,7 @@ import {
   RadioTower,
   EyeOff,
   Globe,
+  Crosshair,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -176,6 +177,97 @@ export function GuardianTracePage() {
     last_seen_location: '',
     medical_notes: 'None',
   });
+
+  // 4 Active Protected Victims & Missing Persons Registry
+  const VICTIM_REGISTRY = [
+    {
+      id: 'aanya',
+      case_number: 'MP-2026-DEMO-001',
+      person_name: 'Aanya Sharma',
+      age: 8,
+      gender: 'Female',
+      description: '8-year-old girl, brown hair, wearing blue school uniform (Delhi Public School), red school bag, small scar on left knee',
+      photo_url: 'https://images.unsplash.com/photo-1543332164-6e82f355badc?w=400',
+      last_seen_lat: 28.5665,
+      last_seen_lon: 77.2431,
+      last_seen_location: 'Lajpat Nagar Metro Station, Exit Gate 3',
+      last_seen_time: '18 hours ago (3:30 PM)',
+      priority: 'CRITICAL',
+      medical_risk: 'Pediatric Asthma Inhaler (5h 50m urgency window)',
+      statutory_code: 'Sec 173 BNSS / POCSO Emergency Protocol',
+      assigned_officer: 'Inspector Rajesh Varma (Missing Persons Unit)',
+      mobile_number: '+91 98XXXX5678',
+      imei: '356789012345678',
+      status: 'ACTIVE SEARCH',
+      face_match_confidence: 89.4,
+    },
+    {
+      id: 'aarav',
+      case_number: 'MP-2026-DEL-0412',
+      person_name: 'Aarav Kapoor',
+      age: 11,
+      gender: 'Male',
+      description: '11-year-old boy, red soccer jersey with #10 on back, black shorts, blue running shoes, digital sports band',
+      photo_url: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=400',
+      last_seen_lat: 28.5355,
+      last_seen_lon: 77.2410,
+      last_seen_location: 'Greater Kailash-II Community Park Grounds',
+      last_seen_time: '6 hours ago (11:00 AM)',
+      priority: 'CRITICAL',
+      medical_risk: 'Type-1 Diabetes (Insulin pump dependency, 4h window)',
+      statutory_code: 'FIR 412/2026 GK PS • Sec 363 IPC/BNSS',
+      assigned_officer: 'Sub-Inspector Neha Sharma (South District)',
+      mobile_number: '+91 99XXXX1122',
+      imei: '864209045612345',
+      status: 'ACTIVE SEARCH',
+      face_match_confidence: 94.2,
+    },
+    {
+      id: 'meera',
+      case_number: 'MP-2026-DEL-0789',
+      person_name: 'Meera Joshi',
+      age: 16,
+      gender: 'Female',
+      description: '16-year-old student, navy blue college hoodie, black denim, silver rim glasses, carrying yellow canvas tote',
+      photo_url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400',
+      last_seen_lat: 28.5535,
+      last_seen_lon: 77.1945,
+      last_seen_location: 'Hauz Khas Village Road Commercial Cab Stand',
+      last_seen_time: '12 hours ago (9:15 PM)',
+      priority: 'HIGH ALERT',
+      medical_risk: 'Suspected fake call-centre cab pickup; Smartwatch SOS trigger',
+      statutory_code: 'FIR 789/2026 Hauz Khas • Sec 140 BNSS',
+      assigned_officer: 'Inspector Vikram Singh (Crime Branch)',
+      mobile_number: '+91 91XXXX7890',
+      imei: '490154203237510',
+      status: 'HIGH-ALERT INTERCEPT',
+      face_match_confidence: 91.8,
+    },
+    {
+      id: 'rohan',
+      case_number: 'MP-2026-DEL-1024',
+      person_name: 'Rohan Mehta',
+      age: 6,
+      gender: 'Male',
+      description: '6-year-old child, bright yellow baseball cap, green dinosaur print t-shirt, brown strapped sandals',
+      photo_url: 'https://images.unsplash.com/photo-1485546246426-74dc88dec4d9?w=400',
+      last_seen_lat: 28.6560,
+      last_seen_lon: 77.2305,
+      last_seen_location: 'Chandni Chowk Sis Ganj Gurudwara Plaza',
+      last_seen_time: '3 hours ago (2:10 PM)',
+      priority: 'AMBER ALERT',
+      medical_risk: 'Non-verbal neurodivergent; severe crowd sensory distress',
+      statutory_code: 'Sec 173 BNSS Code Amber Protocol',
+      assigned_officer: 'Inspector Sunita Rao (Central District SAR)',
+      mobile_number: '+91 93XXXX4455',
+      imei: '352981023940192',
+      status: 'AMBER SEARCH ACTIVE',
+      face_match_confidence: 96.1,
+    },
+  ];
+
+  const [selectedVictimId, setSelectedVictimId] = useState<string>('aanya');
+  const [isVictimsRegistryCollapsed, setIsVictimsRegistryCollapsed] = useState<boolean>(false);
 
   // Case Data State
   const [caseData, setCaseData] = useState<any>({
@@ -627,12 +719,43 @@ export function GuardianTracePage() {
     toast.success(`Missing person docket ${generatedCaseNumber} created and active in HUD.`, 'Case Docket Registered');
   };
 
+  const handleSwitchVictim = (victim: typeof VICTIM_REGISTRY[0]) => {
+    sound.playRadarPing();
+    setSelectedVictimId(victim.id);
+    setCaseData({
+      case_number: victim.case_number,
+      person_name: victim.person_name,
+      age: victim.age,
+      gender: victim.gender,
+      description: victim.description,
+      photo_url: victim.photo_url,
+      last_seen_lat: victim.last_seen_lat,
+      last_seen_lon: victim.last_seen_lon,
+      last_seen_location: victim.last_seen_location,
+      last_seen_time: victim.last_seen_time,
+      priority: victim.priority,
+      station_id: 'PS-DELHI-CENTRAL',
+      assigned_officer: victim.assigned_officer,
+      mobile_number: victim.mobile_number,
+      imei: victim.imei,
+      status: victim.status,
+    });
+    if (mapRef.current) {
+      mapRef.current.flyTo({
+        center: [victim.last_seen_lon, victim.last_seen_lat],
+        zoom: 13.5,
+        duration: 800,
+      });
+    }
+    toast.info(`Switched active SAR target to ${victim.person_name} (${victim.case_number}).`, 'Target Victim Dossier Activated');
+  };
+
   const filteredSightings = selectedSignalSource === 'ALL'
     ? sightings
     : sightings.filter((s) => s.source === selectedSignalSource);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-28 select-none">
       {/* Top Banner: Emergency Mandate & Demo Quick Launcher (Collapsible via X / Dropdown) */}
       {!isHeaderExpanded ? (
         <div className="p-3 rounded-xl border border-red-500/40 bg-red-950/40 flex items-center justify-between gap-3 text-xs shadow-md">
@@ -898,6 +1021,125 @@ export function GuardianTracePage() {
           </div>
         </div>
       )}
+
+      {/* Protected Victims & Missing Persons Registry (Interactive Multi-Subject Dossier) */}
+      <Card className="border border-sky-500/40 bg-slate-900/90 shadow-xl overflow-hidden">
+        <div className="p-3 bg-slate-950 border-b border-border/60 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-sky-500/20 text-sky-400 border border-sky-500/30">
+              <Users className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-xs font-black uppercase tracking-wider text-white">
+                  Protected Victims & Missing Persons Registry
+                </h2>
+                <Badge variant="outline" className="border-sky-500/50 text-sky-300 text-[9px] font-mono">
+                  4 ACTIVE SEARCH DOSSIERS
+                </Badge>
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                Official statutory missing children & vulnerable persons callouts under Section 173 BNSS / POCSO Emergency Protocol
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsVictimsRegistryCollapsed(!isVictimsRegistryCollapsed)}
+              className="text-xs text-muted-foreground hover:text-white px-2 py-1 rounded hover:bg-slate-800 transition-colors flex items-center gap-1 font-mono"
+              title={isVictimsRegistryCollapsed ? 'Expand Victims Registry' : 'Minimize Victims Registry'}
+            >
+              <span>{isVictimsRegistryCollapsed ? '▼ Expand Registry' : '▲ Minimize Registry'}</span>
+            </button>
+          </div>
+        </div>
+
+        {!isVictimsRegistryCollapsed && (
+          <CardContent className="p-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+              {VICTIM_REGISTRY.map((v) => {
+                const isSelected = selectedVictimId === v.id;
+                return (
+                  <div
+                    key={v.id}
+                    className={`p-3 rounded-xl border transition-all flex flex-col justify-between space-y-2 relative overflow-hidden ${
+                      isSelected
+                        ? 'border-emerald-500 bg-emerald-950/20 shadow-lg ring-1 ring-emerald-500/50'
+                        : 'border-border/70 bg-card hover:border-slate-600 hover:bg-muted/30'
+                    }`}
+                  >
+                    {/* Top Row: Photo, Status Badge & Priority */}
+                    <div className="flex items-start gap-3">
+                      <div className="relative w-16 h-16 rounded-xl overflow-hidden border-2 shrink-0 border-sky-400/60 bg-slate-950 shadow-md">
+                        <img
+                          src={v.photo_url}
+                          alt={v.person_name}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute bottom-0 inset-x-0 bg-black/70 text-[8px] text-center font-mono text-cyan-300 py-0.5">
+                          {v.face_match_confidence}% Match
+                        </div>
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-1">
+                          <span className="font-mono text-[10px] font-bold text-sky-400 truncate">{v.case_number}</span>
+                          <span className={`text-[8px] font-mono font-bold px-1.5 py-0.2 rounded uppercase ${
+                            v.priority === 'CRITICAL' ? 'bg-red-600 text-white' : 'bg-amber-600 text-black'
+                          }`}>
+                            {v.priority}
+                          </span>
+                        </div>
+                        <h3 className="text-xs font-black text-white truncate mt-0.5">
+                          {v.person_name} ({v.age}y, {v.gender})
+                        </h3>
+                        <p className="text-[10px] text-slate-300 line-clamp-2 mt-0.5 leading-snug">
+                          {v.description}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Middle Info: Medical Risk & Last Seen */}
+                    <div className="space-y-1 text-[10px] font-mono bg-slate-950/60 p-2 rounded-lg border border-border/40">
+                      <div className="text-red-300 flex items-center gap-1">
+                        <HeartPulse className="h-3 w-3 text-red-400 shrink-0" />
+                        <span className="truncate">{v.medical_risk}</span>
+                      </div>
+                      <div className="text-slate-400 flex items-center gap-1">
+                        <MapPin className="h-3 w-3 text-cyan-400 shrink-0" />
+                        <span className="truncate">{v.last_seen_location} ({v.last_seen_time.split('(')[0]})</span>
+                      </div>
+                    </div>
+
+                    {/* Bottom Action: Switch / Track */}
+                    <Button
+                      size="sm"
+                      onClick={() => handleSwitchVictim(v)}
+                      className={`w-full text-xs font-bold py-1.5 h-8 flex items-center justify-center gap-1.5 transition-all ${
+                        isSelected
+                          ? 'bg-emerald-600 text-white shadow-md cursor-default'
+                          : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
+                      }`}
+                    >
+                      {isSelected ? (
+                        <>
+                          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-300" />
+                          <span>Active Search Target</span>
+                        </>
+                      ) : (
+                        <>
+                          <Crosshair className="h-3.5 w-3.5 text-sky-400" />
+                          <span>Track This Case</span>
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        )}
+      </Card>
 
       {/* Main Split-Screen HUD: 60% Left (Map + Timeline) | 40% Right (Intel Panel) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">

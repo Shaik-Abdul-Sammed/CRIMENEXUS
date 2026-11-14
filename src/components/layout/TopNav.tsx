@@ -231,7 +231,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
     <>
       <header className="sticky top-0 z-40 flex h-16 w-full max-w-full items-center justify-between border-b border-border bg-card/98 px-2 sm:px-4 shadow-sm gap-2 overflow-visible select-none">
       {/* Left: Responsive Breadcrumbs with protected width, zero collision, and guaranteed full 'Home' visibility */}
-      <nav aria-label="Breadcrumb" className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground shrink-0 max-w-[260px] lg:max-w-[340px] mr-2 overflow-hidden">
+      <nav aria-label="Breadcrumb" className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground shrink min-w-0 max-w-sm lg:max-w-md mr-2 overflow-hidden">
         <Link to="/dashboard" className="hover:text-foreground font-bold transition-colors shrink-0 flex items-center gap-1 text-primary">
           <span className="whitespace-nowrap font-extrabold text-xs">Home</span>
         </Link>
@@ -240,7 +240,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
             <ChevronRight className="h-3 w-3 text-border shrink-0" />
             <Link
               to={b.url}
-              className={`truncate whitespace-nowrap ${
+              className={`truncate max-w-[150px] whitespace-nowrap ${
                 idx === breadcrumbs.length - 1
                   ? 'font-extrabold text-foreground'
                   : 'hover:text-foreground transition-colors'
@@ -809,37 +809,6 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
                     <Moon className="h-3.5 w-3.5 text-slate-700" />
                   )}
                 </button>
-              </div>
-
-              {/* Operational Module Direct Access Links */}
-              <div className="pt-2 border-t border-border space-y-1">
-                <Link
-                  to="/guardian-trace"
-                  onClick={() => setSettingsMenuOpen(false)}
-                  className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold transition-all"
-                >
-                  <div className="flex items-center gap-2">
-                    <ShieldAlert className="h-3.5 w-3.5 text-emerald-400" />
-                    <span>Guardian Trace Rescue HUD</span>
-                  </div>
-                  <span className="text-[9px] font-mono font-black px-1.5 py-0.2 rounded bg-emerald-400/20 text-emerald-300">
-                    SAR
-                  </span>
-                </Link>
-
-                <Link
-                  to="/police-reports"
-                  onClick={() => setSettingsMenuOpen(false)}
-                  className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 border border-sky-500/30 text-xs font-bold transition-all text-left"
-                >
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck className="h-3.5 w-3.5 text-sky-400" />
-                    <span>Citizen Reports Queue</span>
-                  </div>
-                  <span className="text-[9px] font-mono font-black px-1.5 py-0.2 rounded bg-sky-400/20 text-sky-300">
-                    FIR 173
-                  </span>
-                </Link>
               </div>
             </div>
           )}

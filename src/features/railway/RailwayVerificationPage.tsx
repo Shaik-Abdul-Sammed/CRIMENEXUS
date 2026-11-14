@@ -170,18 +170,18 @@ export function RailwayVerificationPage() {
     if (!verificationResult) return '';
     return `================================================================================
 INDIAN RAILWAYS / CENTRE FOR RAILWAY INFORMATION SYSTEMS (CRIS)
-TICKET EXAMINER (TTE) BIOMETRIC VERIFICATION & CCTNS WATCHLIST AUDIT MEMO
+AADHAAR BIOMETRIC PASSENGER FACE VERIFICATION & CCTNS WATCHLIST AUDIT MEMO
 ================================================================================
-MEMO NUMBER      : IR-TTE-UIDAI-2026-B4-28
+MEMO NUMBER      : IR-UIDAI-FACE-2026-B4-28
 TIMESTAMP        : ${new Date().toISOString()}
-EXAMINER BADGE   : TTE-9048 (Northern Railway, Delhi Division)
+VERIFICATION UNIT: UIDAI FaceRD Sovereign Terminal v2.4 (Northern Railway)
 TRAIN NUMBER     : ${verificationResult.trainNumber} - ${verificationResult.trainName}
 LOCATION AT SCAN : KM 84 Marker near Jewar / Aligarh Outer (Speed: 92 km/h)
 ================================================================================
-1. BIOMETRIC PASSENGER PROFILE (UIDAI FaceRD AI Engine):
+1. BIOMETRIC PASSENGER VERIFICATION (UIDAI FaceRD AI Engine):
    - Verified Name   : ${verificationResult.fullName}
    - Aadhaar VID     : ${verificationResult.aadhaarVid}
-   - Facial Match    : ${verificationResult.facialConfidence}% Confidence
+   - Facial Match    : ${verificationResult.facialConfidence}% Cosine Similarity vs UIDAI Aadhaar Photo
    - PNR Identifier  : ${verificationResult.pnrNumber}
    - Assigned Seat   : Coach ${verificationResult.coach}, ${verificationResult.berth}
    - Registered Addr : ${verificationResult.registeredAddress}
@@ -198,7 +198,7 @@ LOCATION AT SCAN : KM 84 Marker near Jewar / Aligarh Outer (Speed: 92 km/h)
    }
 
 3. STATUTORY COMPLIANCE:
-   Sealed under Section 63 Bharatiya Sakshya Adhiniyam, 2023.
+   Sealed under Section 63 Bharatiya Sakshya Adhiniyam, 2023 & Aadhaar Act 2016.
    Cryptographic SHA-256 Digest: b894101acdf20489912048912ef0984128941208941249812491280941829041
 ================================================================================`;
   };
@@ -214,14 +214,14 @@ LOCATION AT SCAN : KM 84 Marker near Jewar / Aligarh Outer (Speed: 92 km/h)
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                Indian Railways TC Biometric Aadhaar Face Verification Terminal
+                Indian Railways Biometric Aadhaar Face Verification Terminal
               </h1>
               <Badge className="bg-sky-500 text-black font-extrabold text-xs">
                 UIDAI FaceRD • CCTNS LIVE
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground mt-1 max-w-3xl">
-              Handheld Railway Ticket Examiner (TTE) facial authentication system cross-referencing Aadhaar biometrics against National Police CCTNS Look Out Circulars (LOC).
+              Real-time edge passenger biometric terminal matching live optical facial capture directly against official UIDAI Aadhaar Digital Photo records and National Police CCTNS Look Out Circulars (LOC).
             </p>
           </div>
         </div>
@@ -255,17 +255,17 @@ LOCATION AT SCAN : KM 84 Marker near Jewar / Aligarh Outer (Speed: 92 km/h)
 
       {/* Main Grid: Left Scanner & Right Verification Intelligence */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column (5 Cols): Live Face Scanner & Scenario Selector */}
-        <div className="lg:col-span-5 space-y-4">
-          <Card className="border-border bg-card/80 overflow-hidden">
+        {/* Left Column (6 Cols): Live Optical Passenger Capture vs Aadhaar Digital Card Photo */}
+        <div className="lg:col-span-6 space-y-4">
+          <Card className="border-sky-500/30 bg-card/90 overflow-hidden shadow-xl">
             <CardHeader className="p-4 border-b border-border/60 bg-muted/30">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-xs font-black uppercase tracking-wider text-foreground flex items-center gap-2">
-                  <Camera className="h-4 w-4 text-sky-400" />
-                  <span>Handheld TTE Optical Face Scanner</span>
+                  <Scan className="h-4 w-4 text-sky-400" />
+                  <span>Aadhaar Biometric Face Verification: Live Camera vs Card Photo</span>
                 </CardTitle>
                 <Badge variant="outline" className="border-sky-500/40 text-sky-400 text-[10px] font-mono">
-                  CAMERA 1 • 60 FPS
+                  UIDAI FaceRD v2.4 • 60 FPS
                 </Badge>
               </div>
             </CardHeader>
@@ -274,7 +274,7 @@ LOCATION AT SCAN : KM 84 Marker near Jewar / Aligarh Outer (Speed: 92 km/h)
               {/* Test Scenario Selector */}
               <div className="p-3 rounded-xl border border-border bg-slate-950/60 space-y-2">
                 <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
-                  Select Boarding Passenger Test Simulation:
+                  Select Boarding Passenger Identity to Verify:
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
@@ -285,7 +285,7 @@ LOCATION AT SCAN : KM 84 Marker near Jewar / Aligarh Outer (Speed: 92 km/h)
                     }}
                     className={`p-2.5 rounded-lg border text-left transition-all ${
                       selectedScenario === 'FUGITIVE'
-                        ? 'border-red-500 bg-red-950/40 text-white font-bold shadow-sm'
+                        ? 'border-red-500 bg-red-950/40 text-white font-bold shadow-sm ring-1 ring-red-500/50'
                         : 'border-border/60 bg-muted/20 text-muted-foreground hover:bg-muted/40'
                     }`}
                   >
@@ -306,7 +306,7 @@ LOCATION AT SCAN : KM 84 Marker near Jewar / Aligarh Outer (Speed: 92 km/h)
                     }}
                     className={`p-2.5 rounded-lg border text-left transition-all ${
                       selectedScenario === 'CITIZEN'
-                        ? 'border-emerald-500 bg-emerald-950/40 text-white font-bold shadow-sm'
+                        ? 'border-emerald-500 bg-emerald-950/40 text-white font-bold shadow-sm ring-1 ring-emerald-500/50'
                         : 'border-border/60 bg-muted/20 text-muted-foreground hover:bg-muted/40'
                     }`}
                   >
@@ -321,43 +321,131 @@ LOCATION AT SCAN : KM 84 Marker near Jewar / Aligarh Outer (Speed: 92 km/h)
                 </div>
               </div>
 
-              {/* Viewfinder / Facial Reticle */}
-              <div className="relative aspect-[4/3] rounded-xl border-2 border-dashed border-sky-500/50 bg-slate-950 flex flex-col items-center justify-center p-4 overflow-hidden">
-                {/* Simulated Camera Feed */}
-                <div className="relative w-48 h-48 rounded-full border-2 border-sky-400/60 overflow-hidden flex items-center justify-center bg-slate-900/80 shadow-inner">
-                  {selectedScenario === 'FUGITIVE' ? (
-                    <div className="flex flex-col items-center text-center p-4 space-y-1">
-                      <div className="w-20 h-20 rounded-full bg-slate-800 border-2 border-red-500 flex items-center justify-center text-red-400 text-3xl font-black">
-                        VM
-                      </div>
-                      <span className="text-[11px] font-bold text-white">Target: Vikram Malhotra</span>
-                      <span className="text-[9px] text-red-400 font-mono">Active Warrant Flagged</span>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center text-center p-4 space-y-1">
-                      <div className="w-20 h-20 rounded-full bg-slate-800 border-2 border-emerald-500 flex items-center justify-center text-emerald-400 text-3xl font-black">
-                        PS
-                      </div>
-                      <span className="text-[11px] font-bold text-white">Passenger: Priya Sharma</span>
-                      <span className="text-[9px] text-emerald-400 font-mono">PNR: 681-9048122</span>
-                    </div>
-                  )}
+              {/* Side-by-Side Verification Terminal: Live Passenger Capture ⟷ Official Aadhaar Photo */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-xl border border-sky-500/40 bg-slate-950">
+                {/* 1. Live Passenger Optical Camera Feed */}
+                <div className="p-3 rounded-lg border border-sky-500/30 bg-slate-900/90 flex flex-col items-center justify-between space-y-2 relative overflow-hidden">
+                  <div className="w-full flex items-center justify-between text-[10px] font-mono text-sky-400">
+                    <span className="flex items-center gap-1">
+                      <Camera className="h-3 w-3" />
+                      <span>LIVE CAM CAPTURE</span>
+                    </span>
+                    <span className="h-2 w-2 rounded-full bg-red-500 animate-ping" />
+                  </div>
 
-                  {/* Scanning Laser Beam */}
-                  {isScanning && (
-                    <div className="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-sky-400 to-transparent animate-bounce top-1/2 shadow-lg shadow-sky-400/50" />
-                  )}
+                  {/* Camera Viewfinder with 68-Point Landmark Mesh */}
+                  <div className="relative w-28 h-32 rounded-xl border-2 border-sky-400/60 overflow-hidden bg-slate-950 flex flex-col items-center justify-center shadow-inner">
+                    {/* Passenger Photo Portrait */}
+                    <div className="relative w-full h-full flex items-center justify-center">
+                      {selectedScenario === 'FUGITIVE' ? (
+                        <div className="w-full h-full bg-gradient-to-b from-slate-800 to-slate-900 flex flex-col items-center justify-center p-2 text-center">
+                          <div className="w-16 h-16 rounded-full bg-red-950/60 border border-red-500 flex items-center justify-center text-red-300 text-2xl font-black shadow-lg">
+                            VM
+                          </div>
+                          <span className="text-[10px] font-bold text-white mt-1">Vikram Malhotra</span>
+                          <span className="text-[8px] text-red-400 font-mono">B4 Seat 28</span>
+                        </div>
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-b from-slate-800 to-slate-900 flex flex-col items-center justify-center p-2 text-center">
+                          <div className="w-16 h-16 rounded-full bg-emerald-950/60 border border-emerald-500 flex items-center justify-center text-emerald-300 text-2xl font-black shadow-lg">
+                            PS
+                          </div>
+                          <span className="text-[10px] font-bold text-white mt-1">Priya Sharma</span>
+                          <span className="text-[8px] text-emerald-400 font-mono">A2 Seat 14</span>
+                        </div>
+                      )}
+
+                      {/* 68-Point Biometric Landmarks Simulation Dots */}
+                      <div className="absolute inset-0 pointer-events-none grid grid-cols-4 grid-rows-5 p-2 gap-1 opacity-60">
+                        {Array.from({ length: 20 }).map((_, i) => (
+                          <div key={i} className="h-1 w-1 rounded-full bg-sky-400 mx-auto animate-pulse" />
+                        ))}
+                      </div>
+
+                      {/* Scanning Laser Beam */}
+                      {isScanning && (
+                        <div className="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent animate-bounce top-1/2 shadow-lg shadow-cyan-400/80" />
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="w-full text-center">
+                    <span className="text-[9px] font-mono text-slate-300 block">
+                      Iris Focus: Locked • Yaw: +0.8°
+                    </span>
+                    <span className="text-[9px] font-mono text-emerald-400 block font-semibold">
+                      3D Liveness: PASS (0.98)
+                    </span>
+                  </div>
                 </div>
 
-                {/* Corner reticle brackets */}
-                <div className="absolute top-3 left-3 w-4 h-4 border-t-2 border-l-2 border-sky-400" />
-                <div className="absolute top-3 right-3 w-4 h-4 border-t-2 border-r-2 border-sky-400" />
-                <div className="absolute bottom-3 left-3 w-4 h-4 border-b-2 border-l-2 border-sky-400" />
-                <div className="absolute bottom-3 right-3 w-4 h-4 border-b-2 border-r-2 border-sky-400" />
+                {/* 2. Official UIDAI Aadhaar Digital ID Card Record */}
+                <div className="p-3 rounded-lg border border-amber-500/40 bg-gradient-to-b from-amber-950/20 via-slate-900 to-slate-950 flex flex-col justify-between space-y-2 relative overflow-hidden">
+                  {/* Aadhaar Header */}
+                  <div className="border-b border-amber-500/30 pb-1.5 flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-4 w-4 rounded-full bg-amber-500/20 border border-amber-400 flex items-center justify-center text-[8px] font-bold text-amber-300">
+                        🏛️
+                      </div>
+                      <div className="text-[9px] font-bold text-amber-200 uppercase leading-none">
+                        <div>भारत सरकार</div>
+                        <div className="text-[7px] text-slate-400">Govt. of India</div>
+                      </div>
+                    </div>
+                    <Badge variant="outline" className="text-[8px] text-amber-400 border-amber-500/40 font-mono px-1 py-0">
+                      UIDAI ARCHIVE
+                    </Badge>
+                  </div>
 
-                <div className="absolute bottom-2 text-[10px] font-mono text-sky-300 bg-slate-900/90 px-2 py-0.5 rounded border border-sky-500/30">
-                  {isScanning ? `UIDAI BIOMETRIC MATCHING... ${scanProgress}%` : 'ALIGN PASSENGER FACE IN RETICLE'}
+                  {/* Aadhaar Photo & Details */}
+                  <div className="flex items-center gap-2">
+                    <div className="w-16 h-20 rounded border border-amber-500/60 bg-slate-950 p-1 flex flex-col items-center justify-center shrink-0 relative overflow-hidden">
+                      <div className="w-12 h-14 rounded bg-slate-800 flex items-center justify-center text-xs font-bold text-amber-300">
+                        {selectedScenario === 'FUGITIVE' ? 'VM' : 'PS'}
+                      </div>
+                      <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-amber-400/10 to-transparent pointer-events-none" />
+                      <span className="text-[7px] font-mono text-amber-400 mt-0.5">UIDAI PHOTO</span>
+                    </div>
+
+                    <div className="min-w-0 text-[10px] space-y-0.5 font-mono">
+                      <div className="font-bold text-white truncate">
+                        {selectedScenario === 'FUGITIVE' ? 'Vikram Malhotra' : 'Priya Ananya Sharma'}
+                      </div>
+                      <div className="text-slate-400 text-[9px]">
+                        DOB: {selectedScenario === 'FUGITIVE' ? '14/08/1990' : '22/03/1995'}
+                      </div>
+                      <div className="text-slate-400 text-[9px]">
+                        Gender: {selectedScenario === 'FUGITIVE' ? 'MALE' : 'FEMALE'}
+                      </div>
+                      <div className="text-amber-400 font-bold text-[9px] pt-1">
+                        {selectedScenario === 'FUGITIVE' ? 'XXXX XXXX 8921' : 'XXXX XXXX 4412'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Aadhaar Bottom Bar with Hologram & QR Code Marker */}
+                  <div className="border-t border-amber-500/30 pt-1.5 flex items-center justify-between text-[8px] font-mono text-slate-400">
+                    <span className="text-amber-300 font-bold">मेरा आधार, मेरी पहचान</span>
+                    <span className="text-[8px] text-sky-400 border border-sky-500/30 px-1 rounded bg-sky-950/60">
+                      SEC-63 BSA VALID
+                    </span>
+                  </div>
                 </div>
+              </div>
+
+              {/* Facial Match Status Meter */}
+              <div className="p-2.5 rounded-lg border border-sky-500/30 bg-slate-900/80 flex items-center justify-between text-xs font-mono">
+                <span className="text-muted-foreground flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-sky-400" />
+                  <span>UIDAI Cosine Match:</span>
+                </span>
+                <span className="font-bold text-sky-300">
+                  {verificationResult
+                    ? `${verificationResult.facialConfidence}% MATCH (${selectedScenario === 'FUGITIVE' ? 'RED LOC DETECTED' : 'CLEARED'})`
+                    : isScanning
+                    ? `Matching Vector... ${scanProgress}%`
+                    : 'Awaiting Facial Comparison'}
+                </span>
               </div>
 
               {/* Action Buttons */}
@@ -368,7 +456,11 @@ LOCATION AT SCAN : KM 84 Marker near Jewar / Aligarh Outer (Speed: 92 km/h)
                   className="w-full bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-xs py-2.5 shadow-lg shadow-sky-600/30 flex items-center justify-center gap-2"
                 >
                   <Scan className="h-4 w-4" />
-                  <span>{isScanning ? 'Querying UIDAI Biometric Registry...' : 'Scan Passenger Face with Aadhaar'}</span>
+                  <span>
+                    {isScanning
+                      ? 'Matching Face Against Official Aadhaar Photo...'
+                      : 'Scan & Match Face with Aadhaar Photo'}
+                  </span>
                 </Button>
 
                 <div className="flex items-center gap-2">
@@ -393,8 +485,8 @@ LOCATION AT SCAN : KM 84 Marker near Jewar / Aligarh Outer (Speed: 92 km/h)
           </Card>
         </div>
 
-        {/* Right Column (7 Cols): Verification Dossier & Intercept Actions */}
-        <div className="lg:col-span-7 space-y-4">
+        {/* Right Column (6 Cols): Verification Dossier & Intercept Actions */}
+        <div className="lg:col-span-6 space-y-4">
           {verificationResult ? (
             <div className="space-y-4">
               {/* Alert Status Card */}
