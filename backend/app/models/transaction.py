@@ -1,5 +1,6 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime
+from sqlalchemy.orm import synonym
 from app.database.postgres import Base
 
 
@@ -18,3 +19,8 @@ class BankTransaction(Base):
     suspicious = Column(Boolean, default=False)
     timestamp = Column(DateTime, default=datetime.utcnow)
     notes = Column(String(500), nullable=True)
+
+    # Synonyms for flexible cross-layer query compatibility
+    is_suspicious = synonym("suspicious")
+    account_number = synonym("receiver_account")
+

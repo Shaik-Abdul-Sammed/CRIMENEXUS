@@ -279,9 +279,71 @@ coverage/
 .vscode/
 .idea/
 
+# ==============================================================================
+# CRIMENEXUS — ML Model Artifacts (regenerate via training scripts)
+# ==============================================================================
+backend/app/ml_service/models/*.pkl
+backend/app/ml_service/models/*.pt
+backend/app/ml_service/models/*.onnx
+backend/app/ml_service/models/fir_ner_model/
+backend/app/ml_service/models/hotspot_xgb.pkl
+*.h5
+*.joblib
 
+# Explicitly keep model metadata committed
+!backend/app/ml_service/models/*.json
+!backend/scripts/patch_schema.sql
 
+# Duplicate frontend copy inside backend
+backend/src/
 
+# ChromaDB persistent storage
+backend/chroma_db/
+chroma_db/
 
+# Qiskit simulator cache
+.qiskit/
+*.qpy
+*.qasm
 
+# Large training datasets
+backend/data/raw/
+backend/data/processed/*.parquet
+backend/data/processed/*.csv
+backend/data/*.h5
+
+# Whisper / HuggingFace cache
+.cache/huggingface/
+~/.cache/huggingface/
+transformers_cache/
+
+# Generated reports (except the final PDF)
+CRIMENEXUS_Project_Report_draft.pdf
+draft_*.pdf
+temp_*.png
+
+# Final deliverables and documentation explicitly preserved
+!CRIMENEXUS_Project_Report.pdf
+!demo_data/screenshots/police_dossier/*.png
+!docs/*.md
+
+# Temporary preview / test artifacts
+demo_data/preview_*.png
+demo_data/test_*.png
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+
+# OS and IDE
+.DS_Store
+.idea/
+.vscode/
+*.swp
 

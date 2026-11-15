@@ -1899,10 +1899,12 @@ export function GuardianTracePage() {
           if (mapRef.current) {
             mapRef.current.flyTo({
               center: step.coords,
-              zoom: 13.5,
-              duration: 800,
+              zoom: 14,
+              duration: 700,
             });
           }
+          const targetHour = Math.min(18, Math.max(1, Math.round((step.second / 180) * 18)));
+          setTimelineHour(targetHour);
         }}
       />
       {/* OmniTrace Satellite Verification Modal */}

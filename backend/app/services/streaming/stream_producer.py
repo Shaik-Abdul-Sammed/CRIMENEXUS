@@ -63,8 +63,22 @@ def simulate_live_event():
     """Generates a random realistic law-enforcement event."""
     choice = random.choice(["bank", "cdr", "anpr"])
     if choice == "bank":
-        emit_bank_transaction(amount=random.choice([47000.0, 48500.0, 49200.0, 150000.0]))
+        msg_id = emit_bank_transaction(amount=random.choice([47000.0, 48500.0, 49200.0, 150000.0]))
+        topic = "bank.transactions"
+        payload = {"amount": 49000.0, "sender_account": "ACC-STREAM-01", "receiver_account": "ACC-STREAM-02"}
     elif choice == "cdr":
-        emit_telecom_cdr(duration=random.randint(20, 360))
+        msg_id = emit_telecom_cdr(duration=random.randint(20, 360))
+        topic = "telecom.cdr"
+        payload = {"caller_phone": "+919876543210", "receiver_phone": "+919123456789", "duration": 60}
     else:
-        emit_anpr_sighting()
+        msg_id = emit_anpr_sighting()
+        topic = "anpr.sightings"
+        payload = {"plate_number": "DL 01 AB 9999", "location_name": "Delhi Toll"}
+    
+    # Also directly invoke stream processor so alert is immediately stored in PostgreSQL
+    try:
+        from app.services.streaming.stream_processor import process_single_event
+        process_single_event(topic, payload)
+    except Exception as exc:
+        logger.debug(f"Stream auto-process notice: {exc}")
+    return msg_id

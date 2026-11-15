@@ -6,6 +6,7 @@ import { TopNav } from '../components/layout/TopNav';
 import { GlobalSearchModal } from '../components/layout/GlobalSearchModal';
 import { PageDirectoryModal } from '../components/common/PageDirectoryModal';
 import { ProFeaturesHubModal } from '../components/common/ProFeaturesHubModal';
+import { ForensicAlgorithmsHubModal } from '../components/common/ForensicAlgorithmsHubModal';
 import { PageTransition } from '../components/common/PageTransition';
 import { BackToTopButton } from '../components/common/BackToTopButton';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
@@ -13,7 +14,7 @@ import { useAppStore } from '../stores/appStore';
 
 export function AppLayout() {
   const location = useLocation();
-  const { featuresHubModalOpen, setFeaturesHubModalOpen } = useAppStore();
+  const { featuresHubModalOpen, setFeaturesHubModalOpen, algoHubModalOpen, setAlgoHubModalOpen } = useAppStore();
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground">
@@ -31,7 +32,7 @@ export function AppLayout() {
       {/* Main Content Area with Unclipped Dropdown Flow & Clean Layering */}
       <div className="flex flex-1 flex-col overflow-hidden relative">
         {/* Top Header firmly anchored on top of all workspace elements */}
-        <div className="relative z-40 shrink-0">
+        <div className="relative z-50 shrink-0">
           <TopNav />
         </div>
 
@@ -56,6 +57,10 @@ export function AppLayout() {
       <ProFeaturesHubModal
         isOpen={featuresHubModalOpen}
         onClose={() => setFeaturesHubModalOpen(false)}
+      />
+      <ForensicAlgorithmsHubModal
+        isOpen={algoHubModalOpen}
+        onClose={() => setAlgoHubModalOpen(false)}
       />
 
       {/* Floating Back to Top Button */}

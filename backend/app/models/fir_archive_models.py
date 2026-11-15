@@ -16,6 +16,9 @@ class OfficerRegistry(Base):
     total_firs_handled = Column(Integer, default=0)
     conviction_count = Column(Integer, default=0)
     acquittal_count = Column(Integer, default=0)
+    disciplinary_complaints = Column(Integer, default=0)
+    sustained_complaints = Column(Integer, default=0)
+    last_incident_date = Column(Date, nullable=True)
     status = Column(String(50), default="ACTIVE")  # ACTIVE, RETIRED, TRANSFERRED, DECEASED
 
 

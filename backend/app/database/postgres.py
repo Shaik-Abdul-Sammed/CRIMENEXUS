@@ -32,7 +32,7 @@ def _get_engine():
             "Primary PostgreSQL is unavailable (%s). Falling back to SQLite for resilient testing/offline execution.",
             exc
         )
-        sqlite_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../test_fallback.db"))
+        sqlite_path = "/tmp/test_fallback.db"
         sqlite_url = f"sqlite:///{sqlite_path}"
         eng = create_engine(sqlite_url, connect_args={"check_same_thread": False})
         return eng
@@ -58,7 +58,10 @@ if "sqlite" in str(engine.url):
         import app.models.relationship
         import app.models.guardian_trace
         import app.models.fir_archive_models
-        Base.metadata.create_all(bind=engine)
+        import app.models.officer_disciplinary
+        import app.models.unused_material
+        from app.database.migration import auto_migrate_db_schema
+        auto_migrate_db_schema(engine, Base.metadata)
     except Exception as table_exc:
         logger.warning("Could not auto-create SQLite fallback tables: %s", table_exc)
 

@@ -43,7 +43,6 @@ import { KeyboardShortcutsModal } from '../common/KeyboardShortcutsModal';
 import { PanicLockModal } from '../common/PanicLockModal';
 import { AccessibilityBar } from '../common/AccessibilityBar';
 import { WhatsNewChangelogModal } from '../common/WhatsNewChangelogModal';
-import { ForensicAlgorithmsHubModal } from '../common/ForensicAlgorithmsHubModal';
 import { Lock } from 'lucide-react';
 
 export function TopNav() {
@@ -53,6 +52,7 @@ export function TopNav() {
     setGlobalSearchOpen,
     setPageDirectoryOpen,
     setFeaturesHubModalOpen,
+    setAlgoHubModalOpen,
     theme,
     toggleTheme,
     figmaTheme,
@@ -229,9 +229,9 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
 
   return (
     <>
-      <header className="sticky top-0 z-40 flex h-16 w-full max-w-full items-center justify-between border-b border-border bg-card/98 px-2 sm:px-4 shadow-sm gap-2 overflow-visible select-none">
-      {/* Left: Responsive Breadcrumbs with protected width, zero collision, and guaranteed full 'Home' visibility */}
-      <nav aria-label="Breadcrumb" className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground shrink min-w-0 max-w-sm lg:max-w-md mr-2 overflow-hidden">
+      <header className="sticky top-0 z-50 flex h-16 w-full max-w-full items-center justify-between border-b border-border bg-card/98 px-3 sm:px-4 shadow-sm gap-2 select-none">
+      {/* Left: Responsive Breadcrumbs with guaranteed non-overlapping spacing */}
+      <nav aria-label="Breadcrumb" className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground shrink-0 max-w-[260px] lg:max-w-sm mr-2 overflow-hidden">
         <Link to="/dashboard" className="hover:text-foreground font-bold transition-colors shrink-0 flex items-center gap-1 text-primary">
           <span className="whitespace-nowrap font-extrabold text-xs">Home</span>
         </Link>
@@ -240,7 +240,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
             <ChevronRight className="h-3 w-3 text-border shrink-0" />
             <Link
               to={b.url}
-              className={`truncate max-w-[150px] whitespace-nowrap ${
+              className={`truncate max-w-[120px] lg:max-w-[160px] whitespace-nowrap ${
                 idx === breadcrumbs.length - 1
                   ? 'font-extrabold text-foreground'
                   : 'hover:text-foreground transition-colors'
@@ -253,12 +253,12 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
         ))}
       </nav>
 
-      {/* Right: Consolidated Tools & Actions (Streamlined, Zero Horizontal Overflow, Zero Stacking Traps) */}
-      <div className="flex items-center gap-1 sm:gap-1.5 justify-end ml-auto min-w-0 py-1">
-        {/* 1. Global Intelligence Search Trigger (High Usage) */}
+      {/* Right: Consolidated Tools & Actions (Zero Overflow, Zero Breadcrumb Overlap) */}
+      <div className="flex items-center gap-1 sm:gap-1.5 justify-end ml-auto shrink-0 py-1">
+        {/* 1. Global Intelligence Search Trigger */}
         <button
           onClick={() => setGlobalSearchOpen(true)}
-          className="flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg border border-border bg-background/80 text-xs text-muted-foreground hover:border-primary/50 hover:bg-accent/50 transition-all focus:outline-none shrink-0"
+          className="flex items-center gap-1.5 h-8 px-2 sm:px-2.5 rounded-lg border border-border bg-background/80 text-xs text-muted-foreground hover:border-primary/50 hover:bg-accent/50 transition-all focus:outline-none shrink-0"
           title="Search cases, entities, pages, and evidence (Press /)"
           aria-label="Search cases, entities, and evidence"
         >
@@ -269,13 +269,13 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           </kbd>
         </button>
 
-        {/* 2. All 30 Pages Directory & Quick Navigator (High Priority) */}
+        {/* 2. All 30 Pages Directory (Compact) */}
         <button
           onClick={() => {
             sound.playClickSound();
             setPageDirectoryOpen(true);
           }}
-          className="flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold transition-all shadow-sm shrink-0"
+          className="flex items-center gap-1.5 h-8 px-2 sm:px-2.5 rounded-lg border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold transition-all shadow-sm shrink-0"
           title="Open complete 30 Pages System Directory (Press ⌘P / Ctrl+P)"
           aria-label="All Pages Directory"
         >
@@ -284,11 +284,11 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           <span className="px-1 py-0.2 rounded-full bg-primary/20 text-primary text-[9px] font-mono font-black">30</span>
         </button>
 
-        {/* 3. 100 Technical Specifications & 100 AI/ML Improvements Roadmap */}
+        {/* 3. 100 Technical Specifications & Roadmap (Compact) */}
         <Link
           to="/roadmap"
-          className="flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg border border-amber-500/50 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 text-xs font-bold transition-all shadow-sm shrink-0"
-          title="100 AI/ML Improvements Audit & Sovereign Engineering Roadmap (Sec 63 BSA)"
+          className="hidden lg:flex items-center gap-1.5 h-8 px-2 sm:px-2.5 rounded-lg border border-amber-500/50 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 text-xs font-bold transition-all shadow-sm shrink-0"
+          title="100 AI/ML Improvements Audit & Sovereign Engineering Roadmap"
           aria-label="100 Specs Roadmap"
         >
           <Compass className="h-3.5 w-3.5 text-amber-400 shrink-0" />
@@ -302,7 +302,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
             sound.playClickSound();
             setFeaturesHubModalOpen(true);
           }}
-          className="flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg border border-cyan-500/50 bg-cyan-950/50 hover:bg-cyan-900/50 text-cyan-300 text-xs font-bold transition-all shadow-sm shrink-0"
+          className="flex items-center gap-1.5 h-8 px-2 sm:px-2.5 rounded-lg border border-cyan-500/50 bg-cyan-950/50 hover:bg-cyan-900/50 text-cyan-300 text-xs font-bold transition-all shadow-sm shrink-0"
           title="CRIMENEXUS 15 Core Pro Features & Capabilities Hub"
           aria-label="Features Showcase"
         >
@@ -315,9 +315,9 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
         <button
           onClick={() => {
             sound.playClickSound();
-            setAlgoHubOpen(true);
+            setAlgoHubModalOpen(true);
           }}
-          className="flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg border border-purple-500/50 bg-purple-950/50 hover:bg-purple-900/50 text-purple-200 text-xs font-bold transition-all shadow-sm shrink-0"
+          className="flex items-center gap-1.5 h-8 px-2 sm:px-2.5 rounded-lg border border-purple-500/50 bg-purple-950/50 hover:bg-purple-900/50 text-purple-200 text-xs font-bold transition-all shadow-sm shrink-0"
           title="20 Deep Mathematical & Forensic AI Algorithms Hub (LaTeX Formulas & Live Real-Time Calculators)"
           aria-label="20 Deep AI Models"
         >
@@ -327,8 +327,8 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           <span className="px-1.5 py-0.2 rounded-full bg-purple-500/30 text-purple-200 text-[9px] font-mono font-black border border-purple-400/40">20</span>
         </button>
 
-        {/* 5. 1-Click Vernacular Full Page Language Switcher (Directly on TopNav) */}
-        <div className="flex items-center gap-1 h-8 sm:h-9 px-1.5 sm:px-2 rounded-lg border border-sky-500/40 bg-sky-950/40 text-xs shrink-0">
+        {/* 5. 1-Click Vernacular Full Page Language Switcher */}
+        <div className="flex items-center gap-1 h-8 px-1.5 sm:px-2 rounded-lg border border-sky-500/40 bg-sky-950/40 text-xs shrink-0">
           <Languages className="h-3.5 w-3.5 text-sky-400 shrink-0" />
           <select
             value={language}
@@ -369,7 +369,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           </button>
 
           {tacticalMenuOpen && (
-            <div className="absolute right-0 top-full mt-2 w-72 rounded-2xl border border-border bg-slate-900/98 backdrop-blur-xl p-3 shadow-2xl z-[1000] animate-in fade-in zoom-in-95 space-y-2 select-none">
+            <div className="absolute right-0 top-full mt-2 w-72 max-w-[92vw] rounded-2xl border border-border bg-slate-900/98 backdrop-blur-xl p-3 shadow-2xl z-[99999] animate-in fade-in zoom-in-95 space-y-2 select-none">
               <div className="flex items-center justify-between pb-2 border-b border-border/60">
                 <div className="flex items-center gap-1.5">
                   <Zap className="h-3.5 w-3.5 text-amber-400" />
@@ -511,7 +511,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           </button>
 
           {notifMenuOpen && (
-            <div className="absolute right-0 top-full mt-2 w-[92vw] max-w-sm sm:w-96 rounded-2xl border border-border/80 bg-slate-900/98 backdrop-blur-xl p-4 shadow-2xl z-[1000] animate-in fade-in zoom-in-95 select-none">
+            <div className="absolute right-0 top-full mt-2 w-[92vw] max-w-sm sm:w-96 rounded-2xl border border-border/80 bg-slate-900/98 backdrop-blur-xl p-4 shadow-2xl z-[99999] animate-in fade-in zoom-in-95 select-none">
               <div className="flex items-center justify-between pb-3 border-b border-border/60 mb-3">
                 <div className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
@@ -640,7 +640,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           </button>
 
           {settingsMenuOpen && (
-            <div className="absolute right-0 top-full mt-2 w-[90vw] max-w-xs sm:w-80 rounded-xl border border-border bg-card/98 backdrop-blur-xl p-3 shadow-2xl z-[1000] space-y-3 animate-in fade-in zoom-in-95 max-h-[85vh] overflow-y-auto">
+            <div className="absolute right-0 top-full mt-2 w-[90vw] max-w-xs sm:w-80 rounded-xl border border-border bg-card/98 backdrop-blur-xl p-3 shadow-2xl z-[99999] space-y-3 animate-in fade-in zoom-in-95 max-h-[85vh] overflow-y-auto">
               <div className="flex items-center justify-between border-b border-border pb-2">
                 <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
                   <SettingsIcon className="h-3.5 w-3.5 text-primary" />
@@ -873,10 +873,6 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
     <WhatsNewChangelogModal
       isOpen={whatsNewOpen}
       onClose={() => setWhatsNewOpen(false)}
-    />
-    <ForensicAlgorithmsHubModal
-      isOpen={algoHubOpen}
-      onClose={() => setAlgoHubOpen(false)}
     />
   </>
 );

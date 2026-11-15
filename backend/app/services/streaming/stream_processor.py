@@ -11,6 +11,7 @@ from app.database.neo4j import execute_cypher
 from app.models.transaction import BankTransaction
 from app.models.call_record import CallRecord
 from app.models.vehicle_sighting import VehicleSighting
+from app.models.alert import Alert
 from app.services.streaming.redis_streams import get_redis_client, STREAM_TOPICS
 
 logger = logging.getLogger("crimenexus.streaming.processor")
@@ -107,6 +108,18 @@ def process_single_event(topic: str, data: Dict[str, Any]) -> bool:
     """
     db = SessionLocal()
     try:
+        # Record streaming alert in alerts table
+        stream_alert = Alert(
+            alert_type="STREAM_EVENT",
+            title=f"Redis Stream Event: {topic}",
+            description=f"Received live event payload from stream topic {topic}",
+            severity="high" if topic == "bank.transactions" and float(data.get("amount", 0)) > 45000 else "medium",
+            source="REDIS_STREAM",
+            status="new"
+        )
+        db.add(stream_alert)
+        db.commit()
+
         if topic == "bank.transactions":
             # Zero-Trust Schema Validation
             try:
@@ -234,7 +247,7 @@ def run_stream_consumer_worker(stop_event: Optional[threading.Event] = None):
         try:
             r = get_redis_client()
             if not r:
-                time.sleep(2.0)
+                time.sleep(10.0)
                 continue
 
             for topic in STREAM_TOPICS:

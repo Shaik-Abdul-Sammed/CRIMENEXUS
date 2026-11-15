@@ -657,7 +657,7 @@ def get_evidence_item(evidence_id: str):
 @router.post("/evidence/upload", summary="Ingest binary evidence file with client/server SHA-256 verification")
 async def upload_evidence_file(
     file: UploadFile = File(...),
-    title: str = Form(...),
+    title: str = Form("Evidence Upload"),
     type: str = Form("DOCUMENT"),
     source: str = Form("CCTNS Vault"),
     sourceReference: str = Form("SR-101"),
@@ -670,9 +670,12 @@ async def upload_evidence_file(
     import uuid
     from datetime import datetime
 
+    if file.filename and any(file.filename.lower().endswith(ext) for ext in [".exe", ".bat", ".sh", ".cmd", ".dll", ".bin"]):
+        raise HTTPException(status_code=400, detail="Invalid file type. Executable and binary system scripts (.exe, .bat, .sh) are prohibited from evidentiary upload.")
+
     content = await file.read()
-    if len(content) > 50 * 1024 * 1024:
-        raise HTTPException(status_code=413, detail="Evidence file exceeds 50MB limit.")
+    if len(content) > MAX_UPLOAD_SIZE_BYTES:
+        raise HTTPException(status_code=413, detail=f"Evidence file exceeds maximum allowable limit of 10MB (size: {len(content):,} bytes).")
 
     server_sha256 = hashlib.sha256(content).hexdigest()
     evidence_id = f"EV-{datetime.utcnow().strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
@@ -706,4 +709,36 @@ async def upload_evidence_file(
 
     EVIDENCE_STORE.insert(0, record)
     return record
+
+
+class RegisterHashRequest(BaseModel):
+    specimen_id: str
+    case_id: str
+    sha256_hash: str
+    item_type: Optional[str] = "BALLISTICS_BULLET"
+
+
+REGISTERED_HASHES = set()
+
+
+@router.post("/forensics/register-hash", summary="Register and verify cryptographic hash of physical/digital evidence")
+def register_evidence_hash(payload: RegisterHashRequest):
+    if payload.sha256_hash in REGISTERED_HASHES:
+        return {
+            "status": "DUPLICATE_FLAGGED",
+            "message": "Evidence hash already registered in evidentiary chain",
+            "specimen_id": payload.specimen_id,
+            "sha256_hash": payload.sha256_hash,
+            "duplicate": True
+        }
+    REGISTERED_HASHES.add(payload.sha256_hash)
+    return {
+        "status": "REGISTERED",
+        "specimen_id": payload.specimen_id,
+        "case_id": payload.case_id,
+        "sha256_hash": payload.sha256_hash,
+        "item_type": payload.item_type,
+        "duplicate": False
+    }
+
 

@@ -27,31 +27,61 @@ from app.models.report import PoliceReport
 from app.models.audit_ledger import AuditLedgerEntry, DualWarrantAuthorization
 from app.models.custody_tracker import CustodyTracker
 from app.models.public_report import PublicCrimeReport
+from app.models.guardian_trace import MissingPersonCase, DigitalSighting, SearchPrediction
+from app.models.fir_archive_models import OfficerRegistry, SuspectLifeStatus, HistoricalFIR
+from app.models.smart_meter_reading import SmartMeterReading
+from app.database.migration import auto_migrate_db_schema
 from app.ml_service.model_registry import get_ml_registry
 
-# Import API Routers
-from app.api.auth import router as auth_router
-from app.api.network import router as network_router
-from app.api.threats import router as threats_router
-from app.api.ingest import router as ingest_router
-from app.api.cases import router as cases_router
-from app.api.forensics import router as forensics_router
-from app.api.legal import router as legal_router
-from app.api.external import router as external_router
-from app.api.analytics import router as analytics_router
-from app.api.drafting import router as drafting_router
-from app.api.alerts import router as alerts_router
-from app.api.geo import router as geo_router
-from app.api.quantum import router as quantum_router
-from app.api.fusion import router as fusion_router
-from app.api.escape_demo import router as escape_demo_router
-from app.api.assistant import router as assistant_router
-from app.api.public_report import router as public_report_router
-from app.ml_service.real_data_registry import router as provenance_router
-from app.api.mobile_forensics import router as mobile_forensics_router
-from app.api.guardian_trace import router as guardian_trace_router
-from app.api.fir_archive import router as fir_archive_router
-from app.api.hundred_improvements import router as hundred_improvements_router
+# Safe Router Configuration Registry
+ROUTER_CONFIGS = [
+    # Core API Routers
+    ("auth", "app.api.auth", "/api/v1"),
+    ("network", "app.api.network", "/api/v1"),
+    ("threats", "app.api.threats", "/api/v1"),
+    ("ingest", "app.api.ingest", "/api/v1"),
+    ("cases", "app.api.cases", "/api/v1"),
+    ("forensics", "app.api.forensics", "/api/v1"),
+    ("legal", "app.api.legal", "/api/v1"),
+    ("external", "app.api.external", "/api/v1"),
+    ("analytics", "app.api.analytics", "/api/v1"),
+    ("drafting", "app.api.drafting", "/api/v1"),
+    ("alerts", "app.api.alerts", "/api/v1"),
+    ("geo", "app.api.geo", "/api/v1"),
+    ("quantum", "app.api.quantum", "/api/v1"),
+    ("fusion", "app.api.fusion", "/api/v1"),
+    ("escape_demo", "app.api.escape_demo", "/api/v1"),
+    ("assistant", "app.api.assistant", "/api/v1"),
+    ("assistant_root", "app.api.assistant", ""),
+    ("public_report", "app.api.public_report", "/api/v1"),
+    ("provenance", "app.ml_service.real_data_registry", "/api/v1"),
+    ("mobile_forensics", "app.api.mobile_forensics", "/api/v1"),
+    ("guardian_trace", "app.api.guardian_trace", "/api/v1"),
+    ("fir_archive", "app.api.fir_archive", "/api/v1"),
+    ("hundred_improvements", "app.api.hundred_improvements", "/api/v1"),
+    # 20 International Intelligence & Analytics Routers
+    ("intelligence_fusion", "app.api.intelligence_fusion", "/api/v1"),
+    ("risk_scoring", "app.api.risk_scoring", "/api/v1"),
+    ("hotspot_forecast", "app.api.hotspot_forecast", "/api/v1"),
+    ("sna_gangs", "app.api.sna_gangs", "/api/v1"),
+    ("rtcc", "app.api.rtcc", "/api/v1"),
+    ("route_analysis", "app.api.route_analysis", "/api/v1"),
+    ("near_repeat", "app.api.near_repeat", "/api/v1"),
+    ("forensics_db", "app.api.forensics_db", "/api/v1"),
+    ("interpol_sync", "app.api.interpol_sync", "/api/v1"),
+    ("sar_analytics", "app.api.sar_analytics", "/api/v1"),
+    ("threat_assessment", "app.api.threat_assessment", "/api/v1"),
+    ("osint_monitor", "app.api.osint_monitor", "/api/v1"),
+    ("imsi_catcher", "app.api.imsi_catcher", "/api/v1"),
+    ("gun_intelligence", "app.api.gun_intelligence", "/api/v1"),
+    ("ibis", "app.api.ibis", "/api/v1"),
+    ("dv_risk", "app.api.dv_risk", "/api/v1"),
+    ("intercept_translate", "app.api.intercept_translate", "/api/v1"),
+    ("geofence", "app.api.geofence", "/api/v1"),
+    ("blockchain_evidence", "app.api.blockchain_evidence", "/api/v1"),
+    ("case_triage", "app.api.case_triage", "/api/v1"),
+    ("officers_legal", "app.api.officers_legal", "/api/v1"),
+]
 from app.services.streaming.redis_streams import get_streaming_stats
 from app.services.streaming.stream_processor import run_stream_consumer_worker
 from app.services.streaming.stream_producer import simulate_live_event
@@ -66,9 +96,9 @@ async def lifespan(app: FastAPI):
     """Lifecycle events: initialize databases on startup, close connections on shutdown."""
     logger.info("Initializing CRIMENEXUS databases...")
     try:
-        # Create relational tables in PostgreSQL
-        Base.metadata.create_all(bind=engine)
-        logger.info("PostgreSQL tables verified and synchronized.")
+        # Create relational tables and auto-migrate missing columns in PostgreSQL
+        auto_migrate_db_schema(engine, Base.metadata)
+        logger.info("PostgreSQL tables verified, migrated, and synchronized.")
     except Exception as exc:
         logger.warning("Could not synchronize PostgreSQL schema on startup: %s", exc)
 
@@ -153,6 +183,25 @@ app.add_middleware(
 )
 
 
+MAX_REQUEST_BODY_SIZE = 15 * 1024 * 1024  # 15MB
+
+@app.middleware("http")
+async def limit_request_size(request: Request, call_next):
+    """Enforces strict body size limits to prevent unhandled OOM and denial-of-service."""
+    content_length = request.headers.get("content-length")
+    if content_length:
+        try:
+            if int(content_length) > MAX_REQUEST_BODY_SIZE:
+                from fastapi.responses import JSONResponse
+                return JSONResponse(
+                    status_code=413,
+                    content={"detail": "Payload Too Large. Maximum allowed request size is 15MB."}
+                )
+        except ValueError:
+            pass
+    return await call_next(request)
+
+
 @app.middleware("http")
 async def add_zero_trust_security_headers(request: Request, call_next):
     """Injects mandatory zero-trust defense security headers onto every API response."""
@@ -170,30 +219,15 @@ async def add_zero_trust_security_headers(request: Request, call_next):
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     return response
 
-# Mount API Routers under /api/v1
-app.include_router(auth_router, prefix="/api/v1")
-app.include_router(network_router, prefix="/api/v1")
-app.include_router(threats_router, prefix="/api/v1")
-app.include_router(ingest_router, prefix="/api/v1")
-app.include_router(cases_router, prefix="/api/v1")
-app.include_router(forensics_router, prefix="/api/v1")
-app.include_router(legal_router, prefix="/api/v1")
-app.include_router(external_router, prefix="/api/v1")
-app.include_router(analytics_router, prefix="/api/v1")
-app.include_router(drafting_router, prefix="/api/v1")
-app.include_router(alerts_router, prefix="/api/v1")
-app.include_router(geo_router, prefix="/api/v1")
-app.include_router(quantum_router, prefix="/api/v1")
-app.include_router(fusion_router, prefix="/api/v1")
-app.include_router(escape_demo_router, prefix="/api/v1")
-app.include_router(assistant_router, prefix="/api/v1")
-app.include_router(assistant_router, prefix="")
-app.include_router(public_report_router, prefix="/api/v1")
-app.include_router(provenance_router, prefix="/api/v1")
-app.include_router(mobile_forensics_router, prefix="/api/v1")
-app.include_router(guardian_trace_router, prefix="/api/v1")
-app.include_router(fir_archive_router, prefix="/api/v1")
-app.include_router(hundred_improvements_router, prefix="/api/v1")
+# Safely mount all API Routers with robust try/except import guards
+for router_name, module_path, mount_prefix in ROUTER_CONFIGS:
+    try:
+        mod = __import__(module_path, fromlist=["router"])
+        sub_router = getattr(mod, "router")
+        app.include_router(sub_router, prefix=mount_prefix)
+        logger.info("[Router Mount] Successfully mounted '%s' from %s at '%s'", router_name, module_path, mount_prefix)
+    except Exception as exc:
+        logger.error("[Router Mount FAILED] Could not mount '%s' (%s): %s", router_name, module_path, exc, exc_info=True)
 
 # ── Advanced Feature Endpoints ────────────────────────────────────────────────
 # Feature 1: Prometheus Metrics
@@ -237,13 +271,14 @@ class _BailOppositionRequest(_BaseModel):
 @_adv_router.post("/legal/draft/bail-opposition", summary="Generate Bail Opposition Draft (Sec 480 BNSS / Sec 437 CrPC)")
 def draft_bail_opposition_endpoint(payload: _BailOppositionRequest):
     from app.ml_service.bail_generator import draft_bail_opposition
+    safe_risk = max(0.0, payload.risk_score)
     return draft_bail_opposition(
         case_id=payload.case_id,
         suspect_name=payload.suspect_name,
         grounds_of_bail=payload.grounds_of_bail,
-        risk_score=payload.risk_score,
-        prior_convictions=payload.prior_convictions,
-        anpr_sightings=payload.anpr_sightings,
+        risk_score=safe_risk,
+        prior_convictions=max(0, payload.prior_convictions),
+        anpr_sightings=max(0, payload.anpr_sightings),
         offenses_charged=payload.offenses_charged or "",
         investigating_officer=payload.investigating_officer or "Investigating Officer",
         public_prosecutor=payload.public_prosecutor or "Public Prosecutor",

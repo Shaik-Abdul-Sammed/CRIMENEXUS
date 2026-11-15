@@ -16,5 +16,6 @@ class Alert(Base):
     threat_score = Column(Float)
 
     status = Column(String(50), default="new")
+    source = Column(String(50), default="SYSTEM")
 
     created_at = Column(DateTime, default=datetime.utcnow)

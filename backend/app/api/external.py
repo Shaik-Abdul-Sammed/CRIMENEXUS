@@ -75,8 +75,20 @@ def sync_live_cctns_fir_endpoint(case_id: str):
 
     db = SessionLocal()
     try:
-        # 1. Update or create Case in PostgreSQL
-        existing_case = db.query(Case).filter(Case.case_number == case_id).first()
+        # 1. Update or create Case in PostgreSQL (with automatic self-healing schema migration)
+        try:
+            existing_case = db.query(Case).filter(Case.case_number == case_id).first()
+        except Exception as query_err:
+            db.rollback()
+            if "undefinedcolumn" in str(query_err).lower() or "no such column" in str(query_err).lower():
+                from app.database.migration import auto_migrate_db_schema
+                from app.database.postgres import engine, Base
+                logger.info("Database schema mismatch detected; triggering automatic self-healing migration...")
+                auto_migrate_db_schema(engine, Base.metadata)
+                existing_case = db.query(Case).filter(Case.case_number == case_id).first()
+            else:
+                raise query_err
+
         if not existing_case:
             new_case = Case(
                 case_number=case_id,

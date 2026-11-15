@@ -15,6 +15,15 @@ logger = logging.getLogger("crimenexus.threats")
 router = APIRouter(prefix="/threats", tags=["AI & Threat Intelligence Engine"])
 
 
+@router.get("/health", summary="Threat Intelligence Engine Health Check")
+def threats_health():
+    return {
+        "status": "healthy",
+        "service": "Threat Intelligence & Predictive Network Analytics Engine",
+        "version": "2.0.0"
+    }
+
+
 @router.get("/most-wanted")
 def get_most_wanted_watchlist() -> List[Dict[str, Any]]:
     """

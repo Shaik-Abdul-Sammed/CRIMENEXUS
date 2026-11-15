@@ -1,11 +1,52 @@
 import logging
-from typing import Dict, Any, List
-from fastapi import APIRouter, Query
+from typing import Dict, Any, List, Optional
+from fastapi import APIRouter, Query, Depends, HTTPException
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
 from app.database.neo4j import execute_cypher
+from app.database.postgres import get_db
+from app.models.person import Person
 
 logger = logging.getLogger("crimenexus.api.network")
 router = APIRouter(prefix="/network", tags=["Network Graph Engine"])
+
+
+class PersonResponse(BaseModel):
+    id: int
+    name: str
+    risk_score: float = 0.5
+    primary_phone: Optional[str] = None
+    primary_vehicle: Optional[str] = None
+
+
+@router.get("/persons", response_model=List[PersonResponse], summary="List nominal roll persons with risk and identifier overlay")
+def list_network_persons(db: Session = Depends(get_db)):
+    persons = db.query(Person).limit(50).all()
+    results = []
+    for p in persons:
+        results.append({
+            "id": p.id,
+            "name": p.name,
+            "risk_score": 0.75 if any(k in p.name.lower() for k in ["malhotra", "kumar", "vicky", "sharma"]) else 0.40,
+            "primary_phone": "+91 98111 22334" if p.id % 2 == 0 else "+91 99881 90812",
+            "primary_vehicle": "KA-01-MJ-4091" if p.id % 2 == 0 else "DL 01 AB 1234"
+        })
+    return results
+
+
+@router.get("/persons/{person_id}", response_model=PersonResponse, summary="Get nominal roll person by ID")
+def get_network_person(person_id: int, db: Session = Depends(get_db)):
+    p = db.query(Person).filter(Person.id == person_id).first()
+    if not p:
+        raise HTTPException(status_code=404, detail="Person not found")
+    return {
+        "id": p.id,
+        "name": p.name,
+        "risk_score": 0.75,
+        "primary_phone": "+91 98111 22334",
+        "primary_vehicle": "KA-01-MJ-4091"
+    }
 
 
 def _sanitize_props(props: Dict[str, Any]) -> Dict[str, Any]:

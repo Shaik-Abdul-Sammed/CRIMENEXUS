@@ -497,6 +497,11 @@ def get_nearest_police_station(
         ],
     }
 
+    if lat is not None and (float(lat) < 6.0 or float(lat) > 38.0):
+        raise HTTPException(status_code=400, detail=f"Latitude {lat} out of valid jurisdictional bounds (6.0 <= lat <= 38.0).")
+    if lon is not None and (float(lon) < 68.0 or float(lon) > 98.0):
+        raise HTTPException(status_code=400, detail=f"Longitude {lon} out of valid jurisdictional bounds (68.0 <= lon <= 98.0).")
+
     if lat is None or lon is None:
         return fallback_station
 

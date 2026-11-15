@@ -318,9 +318,20 @@ def ingest_police_report(data: Dict[str, Any], db: Session) -> Dict[str, Any]:
     except Exception as exc:
         logger.error("Neo4j dual-write error for report %s: %s", report_num, exc)
 
+    extracted_entities = []
+    try:
+        from app.ml_service.ner_model import get_ner_pipeline
+        ner_res = get_ner_pipeline().extract_entities(content)
+        for cat, items in ner_res.items():
+            for item in items:
+                extracted_entities.append(item)
+    except Exception as exc:
+        logger.debug(f"NER extraction optional step skipped: {exc}")
+
     return {
         "status": "success",
         "report_number": report_num,
         "case_number": case_num,
-        "postgres_id": pg_record.id
+        "postgres_id": pg_record.id,
+        "entities": extracted_entities
     }

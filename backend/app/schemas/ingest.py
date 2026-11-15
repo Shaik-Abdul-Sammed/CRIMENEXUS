@@ -1,5 +1,7 @@
+import re
 from typing import Optional
-from pydantic import BaseModel, Field
+from datetime import datetime
+from pydantic import BaseModel, Field, field_validator
 
 
 class BankTransactionIngest(BaseModel):
@@ -13,6 +15,8 @@ class BankTransactionIngest(BaseModel):
     transaction_type: str = "WIRE_TRANSFER"
     suspicious: Optional[bool] = None
     notes: Optional[str] = None
+    timestamp: Optional[datetime] = None
+    date: Optional[datetime] = None
 
 
 class CallRecordIngest(BaseModel):
@@ -25,6 +29,15 @@ class CallRecordIngest(BaseModel):
     tower_id: Optional[str] = "CELL-TOWER-01"
     location_name: Optional[str] = "Sector 62, Noida"
     call_type: str = "VOICE"
+
+    @field_validator("caller_number", "receiver_number")
+    @classmethod
+    def normalize_phone(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("Phone number cannot be empty")
+        # Remove formatting spaces, hyphens, parentheses
+        cleaned = re.sub(r"[\s\-\(\)]", "", v.strip())
+        return cleaned
 
 
 class VehicleSightingIngest(BaseModel):
@@ -46,7 +59,8 @@ class PoliceReportIngest(BaseModel):
     report_type: str = "FIR"  # FIR or WITNESS_STATEMENT
     case_number: str
     title: str
-    content: str
+    content: str = Field(..., min_length=1)
     filed_by: str = "Inspector Rajesh Varma"
     witness_or_complainant: Optional[str] = None
     suspects_mentioned: Optional[str] = None
+    entities: Optional[list] = None

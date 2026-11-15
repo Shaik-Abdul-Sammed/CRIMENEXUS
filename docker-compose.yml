@@ -33,6 +33,16 @@ services:
       - neo4j_data:/data
       - neo4j_logs:/logs
 
+  redis:
+    image: redis:7-alpine
+    container_name: crimenexus_redis
+    restart: always
+    command: redis-server --appendonly yes
+    expose:
+      - "6379"
+    volumes:
+      - redis_data:/data
+
   backend:
     build:
       context: ./backend
@@ -44,7 +54,9 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app
+      - ./src:/src:ro
     environment:
+      - PYTHONPATH=/app
       - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-crimenexus}
       - POSTGRES_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-crimenexus}
       - NEO4J_URI=bolt://neo4j:7687
@@ -52,10 +64,13 @@ services:
       - NEO4J_PASSWORD=${NEO4J_PASSWORD:-crimenexus123}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY:-crimenexus_super_secure_jwt_secret_key_change_in_prod_2026}
       - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-60}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
     depends_on:
       postgres:
         condition: service_healthy
       neo4j:
+        condition: service_started
+      redis:
         condition: service_started
 
   frontend:
@@ -74,3 +89,4 @@ volumes:
   postgres_data:
   neo4j_data:
   neo4j_logs:
+  redis_data:

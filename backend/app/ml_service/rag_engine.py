@@ -293,8 +293,13 @@ class ChromaVectorStore:
             self._bm25_index = BM25Okapi(self._tokenized_corpus)
 
         raw_bm25_scores = self._bm25_index.get_scores(q_tokens)
-        max_bm25 = max(raw_bm25_scores) if raw_bm25_scores and max(raw_bm25_scores) > 0 else 1.0
-        norm_bm25_scores = [max(0.0, s / max_bm25) for s in raw_bm25_scores]
+        if hasattr(raw_bm25_scores, "tolist"):
+            raw_bm25_list = raw_bm25_scores.tolist()
+        else:
+            raw_bm25_list = list(raw_bm25_scores)
+
+        max_bm25 = max(raw_bm25_list) if (len(raw_bm25_list) > 0 and max(raw_bm25_list) > 0) else 1.0
+        norm_bm25_scores = [max(0.0, float(s) / max_bm25) for s in raw_bm25_list]
 
         # 2. Dense Semantic Scores
         dense_scores = [self._compute_dense_similarity(query, doc) for doc in self.documents]
@@ -503,7 +508,9 @@ class RAGDraftEngine:
         for cat, ents in ner.items():
             if isinstance(ents, list):
                 for e in ents:
-                    query_entities.add(e.lower())
+                    e_text = e.get("text", "") if isinstance(e, dict) else str(e)
+                    if e_text:
+                        query_entities.add(e_text.lower())
 
         # Also extract proper nouns / uppercase tokens if NER missed them
         words = re.findall(r'\b[A-Z][a-zA-Z0-9_-]+\b', query)

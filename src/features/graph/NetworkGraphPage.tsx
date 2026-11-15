@@ -1620,16 +1620,16 @@ export function NetworkGraphPage() {
   return (
     <div className="space-y-6">
       {/* Top Header Row: Full-width title + primary operational triggers */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 w-full border-b border-border/60 pb-3">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full border-b border-border/60 pb-3">
         <div className="min-w-0 flex-1">
-          <h1 className="text-xl font-extrabold text-foreground flex items-center gap-2 flex-wrap">
+          <h1 className="text-xl md:text-2xl font-extrabold text-foreground flex items-center gap-2 flex-wrap">
             <Network className="h-6 w-6 text-primary shrink-0" />
-            <span>{t('graph.title')}</span>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30 font-mono font-bold shrink-0">
+            <span className="break-normal whitespace-normal">{t('graph.title')}</span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30 font-mono font-bold shrink-0 whitespace-nowrap">
               Cytoscape.js Engine
             </span>
           </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
             {t('graph.subtitle')}
           </p>
         </div>

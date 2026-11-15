@@ -1,0 +1,44 @@
+[
+  {
+    "merkle_root": "14d54332f2df2856e7b93b563301d2d9a9bb735fbfeec15b1af81262ff918ec1",
+    "anchored_at": "2026-11-14T14:33:35.278038",
+    "status": "LOCAL_FALLBACK_STORED",
+    "reason": "POLYGON_RPC_URL or POLYGON_PRIVATE_KEY not configured"
+  },
+  {
+    "merkle_root": "454a59b2f05a61d94905ba22155e6d0636455d49b1286ecf36ecd61656d098a7",
+    "anchored_at": "2026-11-14T14:34:11.928277",
+    "status": "LOCAL_FALLBACK_STORED",
+    "reason": "POLYGON_RPC_URL or POLYGON_PRIVATE_KEY not configured"
+  },
+  {
+    "merkle_root": "df72b6ed52670d491249f32be8072321a091cc8b8413c6bcb1df55d7ef74de6c",
+    "anchored_at": "2026-11-14T15:29:20.254493",
+    "status": "LOCAL_FALLBACK_STORED",
+    "reason": "POLYGON_RPC_URL or POLYGON_PRIVATE_KEY not configured"
+  },
+  {
+    "merkle_root": "d7ff1c9b3ec868a93da750da53ef623dfa9317efd7bc379f59d2e5cb7aac9993",
+    "anchored_at": "2026-11-14T15:31:40.342807",
+    "status": "LOCAL_FALLBACK_STORED",
+    "reason": "POLYGON_RPC_URL or POLYGON_PRIVATE_KEY not configured"
+  },
+  {
+    "merkle_root": "b7b38f5df2bdd8c165eb5ce758bd8b4bfa4e15ec1d7ac931d9c4a0660669f2ec",
+    "anchored_at": "2026-11-14T15:36:50.711320",
+    "status": "LOCAL_FALLBACK_STORED",
+    "reason": "POLYGON_RPC_URL or POLYGON_PRIVATE_KEY not configured"
+  },
+  {
+    "merkle_root": "c88bf1cb70f05c6d2a70a767de4cc93bb8ae4efccb33c91f99508d43951ef0bc",
+    "anchored_at": "2026-11-14T15:41:32.435889",
+    "status": "LOCAL_FALLBACK_STORED",
+    "reason": "POLYGON_RPC_URL or POLYGON_PRIVATE_KEY not configured"
+  },
+  {
+    "merkle_root": "bed7322663ec01fdf3a8daf2df4dc41a59c91f178f73f1cbb05ff4e361eb6528",
+    "anchored_at": "2026-11-14T15:46:03.494428",
+    "status": "LOCAL_FALLBACK_STORED",
+    "reason": "POLYGON_RPC_URL or POLYGON_PRIVATE_KEY not configured"
+  }
+]

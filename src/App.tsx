@@ -41,6 +41,28 @@ const PublicReportsQueue = React.lazy(() => import('./features/police/PublicRepo
 const FIRArchivePage = React.lazy(() => import('./features/fir-archive/FIRArchivePage').then((m) => ({ default: m.FIRArchivePage })));
 const NotFoundPage = React.lazy(() => import('./features/error/NotFoundPage').then((m) => ({ default: m.NotFoundPage })));
 
+// 20 International Police Intelligence & Analytics Pages (Features 1-20)
+const IntelligenceFusionPage = React.lazy(() => import('./features/intelligence/IntelligenceFusionPage').then((m) => ({ default: m.IntelligenceFusionPage })));
+const PersonRiskPage = React.lazy(() => import('./features/risk/PersonRiskPage').then((m) => ({ default: m.PersonRiskPage })));
+const HotspotForecastPage = React.lazy(() => import('./features/forecast/HotspotForecastPage').then((m) => ({ default: m.HotspotForecastPage })));
+const SNAGangsPage = React.lazy(() => import('./features/sna/SNAGangsPage').then((m) => ({ default: m.SNAGangsPage })));
+const RTCCDashboard = React.lazy(() => import('./features/rtcc/RTCCDashboard').then((m) => ({ default: m.RTCCDashboard })));
+const RouteAnalysisPage = React.lazy(() => import('./features/route/RouteAnalysisPage').then((m) => ({ default: m.RouteAnalysisPage })));
+const NearRepeatAlertsPage = React.lazy(() => import('./features/alerts/NearRepeatAlertsPage').then((m) => ({ default: m.NearRepeatAlertsPage })));
+const ForensicDBPage = React.lazy(() => import('./features/forensics/ForensicDBPage').then((m) => ({ default: m.ForensicDBPage })));
+const InterpolSyncPage = React.lazy(() => import('./features/interpol/InterpolSyncPage').then((m) => ({ default: m.InterpolSyncPage })));
+const SARAnalyticsPage = React.lazy(() => import('./features/sar/SARAnalyticsPage').then((m) => ({ default: m.SARAnalyticsPage })));
+const ThreatAssessmentPage = React.lazy(() => import('./features/threat/ThreatAssessmentPage').then((m) => ({ default: m.ThreatAssessmentPage })));
+const OSINTMonitorPage = React.lazy(() => import('./features/osint/OSINTMonitorPage').then((m) => ({ default: m.OSINTMonitorPage })));
+const IMSICatcherPage = React.lazy(() => import('./features/imsi/IMSICatcherPage').then((m) => ({ default: m.IMSICatcherPage })));
+const GunIntelligencePage = React.lazy(() => import('./features/gun/GunIntelligencePage').then((m) => ({ default: m.GunIntelligencePage })));
+const IBISPage = React.lazy(() => import('./features/ballistics/IBISPage').then((m) => ({ default: m.IBISPage })));
+const DVRiskPage = React.lazy(() => import('./features/dv/DVRiskPage').then((m) => ({ default: m.DVRiskPage })));
+const InterceptTranslatePage = React.lazy(() => import('./features/intercept/InterceptTranslatePage').then((m) => ({ default: m.InterceptTranslatePage })));
+const GeofencePage = React.lazy(() => import('./features/geofence/GeofencePage').then((m) => ({ default: m.GeofencePage })));
+const BlockchainEvidencePage = React.lazy(() => import('./features/blockchain/BlockchainEvidencePage').then((m) => ({ default: m.BlockchainEvidencePage })));
+const CaseTriagePage = React.lazy(() => import('./features/triage/CaseTriagePage').then((m) => ({ default: m.CaseTriagePage })));
+
 const LazyRouteFallback = (
   <div className="p-6 space-y-4">
     <SkeletonLoader variant="card" count={3} />
@@ -164,6 +186,30 @@ export function App() {
                 <Route path="/fir-archive" element={<FIRArchivePage />} />
                 <Route path="/archive" element={<Navigate to="/fir-archive" replace />} />
                 <Route path="/firarchive" element={<Navigate to="/fir-archive" replace />} />
+
+                {/* 20 International Police Intelligence & Analytics Features */}
+                <Route path="/intelligence-fusion" element={<IntelligenceFusionPage />} />
+                <Route path="/risk-scoring" element={<PersonRiskPage />} />
+                <Route path="/hotspot-forecast" element={<HotspotForecastPage />} />
+                <Route path="/sna-gangs" element={<SNAGangsPage />} />
+                <Route path="/rtcc" element={<RTCCDashboard />} />
+                <Route path="/route-analysis" element={<RouteAnalysisPage />} />
+                <Route path="/near-repeat" element={<NearRepeatAlertsPage />} />
+                <Route path="/forensics-db" element={<ForensicDBPage />} />
+                <Route path="/interpol-sync" element={<InterpolSyncPage />} />
+                <Route path="/sar-analytics" element={<SARAnalyticsPage />} />
+                <Route path="/threat-assessment" element={<ThreatAssessmentPage />} />
+                <Route path="/osint-monitor" element={<OSINTMonitorPage />} />
+                <Route path="/imsi-catcher" element={<IMSICatcherPage />} />
+                <Route path="/gun-intelligence" element={<GunIntelligencePage />} />
+                <Route path="/ibis" element={<IBISPage />} />
+                <Route path="/ibis-ballistics" element={<Navigate to="/ibis" replace />} />
+                <Route path="/ballistics" element={<Navigate to="/ibis" replace />} />
+                <Route path="/dv-risk" element={<DVRiskPage />} />
+                <Route path="/intercept-translate" element={<InterceptTranslatePage />} />
+                <Route path="/geofence" element={<GeofencePage />} />
+                <Route path="/blockchain-evidence" element={<BlockchainEvidencePage />} />
+                <Route path="/case-triage" element={<CaseTriagePage />} />
                 <Route path="/about" element={<AboutPlatformPage />} />
                 <Route path="/benchmarks" element={<Navigate to="/about" replace />} />
                 <Route path="/settings" element={<SettingsPage />} />

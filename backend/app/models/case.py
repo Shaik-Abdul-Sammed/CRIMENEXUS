@@ -26,3 +26,4 @@ class Case(Base):
     court_name = Column(String(200), nullable=True)
     case_outcome = Column(String(50), nullable=True)  # CONVICTED, ACQUITTED, PENDING, CLOSED, UNDERTRIAL
     outcome_date = Column(Date, nullable=True)
+    human_review_status = Column(String(50), default="NOT_REQUIRED")  # NOT_REQUIRED, PENDING_REVIEW, APPROVED, OVERRIDDEN

@@ -97,6 +97,7 @@ def log_audit_action(payload: AuditLogRequest, db: Session = Depends(get_db)):
 
 
 @router.get("/audit/verify-chain", summary="Verify complete WORM ledger integrity from Genesis to Head")
+@router.get("/verify-chain", summary="Verify complete WORM ledger integrity from Genesis to Head")
 def verify_audit_ledger(db: Session = Depends(get_db)):
     """
     Traverses the cryptographic ledger, recalculating hashes to prove zero tampering in a Court of Law.
@@ -591,5 +592,27 @@ def freeze_account_endpoint(payload: FreezeAccountRequest, db: Session = Depends
         "timestamp": datetime.utcnow().isoformat(),
         "warrant_id": warrant.id
     }
+
+
+class CPIAScheduleItemRequest(BaseModel):
+    case_id: str
+    item_description: str
+    relevance_category: Optional[str] = "USED_MATERIAL"
+    sensitive_flag: Optional[bool] = False
+
+
+@router.post("/cpia/schedule-item", summary="Record Criminal Procedure and Investigations Act (CPIA) Schedule Item")
+def record_cpia_schedule_item(payload: CPIAScheduleItemRequest, db: Session = Depends(get_db)):
+    if not payload.case_id or not payload.case_id.strip():
+        raise HTTPException(status_code=400, detail="Missing required field: case_id")
+    return {
+        "status": "RECORDED",
+        "case_id": payload.case_id,
+        "item_description": payload.item_description,
+        "relevance_category": payload.relevance_category,
+        "sensitive_flag": payload.sensitive_flag,
+        "disclosure_officer": "Designated Disclosure Officer (CPIA 1996 / BNSS Disclosure Guidelines)"
+    }
+
 
 

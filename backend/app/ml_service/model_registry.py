@@ -9,6 +9,10 @@ from app.ml_service.anomaly_detector import get_anomaly_detector
 from app.ml_service.explainable_risk import get_risk_model
 from app.ml_service.semantic_search import get_mo_semantic_search_engine
 from app.ml_service.rag_engine import get_rag_engine
+from app.ml_service.hotspot_forecaster import get_hotspot_forecaster
+from app.services.graph.route_analyzer import get_route_analyzer
+from app.ml_service.ballistics_matcher import get_ballistics_matcher
+from app.ml_service.intercept_translator import get_intercept_translator
 
 logger = logging.getLogger("crimenexus.ml.registry")
 
@@ -22,7 +26,11 @@ MODEL_VERSIONS: Dict[str, str] = {
     "financial_anomaly_detector": "v1.0.0",
     "explainable_risk_model": "v1.0.0",
     "mo_semantic_search": "v1.0.0",
-    "rag_draft_engine": "v1.0.0"
+    "rag_draft_engine": "v1.0.0",
+    "hotspot_xgb": "v2.0.0",
+    "route_voronoi": "v2.0.0",
+    "ballistics_resnet": "v2.0.0",
+    "intercept_whisper": "v2.0.0"
 }
 
 
@@ -156,11 +164,70 @@ class MLModelRegistry:
             logger.error("[MLOps] Failed to initialize RAG Draft Engine: %s", exc)
             self.models_status["rag_draft_engine"] = {"name": "RAGDraftEngine", "status": "ERROR"}
 
+        # 7. Hotspot Forecaster (XGBoost)
+        try:
+            hf = get_hotspot_forecaster()
+            self.models_status["hotspot_xgb"] = {
+                "name": "HotspotXGBForecaster",
+                "version": MODEL_VERSIONS["hotspot_xgb"],
+                "status": "READY",
+                "model_engine": hf.engine,
+                "type": "Spatio-Temporal Crime Forecasting"
+            }
+        except Exception as exc:
+            logger.error("[MLOps] Failed to initialize Hotspot Forecaster: %s", exc)
+            self.models_status["hotspot_xgb"] = {"name": "HotspotXGBForecaster", "status": "ERROR"}
+
+        # 8. Route Analyzer (Scipy Voronoi)
+        try:
+            ra = get_route_analyzer()
+            self.models_status["route_voronoi"] = {
+                "name": "RouteAnalyzerVoronoi",
+                "version": MODEL_VERSIONS["route_voronoi"],
+                "status": "READY",
+                "model_engine": ra.engine,
+                "type": "Crime Pattern Theory Spatial Voronoi Partitioning"
+            }
+        except Exception as exc:
+            logger.error("[MLOps] Failed to initialize Route Analyzer: %s", exc)
+            self.models_status["route_voronoi"] = {"name": "RouteAnalyzerVoronoi", "status": "ERROR"}
+
+        # 9. Ballistics Matcher (ResNet18)
+        try:
+            bm = get_ballistics_matcher()
+            self.models_status["ballistics_resnet"] = {
+                "name": "BallisticsResNetMatcher",
+                "version": MODEL_VERSIONS["ballistics_resnet"],
+                "status": "READY",
+                "model_engine": bm.engine,
+                "type": "Deep Visual 512-dim Cartridge Feature Extraction"
+            }
+        except Exception as exc:
+            logger.error("[MLOps] Failed to initialize Ballistics Matcher: %s", exc)
+            self.models_status["ballistics_resnet"] = {"name": "BallisticsResNetMatcher", "status": "ERROR"}
+
+        # 10. Intercept Translator (Whisper)
+        try:
+            it = get_intercept_translator()
+            self.models_status["intercept_whisper"] = {
+                "name": "InterceptWhisperTranslator",
+                "version": MODEL_VERSIONS["intercept_whisper"],
+                "status": "READY",
+                "model_engine": it.engine,
+                "type": "Automatic Speech Recognition & Underworld Argot Decoding"
+            }
+        except Exception as exc:
+            logger.error("[MLOps] Failed to initialize Intercept Translator: %s", exc)
+            self.models_status["intercept_whisper"] = {"name": "InterceptWhisperTranslator", "status": "ERROR"}
+
         self.initialized = True
         logger.info("[MLOps] All CRIMENEXUS ML Models initialized and cached in memory.")
         return self.models_status
 
     def get_status(self) -> Dict[str, Any]:
+        if not self.initialized or not self.models_status:
+            self.warm_up_all_models()
+
         # Memory usage via resource getrusage
         try:
             mem_kb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss

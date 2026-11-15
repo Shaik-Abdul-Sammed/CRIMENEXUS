@@ -29,6 +29,7 @@ RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
 FROM python:3.10-slim-bookworm AS runner
 
 WORKDIR /app
+ENV PYTHONPATH=/app
 
 # Install minimal runtime shared libraries only
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -44,8 +45,14 @@ COPY --from=builder /wheels /wheels
 RUN pip install --no-cache-dir --no-index --find-links=/wheels /wheels/* && \
     rm -rf /wheels
 
-# Copy application source
+# Copy application source explicitly including tests
+COPY app/ /app/app/
+COPY tests/ /app/tests/
+COPY scripts/ /app/scripts/
+COPY requirements.txt /app/
 COPY . .
+
+RUN ls -la /app/tests/ || echo "WARNING: tests directory not copied"
 
 EXPOSE 8000
 

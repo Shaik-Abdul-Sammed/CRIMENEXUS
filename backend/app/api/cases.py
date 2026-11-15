@@ -203,6 +203,17 @@ def export_evidence_bundle(
     )
 
 
+@router.get("/search", summary="Search Cases by Query Keyword")
+def search_cases(q: Optional[str] = Query("", description="Search query string"), db: Session = Depends(get_db)):
+    if not q or not q.strip():
+        return {"query": q, "results_count": 0, "results": []}
+    term = f"%{q.strip()}%"
+    results = db.query(Case).filter(
+        (Case.case_number.ilike(term)) | (Case.title.ilike(term)) | (Case.description.ilike(term))
+    ).limit(50).all()
+    return {"query": q, "results_count": len(results), "results": results}
+
+
 @router.get("/{case_id}", response_model=CaseResponse)
 def get_case(case_id: int, db: Session = Depends(get_db)):
     case = db.query(Case).filter(Case.id == case_id).first()

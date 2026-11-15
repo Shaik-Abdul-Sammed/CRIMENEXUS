@@ -7,7 +7,10 @@ import redis
 
 logger = logging.getLogger("crimenexus.streaming.redis")
 
-REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+REDIS_URL = os.getenv("REDIS_URL")
+if not REDIS_URL:
+    REDIS_URL = "redis://redis:6379/0" if os.path.exists("/.dockerenv") else "redis://localhost:6379/0"
+
 STREAM_TOPICS = [
     "bank.transactions",
     "telecom.cdr",
@@ -30,10 +33,11 @@ streaming_telemetry: Dict[str, Any] = {
 }
 
 _redis_client: Optional[redis.Redis] = None
+_last_warn_time: float = 0.0
 
 
 def get_redis_client() -> Optional[redis.Redis]:
-    global _redis_client
+    global _redis_client, _last_warn_time
     if _redis_client is not None:
         return _redis_client
     try:
@@ -44,7 +48,11 @@ def get_redis_client() -> Optional[redis.Redis]:
         logger.info("Connected to Redis Streaming Engine at %s", REDIS_URL)
         return _redis_client
     except Exception as exc:
-        logger.warning("Redis stream connection failed (%s). Operating in-memory mode.", exc)
+        now = time.time()
+        # Rate-limit the warning to at most once per 60 seconds to prevent log flooding
+        if now - _last_warn_time > 60:
+            logger.warning("Redis stream connection failed (%s). Operating in-memory mode.", exc)
+            _last_warn_time = now
         return None
 
 
