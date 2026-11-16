@@ -139,3 +139,23 @@ def sync_transaction(payload: SyncTransactionRequest):
         "amount": payload.amount
     }
 
+
+def get_sar_benchmarks():
+    """
+    Standardized validation scenarios for Suspicious Activity Reporting (PMLA 2002).
+    """
+    return [
+        {
+            "id": "BENCH-PMLA-01",
+            "name": "Mule Structuring Cascade (₹49,000 PAN Avoidance)",
+            "risk_level": "HIGH",
+            "statutory_section": "Sec 12 PMLA 2002"
+        },
+        {
+            "id": "BENCH-PMLA-02",
+            "name": "Hawala Rapid Layering (< 15 min multi-bank hops)",
+            "risk_level": "CRITICAL",
+            "statutory_section": "Sec 3 & 4 PMLA 2002"
+        }
+    ]
+

@@ -261,7 +261,6 @@ export function App() {
                 <Route path="/graph-analysis" element={<Navigate to="/network-graph" replace />} />
                 <Route path="/link-prediction" element={<Navigate to="/network-graph" replace />} />
                 <Route path="/syndicate-tree" element={<Navigate to="/network-graph" replace />} />
-                <Route path="/geofence" element={<Navigate to="/map" replace />} />
                 <Route path="/spatial" element={<Navigate to="/map" replace />} />
                 <Route path="/gis" element={<Navigate to="/map" replace />} />
                 <Route path="/satellite-trace" element={<Navigate to="/map" replace />} />

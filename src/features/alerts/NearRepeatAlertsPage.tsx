@@ -84,7 +84,7 @@ export const NearRepeatAlertsPage: React.FC = () => {
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <BellRing className="w-7 h-7 text-amber-500 shrink-0" />
-            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground overflow-hidden text-ellipsis whitespace-nowrap" title="Near-Repeat Victimization Prediction & Prophylactic Alerts">
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground leading-tight break-words" title="Near-Repeat Victimization Prediction & Prophylactic Alerts">
               Near-Repeat Victimization Prediction & Alerts
             </h1>
           </div>

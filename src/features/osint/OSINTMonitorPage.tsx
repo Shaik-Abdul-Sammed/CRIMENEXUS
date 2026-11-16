@@ -79,7 +79,7 @@ export const OSINTMonitorPage: React.FC = () => {
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <Eye className="w-7 h-7 text-sky-400 shrink-0" />
-            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground overflow-hidden text-ellipsis whitespace-nowrap" title="Open Source Intelligence (OSINT) & Dark Web Monitor">
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground leading-tight break-words" title="Open Source Intelligence (OSINT) & Dark Web Monitor">
               Open Source Intelligence (OSINT) & Dark Web Monitor
             </h1>
           </div>

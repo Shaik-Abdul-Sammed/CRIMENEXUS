@@ -128,7 +128,12 @@
   }
 }
 
-/* Custom Scrollbar */
+/* Cross-Platform Custom Scrollbar (Firefox + WebKit) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(51, 65, 85, 0.8) rgba(15, 23, 42, 0.6);
+}
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;

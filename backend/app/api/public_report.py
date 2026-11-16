@@ -53,7 +53,9 @@ def _generate_report_number(db: Session) -> str:
 class ReviewReportRequest(BaseModel):
     action: str = Field(..., description="Action: 'VERIFY', 'REJECT', or 'REQUEST_INFO'")
     review_notes: Optional[str] = Field(None, description="Detailed officer review notes")
+    notes: Optional[str] = Field(None, description="Alias for review notes")
     rejection_reason: Optional[str] = Field(None, description="Predefined rejection reason if rejected")
+    statutory_sections: Optional[List[str]] = Field(default_factory=list, description="Sections applied")
 
 
 class BulkReviewRequest(BaseModel):
@@ -64,7 +66,7 @@ class BulkReviewRequest(BaseModel):
 
 # ── Public Endpoints ──────────────────────────────────────────────────────────
 
-@router.post("/public/report/submit", status_code=status.HTTP_201_CREATED, summary="Citizen Public Crime Report Submission")
+@router.post("/public/report/submit", status_code=status.HTTP_200_OK, summary="Citizen Public Crime Report Submission")
 async def submit_public_report(
     crime_type: str = Form(..., description="Crime category e.g. Theft, Assault, Cyber Fraud, Harassment, Vandalism, Other"),
     description: str = Form(..., description="Description of the crime incident (max 1000 characters)"),
@@ -77,6 +79,7 @@ async def submit_public_report(
     reporter_email: Optional[str] = Form(None, description="Contact email address"),
     is_anonymous: bool = Form(False, description="Whether to submit anonymously"),
     evidence: List[UploadFile] = File([], description="Up to 5 evidence files (JPG, PNG, MP4, PDF) max 20MB each"),
+    files: Optional[List[UploadFile]] = File(None, description="Alternative files field name"),
     db: Session = Depends(get_db)
 ):
     """
@@ -84,10 +87,11 @@ async def submit_public_report(
     Runs AI Satellite Analyzer, calculates nearest police station (Haversine),
     and hashes all evidence with SHA-256.
     """
-    if len(evidence) > MAX_FILES_ALLOWED:
+    upload_candidates = [f for f in (evidence or []) + (files or []) if hasattr(f, "filename") and f.filename]
+    if len(upload_candidates) > MAX_FILES_ALLOWED:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Maximum {MAX_FILES_ALLOWED} proof files allowed per submission. Received {len(evidence)}."
+            detail=f"Maximum {MAX_FILES_ALLOWED} proof files allowed per submission. Received {len(upload_candidates)}."
         )
 
     # 1. Validate Incident Timestamp
@@ -118,7 +122,7 @@ async def submit_public_report(
     evidence_records: List[Dict[str, Any]] = []
 
     # 2. Process and Hash Uploaded Proof Files
-    for file in evidence:
+    for file in upload_candidates:
         if not file.filename:
             continue
 
@@ -225,10 +229,21 @@ async def submit_public_report(
         "report_number": report_number,
         "submission_id": report_record.id,
         "nearest_station_name": nearest_stn_name,
+        "nearest_station": {
+            "name": nearest_stn_name,
+            "distance_km": distance_km
+        },
         "distance_to_station_km": distance_km,
         "ai_verdict": ai_result["verdict"],
         "satellite_verified": ai_result["verified"],
         "satellite_confidence": ai_result["confidence"],
+        "satellite_verdict": {
+            "verified": ai_result["verified"],
+            "confidence": ai_result["confidence"],
+            "verdict": ai_result["verdict"],
+            "layers": ai_result["layers"]
+        },
+        "tracking_url": f"/citizen/track?id={report_record.report_number}",
         "layers": ai_result["layers"],
         "submitted_at": report_record.submitted_at.isoformat() if report_record.submitted_at else datetime.datetime.utcnow().isoformat()
     }
@@ -292,6 +307,14 @@ def get_public_report_status(report_number: str, db: Session = Depends(get_db)):
         }
     ]
 
+    current_milestone_index = 1
+    if report.status in ["CONVERTED", "ACTION_TAKEN"]:
+        current_milestone_index = 4
+    elif report.status in ["VERIFIED", "REJECTED"]:
+        current_milestone_index = 3
+    elif report.nearest_station_name:
+        current_milestone_index = 1
+
     return {
         "report_number": report.report_number,
         "crime_type": report.crime_type,
@@ -303,7 +326,15 @@ def get_public_report_status(report_number: str, db: Session = Depends(get_db)):
         "nearest_station_name": report.nearest_station_name,
         "rejection_reason": report.rejection_reason,
         "review_notes": report.review_notes,
+        "police_review": {
+            "status": report.status,
+            "reviewed_by": report.reviewed_by_officer,
+            "reviewed_at": report.reviewed_at.isoformat() if report.reviewed_at else None,
+            "notes": report.review_notes,
+            "rejection_reason": report.rejection_reason
+        },
         "converted_case_id": report.converted_case_id,
+        "current_milestone_index": current_milestone_index,
         "timeline_stages": stages
     }
 
@@ -423,16 +454,17 @@ def review_public_report(
     act = payload.action.upper()
     now = datetime.datetime.utcnow()
 
+    effective_notes = payload.notes or payload.review_notes
     if act == "VERIFY":
         report.status = "VERIFIED"
-        report.review_notes = payload.review_notes or "Evidence verified by Investigating Officer."
+        report.review_notes = effective_notes or "Evidence verified by Investigating Officer."
     elif act == "REJECT":
         report.status = "REJECTED"
         report.rejection_reason = payload.rejection_reason or "Insufficient Evidence"
-        report.review_notes = payload.review_notes or "Rejected upon police station examination."
+        report.review_notes = effective_notes or "Rejected upon police station examination."
     elif act == "REQUEST_INFO":
         report.status = "UNDER_REVIEW"
-        report.review_notes = payload.review_notes or "Supplementary evidence requested from reporter."
+        report.review_notes = effective_notes or "Supplementary evidence requested from reporter."
     else:
         raise HTTPException(
             status_code=400,
@@ -458,7 +490,15 @@ def review_public_report(
         "report_number": report.report_number,
         "new_status": report.status,
         "reviewed_by": report.reviewed_by_officer,
-        "reviewed_at": report.reviewed_at.isoformat()
+        "report": {
+            "id": report.id,
+            "report_number": report.report_number,
+            "status": report.status,
+            "review_notes": report.review_notes,
+            "rejection_reason": report.rejection_reason,
+            "reviewed_by": report.reviewed_by_officer,
+            "reviewed_at": report.reviewed_at.isoformat() if report.reviewed_at else None
+        }
     }
 
 
@@ -483,8 +523,8 @@ def convert_report_to_fir(
             "report_number": report.report_number
         }
 
-    # Generate official Case Number
-    new_case_number = f"FIR-2026-PUB-{str(report.id).zfill(4)}"
+    # Generate official Case Number conforming to standard police case numbering
+    new_case_number = f"CASE-2026-PUB-{str(report.id).zfill(4)}"
 
     # 1. Create Case in PostgreSQL
     new_case = Case(
@@ -547,7 +587,9 @@ def convert_report_to_fir(
         "case_number": new_case_number,
         "case_id": new_case.id,
         "report_number": report.report_number,
-        "converted_at": report.reviewed_at.isoformat()
+        "converted_at": report.reviewed_at.isoformat(),
+        "neo4j_linked": True,
+        "report_status": "CONVERTED"
     }
 
 
@@ -571,6 +613,9 @@ def bulk_review_reports(
         elif act == "REJECT":
             r.status = "REJECTED"
             r.rejection_reason = payload.notes or "Bulk Rejected upon station triage."
+        elif act in ["UNDER_REVIEW", "REQUEST_INFO"]:
+            r.status = "UNDER_REVIEW"
+            r.review_notes = payload.notes or "Under field review."
         r.reviewed_by_officer = f"{current_user.username} ({current_user.role})"
         r.reviewed_at = now
         updated.append(r.report_number)
@@ -579,6 +624,7 @@ def bulk_review_reports(
     return {
         "status": "SUCCESS",
         "count_updated": len(updated),
+        "updated_count": len(updated),
         "action": act,
         "report_numbers": updated
     }

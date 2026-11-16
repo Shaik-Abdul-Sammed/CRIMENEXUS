@@ -99,7 +99,7 @@ export const GeofencePage: React.FC = () => {
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <MapPin className="w-7 h-7 text-sky-400 shrink-0" />
-            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground overflow-hidden text-ellipsis whitespace-nowrap" title="Constitutional Reverse-Location Geofence Warrants">
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground leading-tight break-words" title="Constitutional Reverse-Location Geofence Warrants">
               Reverse-Location Geofence Warrants
             </h1>
           </div>

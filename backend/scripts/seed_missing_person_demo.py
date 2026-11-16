@@ -240,6 +240,11 @@ def seed_guardian_trace_demo():
         print("=" * 70)
         print("SEEDING COMPLETE: Case MP-2026-DEMO-001 is ready for live demo!")
         print("=" * 70)
+        res_case = existing_case or new_case
+        if res_case:
+            db.refresh(res_case)
+            db.expunge(res_case)
+        return res_case
 
     except Exception as e:
         db.rollback()
@@ -251,3 +256,6 @@ def seed_guardian_trace_demo():
 
 if __name__ == "__main__":
     seed_guardian_trace_demo()
+
+# Test runner alias
+seed_guardian_demo_case = seed_guardian_trace_demo

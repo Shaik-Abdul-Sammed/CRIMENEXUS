@@ -119,6 +119,7 @@ export function GuardianTracePage() {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
+  const demoMarkerRef = useRef<maplibregl.Marker | null>(null);
 
   // Demo Player State
   const [demoPlayerOpen, setDemoPlayerOpen] = useState<boolean>(false);
@@ -1894,14 +1895,41 @@ export function GuardianTracePage() {
       {/* Interactive 90-Second Demo Player Overlay */}
       <DemoPlayer
         isOpen={demoPlayerOpen}
-        onClose={() => setDemoPlayerOpen(false)}
+        onClose={() => {
+          setDemoPlayerOpen(false);
+          if (demoMarkerRef.current) {
+            demoMarkerRef.current.remove();
+            demoMarkerRef.current = null;
+          }
+        }}
         onStepChange={(step) => {
           if (mapRef.current) {
             mapRef.current.flyTo({
               center: step.coords,
-              zoom: 14,
-              duration: 700,
+              zoom: 14.5,
+              duration: 800,
             });
+
+            if (demoMarkerRef.current) {
+              demoMarkerRef.current.setLngLat(step.coords);
+            } else {
+              const pinEl = document.createElement('div');
+              pinEl.className = 'relative flex items-center justify-center cursor-pointer z-50';
+              pinEl.innerHTML = `
+                <div style="position: relative; display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 4px 16px rgba(16,185,129,0.95));">
+                  <div style="background: linear-gradient(135deg, #065f46, #10b981); border: 2px solid #6ee7b7; border-radius: 9999px; padding: 3px 9px; display: flex; align-items: center; gap: 5px; box-shadow: 0 0 20px rgba(16,185,129,0.95); white-space: nowrap; color: white; font-family: monospace; font-weight: 900; font-size: 11px;">
+                    <span>📍 DEMO LOCUS</span>
+                  </div>
+                  <div style="width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid #10b981;"></div>
+                  <div style="width: 20px; height: 20px; border-radius: 9999px; background: #10b981; border: 2px solid #ffffff; box-shadow: 0 0 14px #34d399; margin-top: -3px; display: flex; align-items: center; justify-content: center; color: black; font-size: 10px; font-weight: bold;">
+                    🎯
+                  </div>
+                </div>
+              `;
+              demoMarkerRef.current = new maplibregl.Marker({ element: pinEl })
+                .setLngLat(step.coords)
+                .addTo(mapRef.current);
+            }
           }
           const targetHour = Math.min(18, Math.max(1, Math.round((step.second / 180) * 18)));
           setTimelineHour(targetHour);

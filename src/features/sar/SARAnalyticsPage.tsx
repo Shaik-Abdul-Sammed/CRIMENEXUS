@@ -106,7 +106,7 @@ export const SARAnalyticsPage: React.FC = () => {
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <Banknote className="w-7 h-7 text-emerald-400 shrink-0" />
-            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground overflow-hidden text-ellipsis whitespace-nowrap" title="Automated Suspicious Activity Reporting (FIU-IND PMLA)">
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground leading-tight break-words" title="Automated Suspicious Activity Reporting (FIU-IND PMLA)">
               Automated Suspicious Activity Reporting (FIU-IND SAR)
             </h1>
           </div>

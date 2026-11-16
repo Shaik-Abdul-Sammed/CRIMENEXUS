@@ -1798,13 +1798,9 @@ export function MapIntelligencePage() {
     crimEl.title = 'ACTIVE TARGET: [CRIM-03] Vikram Malhotra (Black Scorpio TS 09 AB 1234)';
     crimEl.innerHTML = `
       <div style="position: relative; display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 4px 16px rgba(220,38,38,0.95));">
-        <div style="background: linear-gradient(135deg, #991b1b, #ef4444); border: 2px solid #f87171; border-radius: 18px; padding: 4px 10px 4px 6px; display: flex; align-items: center; gap: 6px; box-shadow: 0 0 24px rgba(239,68,68,0.95); white-space: nowrap;">
-          <span style="background: #450a0a; color: #ffffff; font-family: monospace; font-weight: 900; font-size: 11px; padding: 2px 6px; border-radius: 8px; border: 1.5px solid #fca5a5;">CRIM-03</span>
-          <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150" alt="Vikram Malhotra" style="width: 24px; height: 24px; border-radius: 9999px; object-fit: cover; border: 2px solid #ffffff;" />
-          <div style="text-align: left; line-height: 1.15;">
-            <div style="font-size: 10.5px; font-weight: 900; color: #ffffff;">🚨 V. MALHOTRA (CRIMINAL)</div>
-            <div style="font-size: 8.5px; color: #fecaca; font-family: monospace; font-weight: 700;">WANTED • TS 09 AB 1234 (118 km/h)</div>
-          </div>
+        <div style="background: linear-gradient(135deg, #991b1b, #ef4444); border: 2px solid #f87171; border-radius: 20px; padding: 3px 8px 3px 4px; display: flex; align-items: center; gap: 6px; box-shadow: 0 0 24px rgba(239,68,68,0.95); white-space: nowrap;">
+          <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150" alt="Vikram Malhotra" style="width: 26px; height: 26px; border-radius: 9999px; object-fit: cover; border: 2px solid #ffffff;" />
+          <span style="background: #450a0a; color: #ffffff; font-family: monospace; font-weight: 900; font-size: 11px; padding: 2px 8px; border-radius: 12px; border: 1.5px solid #fca5a5; letter-spacing: 0.5px;">CRIM-03</span>
         </div>
         <div style="width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid #dc2626;"></div>
         <div style="position: relative; width: 32px; height: 32px; margin-top: -3px; display: flex; align-items: center; justify-content: center;">
@@ -1900,13 +1896,9 @@ export function MapIntelligencePage() {
         el.title = `POLICE STATION [${policeId}]: ${cleanStationName} • Officer: ${officerName} (${callsign})`;
         el.innerHTML = `
           <div style="position: relative; display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 4px 14px rgba(2,132,199,0.85));">
-            <div style="background: linear-gradient(135deg, #0369a1, #0284c7); border: 2px solid #38bdf8; border-radius: 18px; padding: 4px 9px 4px 5px; display: flex; align-items: center; gap: 6px; box-shadow: 0 0 20px rgba(56,189,248,0.85); white-space: nowrap;">
-              <span style="background: #082f49; color: #ffffff; font-family: monospace; font-weight: 900; font-size: 11px; padding: 2px 6px; border-radius: 8px; border: 1.5px solid #38bdf8;">${policeId}</span>
-              <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150" alt="${officerName}" style="width: 22px; height: 22px; border-radius: 9999px; object-fit: cover; border: 2px solid #ffffff;" />
-              <div style="text-align: left; line-height: 1.15;">
-                <div style="font-size: 10px; font-weight: 900; color: #ffffff;">👮 ${cleanStationName}</div>
-                <div style="font-size: 8px; color: #bae6fd; font-family: monospace; font-weight: 600;">${officerName} (${callsign})</div>
-              </div>
+            <div style="background: linear-gradient(135deg, #0369a1, #0284c7); border: 2px solid #38bdf8; border-radius: 20px; padding: 3px 8px 3px 4px; display: flex; align-items: center; gap: 6px; box-shadow: 0 0 20px rgba(56,189,248,0.85); white-space: nowrap;">
+              <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150" alt="${officerName}" style="width: 24px; height: 24px; border-radius: 9999px; object-fit: cover; border: 2px solid #ffffff;" />
+              <span style="background: #082f49; color: #ffffff; font-family: monospace; font-weight: 900; font-size: 11px; padding: 2px 8px; border-radius: 12px; border: 1.5px solid #38bdf8; letter-spacing: 0.5px;">${policeId}</span>
             </div>
             <div style="width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid #0284c7;"></div>
             <div style="width: 14px; height: 14px; border-radius: 9999px; background: #0284c7; border: 2px solid #ffffff; box-shadow: 0 0 10px #38bdf8; margin-top: -3px; display: flex; align-items: center; justify-content: center; color: white; font-size: 8px;">
@@ -2812,10 +2804,10 @@ export function MapIntelligencePage() {
                   mapRef.current.flyTo({ center: [77.5510, 28.1402], zoom: 14.5, duration: 800 });
                 }
               }}
-              className="px-2 py-0.5 rounded-full bg-red-950/80 border border-red-500 text-red-200 text-[10px] font-mono font-bold hover:bg-red-900 transition-colors shrink-0 flex items-center gap-1 shadow-sm"
+              className="px-2.5 py-0.5 rounded-full bg-red-950/80 border border-red-500 text-red-200 text-[10px] font-mono font-bold hover:bg-red-900 transition-colors shrink-0 flex items-center gap-1 shadow-sm"
               title="Target CRIM-03: Vikram Malhotra (Scorpio TS 09 AB 1234)"
             >
-              <span>🎯 CRIM-03: Vikram (118 km/h)</span>
+              <span>🎯 CRIM-03</span>
             </button>
             {OSM_POLICE_STATIONS.map((stn) => (
               <button
@@ -2826,10 +2818,10 @@ export function MapIntelligencePage() {
                     mapRef.current.flyTo({ center: [stn.longitude, stn.latitude], zoom: 14.2, duration: 800 });
                   }
                 }}
-                className="px-2 py-0.5 rounded-full bg-sky-950/60 border border-sky-500/40 text-sky-200 text-[10px] font-mono hover:bg-sky-900 transition-colors shrink-0 flex items-center gap-1"
+                className="px-2.5 py-0.5 rounded-full bg-sky-950/60 border border-sky-500/40 text-sky-200 text-[10px] font-mono hover:bg-sky-900 transition-colors shrink-0 flex items-center gap-1"
                 title={`Center map on ${stn.policeId}: ${stn.name} (${stn.officer})`}
               >
-                <span>🚔 {stn.policeId}: {stn.shortName}</span>
+                <span>🚔 {stn.policeId}</span>
               </button>
             ))}
           </div>

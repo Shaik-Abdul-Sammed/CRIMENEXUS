@@ -37,12 +37,20 @@ import {
   ExternalLink,
   Info,
   Layers,
+  Search,
+  Loader2,
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { sound } from '../../utils/soundEffects';
 import { useToast } from '../../components/ui/Toast';
 import { OmniTraceSatelliteModal } from '../../components/common/OmniTraceSatelliteModal';
+import {
+  getNearestPoliceStation,
+  geocodeAddressQuery,
+  reverseGeocodeCoordinates,
+  GeocodedPlace,
+} from '../../services/geocodingService';
 import {
   detectLanguage,
   checkSpamAndUnwanted,
@@ -113,37 +121,6 @@ export const SAMPLE_EVIDENCE_GALLERY = [
     locationName: 'Lajpat Nagar Central Market Promenade Block 4',
   },
 ];
-
-// Jurisdictional Police Stations for Instant Citizen-to-Thana Haversine Proximity
-const DELHI_POLICE_STATIONS = [
-  { name: 'Connaught Place Police Station', shortName: 'Connaught Place PS', lat: 28.6328, lon: 77.2197, district: 'New Delhi', callsign: 'POL-03' },
-  { name: 'Karol Bagh Police Station', shortName: 'Karol Bagh PS', lat: 28.6520, lon: 77.1900, district: 'Central Delhi', callsign: 'POL-01' },
-  { name: 'Parliament Street Police Station', shortName: 'Parliament St PS', lat: 28.6234, lon: 77.2110, district: 'New Delhi', callsign: 'POL-04' },
-  { name: 'Hauz Khas Police Station', shortName: 'Hauz Khas PS', lat: 28.5494, lon: 77.2001, district: 'South Delhi', callsign: 'POL-05' },
-  { name: 'Noida Sector 20 Police Station', shortName: 'Noida Sec 20 PS', lat: 28.5815, lon: 77.3308, district: 'Gautam Buddha Nagar', callsign: 'POL-02' },
-  { name: 'Noida Sector 62 Police Station', shortName: 'Noida Sec 62 PS', lat: 28.6280, lon: 77.3649, district: 'Gautam Buddha Nagar', callsign: 'POL-06' },
-  { name: 'Gurugram DLF Phase 1 Police Station', shortName: 'Gurugram DLF-1 PS', lat: 28.4795, lon: 77.0980, district: 'Gurugram', callsign: 'POL-08' },
-  { name: 'Yamuna Expressway Jewar Police Station', shortName: 'Jewar PS', lat: 28.1285, lon: 77.5562, district: 'Yamuna Authority', callsign: 'POL-09' },
-];
-
-function getNearestPoliceStation(lat: number, lon: number) {
-  let nearest = DELHI_POLICE_STATIONS[0];
-  let minDistance = Infinity;
-  for (const stn of DELHI_POLICE_STATIONS) {
-    const dLat = ((stn.lat - lat) * Math.PI) / 180;
-    const dLon = ((stn.lon - lon) * Math.PI) / 180;
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((lat * Math.PI) / 180) * Math.cos((stn.lat * Math.PI) / 180) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const dist = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    if (dist < minDistance) {
-      minDistance = dist;
-      nearest = stn;
-    }
-  }
-  return { station: nearest, distanceKm: minDistance.toFixed(1) };
-}
 
 interface EvidencePreview {
   file: File;
@@ -281,6 +258,12 @@ export function CitizenReportingPage() {
   const [isLocating, setIsLocating] = useState<boolean>(false);
   const [locationSuccess, setLocationSuccess] = useState<boolean>(false);
 
+  // Address Geocoding & Autocomplete State
+  const [isSearchingAddress, setIsSearchingAddress] = useState<boolean>(false);
+  const [addressSuggestions, setAddressSuggestions] = useState<GeocodedPlace[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   // Submission State
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submissionResult, setSubmissionResult] = useState<{
@@ -379,26 +362,37 @@ export function CitizenReportingPage() {
       .setLngLat([initialLng, initialLat])
       .addTo(map);
 
+    const onLocationPinned = async (newLat: number, newLng: number) => {
+      setLatitude(newLat);
+      setLongitude(newLng);
+      setLocationSuccess(true);
+      sound.playClickSound();
+
+      const stn = getNearestPoliceStation(newLat, newLng);
+      setLocationName(`Pin: ${newLat.toFixed(4)}°N, ${newLng.toFixed(4)}°E (Near ${stn.station.shortName})`);
+
+      try {
+        const readable = await reverseGeocodeCoordinates(newLat, newLng);
+        if (readable) {
+          setLocationName(readable);
+        }
+      } catch (err) {
+        // preserve readable fallback
+      }
+    };
+
     marker.on('dragend', () => {
       const lngLat = marker.getLngLat();
       const newLat = Number(lngLat.lat.toFixed(5));
       const newLng = Number(lngLat.lng.toFixed(5));
-      setLatitude(newLat);
-      setLongitude(newLng);
-      const stn = getNearestPoliceStation(newLat, newLng);
-      setLocationName(`Incident Pin: Near ${stn.station.shortName} (${newLat}°N, ${newLng}°E)`);
-      sound.playClickSound();
+      onLocationPinned(newLat, newLng);
     });
 
     map.on('click', (e: any) => {
       marker.setLngLat(e.lngLat);
       const newLat = Number(e.lngLat.lat.toFixed(5));
       const newLng = Number(e.lngLat.lng.toFixed(5));
-      setLatitude(newLat);
-      setLongitude(newLng);
-      const stn = getNearestPoliceStation(newLat, newLng);
-      setLocationName(`Incident Pin: Near ${stn.station.shortName} (${newLat}°N, ${newLng}°E)`);
-      sound.playClickSound();
+      onLocationPinned(newLat, newLng);
     });
 
     mapRef.current = map;
@@ -420,6 +414,99 @@ export function CitizenReportingPage() {
     if (mapRef.current && markerRef.current) {
       markerRef.current.setLngLat([lon, lat]);
       mapRef.current.flyTo({ center: [lon, lat], zoom: 14.5, duration: 800 });
+    }
+    const stn = getNearestPoliceStation(lat, lon);
+    toast.info(`Snapped locus to ${name}. Nearest jurisdiction: ${stn.station.shortName} (${stn.distanceKm} km).`);
+  };
+
+  // Address Geocoding Input Handler with Debounced Autocomplete
+  const handleAddressInputChange = (val: string) => {
+    setLocationName(val);
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (!val || val.trim().length < 2) {
+      setAddressSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    searchTimeoutRef.current = setTimeout(async () => {
+      const places = await geocodeAddressQuery(val);
+      setAddressSuggestions(places);
+      setShowSuggestions(places.length > 0);
+
+      // Auto-snap map camera and pin if user types a known city or matching location
+      const cleanVal = val.trim().toLowerCase();
+      const directMatch = places.find(
+        (p) =>
+          p.shortName.toLowerCase() === cleanVal ||
+          cleanVal.includes(p.shortName.toLowerCase()) ||
+          p.fullName.toLowerCase().startsWith(cleanVal)
+      );
+      if (directMatch) {
+        setLatitude(directMatch.lat);
+        setLongitude(directMatch.lon);
+        setLocationSuccess(true);
+        if (markerRef.current) {
+          markerRef.current.setLngLat([directMatch.lon, directMatch.lat]);
+        }
+        if (mapRef.current) {
+          mapRef.current.flyTo({ center: [directMatch.lon, directMatch.lat], zoom: 14.5, duration: 800 });
+        }
+      }
+    }, 250);
+  };
+
+  // Select Geocoded Place (from search autocomplete or quick pick)
+  const handleSelectGeocodedPlace = (place: GeocodedPlace) => {
+    sound.playClickSound();
+    setLatitude(place.lat);
+    setLongitude(place.lon);
+    setLocationName(place.fullName || place.shortName);
+    setLocationSuccess(true);
+    setShowSuggestions(false);
+
+    if (markerRef.current) {
+      markerRef.current.setLngLat([place.lon, place.lat]);
+    }
+    if (mapRef.current) {
+      mapRef.current.flyTo({ center: [place.lon, place.lat], zoom: 14.5, duration: 800 });
+    }
+
+    const stn = getNearestPoliceStation(place.lat, place.lon);
+    toast.success(
+      `Located "${place.shortName}". Nearest jurisdiction: ${stn.station.shortName} (${stn.distanceKm} km away).`,
+      'Scene Snapped'
+    );
+  };
+
+  // Direct Address Search & Snap Trigger (Enter key or Locate button)
+  const handleLocateAddress = async (queryText?: string) => {
+    const q = (queryText !== undefined ? queryText : locationName).trim();
+    if (!q) {
+      toast.info('Please enter an address, city, or landmark to search.', 'Address Required');
+      return;
+    }
+
+    setIsSearchingAddress(true);
+    sound.playRadarPing();
+
+    try {
+      const results = await geocodeAddressQuery(q);
+      if (results && results.length > 0) {
+        handleSelectGeocodedPlace(results[0]);
+      } else {
+        toast.warning(
+          `Could not locate "${q}". Try entering a city name (e.g. Kurnool, Tirupati, Delhi, Hyderabad) or click on the map.`,
+          'Location Not Found'
+        );
+      }
+    } catch (err) {
+      toast.error('Search failed. Please try clicking directly on the map to pin the crime scene.');
+    } finally {
+      setIsSearchingAddress(false);
     }
   };
 
@@ -506,25 +593,38 @@ export function CitizenReportingPage() {
     { id: 'Vandalism', label: lang === 'hi' ? 'सार्वजनिक संपत्ति क्षति' : 'Public Property Damage', icon: '🔨', desc: 'PDPP Act / Sec 324 BNS • Destruction of transit, civic infrastructure' },
   ];
 
-  // Robust Geolocation Handler with Multi-Tier Fallback (Browser GPS -> IP Geolocation -> Regional NCR Locus)
+  // Robust Geolocation Handler with Real Device GPS & Address Reverse Geocoding
   const handleUseMyLocation = () => {
     sound.playRadarPing();
     setIsLocating(true);
     let hasResolved = false;
 
-    const applyLocationSuccess = (lat: number, lng: number, sourceLabel: string) => {
+    const applyLocationSuccess = async (lat: number, lng: number, sourceLabel: string) => {
       if (hasResolved) return;
       hasResolved = true;
       setLatitude(lat);
       setLongitude(lng);
-      const stn = getNearestPoliceStation(lat, lng);
-      setLocationName(`GPS Locus: Near ${stn.station.shortName} (${lat}°N, ${lng}°E)`);
-      setIsLocating(false);
       setLocationSuccess(true);
+      setIsLocating(false);
+
       if (mapRef.current && markerRef.current) {
         markerRef.current.setLngLat([lng, lat]);
-        mapRef.current.flyTo({ center: [lng, lat], zoom: 14.5, duration: 800 });
+        mapRef.current.flyTo({ center: [lng, lat], zoom: 15, duration: 800 });
       }
+
+      const stn = getNearestPoliceStation(lat, lng);
+      setLocationName(`GPS Locus: Near ${stn.station.shortName} (${lat}°N, ${lng}°E)`);
+
+      // Reverse geocode coordinates to get detailed local address/district
+      try {
+        const readable = await reverseGeocodeCoordinates(lat, lng);
+        if (readable) {
+          setLocationName(readable);
+        }
+      } catch (err) {
+        // preserve readable fallback
+      }
+
       sound.playSuccessChime();
       toast.success(
         `Location locked (${lat}° N, ${lng}° E) via ${sourceLabel}. Nearest jurisdiction: ${stn.station.shortName} (${stn.distanceKm} km).`,
@@ -532,36 +632,31 @@ export function CitizenReportingPage() {
       );
     };
 
-    const fallbackToRegionalLocus = () => {
-      if (hasResolved) return;
-      applyLocationSuccess(28.6328, 77.2197, 'Central Delhi Police Headquarters Sovereign Locus');
-    };
-
-    // Fast-fail safety timer: If browser GPS hardware or permission dialog takes >2000ms, immediately fall back
-    const safetyTimer = setTimeout(() => {
-      if (!hasResolved) {
-        fallbackToRegionalLocus();
-      }
-    }, 2000);
-
     if (typeof navigator !== 'undefined' && 'geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          clearTimeout(safetyTimer);
           const lat = Number(pos.coords.latitude.toFixed(5));
           const lng = Number(pos.coords.longitude.toFixed(5));
           applyLocationSuccess(lat, lng, 'Browser Hardware GPS');
         },
         (err) => {
-          clearTimeout(safetyTimer);
-          console.warn('Browser geolocation error, using network fallback:', err.message);
-          fallbackToRegionalLocus();
+          setIsLocating(false);
+          console.warn('Browser geolocation error:', err.message);
+          let errMsg = 'Could not acquire GPS position. Please check location permissions or type your city/area above.';
+          if (err.code === 1) {
+            errMsg = 'Location permission was denied. Please allow location access in your browser or type your location in the search box.';
+          } else if (err.code === 2) {
+            errMsg = 'GPS signal unavailable. Please type your city name (e.g. Kurnool, Tirupati, Hyderabad) in the search box.';
+          } else if (err.code === 3) {
+            errMsg = 'GPS request timed out. Please type your location in the search box.';
+          }
+          toast.warning(errMsg, 'GPS Acquisition Notice');
         },
-        { timeout: 2000, enableHighAccuracy: false, maximumAge: 60000 }
+        { timeout: 10000, enableHighAccuracy: true, maximumAge: 30000 }
       );
     } else {
-      clearTimeout(safetyTimer);
-      fallbackToRegionalLocus();
+      setIsLocating(false);
+      toast.warning('Geolocation is not supported by your browser. Please search for your location above.', 'GPS Unsupported');
     }
   };
 
@@ -577,7 +672,7 @@ export function CitizenReportingPage() {
       markerRef.current.setLngLat([landmark.lng, landmark.lat]);
       mapRef.current.flyTo({ center: [landmark.lng, landmark.lat], zoom: 15, duration: 800 });
     }
-    toast.info(`Snapped locus to ${landmark.name}. Nearest jurisdiction: ${stn.station.shortName}.`);
+    toast.info(`Snapped locus to ${landmark.name}. Nearest jurisdiction: ${stn.station.shortName} (${stn.distanceKm} km).`);
   };
 
   // One-Click Sample Evidence Selector & Structural Geolocation Runner
@@ -1399,30 +1494,101 @@ export function CitizenReportingPage() {
                   <span>{t.step2}</span>
                 </label>
 
-                {/* GPS Location Button */}
+                {/* GPS Location & Live Address Search Bar */}
                 <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center">
                   <button
                     type="button"
                     onClick={handleUseMyLocation}
                     disabled={isLocating}
-                    className={`h-11 px-4 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all ${
+                    className={`h-11 px-4 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all shrink-0 ${
                       locationSuccess
                         ? 'bg-emerald-950/60 border-emerald-500 text-emerald-300'
                         : 'bg-primary/10 border-primary/40 text-primary hover:bg-primary/20'
                     }`}
+                    title="Acquire live GPS coordinates from your device"
                   >
                     <Navigation className={`h-4 w-4 ${isLocating ? 'animate-spin' : ''}`} />
                     <span>{isLocating ? t.locating : locationSuccess ? t.locSuccess : t.useMyLocation}</span>
                   </button>
 
-                  <div className="flex-1">
-                    <input
-                      type="text"
-                      value={locationName}
-                      onChange={(e) => setLocationName(e.target.value)}
-                      placeholder="e.g. Connaught Place Block B / Metro Gate 3"
-                      className="w-full h-11 px-3.5 rounded-xl border border-border bg-slate-950 text-xs text-white placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                    />
+                  <div className="flex-1 relative">
+                    <div className="relative flex items-center">
+                      <Search className="absolute left-3.5 h-4 w-4 text-cyan-400 pointer-events-none" />
+                      <input
+                        type="text"
+                        value={locationName}
+                        onChange={(e) => handleAddressInputChange(e.target.value)}
+                        onFocus={() => {
+                          if (addressSuggestions.length > 0) setShowSuggestions(true);
+                        }}
+                        onBlur={() => {
+                          // Small delay to allow click on dropdown option
+                          setTimeout(() => setShowSuggestions(false), 200);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleLocateAddress();
+                          }
+                        }}
+                        placeholder="Type city or address (e.g. Kurnool, Tirupati, CP Delhi, Cyberabad) & press Enter"
+                        className="w-full h-11 pl-10 pr-24 rounded-xl border border-border bg-slate-950 text-xs text-white placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleLocateAddress()}
+                        disabled={isSearchingAddress || !locationName.trim()}
+                        className="absolute right-1.5 h-8 px-3 rounded-lg bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-md"
+                      >
+                        {isSearchingAddress ? (
+                          <>
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            <span>Locating...</span>
+                          </>
+                        ) : (
+                          <>
+                            <MapPin className="h-3.5 w-3.5" />
+                            <span>Locate</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                    {/* Autocomplete Suggestions Dropdown */}
+                    {showSuggestions && addressSuggestions.length > 0 && (
+                      <div
+                        className="absolute left-0 right-0 top-12 z-50 rounded-xl border border-cyan-500/40 bg-slate-950/95 shadow-2xl backdrop-blur-md overflow-hidden max-h-60 overflow-y-auto"
+                        onMouseDown={(e) => e.preventDefault()}
+                      >
+                        <div className="px-3 py-1.5 bg-slate-900 border-b border-slate-800 text-[10px] font-mono text-cyan-300 flex items-center justify-between">
+                          <span>Matching Places ({addressSuggestions.length})</span>
+                          <span className="text-slate-400">Click to snap pin</span>
+                        </div>
+                        {addressSuggestions.map((place, idx) => (
+                          <button
+                            key={`${place.shortName}-${idx}`}
+                            type="button"
+                            onClick={() => handleSelectGeocodedPlace(place)}
+                            className="w-full text-left px-3.5 py-2.5 hover:bg-slate-800/80 border-b border-slate-900 last:border-b-0 transition-colors flex items-start gap-2.5"
+                          >
+                            <MapPin className="h-4 w-4 text-cyan-400 mt-0.5 shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <div className="text-xs font-bold text-white truncate">
+                                {place.shortName}
+                              </div>
+                              <div className="text-[10px] text-muted-foreground truncate">
+                                {place.fullName}
+                              </div>
+                            </div>
+                            {place.state && (
+                              <span className="px-1.5 py-0.5 rounded bg-slate-800 text-[9px] font-mono text-slate-300 shrink-0">
+                                {place.state}
+                              </span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1430,11 +1596,12 @@ export function CitizenReportingPage() {
                 <div className="flex items-center gap-1.5 flex-wrap pt-0.5 text-xs">
                   <span className="text-[10px] text-muted-foreground font-mono">⚡ Hotspot Fast-Pick:</span>
                   {[
-                    { name: 'Rajiv Chowk Metro Gate 3 (CP)', lat: 28.6328, lng: 77.2197 },
-                    { name: 'Lajpat Nagar Central Market Block 4', lat: 28.5665, lng: 77.2431 },
-                    { name: 'Chandni Chowk Lahori Gate Arch', lat: 28.6562, lng: 77.2410 },
-                    { name: 'Hauz Khas Historical Reservoir', lat: 28.5528, lng: 77.1945 },
-                    { name: 'Yamuna Expressway Jewar Toll Plaza', lat: 28.1884, lng: 77.5513 },
+                    { name: 'Kurnool City Center (AP)', lat: 15.8281, lng: 78.0373 },
+                    { name: 'Tirupati Temple City (AP)', lat: 13.6288, lng: 79.4192 },
+                    { name: 'Cyberabad IT Corridor (TS)', lat: 17.4401, lng: 78.3489 },
+                    { name: 'Rajiv Chowk CP (Delhi)', lat: 28.6328, lng: 77.2197 },
+                    { name: 'Bengaluru Central (KA)', lat: 12.9716, lng: 77.5946 },
+                    { name: 'Mumbai BKC (MH)', lat: 19.0657, lng: 72.8687 },
                   ].map((lm) => (
                     <button
                       key={lm.name}
@@ -1442,7 +1609,7 @@ export function CitizenReportingPage() {
                       onClick={() => handleSelectQuickLandmark(lm)}
                       className="px-2 py-0.5 rounded-md border border-slate-700 bg-slate-950 hover:bg-slate-800 text-[10px] text-cyan-300 font-mono transition-all hover:border-cyan-400"
                     >
-                      📍 {lm.name.split(' (')[0].split(' Central')[0].split(' Lahori')[0].split(' Historical')[0].split(' Jewar')[0]}
+                      📍 {lm.name}
                     </button>
                   ))}
                 </div>
@@ -1506,12 +1673,12 @@ export function CitizenReportingPage() {
                   <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
                     <span className="text-[10px] text-muted-foreground font-mono shrink-0">Quick Loci:</span>
                     {[
-                      { name: 'Connaught Place Block B', lat: 28.6328, lon: 77.2197 },
-                      { name: 'Karol Bagh Metro Gate 2', lat: 28.6520, lon: 77.1900 },
-                      { name: 'Sector 62 Noida Cyber Hub', lat: 28.6280, lon: 77.3649 },
-                      { name: 'Gurugram DLF CyberCity', lat: 28.4950, lon: 77.0878 },
-                      { name: 'Hauz Khas Village', lat: 28.5494, lon: 77.2001 },
-                      { name: 'Jewar Yamuna Toll KM 48', lat: 28.1402, lon: 77.5510 },
+                      { name: 'Kurnool I-Town PS (AP)', lat: 15.8281, lon: 78.0373 },
+                      { name: 'Tirupati Alipiri (AP)', lat: 13.6288, lon: 79.4192 },
+                      { name: 'Cyberabad Hitec City (TS)', lat: 17.4401, lon: 78.3489 },
+                      { name: 'Connaught Place Block B (DL)', lat: 28.6328, lon: 77.2197 },
+                      { name: 'Bengaluru Cyber Hub (KA)', lat: 12.9716, lon: 77.5946 },
+                      { name: 'Mumbai BKC (MH)', lat: 19.0657, lon: 72.8687 },
                     ].map((loc) => (
                       <button
                         key={loc.name}
@@ -1520,7 +1687,7 @@ export function CitizenReportingPage() {
                         className="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700/60 text-[10px] font-mono shrink-0 transition-colors flex items-center gap-1"
                       >
                         <span>📍</span>
-                        <span>{loc.name.split(' ')[0]} {loc.name.split(' ')[1]}</span>
+                        <span>{loc.name}</span>
                       </button>
                     ))}
                   </div>

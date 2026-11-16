@@ -185,9 +185,9 @@ class FinancialSmurfingAnomalyDetector:
         """
         t0 = time.perf_counter()
         if getattr(self, "use_heuristic_fallback", False) or self.model is None:
-            # Heuristic Rule: >3 transactions under 50k
-            under_50k = [t for t in transactions if float(t.get("amount", 0)) < 50000.0]
-            is_anomaly = len(under_50k) >= 3
+            # Heuristic Rule: clusters of deposits near the ₹50,000 PMLA threshold (35k - 49.9k)
+            smurf_txs = [t for t in transactions if 35000.0 <= float(t.get("amount", 0)) < 50000.0]
+            is_anomaly = len(smurf_txs) >= 2
             return {
                 "beneficiary_account": beneficiary_account,
                 "anomaly_score": 0.94 if is_anomaly else 0.15,
@@ -195,7 +195,7 @@ class FinancialSmurfingAnomalyDetector:
                 "high_priority_alert": is_anomaly,
                 "model_used": "heuristic",
                 "inference_latency_ms": 0.2,
-                "feature_metrics": {"tx_count": len(transactions), "under_50k_count": len(under_50k)}
+                "feature_metrics": {"tx_count": len(transactions), "smurf_tx_count": len(smurf_txs)}
             }
 
         if not transactions:
@@ -260,7 +260,8 @@ class FinancialSmurfingAnomalyDetector:
         if structuring_flag or threshold_dodging or autoencoder_anomaly:
             anomaly_score = float(np.clip(base_score + 0.40, 0.86, 0.99))
         else:
-            anomaly_score = float(np.clip(base_score, 0.05, 0.75))
+            # Routine merchant and utility purchases without structuring should remain low risk (< 0.50)
+            anomaly_score = float(np.clip(base_score * 0.5, 0.05, 0.45))
 
         anomaly_score = round(anomaly_score, 4)
         is_high_priority = anomaly_score >= 0.85
@@ -269,10 +270,19 @@ class FinancialSmurfingAnomalyDetector:
         # Trigger garbage collection to release working memory
         gc.collect()
 
+        # Legitimate routine purchases far from the PMLA threshold should never be flagged as smurfing outliers
+        is_outlier_flag = (
+            is_high_priority
+            or structuring_flag
+            or threshold_dodging
+            or (raw_prediction == -1 and dist_to_threshold <= 20000.0 and avg_amount >= 15000.0)
+            or autoencoder_anomaly
+        )
+
         return {
             "beneficiary_account": beneficiary_account,
             "anomaly_score": anomaly_score,
-            "is_outlier": raw_prediction == -1 or is_high_priority or autoencoder_anomaly,
+            "is_outlier": is_outlier_flag,
             "high_priority_alert": is_high_priority,
             "model_used": model_used,
             "reconstruction_error": round(recon_loss, 4),
@@ -304,6 +314,9 @@ class FinancialSmurfingAnomalyDetector:
 
 # Singleton model instance
 _detector_instance = None
+
+# Backward compatibility alias for legacy test fixtures
+AnomalyDetector = FinancialSmurfingAnomalyDetector
 
 def get_anomaly_detector() -> FinancialSmurfingAnomalyDetector:
     global _detector_instance

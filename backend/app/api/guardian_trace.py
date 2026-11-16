@@ -50,6 +50,10 @@ class CaseCreateJSON(BaseModel):
     station_id: Optional[str] = "PS-CENTRAL"
 
 
+# Backward compatibility alias for test suite
+CaseCreateRequest = CaseCreateJSON
+
+
 class BroadcastRequest(BaseModel):
     radius_km: Optional[float] = 5.0
     channels: Optional[List[str]] = ["CITIZEN_SENTINEL", "SMS_FLASH", "PCR_RADIO"]
@@ -65,15 +69,20 @@ class CloseCaseRequest(BaseModel):
 def validate_coordinates(lat: float, lon: float):
     if lat is None or lon is None:
         raise HTTPException(status_code=400, detail="Latitude and longitude are mandatory")
-    if not (-90.0 <= lat <= 90.0) or not (-180.0 <= lon <= 180.0):
+    if not (-90.0 <= lat <= 90.0):
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid geospatial coordinates: lat={lat}, lon={lon}. Latitude must be [-90, 90], longitude [-180, 180].",
+            detail=f"Invalid latitude: {lat}. Latitude must be between -90 and 90.",
+        )
+    if not (-180.0 <= lon <= 180.0):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid longitude: {lon}. Longitude must be between -180 and 180.",
         )
 
 
 @router.post("/case/create", status_code=status.HTTP_201_CREATED)
-async def create_missing_person_case(
+def create_missing_person_case(
     payload: Optional[CaseCreateJSON] = None,
     # Form data support for direct multipart photo uploads
     person_name: Optional[str] = Form(None),
@@ -167,12 +176,12 @@ async def create_missing_person_case(
         prio = "HIGH"
 
     # Handle file upload if present
-    if photo:
+    if photo and hasattr(photo, "filename") and photo.filename:
         upload_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../data/uploads/photos"))
         os.makedirs(upload_dir, exist_ok=True)
         safe_filename = f"mp_{uuid.uuid4().hex[:12]}_{photo.filename}"
         dest_path = os.path.join(upload_dir, safe_filename)
-        content = await photo.read()
+        content = photo.file.read() if hasattr(photo, "file") else photo.read()
         with open(dest_path, "wb") as f:
             f.write(content)
         photo_path = f"/data/uploads/photos/{safe_filename}"

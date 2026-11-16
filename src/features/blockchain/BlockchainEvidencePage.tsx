@@ -73,7 +73,7 @@ export const BlockchainEvidencePage: React.FC = () => {
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <Link2 className="w-7 h-7 text-emerald-400 shrink-0" />
-            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground overflow-hidden text-ellipsis whitespace-nowrap" title="Blockchain Evidence Chain-of-Custody & BSA Certificate">
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground leading-tight break-words" title="Blockchain Evidence Chain-of-Custody & BSA Certificate">
               Blockchain Evidence Chain-of-Custody (BSA 2023 Sec 63)
             </h1>
           </div>

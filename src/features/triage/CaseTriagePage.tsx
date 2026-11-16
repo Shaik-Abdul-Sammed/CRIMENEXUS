@@ -118,7 +118,7 @@ export const CaseTriagePage: React.FC = () => {
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <ListFilter className="w-7 h-7 text-indigo-400 shrink-0" />
-            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground overflow-hidden text-ellipsis whitespace-nowrap" title="AI-Powered Case Solvability & Priority Triage Engine">
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground leading-tight break-words" title="AI-Powered Case Solvability & Priority Triage Engine">
               AI-Powered Case Solvability & Priority Triage
             </h1>
           </div>

@@ -34,7 +34,7 @@ def create_jpeg_with_gps(lat: float, lon: float) -> bytes:
         t1 = (abs_v - d) * 60
         m = int(t1)
         s = (t1 - m) * 60
-        return ((d, 1), (m, 1), (int(s * 100), 100))
+        return (float(d), float(m), float(s))
 
     gps_ifd = {
         1: "N" if lat >= 0 else "S",

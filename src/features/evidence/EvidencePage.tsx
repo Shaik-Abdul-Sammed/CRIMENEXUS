@@ -705,41 +705,45 @@ export function EvidencePage() {
         )}
       </div>
 
-      {/* Forensic Test Exhibits Sandbox (Solves User Request: 2 dummy files for forensic test) */}
+      {/* Forensic Test Exhibits Sandbox (CFSL Standardized Test Samples) */}
       <div className="p-4 rounded-xl border border-primary/30 bg-card/90 shadow-md space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/40 pb-2.5">
-          <div className="flex items-center gap-2">
-            <span className="p-1 rounded bg-amber-500/20 text-amber-400 font-mono text-xs font-bold">BENCHMARK LAB</span>
-            <h3 className="text-xs font-extrabold text-foreground uppercase tracking-wider">
-              Forensic Test Exhibits Sandbox (One-Click Ingestion & Verification)
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="p-1 px-1.5 rounded bg-amber-500/20 text-amber-400 font-mono text-[10px] font-bold uppercase tracking-wider shrink-0">
+              CFSL FORENSIC LAB
+            </span>
+            <h3 className="text-xs font-extrabold text-foreground uppercase tracking-wider truncate">
+              Standardized Forensic Exhibits (One-Click Ingestion & Verification)
             </h3>
           </div>
-          <span className="text-[11px] text-muted-foreground">
+          <span className="text-[11px] text-muted-foreground shrink-0">
             Standardized legal test exhibits ready for automated parsing & BSA Sec 63 certificate preview
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-1">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-1">
           {/* Dummy File 1: Telecom CDR */}
-          <div className="p-3 rounded-lg border border-border/60 bg-background/60 hover:border-amber-500/50 transition-all flex flex-col justify-between space-y-2">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded bg-amber-500/10 text-amber-400">
+          <div className="p-3.5 rounded-lg border border-border/60 bg-background/60 hover:border-amber-500/50 transition-all flex flex-col justify-between space-y-3 min-w-0 shadow-sm">
+            <div className="flex items-start justify-between gap-3 min-w-0">
+              <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                <div className="p-2 rounded bg-amber-500/10 text-amber-400 shrink-0 mt-0.5">
                   <PhoneCall className="h-4 w-4" />
                 </div>
-                <div>
-                  <h4 className="text-xs font-bold text-foreground">forensic_telecom_cdr_sample.csv</h4>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                <div className="min-w-0 flex-1">
+                  <h4 className="text-xs font-mono font-bold text-foreground truncate" title="forensic_telecom_cdr_sample.csv">
+                    forensic_telecom_cdr_sample.csv
+                  </h4>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
                     Telecom CDR Dump: 15 call detail records, cell tower lat/lon coordinates, and IMEI/IMSI identifiers.
                   </p>
                 </div>
               </div>
-              <Badge variant="outline" className="border-amber-500/40 text-amber-300 text-[10px] shrink-0">
+              <Badge variant="outline" className="border-amber-500/40 text-amber-300 text-[10px] shrink-0 font-mono">
                 CALL RECORD
               </Badge>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-1 border-t border-border/30">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/30 flex-wrap">
               <a
                 href="/samples/forensic_telecom_cdr_sample.csv"
                 download="forensic_telecom_cdr_sample.csv"
@@ -767,25 +771,27 @@ export function EvidencePage() {
           </div>
 
           {/* Dummy File 2: Bank Smurfing Ledger */}
-          <div className="p-3 rounded-lg border border-border/60 bg-background/60 hover:border-emerald-500/50 transition-all flex flex-col justify-between space-y-2">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded bg-emerald-500/10 text-emerald-400">
+          <div className="p-3.5 rounded-lg border border-border/60 bg-background/60 hover:border-emerald-500/50 transition-all flex flex-col justify-between space-y-3 min-w-0 shadow-sm">
+            <div className="flex items-start justify-between gap-3 min-w-0">
+              <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                <div className="p-2 rounded bg-emerald-500/10 text-emerald-400 shrink-0 mt-0.5">
                   <DollarSign className="h-4 w-4" />
                 </div>
-                <div>
-                  <h4 className="text-xs font-bold text-foreground">forensic_bank_smurfing_ledger.csv</h4>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                <div className="min-w-0 flex-1">
+                  <h4 className="text-xs font-mono font-bold text-foreground truncate" title="forensic_bank_smurfing_ledger.csv">
+                    forensic_bank_smurfing_ledger.csv
+                  </h4>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
                     HDFC Bank Mule Statement: 14 structured deposits under ₹50,000 within 48h triggering ML anomaly detection.
                   </p>
                 </div>
               </div>
-              <Badge variant="outline" className="border-emerald-500/40 text-emerald-300 text-[10px] shrink-0">
+              <Badge variant="outline" className="border-emerald-500/40 text-emerald-300 text-[10px] shrink-0 font-mono">
                 BANK LEDGER
               </Badge>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-1 border-t border-border/30">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/30 flex-wrap">
               <a
                 href="/samples/forensic_bank_smurfing_ledger.csv"
                 download="forensic_bank_smurfing_ledger.csv"

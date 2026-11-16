@@ -162,7 +162,7 @@ export function IntelligenceFusionPage() {
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight overflow-hidden text-ellipsis whitespace-nowrap" title="Conjunctive Analytic Platform">
+              <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-tight break-words" title="Conjunctive Analytic Platform">
                 Conjunctive Analytic Platform (CAP)
               </h1>
               <Badge className="bg-sky-500 text-black font-extrabold text-xs whitespace-nowrap shrink-0">

@@ -312,6 +312,7 @@ export function DemoPlayer({ isOpen, onClose, onStepChange }: DemoPlayerProps) {
   const [voiceDispatchEnabled, setVoiceDispatchEnabled] = useState<boolean>(true);
   const [dossierPreviewOpen, setDossierPreviewOpen] = useState<boolean>(false);
   const [satelliteModalOpen, setSatelliteModalOpen] = useState<boolean>(false);
+  const [isDocked, setIsDocked] = useState<boolean>(false);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -404,31 +405,132 @@ export function DemoPlayer({ isOpen, onClose, onStepChange }: DemoPlayerProps) {
     toast.info('Restarting 3-minute Guardian Trace rescue simulation.', 'Demo Replay');
   };
 
+  // Compact Docked Bottom HUD mode (leaves map completely visible while demo runs)
+  if (isDocked) {
+    return (
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[999999] w-[95%] max-w-4xl bg-slate-950/95 border-2 border-emerald-500/70 rounded-2xl shadow-2xl backdrop-blur-md p-3.5 space-y-2 animate-in slide-in-from-bottom-2 duration-200">
+        <div className="flex items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div
+              className="p-1.5 rounded-lg border flex items-center justify-center text-white shrink-0"
+              style={{ backgroundColor: `${currentStep.color}25`, borderColor: currentStep.color }}
+            >
+              <StepIcon className="h-4 w-4 animate-pulse" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="font-extrabold text-white text-xs truncate">
+                  Stage {activeStepIndex + 1}/{DEMO_STEPS.length}: {currentStep.title}
+                </span>
+                <span className="text-[10px] text-emerald-400 font-mono hidden md:inline shrink-0">
+                  📍 {currentStep.locationName}
+                </span>
+              </div>
+              <div className="text-[10px] text-slate-400 font-mono truncate">
+                Elapsed: {currentSecond}s / 180s • Signal: {currentStep.source} [{currentStep.coords[1].toFixed(4)}°N, {currentStep.coords[0].toFixed(4)}°E]
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Button
+              size="sm"
+              onClick={() => {
+                sound.playClickSound();
+                setIsPlaying(!isPlaying);
+              }}
+              className="h-8 px-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5"
+            >
+              {isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5 fill-current" />}
+              <span>{isPlaying ? 'Pause' : 'Play'}</span>
+            </Button>
+
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                sound.playClickSound();
+                setIsDocked(false);
+              }}
+              className="h-8 px-2.5 text-xs font-bold border-cyan-500/40 bg-cyan-950/30 text-cyan-300 hover:bg-cyan-900/50 flex items-center gap-1"
+              title="Expand Full Scenario Narrative & Milestones"
+            >
+              <Layers className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Full Screen</span>
+            </Button>
+
+            <button
+              onClick={() => {
+                sound.playClickSound();
+                onClose();
+              }}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              title="Close Demo"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Scrubber */}
+        <div
+          className="w-full h-2 bg-slate-800 rounded-full overflow-hidden relative cursor-pointer"
+          onClick={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const clickPos = (e.clientX - rect.left) / rect.width;
+            const targetSec = Math.round(clickPos * 180);
+            setCurrentSecond(targetSec);
+          }}
+        >
+          <div
+            className="h-full bg-gradient-to-r from-emerald-500 via-cyan-400 to-amber-400 transition-all duration-200 rounded-full"
+            style={{ width: `${(currentSecond / 180) * 100}%` }}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-[999999] bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-hidden animate-in fade-in duration-200">
       <div className="relative w-full max-w-5xl bg-slate-900 border-2 border-emerald-500/60 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* Top Header */}
-        <div className="p-4 border-b border-border/80 bg-slate-950 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-glow">
+        <div className="p-3.5 sm:p-4 border-b border-border/80 bg-slate-950 flex flex-wrap items-center justify-between gap-3 shrink-0">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-glow shrink-0">
               <Sparkles className="h-5 w-5 animate-spin-slow" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base sm:text-lg font-black text-white tracking-wide">
-                  Guardian Trace: 90-Second Operational Scenario / 3-Minute 20-Feature Live Rescue Demo
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-sm sm:text-base font-black text-white tracking-wide truncate">
+                  Guardian Trace • 20-Stage Child Rescue Simulation
                 </h2>
-                <Badge className="bg-emerald-600 text-white font-extrabold text-[10px] animate-pulse">
+                <Badge className="bg-emerald-600 text-white font-extrabold text-[9px] animate-pulse shrink-0">
                   SIMULATION ACTIVE
                 </Badge>
               </div>
-              <p className="text-xs text-slate-300">
+              <p className="text-[11px] text-slate-300 truncate">
                 Operation Aanya: Aanya Sharma (8) • 20 Real-Time Operational Intelligence Milestones (0s to 180s)
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 flex-wrap justify-end shrink-0">
+            {/* View on Map Dock Toggle */}
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                sound.playClickSound();
+                setIsDocked(true);
+              }}
+              className="h-8 text-xs font-bold border-emerald-500/50 bg-emerald-950/40 text-emerald-300 hover:bg-emerald-900/50 flex items-center gap-1.5"
+              title="Dock demo to bottom HUD to watch live map camera & pins"
+            >
+              <Navigation className="h-3.5 w-3.5 text-emerald-400" />
+              <span>View on Map</span>
+            </Button>
+
             {/* Synthetic Voice Dispatch Narration Toggle */}
             <Button
               size="sm"
@@ -452,12 +554,12 @@ export function DemoPlayer({ isOpen, onClose, onStepChange }: DemoPlayerProps) {
               {voiceDispatchEnabled ? (
                 <>
                   <Volume2 className="h-3.5 w-3.5 text-emerald-400 animate-pulse" />
-                  <span className="hidden sm:inline">Voice Dispatch: ON</span>
+                  <span className="hidden sm:inline">Voice: ON</span>
                 </>
               ) : (
                 <>
                   <VolumeX className="h-3.5 w-3.5 text-slate-400" />
-                  <span className="hidden sm:inline">Voice Dispatch: OFF</span>
+                  <span className="hidden sm:inline">Voice: OFF</span>
                 </>
               )}
             </Button>
@@ -488,7 +590,7 @@ export function DemoPlayer({ isOpen, onClose, onStepChange }: DemoPlayerProps) {
               title="Inspect OmniTrace Satellite Earth Observation Locus"
             >
               <Globe className="h-3.5 w-3.5 text-cyan-400" />
-              <span className="hidden sm:inline">OmniTrace Satellite</span>
+              <span className="hidden sm:inline">Satellite</span>
             </Button>
 
             <Button
@@ -498,7 +600,7 @@ export function DemoPlayer({ isOpen, onClose, onStepChange }: DemoPlayerProps) {
               className="h-8 text-xs font-bold border-slate-700 hover:bg-slate-800 text-slate-300 flex items-center gap-1.5"
             >
               <FastForward className="h-3.5 w-3.5" />
-              <span>Skip to End</span>
+              <span>Skip</span>
             </Button>
             <button
               onClick={() => {

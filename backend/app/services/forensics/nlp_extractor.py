@@ -85,21 +85,22 @@ def extract_entities_from_police_narrative(text: str) -> Dict[str, Any]:
         except Exception as exc:
             logger.error("Error executing spaCy NER model: %s", exc)
 
-    # If spaCy model did not yield entities (or model not yet trained), apply high-precision domain extractor
-    if not any(extracted.values()):
-        # VEHICLE (Standard Indian HSRP format e.g., TS 09 AB 1234, DL 01 C 4521)
-        vehicle_matches = re.findall(r'\b([A-Z]{2}\s?[0-9]{1,2}\s?[A-Z]{1,3}\s?[0-9]{4})\b', effective_text)
-        for v in vehicle_matches:
-            clean_v = re.sub(r'\s+', ' ', v).strip()
-            if clean_v not in extracted["VEHICLE"]:
-                extracted["VEHICLE"].append(clean_v)
+    # Extract vehicles with hyphen/space support for standard Indian HSRP plates (e.g. DL-01-AB-1234, TS 09 AB 1234)
+    vehicle_matches = re.findall(r'\b([A-Z]{2}[-\s]?[0-9]{1,2}[-\s]?[A-Z]{1,3}[-\s]?[0-9]{4})\b', effective_text)
+    for v in vehicle_matches:
+        clean_v = re.sub(r'[-\s]+', '-', v).strip()
+        if clean_v not in extracted["VEHICLE"]:
+            extracted["VEHICLE"].append(clean_v)
 
-        # PHONE (Indian 10-digit mobile with optional +91/0 prefix)
-        phone_matches = re.findall(r'(?:\+91[\s-]?)?[6-9][0-9]{4}[\s-]?[0-9]{5}', effective_text)
-        for p in phone_matches:
-            clean_p = p.strip()
-            if clean_p not in extracted["PHONE"]:
-                extracted["PHONE"].append(clean_p)
+    # PHONE (Indian 10-digit mobile with optional +91/0 prefix)
+    phone_matches = re.findall(r'(?:\+91[\s-]?)?[6-9][0-9]{4}[\s-]?[0-9]{5}', effective_text)
+    for p in phone_matches:
+        clean_p = p.strip()
+        if clean_p not in extracted["PHONE"]:
+            extracted["PHONE"].append(clean_p)
+
+    # If spaCy model did not yield entities (or model not yet trained), apply high-precision domain extractor
+    if not any(extracted.get(k) for k in ["SUSPECT", "VICTIM", "LOCATION"]):
 
         # LEGAL_SECTION (BNS 2023, BNSS, BSA, IPC, IT Act, PMLA)
         sec_matches = re.findall(
@@ -181,6 +182,13 @@ def extract_entities_from_police_narrative(text: str) -> Dict[str, Any]:
         "locations_identified": extracted["LOCATION"],
         "vehicles_identified": extracted["VEHICLE"],
         "phones_identified": extracted["PHONE"],
+        # Uppercase alias keys for test fixture compatibility
+        "SUSPECT": suspect_candidates,
+        "VICTIM": extracted["VICTIM"],
+        "LOCATION": extracted["LOCATION"],
+        "VEHICLE": extracted["VEHICLE"],
+        "PHONE": extracted["PHONE"],
+        "LEGAL_SECTION": extracted["LEGAL_SECTION"],
         "crime_category": crime_category,
         "detected_language": detected_lang,
         "translated_text": effective_text

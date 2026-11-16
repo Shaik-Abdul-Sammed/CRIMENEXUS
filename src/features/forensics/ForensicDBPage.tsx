@@ -97,7 +97,7 @@ export const ForensicDBPage: React.FC = () => {
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <Dna className="w-7 h-7 text-teal-400 shrink-0" />
-            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground overflow-hidden text-ellipsis whitespace-nowrap" title="Forensic Intelligence Database (CFSL/FSL Multi-Modal Linker)">
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground leading-tight break-words" title="Forensic Intelligence Database (CFSL/FSL Multi-Modal Linker)">
               Forensic Intelligence Database (Multi-Modal Linker)
             </h1>
           </div>

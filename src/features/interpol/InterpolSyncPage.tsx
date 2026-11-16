@@ -66,7 +66,7 @@ export const InterpolSyncPage: React.FC = () => {
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <Globe2 className="w-7 h-7 text-red-500 shrink-0" />
-            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground overflow-hidden text-ellipsis whitespace-nowrap" title="Interpol I-24/7 & Cross-Border Intelligence Sharing">
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground leading-tight break-words" title="Interpol I-24/7 & Cross-Border Intelligence Sharing">
               Interpol I-24/7 & Cross-Border Intelligence Sharing
             </h1>
           </div>

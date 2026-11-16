@@ -88,7 +88,7 @@ export const SNAGangsPage: React.FC = () => {
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <Share2 className="w-7 h-7 text-amber-400 shrink-0" />
-            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground overflow-hidden text-ellipsis whitespace-nowrap" title="Social Network Analysis for Gang Intervention">
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground leading-tight break-words" title="Social Network Analysis for Gang Intervention">
               Social Network Analysis (SNA) for Gang Intervention
             </h1>
           </div>

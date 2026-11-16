@@ -108,7 +108,7 @@ export const ThreatAssessmentPage: React.FC = () => {
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <Flame className="w-7 h-7 text-red-500 shrink-0" />
-            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground overflow-hidden text-ellipsis whitespace-nowrap" title="Threat Assessment & Targeted Violence Protocol (TRAP-18)">
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground leading-tight break-words" title="Threat Assessment & Targeted Violence Protocol (TRAP-18)">
               Threat Assessment & Targeted Violence Protocol (TRAP-18)
             </h1>
           </div>

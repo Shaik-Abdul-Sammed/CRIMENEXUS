@@ -129,7 +129,7 @@ export function HotspotForecastPage() {
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight overflow-hidden text-ellipsis whitespace-nowrap" title="Place-Based Micro-Hotspot Forecasting">
+              <h1 className="text-xl md:text-2xl font-bold tracking-tight text-white leading-tight break-words" title="Place-Based Micro-Hotspot Forecasting">
                 Place-Based Micro-Hotspot Forecasting (100m Grid)
               </h1>
               <Badge className="bg-amber-500 text-black font-extrabold text-xs whitespace-nowrap shrink-0">
@@ -168,6 +168,11 @@ export function HotspotForecastPage() {
               >
                 <option value="DELHI_CENTRAL">Delhi Central (Paharganj / NDLS)</option>
                 <option value="DELHI_SOUTH">Delhi South (Lajpat Nagar / GK)</option>
+                <option value="AP_KURNOOL">AP Police (Kurnool Urban / IIITDM)</option>
+                <option value="AP_TIRUPATI">AP Police (Tirupati Urban / Temple Corridor)</option>
+                <option value="TS_CYBERABAD">Telangana (Cyberabad / HITEC City Corridor)</option>
+                <option value="MH_MUMBAI">Mumbai Police (Zone 1 / Colaba-CST Hub)</option>
+                <option value="KA_BENGALURU">Bengaluru City (Central / Majestic Hub)</option>
               </select>
             </div>
 

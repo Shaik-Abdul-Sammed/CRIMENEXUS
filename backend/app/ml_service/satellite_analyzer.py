@@ -1,5 +1,6 @@
 import datetime
 import hashlib
+import io
 import logging
 import math
 import os
@@ -78,6 +79,17 @@ class SatelliteAnalyzer:
         Runs the 3-layer AI Satellite Verification Pipeline on a submitted crime report.
         """
         fraud_flags: List[str] = []
+        duplicate_detected = False
+
+        # Anti-fraud duplicate SHA-256 detection across provided files
+        seen_hashes = set()
+        for f in (evidence_files or []):
+            sha = f.get("sha256")
+            if sha:
+                if sha in seen_hashes or sha in KNOWN_STOCK_HASHES or sha in HISTORICAL_EVIDENCE_HASHES:
+                    duplicate_detected = True
+                    fraud_flags.append("Duplicate image SHA-256 matches existing repository or stock photo")
+                seen_hashes.add(sha)
 
         # Layer 1: EXIF and Digital Forensics
         exif_result = self._verify_exif(evidence_files, latitude, longitude)
@@ -98,9 +110,9 @@ class SatelliteAnalyzer:
             confidence = 0.0
             verdict = "UNVERIFIED_NO_EVIDENCE"
             verified = False
-        elif fraud_flags:
+        elif fraud_flags or duplicate_detected:
             confidence = 0.15
-            verdict = f"FLAGGED_SUSPICIOUS: {', '.join(fraud_flags)}"
+            verdict = f"FLAGGED_SUSPICIOUS: {', '.join(fraud_flags or ['DUPLICATE_FILE_DETECTED'])}"
             verified = False
         else:
             confidence = (
@@ -119,6 +131,11 @@ class SatelliteAnalyzer:
                 "exif": exif_result,
                 "timestamp": time_result,
                 "location_type": location_result
+            },
+            "anti_fraud": {
+                "duplicate_detected": duplicate_detected or any("DUPLICATE" in f.upper() or "STOCK" in f.upper() for f in fraud_flags),
+                "flags": ["DUPLICATE_FILE_DETECTED"] if duplicate_detected else [],
+                "fraud_flags": fraud_flags
             },
             "verdict": verdict,
             "fraud_flags": fraud_flags,
@@ -172,32 +189,42 @@ class SatelliteAnalyzer:
 
         for f in files:
             file_path = f.get("path")
-            if not file_path or not os.path.exists(file_path):
-                # Try direct buffer or simulated mock EXIF if provided in dict
-                if "mock_gps" in f:
-                    mg = f["mock_gps"]
-                    detected_lat, detected_lon = mg.get("lat"), mg.get("lon")
-                    exif_found = True
-                    detected_coords = {"lat": detected_lat, "lon": detected_lon}
-                    if reported_lat is not None and reported_lon is not None:
-                        dist = haversine_distance_km(reported_lat, reported_lon, detected_lat, detected_lon)
-                        best_distance = round(dist, 3)
-                        if dist <= 0.10:  # <= 100 meters
-                            best_score = 1.0
-                        elif dist <= 1.0:  # <= 1 km
-                            best_score = 0.70
-                        elif dist <= 5.0:  # <= 5 km
-                            best_score = 0.40
-                        else:
-                            best_score = 0.10
+            content = f.get("content")
+
+            # Try direct buffer or simulated mock EXIF if provided in dict
+            if "mock_gps" in f:
+                mg = f["mock_gps"]
+                detected_lat, detected_lon = mg.get("lat"), mg.get("lon")
+                exif_found = True
+                detected_coords = {"lat": detected_lat, "lon": detected_lon}
+                if reported_lat is not None and reported_lon is not None:
+                    dist = haversine_distance_km(reported_lat, reported_lon, detected_lat, detected_lon)
+                    best_distance = round(dist, 3)
+                    if dist <= 0.10:  # <= 100 meters
+                        best_score = 1.0
+                    elif dist <= 1.0:  # <= 1 km
+                        best_score = 0.70
+                    elif dist <= 5.0:  # <= 5 km
+                        best_score = 0.40
+                    else:
+                        best_score = 0.10
                 continue
 
             if not Image:
                 continue
 
+            img_source = None
+            if content and isinstance(content, (bytes, bytearray)):
+                img_source = io.BytesIO(content)
+            elif file_path and os.path.exists(file_path):
+                img_source = file_path
+
+            if not img_source:
+                continue
+
             # Attempt EXIF extraction from image
             try:
-                with Image.open(file_path) as img:
+                with Image.open(img_source) as img:
                     exif = img._getexif() if hasattr(img, '_getexif') else None
                     if not exif:
                         continue
@@ -235,7 +262,7 @@ class SatelliteAnalyzer:
                                 else:
                                     best_score = min(best_score, 0.15)
             except Exception as e:
-                logger.debug("EXIF parse exception on %s: %s", file_path, e)
+                logger.debug("EXIF parse exception: %s", e)
 
         notes = (
             f"EXIF GPS matched reported location within {best_distance} km."
@@ -243,9 +270,10 @@ class SatelliteAnalyzer:
             else "Image lacks embedded EXIF GPS tags (common when shared over WhatsApp/Telegram). Marked for secondary review."
         )
 
+        score_val = best_score if exif_found else 0.0
         return {
-            "score": best_score,
-            "status": "VERIFIED_WITH_GPS" if (exif_found and best_score >= 0.7) else "EXIF_STRIPPED_OR_ABSENT",
+            "score": score_val,
+            "status": "VERIFIED_WITH_GPS" if (exif_found and score_val >= 0.7) else "EXIF_STRIPPED_OR_ABSENT",
             "exif_found": exif_found,
             "detected_gps": detected_coords,
             "distance_km": best_distance,
@@ -296,6 +324,7 @@ class SatelliteAnalyzer:
             return {
                 "score": 0.0,
                 "status": "FUTURE_TIMESTAMP_REJECTED",
+                "reason": "FUTURE_TIMESTAMP_INVALID",
                 "fraud_flag": f"Reported incident timestamp ({dt.isoformat()}) is in the future",
                 "notes": "Incident occurred in the future. Rejected by Temporal AI validation."
             }

@@ -108,7 +108,7 @@ export function PersonRiskPage() {
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight overflow-hidden text-ellipsis whitespace-nowrap" title="Person-Based Predictive Risk Scoring">
+              <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-tight break-words" title="Person-Based Predictive Risk Scoring">
                 Person-Based Predictive Risk Scoring &amp; SHAP Explainer
               </h1>
               <Badge className="bg-red-600 text-white font-extrabold text-xs whitespace-nowrap shrink-0">

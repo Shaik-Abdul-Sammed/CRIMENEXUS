@@ -81,7 +81,7 @@ export const RouteAnalysisPage: React.FC = () => {
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <Route className="w-7 h-7 text-indigo-400 shrink-0" />
-            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground overflow-hidden text-ellipsis whitespace-nowrap" title="Crime Pattern Theory Route Analysis">
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground leading-tight break-words" title="Crime Pattern Theory Route Analysis">
               Crime Pattern Theory Route Analysis
             </h1>
           </div>
@@ -90,10 +90,22 @@ export const RouteAnalysisPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-3 shrink-0 flex-wrap">
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-muted-foreground font-semibold">Offender:</span>
+            <select
+              value={offenderId}
+              onChange={(e) => setOffenderId(e.target.value)}
+              className="bg-card border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary"
+            >
+              <option value="PERSON-VK-01">PERSON-VK-01 (Vikram Malhotra)</option>
+              <option value="PERSON-SK-02">PERSON-SK-02 (Sameer Khan)</option>
+              <option value="PERSON-AK-03">PERSON-AK-03 (Anil Kumar)</option>
+            </select>
+          </div>
           <button
             onClick={fetchAnalysis}
-            className="flex items-center gap-2 px-3 py-2 bg-card hover:bg-muted text-foreground rounded-lg text-sm font-medium border border-border transition-all whitespace-nowrap shrink-0"
+            className="flex items-center gap-2 px-3 py-1.5 bg-card hover:bg-muted text-foreground rounded-lg text-xs md:text-sm font-medium border border-border transition-all whitespace-nowrap shrink-0"
             title="Recalculate Corridors"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -105,7 +117,7 @@ export const RouteAnalysisPage: React.FC = () => {
       {error && (
         <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-sm flex items-center gap-3">
           <AlertCircle className="w-5 h-5 shrink-0" />
-          <span className="overflow-hidden text-ellipsis whitespace-nowrap">{error}</span>
+          <span className="break-words">{error}</span>
         </div>
       )}
 

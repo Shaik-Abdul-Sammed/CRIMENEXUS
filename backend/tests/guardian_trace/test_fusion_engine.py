@@ -8,7 +8,7 @@ def test_12_sightings_ordered_trajectory():
     
     # Generate 12 sightings in shuffled/unordered order
     raw_sightings = [
-        {"id": 1, "timestamp": (base_time + timedelta(hours=i * 1.5)).isoformat(), "lat": 28.5355 + i * 0.005, "lon": 77.3910 + i * 0.004, "source": "CCTV", "confidence": 0.8}
+        {"id": i, "timestamp": (base_time + timedelta(hours=i * 1.5)).isoformat(), "lat": 28.5355 + i * 0.005, "lon": 77.3910 + i * 0.004, "source": "CCTV", "confidence": 0.8}
         for i in range(12)
     ]
     # Reverse to test that fusion engine sorts chronologically

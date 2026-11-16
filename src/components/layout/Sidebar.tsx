@@ -16,6 +16,8 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  Brain,
   Shield,
   ShieldCheck,
   Flame,
@@ -63,11 +65,19 @@ interface NavItem {
   id: string;
 }
 
+interface NavSubCategory {
+  id: string;
+  title: string;
+  icon: React.ElementType;
+  items: NavItem[];
+}
+
 interface NavSection {
   id: string;
   title: string;
   shortTitle: string;
-  items: NavItem[];
+  items?: NavItem[];
+  subCategories?: NavSubCategory[];
 }
 
 export function Sidebar() {
@@ -118,6 +128,22 @@ export function Sidebar() {
       return location.pathname === '/dashboard' || location.pathname === '/';
     }
     return location.pathname.startsWith(path);
+  };
+
+  const isSubCategoryActive = (subCat: NavSubCategory) => {
+    return subCat.items.some((item) => isItemActive(item.path));
+  };
+
+  const [openSubCategories, setOpenSubCategories] = React.useState<Record<string, boolean>>({
+    'sub-predictive': true,
+  });
+
+  const toggleSubCategory = (subId: string) => {
+    sound.playClickSound();
+    setOpenSubCategories((prev) => ({
+      ...prev,
+      [subId]: !prev[subId],
+    }));
   };
 
   // Structured Sections Ordered Strictly by Real-World Investigative Usage
@@ -174,27 +200,62 @@ export function Sidebar() {
       id: 'sec-international-intel',
       title: 'INTERNATIONAL INTELLIGENCE & ANALYTICS',
       shortTitle: 'INTL',
-      items: [
-        { label: 'Intelligence Fusion', path: '/intelligence-fusion', icon: Network, badge: 'S-1', id: 'sidebar-intel-fusion' },
-        { label: 'Person Predictive Risk', path: '/risk-scoring', icon: Activity, badge: 'XGB', id: 'sidebar-person-risk' },
-        { label: 'Micro-Hotspot Forecast', path: '/hotspot-forecast', icon: Compass, badge: '100M', id: 'sidebar-hotspot-forecast' },
-        { label: 'SNA Gang Intervention', path: '/sna-gangs', icon: Zap, badge: 'CUTS', id: 'sidebar-sna-gangs' },
-        { label: 'Real-Time Crime Center', path: '/rtcc', icon: Radio, badge: 'RTCC', id: 'sidebar-rtcc' },
-        { label: 'Route Pattern Theory', path: '/route-analysis', icon: Route, badge: 'S-2', id: 'sidebar-route-analysis' },
-        { label: 'Near-Repeat Alerts', path: '/near-repeat', icon: BellRing, badge: 'KNOX', id: 'sidebar-near-repeat' },
-        { label: 'Forensic Intelligence DB', path: '/forensics-db', icon: Dna, badge: 'CFSL', id: 'sidebar-forensic-db' },
-        { label: 'Interpol I-24/7 Sharing', path: '/interpol-sync', icon: Globe2, badge: 'RED', id: 'sidebar-interpol-sync' },
-        { label: 'FIU-IND SAR Analytics', path: '/sar-analytics', icon: Banknote, badge: 'PMLA', id: 'sidebar-sar-analytics' },
-        { label: 'Threat Assessment (TRAP)', path: '/threat-assessment', icon: ShieldAlert, badge: 'S-3', id: 'sidebar-threat-assessment' },
-        { label: 'OSINT & Dark Web Monitor', path: '/osint-monitor', icon: Camera, badge: 'TOR', id: 'sidebar-osint-monitor' },
-        { label: 'IMSI Catcher Oversight', path: '/imsi-catcher', icon: RadioTower, badge: 'WORM', id: 'sidebar-imsi-catcher' },
-        { label: 'Crime Gun Intelligence', path: '/gun-intelligence', icon: Crosshair, badge: 'CGIC', id: 'sidebar-gun-intelligence' },
-        { label: 'IBIS Ballistics Match', path: '/ibis', icon: Focus, badge: 'FSL', id: 'sidebar-ibis' },
-        { label: 'DV Fatality Risk Assessment', path: '/dv-risk', icon: HeartCrack, badge: 'S-4', id: 'sidebar-dv-risk' },
-        { label: 'Intercept Slang Translation', path: '/intercept-translate', icon: Languages, badge: '65B', id: 'sidebar-intercept-translate' },
-        { label: 'Geofence Reverse Warrants', path: '/geofence', icon: MapPin, badge: 'JUDICIAL', id: 'sidebar-geofence' },
-        { label: 'Blockchain Chain-of-Custody', path: '/blockchain-evidence', icon: Link2, badge: 'BSA', id: 'sidebar-blockchain-evidence' },
-        { label: 'AI Case Solvability Triage', path: '/case-triage', icon: ListFilter, badge: 'NDM', id: 'sidebar-case-triage' },
+      subCategories: [
+        {
+          id: 'sub-predictive',
+          title: 'Predictive AI & Threat Risk',
+          icon: Brain,
+          items: [
+            { label: 'Intelligence Fusion', path: '/intelligence-fusion', icon: Network, badge: 'S-1', id: 'sidebar-intel-fusion' },
+            { label: 'Person Predictive Risk', path: '/risk-scoring', icon: Activity, badge: 'XGB', id: 'sidebar-person-risk' },
+            { label: 'Threat Assessment (TRAP)', path: '/threat-assessment', icon: ShieldAlert, badge: 'S-3', id: 'sidebar-threat-assessment' },
+            { label: 'DV Fatality Risk Assessment', path: '/dv-risk', icon: HeartCrack, badge: 'S-4', id: 'sidebar-dv-risk' },
+            { label: 'AI Case Solvability Triage', path: '/case-triage', icon: ListFilter, badge: 'NDM', id: 'sidebar-case-triage' },
+          ],
+        },
+        {
+          id: 'sub-spatial',
+          title: 'Spatial & Tactical Forecasting',
+          icon: Compass,
+          items: [
+            { label: 'Micro-Hotspot Forecast', path: '/hotspot-forecast', icon: Compass, badge: '100M', id: 'sidebar-hotspot-forecast' },
+            { label: 'Route Pattern Theory', path: '/route-analysis', icon: Route, badge: 'S-2', id: 'sidebar-route-analysis' },
+            { label: 'Near-Repeat Alerts', path: '/near-repeat', icon: BellRing, badge: 'KNOX', id: 'sidebar-near-repeat' },
+            { label: 'Real-Time Crime Center', path: '/rtcc', icon: Radio, badge: 'RTCC', id: 'sidebar-rtcc' },
+            { label: 'SNA Gang Intervention', path: '/sna-gangs', icon: Zap, badge: 'CUTS', id: 'sidebar-sna-gangs' },
+          ],
+        },
+        {
+          id: 'sub-surveillance',
+          title: 'Surveillance & Intercepts',
+          icon: RadioTower,
+          items: [
+            { label: 'OSINT & Dark Web Monitor', path: '/osint-monitor', icon: Camera, badge: 'TOR', id: 'sidebar-osint-monitor' },
+            { label: 'Intercept Slang Translation', path: '/intercept-translate', icon: Languages, badge: '65B', id: 'sidebar-intercept-translate' },
+            { label: 'IMSI Catcher Oversight', path: '/imsi-catcher', icon: RadioTower, badge: 'WORM', id: 'sidebar-imsi-catcher' },
+            { label: 'Geofence Reverse Warrants', path: '/geofence', icon: MapPin, badge: 'JUDICIAL', id: 'sidebar-geofence' },
+          ],
+        },
+        {
+          id: 'sub-forensics',
+          title: 'Forensics & Evidence Integrity',
+          icon: Dna,
+          items: [
+            { label: 'Forensic Intelligence DB', path: '/forensics-db', icon: Dna, badge: 'CFSL', id: 'sidebar-forensic-db' },
+            { label: 'IBIS Ballistics Match', path: '/ibis', icon: Focus, badge: 'FSL', id: 'sidebar-ibis' },
+            { label: 'Crime Gun Intelligence', path: '/gun-intelligence', icon: Crosshair, badge: 'CGIC', id: 'sidebar-gun-intelligence' },
+            { label: 'Blockchain Chain-of-Custody', path: '/blockchain-evidence', icon: Link2, badge: 'BSA', id: 'sidebar-blockchain-evidence' },
+          ],
+        },
+        {
+          id: 'sub-crossborder',
+          title: 'Cross-Border & Financial Intel',
+          icon: Globe2,
+          items: [
+            { label: 'Interpol I-24/7 Sharing', path: '/interpol-sync', icon: Globe2, badge: 'RED', id: 'sidebar-interpol-sync' },
+            { label: 'FIU-IND SAR Analytics', path: '/sar-analytics', icon: Banknote, badge: 'PMLA', id: 'sidebar-sar-analytics' },
+          ],
+        },
       ],
     },
     {
@@ -367,74 +428,138 @@ export function Sidebar() {
         {/* Grouped Navigation Links Scrollable Area */}
         <div className="flex-1 overflow-y-auto px-2 py-2 space-y-4 scrollbar-thin scrollbar-thumb-border">
           <nav className="space-y-4">
-            {navSections.map((section) => (
-              <div key={section.id} className="space-y-1">
-                {sidebarOpen ? (
-                  <div className="px-2 pt-1 pb-0.5 text-[9px] font-black font-mono tracking-widest text-muted-foreground uppercase flex items-center justify-between">
-                    <span>{section.title}</span>
-                    <span className="text-[8px] px-1 py-0.2 rounded bg-muted text-muted-foreground/80">
-                      {section.items.length}
-                    </span>
-                  </div>
-                ) : (
-                  <div className="my-1 border-t border-border/40 mx-2" title={section.title} />
-                )}
+            {navSections.map((section) => {
+              const totalItems = section.items
+                ? section.items.length
+                : (section.subCategories?.reduce((acc, sub) => acc + sub.items.length, 0) || 0);
 
-                <div className="space-y-0.5">
-                  {section.items.map((item) => {
-                    const Icon = item.icon;
-                    const active = isItemActive(item.path);
+              const renderNavItem = (item: NavItem, isNested: boolean = false) => {
+                const Icon = item.icon;
+                const active = isItemActive(item.path);
 
-                    if (item.minRole && activeRole === 'INVESTIGATOR' && item.minRole !== 'INVESTIGATOR') {
-                      return null;
-                    }
+                if (item.minRole && activeRole === 'INVESTIGATOR' && item.minRole !== 'INVESTIGATOR') {
+                  return null;
+                }
 
-                    return (
-                      <NavLink
-                        key={item.path}
-                        to={item.path}
-                        id={item.id}
-                        aria-current={active ? 'page' : undefined}
+                return (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    id={item.id}
+                    aria-current={active ? 'page' : undefined}
+                    className={cn(
+                      'group flex items-center rounded-lg text-xs font-medium transition-colors relative w-full',
+                      sidebarOpen ? (isNested ? 'gap-2 px-2 py-1.5' : 'gap-2.5 px-2.5 py-1.5') : 'justify-center p-2.5',
+                      active
+                        ? 'bg-primary text-primary-foreground font-semibold shadow-sm'
+                        : 'text-muted-foreground hover:bg-accent hover:text-foreground',
+                      item.hero && !active && 'text-primary font-bold'
+                    )}
+                    title={item.label}
+                    aria-label={item.label}
+                  >
+                    <Icon className={cn('h-4 w-4 shrink-0', active ? 'text-primary-foreground' : '')} />
+                    {sidebarOpen && (
+                      <span className="truncate whitespace-nowrap overflow-hidden text-ellipsis flex-1 min-w-0">
+                        {item.label}
+                      </span>
+                    )}
+                    {sidebarOpen && item.badge && (
+                      <span
                         className={cn(
-                          'group flex items-center rounded-lg text-xs font-medium transition-colors relative w-full',
-                          sidebarOpen ? 'gap-2.5 px-2.5 py-1.5' : 'justify-center p-2.5',
-                          active
-                            ? 'bg-primary text-primary-foreground font-semibold shadow-sm'
-                            : 'text-muted-foreground hover:bg-accent hover:text-foreground',
-                          item.hero && !active && 'text-primary font-bold'
+                          'text-[9px] font-mono font-bold px-1.5 py-0.2 rounded shrink-0',
+                          item.badgeColor
+                            ? item.badgeColor
+                            : 'bg-muted/80 text-muted-foreground border border-border/60'
                         )}
-                        title={item.label}
-                        aria-label={item.label}
                       >
-                        <Icon className={cn('h-4 w-4 shrink-0', active ? 'text-primary-foreground' : '')} />
-                        {sidebarOpen && (
-                          <span className="truncate whitespace-nowrap overflow-hidden text-ellipsis flex-1 min-w-0">
-                            {item.label}
-                          </span>
-                        )}
-                        {sidebarOpen && item.badge && (
-                          <span
-                            className={cn(
-                              'text-[9px] font-mono font-bold px-1.5 py-0.2 rounded shrink-0',
-                              item.badgeColor
-                                ? item.badgeColor
-                                : 'bg-muted/80 text-muted-foreground border border-border/60'
-                            )}
-                          >
-                            {item.badge}
-                          </span>
-                        )}
-                        {sidebarOpen && item.hero && !item.badge && (
-                          <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-primary/30 text-primary-foreground shrink-0">
-                            HERO
-                          </span>
-                        )}
-                      </NavLink>
-                    );
-                  })}
+                        {item.badge}
+                      </span>
+                    )}
+                    {sidebarOpen && item.hero && !item.badge && (
+                      <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-primary/30 text-primary-foreground shrink-0">
+                        HERO
+                      </span>
+                    )}
+                  </NavLink>
+                );
+              };
+
+              return (
+                <div key={section.id} className="space-y-1">
+                  {sidebarOpen ? (
+                    <div className="px-2 pt-1 pb-0.5 text-[9px] font-black font-mono tracking-widest text-muted-foreground uppercase flex items-center justify-between">
+                      <span>{section.title}</span>
+                      <span className="text-[8px] px-1 py-0.2 rounded bg-muted text-muted-foreground/80">
+                        {totalItems}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="my-1 border-t border-border/40 mx-2" title={section.title} />
+                  )}
+
+                  {/* Standard Flat Items */}
+                  {section.items && (
+                    <div className="space-y-0.5">
+                      {section.items.map((item) => renderNavItem(item, false))}
+                    </div>
+                  )}
+
+                  {/* Categorized Sub-Sections (Submerged Accordion Folders) */}
+                  {section.subCategories && (
+                    <div className="space-y-1">
+                      {sidebarOpen ? (
+                        section.subCategories.map((subCat) => {
+                          const SubIcon = subCat.icon;
+                          const hasActiveChild = isSubCategoryActive(subCat);
+                          const isOpen = openSubCategories[subCat.id] ?? hasActiveChild;
+
+                          return (
+                            <div key={subCat.id} className="space-y-0.5">
+                              <button
+                                type="button"
+                                onClick={() => toggleSubCategory(subCat.id)}
+                                className={cn(
+                                  'w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all',
+                                  hasActiveChild
+                                    ? 'text-cyan-300 bg-cyan-950/40 border border-cyan-500/30'
+                                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                                )}
+                              >
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <SubIcon className={cn('h-3.5 w-3.5 shrink-0', hasActiveChild ? 'text-cyan-400' : 'text-muted-foreground')} />
+                                  <span className="truncate text-[11px] font-semibold">{subCat.title}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 shrink-0 ml-1">
+                                  <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-muted/60 text-muted-foreground">
+                                    {subCat.items.length}
+                                  </span>
+                                  {isOpen ? (
+                                    <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                                  ) : (
+                                    <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                                  )}
+                                </div>
+                              </button>
+
+                              {isOpen && (
+                                <div className="border-l-2 border-border/70 pl-2 ml-4 space-y-0.5 animate-in slide-in-from-top-1 duration-150">
+                                  {subCat.items.map((item) => renderNavItem(item, true))}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <div className="space-y-0.5">
+                          {section.subCategories.flatMap((sc) => sc.items).map((item) => renderNavItem(item, false))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </nav>
         </div>
 
