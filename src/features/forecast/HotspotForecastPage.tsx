@@ -164,15 +164,15 @@ export function HotspotForecastPage() {
                 onChange={(e) => {
                   setDistrict(e.target.value);
                 }}
-                className="bg-background border border-border rounded-xl px-3 py-1.5 text-xs text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary overflow-hidden text-ellipsis whitespace-nowrap"
+                className="bg-background border border-border rounded-xl px-3 py-1.5 text-xs text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary overflow-hidden text-ellipsis whitespace-nowrap [&>option]:bg-slate-900 [&>option]:text-slate-100"
               >
-                <option value="DELHI_CENTRAL">Delhi Central (Paharganj / NDLS)</option>
-                <option value="DELHI_SOUTH">Delhi South (Lajpat Nagar / GK)</option>
-                <option value="AP_KURNOOL">AP Police (Kurnool Urban / IIITDM)</option>
-                <option value="AP_TIRUPATI">AP Police (Tirupati Urban / Temple Corridor)</option>
-                <option value="TS_CYBERABAD">Telangana (Cyberabad / HITEC City Corridor)</option>
-                <option value="MH_MUMBAI">Mumbai Police (Zone 1 / Colaba-CST Hub)</option>
-                <option value="KA_BENGALURU">Bengaluru City (Central / Majestic Hub)</option>
+                <option value="DELHI_CENTRAL" className="bg-slate-900 text-slate-100">Delhi Central (Paharganj / NDLS)</option>
+                <option value="DELHI_SOUTH" className="bg-slate-900 text-slate-100">Delhi South (Lajpat Nagar / GK)</option>
+                <option value="AP_KURNOOL" className="bg-slate-900 text-slate-100">AP Police (Kurnool Urban / IIITDM)</option>
+                <option value="AP_TIRUPATI" className="bg-slate-900 text-slate-100">AP Police (Tirupati Urban / Temple Corridor)</option>
+                <option value="TS_CYBERABAD" className="bg-slate-900 text-slate-100">Telangana (Cyberabad / HITEC City Corridor)</option>
+                <option value="MH_MUMBAI" className="bg-slate-900 text-slate-100">Mumbai Police (Zone 1 / Colaba-CST Hub)</option>
+                <option value="KA_BENGALURU" className="bg-slate-900 text-slate-100">Bengaluru City (Central / Majestic Hub)</option>
               </select>
             </div>
 

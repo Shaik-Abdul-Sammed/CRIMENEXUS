@@ -234,11 +234,11 @@ export function EntitiesPage() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="bg-background border border-border rounded-md px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+              className="bg-background border border-border rounded-md px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer [&>option]:bg-slate-900 [&>option]:text-slate-100"
             >
-              <option value="risk">Sort by Risk Level</option>
-              <option value="name">Sort by Name</option>
-              <option value="confidence">Sort by Confidence</option>
+              <option value="risk" className="bg-slate-900 text-slate-100">Sort by Risk Level</option>
+              <option value="name" className="bg-slate-900 text-slate-100">Sort by Name</option>
+              <option value="confidence" className="bg-slate-900 text-slate-100">Sort by Confidence</option>
             </select>
             <button
               onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
@@ -257,12 +257,12 @@ export function EntitiesPage() {
                 setRowsPerPage(Number(e.target.value));
                 setCurrentPage(1);
               }}
-              className="bg-background border border-border rounded-md px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+              className="bg-background border border-border rounded-md px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer [&>option]:bg-slate-900 [&>option]:text-slate-100"
             >
-              <option value={6}>6</option>
-              <option value={12}>12</option>
-              <option value={24}>24</option>
-              <option value={48}>48</option>
+              <option value={6} className="bg-slate-900 text-slate-100">6</option>
+              <option value={12} className="bg-slate-900 text-slate-100">12</option>
+              <option value={24} className="bg-slate-900 text-slate-100">24</option>
+              <option value={48} className="bg-slate-900 text-slate-100">48</option>
             </select>
           </div>
         </div>

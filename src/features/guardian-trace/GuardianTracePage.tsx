@@ -1818,11 +1818,11 @@ export function GuardianTracePage() {
                 <select
                   value={newCaseForm.gender}
                   onChange={(e) => setNewCaseForm({ ...newCaseForm, gender: e.target.value })}
-                  className="w-full h-8 px-2 rounded-lg border border-border bg-slate-900 text-xs text-white focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full h-8 px-2 rounded-lg border border-border bg-slate-900 text-xs text-white focus:outline-none focus:ring-1 focus:ring-primary [&>option]:bg-slate-900 [&>option]:text-slate-100"
                 >
-                  <option value="Female">Female</option>
-                  <option value="Male">Male</option>
-                  <option value="Other">Other</option>
+                  <option value="Female" className="bg-slate-900 text-slate-100">Female</option>
+                  <option value="Male" className="bg-slate-900 text-slate-100">Male</option>
+                  <option value="Other" className="bg-slate-900 text-slate-100">Other</option>
                 </select>
               </div>
             </div>

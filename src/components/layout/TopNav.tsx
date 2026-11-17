@@ -327,7 +327,7 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           <span className="px-1.5 py-0.2 rounded-full bg-purple-500/30 text-purple-200 text-[9px] font-mono font-black border border-purple-400/40">20</span>
         </button>
 
-        {/* 5. 1-Click Vernacular Full Page Language Switcher */}
+        {/* 5. 1-Click Vernacular Full Page Language Switcher (All 13 Indian Languages) */}
         <div className="flex items-center gap-1 h-8 px-1.5 sm:px-2 rounded-lg border border-sky-500/40 bg-sky-950/40 text-xs shrink-0">
           <Languages className="h-3.5 w-3.5 text-sky-400 shrink-0" />
           <select
@@ -336,15 +336,23 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
               sound.playClickSound();
               setLanguage(e.target.value as SupportedLanguage);
             }}
-            className="bg-transparent text-sky-200 font-bold text-xs focus:outline-none cursor-pointer pr-0.5"
+            className="bg-transparent text-sky-200 font-bold text-xs focus:outline-none cursor-pointer pr-0.5 [&>option]:bg-slate-900 [&>option]:text-slate-100"
             aria-label="Switch Entire Application Language"
-            title="Full Entire Page Translation (EN / हिन्दी / मराठी / ಕನ್ನಡ / తెలుగు)"
+            title="Full Application Vernacular Translation (Google Free API + Lexicon)"
           >
-            <option value="en" className="bg-slate-900 text-slate-100">EN</option>
-            <option value="hi" className="bg-slate-900 text-slate-100">हिन्दी</option>
-            <option value="mr" className="bg-slate-900 text-slate-100">मराठी</option>
-            <option value="kn" className="bg-slate-900 text-slate-100">ಕನ್ನಡ</option>
-            <option value="te" className="bg-slate-900 text-slate-100">తెలుగు</option>
+            <option value="en" className="bg-slate-900 text-slate-100">EN (English)</option>
+            <option value="hi" className="bg-slate-900 text-slate-100">हिन्दी (Hindi)</option>
+            <option value="mr" className="bg-slate-900 text-slate-100">मराठी (Marathi)</option>
+            <option value="te" className="bg-slate-900 text-slate-100">తెలుగు (Telugu)</option>
+            <option value="kn" className="bg-slate-900 text-slate-100">ಕನ್ನಡ (Kannada)</option>
+            <option value="bn" className="bg-slate-900 text-slate-100">বাংলা (Bengali)</option>
+            <option value="ta" className="bg-slate-900 text-slate-100">தமிழ் (Tamil)</option>
+            <option value="gu" className="bg-slate-900 text-slate-100">ગુજરાતી (Gujarati)</option>
+            <option value="pa" className="bg-slate-900 text-slate-100">ਪੰਜਾਬੀ (Punjabi)</option>
+            <option value="ml" className="bg-slate-900 text-slate-100">മലയാളം (Malayalam)</option>
+            <option value="or" className="bg-slate-900 text-slate-100">ଓଡ଼ିଆ (Odia)</option>
+            <option value="ur" className="bg-slate-900 text-slate-100">اردو (Urdu)</option>
+            <option value="as" className="bg-slate-900 text-slate-100">অসমীয়া (Assamese)</option>
           </select>
         </div>
 
@@ -682,21 +690,29 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
               {/* Vernacular Language Selector */}
               <div>
                 <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
-                  Language (Vernacular)
+                  Language (Vernacular / 13 Regional Languages)
                 </label>
                 <div className="flex items-center gap-2 h-9 px-2.5 rounded-lg border border-border bg-background/80 text-xs">
                   <Languages className="h-4 w-4 text-cyan-400 shrink-0" />
                   <select
                     value={language}
                     onChange={(e) => setLanguage(e.target.value as SupportedLanguage)}
-                    className="w-full bg-transparent text-foreground font-medium text-xs focus:outline-none cursor-pointer"
+                    className="w-full bg-transparent text-foreground font-medium text-xs focus:outline-none cursor-pointer [&>option]:bg-slate-900 [&>option]:text-slate-100"
                     aria-label="Select Language"
                   >
                     <option value="en" className="bg-slate-900 text-slate-100">English (EN)</option>
                     <option value="hi" className="bg-slate-900 text-slate-100">हिन्दी (Hindi)</option>
                     <option value="mr" className="bg-slate-900 text-slate-100">मराठी (Marathi)</option>
-                    <option value="kn" className="bg-slate-900 text-slate-100">ಕನ್ನಡ (Kannada)</option>
                     <option value="te" className="bg-slate-900 text-slate-100">తెలుగు (Telugu)</option>
+                    <option value="kn" className="bg-slate-900 text-slate-100">ಕನ್ನಡ (Kannada)</option>
+                    <option value="bn" className="bg-slate-900 text-slate-100">বাংলা (Bengali)</option>
+                    <option value="ta" className="bg-slate-900 text-slate-100">தமிழ் (Tamil)</option>
+                    <option value="gu" className="bg-slate-900 text-slate-100">ગુજરાતી (Gujarati)</option>
+                    <option value="pa" className="bg-slate-900 text-slate-100">ਪੰਜਾਬੀ (Punjabi)</option>
+                    <option value="ml" className="bg-slate-900 text-slate-100">മലയാളം (Malayalam)</option>
+                    <option value="or" className="bg-slate-900 text-slate-100">ଓଡ଼ିଆ (Odia)</option>
+                    <option value="ur" className="bg-slate-900 text-slate-100">اردو (Urdu)</option>
+                    <option value="as" className="bg-slate-900 text-slate-100">অসমীয়া (Assamese)</option>
                   </select>
                 </div>
               </div>

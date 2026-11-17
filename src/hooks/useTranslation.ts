@@ -11,7 +11,43 @@ import {
   setCachedTranslation
 } from '../services/translationService';
 
-export type SupportedLanguage = 'en' | 'hi' | 'mr' | 'kn' | 'te';
+export type SupportedLanguage =
+  | 'en'
+  | 'hi'
+  | 'mr'
+  | 'kn'
+  | 'te'
+  | 'bn'
+  | 'ta'
+  | 'gu'
+  | 'pa'
+  | 'ml'
+  | 'or'
+  | 'ur'
+  | 'as';
+
+export interface LanguageOption {
+  code: SupportedLanguage;
+  name: string;
+  native: string;
+  speechCode: string;
+}
+
+export const INDIAN_LANGUAGES: readonly LanguageOption[] = [
+  { code: 'en', name: 'English', native: 'English', speechCode: 'en-IN' },
+  { code: 'hi', name: 'Hindi', native: 'हिन्दी', speechCode: 'hi-IN' },
+  { code: 'mr', name: 'Marathi', native: 'मराठी', speechCode: 'mr-IN' },
+  { code: 'te', name: 'Telugu', native: 'తెలుగు', speechCode: 'te-IN' },
+  { code: 'kn', name: 'Kannada', native: 'ಕನ್ನಡ', speechCode: 'kn-IN' },
+  { code: 'bn', name: 'Bengali', native: 'বাংলা', speechCode: 'bn-IN' },
+  { code: 'ta', name: 'Tamil', native: 'தமிழ்', speechCode: 'ta-IN' },
+  { code: 'gu', name: 'Gujarati', native: 'ગુજરાતી', speechCode: 'gu-IN' },
+  { code: 'pa', name: 'Punjabi', native: 'ਪੰਜਾਬੀ', speechCode: 'pa-IN' },
+  { code: 'ml', name: 'Malayalam', native: 'മലയാളം', speechCode: 'ml-IN' },
+  { code: 'or', name: 'Odia', native: 'ଓଡ଼ିଆ', speechCode: 'or-IN' },
+  { code: 'ur', name: 'Urdu', native: 'اردو', speechCode: 'ur-IN' },
+  { code: 'as', name: 'Assamese', native: 'অসমীয়া', speechCode: 'as-IN' },
+] as const;
 
 interface TranslationStore {
   language: SupportedLanguage;
@@ -23,7 +59,7 @@ interface TranslationStore {
 
 type TranslationTree = Record<string, unknown>;
 
-const resources: Record<SupportedLanguage, TranslationTree> = {
+const resources: Partial<Record<SupportedLanguage, TranslationTree>> = {
   en: enTranslations as unknown as TranslationTree,
   hi: hiTranslations as unknown as TranslationTree,
   mr: mrTranslations as unknown as TranslationTree,
@@ -43,7 +79,21 @@ export const useTranslation = create<TranslationStore>((set, get) => ({
   },
 
   toggleLanguage: () => {
-    const langs: SupportedLanguage[] = ['en', 'hi', 'mr', 'kn', 'te'];
+    const langs: SupportedLanguage[] = [
+      'en',
+      'hi',
+      'mr',
+      'te',
+      'kn',
+      'bn',
+      'ta',
+      'gu',
+      'pa',
+      'ml',
+      'or',
+      'ur',
+      'as'
+    ];
     const currentIdx = langs.indexOf(get().language);
     const nextLang = langs[(currentIdx + 1) % langs.length];
     localStorage.setItem('crimenexus_lang', nextLang);

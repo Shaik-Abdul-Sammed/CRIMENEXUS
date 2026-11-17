@@ -96,11 +96,11 @@ export const RouteAnalysisPage: React.FC = () => {
             <select
               value={offenderId}
               onChange={(e) => setOffenderId(e.target.value)}
-              className="bg-card border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary"
+              className="bg-card border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary [&>option]:bg-slate-900 [&>option]:text-slate-100"
             >
-              <option value="PERSON-VK-01">PERSON-VK-01 (Vikram Malhotra)</option>
-              <option value="PERSON-SK-02">PERSON-SK-02 (Sameer Khan)</option>
-              <option value="PERSON-AK-03">PERSON-AK-03 (Anil Kumar)</option>
+              <option value="PERSON-VK-01" className="bg-slate-900 text-slate-100">PERSON-VK-01 (Vikram Malhotra)</option>
+              <option value="PERSON-SK-02" className="bg-slate-900 text-slate-100">PERSON-SK-02 (Sameer Khan)</option>
+              <option value="PERSON-AK-03" className="bg-slate-900 text-slate-100">PERSON-AK-03 (Anil Kumar)</option>
             </select>
           </div>
           <button

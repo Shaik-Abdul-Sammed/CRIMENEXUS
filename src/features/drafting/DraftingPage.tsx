@@ -164,12 +164,19 @@ export function DraftingPage() {
     setIsAnalyzingVernacular(true);
 
     try {
-      // Script and vocabulary detection
+      // Script and vocabulary detection across all Indian languages
       const hasDevanagari = /[\u0900-\u097F]/.test(firNarrative);
       const isMarathi = hasDevanagari && /(आहे|झाले|केले|तक्रार|गुन्हा|पोलीस|रुपये|पसार|गाडी|चौकशी|आरोपी|रोजी|नोंदवले|केल्याचे|खंडणी|खात्यांद्वारे)/i.test(firNarrative);
       const isHindi = hasDevanagari && !isMarathi;
       const isTelugu = /[\u0C00-\u0C7F]/.test(firNarrative);
       const isKannada = /[\u0C80-\u0CFF]/.test(firNarrative);
+      const isBengali = /[\u0980-\u09FF]/.test(firNarrative);
+      const isTamil = /[\u0B80-\u0BFF]/.test(firNarrative);
+      const isGujarati = /[\u0A80-\u0AFF]/.test(firNarrative);
+      const isPunjabi = /[\u0A00-\u0A7F]/.test(firNarrative);
+      const isMalayalam = /[\u0D00-\u0D7F]/.test(firNarrative);
+      const isOdia = /[\u0B00-\u0B7F]/.test(firNarrative);
+      const isUrdu = /[\u0600-\u06FF]/.test(firNarrative);
 
       let detectedLang = 'English (en-IN)';
       let defaultFallback = firNarrative;
@@ -186,6 +193,27 @@ export function DraftingPage() {
       } else if (isKannada) {
         detectedLang = 'ಕನ್ನಡ (Kannada - kn-IN)';
         defaultFallback = 'On 28-October-2026, complainant reported fraudulent financial diversion through syndicated mule bank accounts by accused Rajan operating Scorpio vehicle TS 09 AB 1234. Evidentiary records submitted for statutory cognizance.';
+      } else if (isBengali) {
+        detectedLang = 'বাংলা (Bengali - bn-IN)';
+        defaultFallback = 'On 28-October-2026, complainant lodged an official complaint reporting fraudulent fund diversions into mule bank accounts by accused Rajan using getaway vehicle TS 09 AB 1234. Case registered under Section 173 BNSS.';
+      } else if (isTamil) {
+        detectedLang = 'தமிழ் (Tamil - ta-IN)';
+        defaultFallback = 'On 28-October-2026, complainant filed a police report concerning organized syndicate financial extortion and vehicle getaway TS 09 AB 1234 by accused Rajan. Statutory digital seizure conducted under Section 63 BSA.';
+      } else if (isGujarati) {
+        detectedLang = 'ગુજરાતી (Gujarati - gu-IN)';
+        defaultFallback = 'On 28-October-2026, complainant reported unauthorized hawala smurfing transactions by suspect Rajan with vehicle TS 09 AB 1234. Formal FIR registered under Section 173 BNSS.';
+      } else if (isPunjabi) {
+        detectedLang = 'ਪੰਜਾਬੀ (Punjabi - pa-IN)';
+        defaultFallback = 'On 28-October-2026, complainant submitted formal report on organized extortion scheme and vehicular escape by accused Rajan in Scorpio TS 09 AB 1234. Technical evidence preserved under Section 63 BSA.';
+      } else if (isMalayalam) {
+        detectedLang = 'മലയാളം (Malayalam - ml-IN)';
+        defaultFallback = 'On 28-October-2026, police complaint registered regarding illegal banking transactions and organized syndicate operations by accused Rajan with vehicle TS 09 AB 1234.';
+      } else if (isOdia) {
+        detectedLang = 'ଓଡ଼ିଆ (Odia - or-IN)';
+        defaultFallback = 'On 28-October-2026, complainant reported financial cyber fraud and highway vehicular flight of accused Rajan in vehicle TS 09 AB 1234 under BNSS Section 173.';
+      } else if (isUrdu) {
+        detectedLang = 'اردو (Urdu - ur-IN)';
+        defaultFallback = 'On 28-October-2026, formal report lodged regarding interstate criminal syndicate operations, hawala transfers, and getaway vehicle TS 09 AB 1234 by accused Rajan.';
       }
 
       // Call Google Translate Free Service dynamically
@@ -522,14 +550,22 @@ CASE/ACCUSED: ${activeTab === 'BANK_NOTICE' ? bankAccount : locSuspect}
                           <select
                             value={dictationLang}
                             onChange={(e) => setDictationLang(e.target.value)}
-                            className="bg-transparent text-foreground font-semibold text-[10px] focus:outline-none cursor-pointer"
+                            className="bg-transparent text-foreground font-semibold text-[10px] focus:outline-none cursor-pointer [&>option]:bg-slate-900 [&>option]:text-slate-100"
                             title="Voice Dictation Language"
                           >
-                            <option value="hi-IN">हिन्दी (hi-IN)</option>
-                            <option value="en-IN">English (en-IN)</option>
-                            <option value="mr-IN">मराठी (mr-IN)</option>
-                            <option value="te-IN">తెలుగు (te-IN)</option>
-                            <option value="kn-IN">ಕನ್ನಡ (kn-IN)</option>
+                            <option value="hi-IN" className="bg-slate-900 text-slate-100">हिन्दी (hi-IN)</option>
+                            <option value="en-IN" className="bg-slate-900 text-slate-100">English (en-IN)</option>
+                            <option value="mr-IN" className="bg-slate-900 text-slate-100">मराठी (mr-IN)</option>
+                            <option value="te-IN" className="bg-slate-900 text-slate-100">తెలుగు (te-IN)</option>
+                            <option value="kn-IN" className="bg-slate-900 text-slate-100">ಕನ್ನಡ (kn-IN)</option>
+                            <option value="bn-IN" className="bg-slate-900 text-slate-100">বাংলা (bn-IN)</option>
+                            <option value="ta-IN" className="bg-slate-900 text-slate-100">தமிழ் (ta-IN)</option>
+                            <option value="gu-IN" className="bg-slate-900 text-slate-100">ગુજરાતી (gu-IN)</option>
+                            <option value="pa-IN" className="bg-slate-900 text-slate-100">ਪੰਜਾਬੀ (pa-IN)</option>
+                            <option value="ml-IN" className="bg-slate-900 text-slate-100">മലയാളം (ml-IN)</option>
+                            <option value="or-IN" className="bg-slate-900 text-slate-100">ଓଡ଼ିଆ (or-IN)</option>
+                            <option value="ur-IN" className="bg-slate-900 text-slate-100">اردو (ur-IN)</option>
+                            <option value="as-IN" className="bg-slate-900 text-slate-100">অসমীয়া (as-IN)</option>
                           </select>
                         </div>
 

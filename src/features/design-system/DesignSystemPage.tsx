@@ -535,11 +535,11 @@ export function DesignSystemPage() {
               <select
                 id="jurisdiction-filter-select"
                 aria-label="Jurisdictional Filter"
-                className="w-full h-10 px-3 text-xs rounded-lg border border-border bg-background/80 text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full h-10 px-3 text-xs rounded-lg border border-border bg-background/80 text-foreground focus:outline-none focus:ring-1 focus:ring-primary [&>option]:bg-slate-900 [&>option]:text-slate-100"
               >
-                <option>All Police Ranges (Delhi NCR & Yamuna Corridor)</option>
-                <option>Cyber Crime Police Station, Sector 20</option>
-                <option>Special Cell Delhi Police (Lodhi Colony)</option>
+                <option className="bg-slate-900 text-slate-100">All Police Ranges (Delhi NCR & Yamuna Corridor)</option>
+                <option className="bg-slate-900 text-slate-100">Cyber Crime Police Station, Sector 20</option>
+                <option className="bg-slate-900 text-slate-100">Special Cell Delhi Police (Lodhi Colony)</option>
               </select>
             </div>
           </CardContent>

@@ -254,12 +254,12 @@ export function LoginPage() {
                 <select
                   value={selectedRole}
                   onChange={(e) => setSelectedRole(e.target.value as UserRole)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950/80 border border-slate-700 text-slate-100 font-mono text-xs focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950/80 border border-slate-700 text-slate-100 font-mono text-xs focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary [&>option]:bg-slate-900 [&>option]:text-slate-100"
                 >
-                  <option value="INVESTIGATOR">Investigating Officer (IO) - Special Crime Branch</option>
-                  <option value="ANALYST">Forensic Intelligence Analyst - Cyber Cell</option>
-                  <option value="SUPERVISOR">Supervisory Police Officer (ACP / DCP Command)</option>
-                  <option value="ADMIN">System Administrator - CCTNS Central Command</option>
+                  <option value="INVESTIGATOR" className="bg-slate-900 text-slate-100">Investigating Officer (IO) - Special Crime Branch</option>
+                  <option value="ANALYST" className="bg-slate-900 text-slate-100">Forensic Intelligence Analyst - Cyber Cell</option>
+                  <option value="SUPERVISOR" className="bg-slate-900 text-slate-100">Supervisory Police Officer (ACP / DCP Command)</option>
+                  <option value="ADMIN" className="bg-slate-900 text-slate-100">System Administrator - CCTNS Central Command</option>
                 </select>
               </div>
 

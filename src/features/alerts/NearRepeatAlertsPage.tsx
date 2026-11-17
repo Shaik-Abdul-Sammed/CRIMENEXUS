@@ -97,11 +97,11 @@ export const NearRepeatAlertsPage: React.FC = () => {
           <select
             value={district}
             onChange={(e) => setDistrict(e.target.value)}
-            className="bg-card border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 whitespace-nowrap"
+            className="bg-card border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 whitespace-nowrap [&>option]:bg-slate-900 [&>option]:text-slate-100"
           >
-            <option value="South Delhi">South Delhi Police District</option>
-            <option value="Central Delhi">Central Delhi Police District</option>
-            <option value="Dwarka">Dwarka Police District</option>
+            <option value="South Delhi" className="bg-slate-900 text-slate-100">South Delhi Police District</option>
+            <option value="Central Delhi" className="bg-slate-900 text-slate-100">Central Delhi Police District</option>
+            <option value="Dwarka" className="bg-slate-900 text-slate-100">Dwarka Police District</option>
           </select>
           <button
             onClick={fetchAlerts}

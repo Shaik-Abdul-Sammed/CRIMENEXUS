@@ -1,6 +1,19 @@
-export type SupportedLanguage = 'en' | 'hi' | 'mr' | 'kn' | 'te';
+export type SupportedLanguage =
+  | 'en'
+  | 'hi'
+  | 'mr'
+  | 'kn'
+  | 'te'
+  | 'bn'
+  | 'ta'
+  | 'gu'
+  | 'pa'
+  | 'ml'
+  | 'or'
+  | 'ur'
+  | 'as';
 
-export const VERNACULAR_TRANSLATIONS: Record<string, Record<Exclude<SupportedLanguage, 'en'>, string>> = {
+export const VERNACULAR_TRANSLATIONS: Record<string, Partial<Record<Exclude<SupportedLanguage, 'en'>, string>>> = {
   // Navigation & Brand
   'CRIMENEXUS': {
     hi: 'क्राइमनेक्सस',

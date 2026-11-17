@@ -462,12 +462,12 @@ export function CaseDetailPage() {
                         sound.playClickSound();
                         toast.success(`Case assigned to ${val}. CCTNS roster updated.`, 'IO Assigned');
                       }}
-                      className="mt-1 w-full bg-slate-900 border border-border/80 text-foreground text-xs font-semibold rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+                      className="mt-1 w-full bg-slate-900 border border-border/80 text-foreground text-xs font-semibold rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer [&>option]:bg-slate-900 [&>option]:text-slate-100"
                     >
-                      <option value="Inspector Rajesh Sharma (Cyber Cell)">Inspector Rajesh Sharma (Cyber Cell)</option>
-                      <option value="ACP Surender Kumar (Special Cell)">ACP Surender Kumar (Special Cell)</option>
-                      <option value="Sub-Inspector Ankit Sharma (PCR-04)">Sub-Inspector Ankit Sharma (PCR-04)</option>
-                      <option value="Inspector Pradeep Rathore (Crime Branch)">Inspector Pradeep Rathore (Crime Branch)</option>
+                      <option value="Inspector Rajesh Sharma (Cyber Cell)" className="bg-slate-900 text-slate-100">Inspector Rajesh Sharma (Cyber Cell)</option>
+                      <option value="ACP Surender Kumar (Special Cell)" className="bg-slate-900 text-slate-100">ACP Surender Kumar (Special Cell)</option>
+                      <option value="Sub-Inspector Ankit Sharma (PCR-04)" className="bg-slate-900 text-slate-100">Sub-Inspector Ankit Sharma (PCR-04)</option>
+                      <option value="Inspector Pradeep Rathore (Crime Branch)" className="bg-slate-900 text-slate-100">Inspector Pradeep Rathore (Crime Branch)</option>
                     </select>
                   </div>
                   <div className="min-w-0">

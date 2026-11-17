@@ -101,10 +101,10 @@ export const SNAGangsPage: React.FC = () => {
           <select
             value={selectedGang}
             onChange={(e) => setSelectedGang(e.target.value)}
-            className="bg-card border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 whitespace-nowrap"
+            className="bg-card border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 whitespace-nowrap [&>option]:bg-slate-900 [&>option]:text-slate-100"
           >
-            <option value="GANG-NCR-01">Lawrence-Bishnoi Trans-State Syndicate (NCR-01)</option>
-            <option value="GANG-BOMBAY-02">D-Company Extortion & Hawala Remnants (BOM-02)</option>
+            <option value="GANG-NCR-01" className="bg-slate-900 text-slate-100">Lawrence-Bishnoi Trans-State Syndicate (NCR-01)</option>
+            <option value="GANG-BOMBAY-02" className="bg-slate-900 text-slate-100">D-Company Extortion & Hawala Remnants (BOM-02)</option>
           </select>
           <button
             onClick={() => fetchGangData(selectedGang)}

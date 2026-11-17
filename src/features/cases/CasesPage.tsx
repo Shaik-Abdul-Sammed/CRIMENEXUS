@@ -508,12 +508,12 @@ export function CasesPage() {
             </label>
             <select
               {...register('priority')}
-              className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring [&>option]:bg-slate-900 [&>option]:text-slate-100"
             >
-              <option value="LOW">LOW</option>
-              <option value="MEDIUM">MEDIUM</option>
-              <option value="HIGH">HIGH</option>
-              <option value="CRITICAL">CRITICAL</option>
+              <option value="LOW" className="bg-slate-900 text-slate-100">LOW</option>
+              <option value="MEDIUM" className="bg-slate-900 text-slate-100">MEDIUM</option>
+              <option value="HIGH" className="bg-slate-900 text-slate-100">HIGH</option>
+              <option value="CRITICAL" className="bg-slate-900 text-slate-100">CRITICAL</option>
             </select>
           </div>
 

@@ -999,13 +999,13 @@ export function PublicReportsQueue() {
               <select
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
-                className="w-full h-9 px-3 rounded-lg border border-border bg-background text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+                className="w-full h-9 px-3 rounded-lg border border-border bg-background text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer [&>option]:bg-slate-900 [&>option]:text-slate-100"
               >
-                <option value="Insufficient Evidence">Insufficient Evidence / Unsubstantiated Claim</option>
-                <option value="False Report">False / Malicious / Fabricated Information</option>
-                <option value="Not a Crime">Civil Matter / Not Cognizable Criminal Offense</option>
-                <option value="Duplicate Report">Duplicate Report (Already Investigated Under Existing FIR)</option>
-                <option value="Outside Jurisdiction">Outside Jurisdiction / Forwarded to Respective Police Force</option>
+                <option value="Insufficient Evidence" className="bg-slate-900 text-slate-100">Insufficient Evidence / Unsubstantiated Claim</option>
+                <option value="False Report" className="bg-slate-900 text-slate-100">False / Malicious / Fabricated Information</option>
+                <option value="Not a Crime" className="bg-slate-900 text-slate-100">Civil Matter / Not Cognizable Criminal Offense</option>
+                <option value="Duplicate Report" className="bg-slate-900 text-slate-100">Duplicate Report (Already Investigated Under Existing FIR)</option>
+                <option value="Outside Jurisdiction" className="bg-slate-900 text-slate-100">Outside Jurisdiction / Forwarded to Respective Police Force</option>
               </select>
             </div>
 
@@ -1246,12 +1246,12 @@ export function PublicReportsQueue() {
                   <select
                     value={editDraft.status}
                     onChange={(e) => setEditDraft({ ...editDraft, status: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-border text-white text-xs"
+                    className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-border text-white text-xs [&>option]:bg-slate-900 [&>option]:text-slate-100"
                   >
-                    <option value="PENDING">PENDING REVIEW</option>
-                    <option value="VERIFIED">VERIFIED SATELLITE</option>
-                    <option value="CONVERTED">CONVERTED TO FIR</option>
-                    <option value="REJECTED">REJECTED</option>
+                    <option value="PENDING" className="bg-slate-900 text-slate-100">PENDING REVIEW</option>
+                    <option value="VERIFIED" className="bg-slate-900 text-slate-100">VERIFIED SATELLITE</option>
+                    <option value="CONVERTED" className="bg-slate-900 text-slate-100">CONVERTED TO FIR</option>
+                    <option value="REJECTED" className="bg-slate-900 text-slate-100">REJECTED</option>
                   </select>
                 </div>
               </div>

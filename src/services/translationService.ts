@@ -102,14 +102,12 @@ export async function translateText(
   if (cached) return cached;
 
   // 2. Dictionary hit for common UI words
-  if (
-    targetLang !== 'en' &&
-    VERNACULAR_TRANSLATIONS[cleanText] &&
-    VERNACULAR_TRANSLATIONS[cleanText][targetLang as Exclude<SupportedLanguage, 'en'>]
-  ) {
+  if (targetLang !== 'en' && VERNACULAR_TRANSLATIONS[cleanText]) {
     const hit = VERNACULAR_TRANSLATIONS[cleanText][targetLang as Exclude<SupportedLanguage, 'en'>];
-    setCachedTranslation(cleanText, targetLang, hit);
-    return hit;
+    if (hit) {
+      setCachedTranslation(cleanText, targetLang, hit);
+      return hit;
+    }
   }
 
   // 3. Backend /api/v1/translate API

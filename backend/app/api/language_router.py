@@ -32,7 +32,9 @@ SUPPORTED_LANGUAGES = [
     {"code": "gu", "name": "Gujarati", "native": "ગુજરાતી"},
     {"code": "pa", "name": "Punjabi", "native": "ਪੰਜਾਬੀ"},
     {"code": "ml", "name": "Malayalam", "native": "മലയാളം"},
-    {"code": "or", "name": "Odia", "native": "ଓଡ଼ିଆ"}
+    {"code": "or", "name": "Odia", "native": "ଓଡ଼ିଆ"},
+    {"code": "ur", "name": "Urdu", "native": "اردو"},
+    {"code": "as", "name": "Assamese", "native": "অসমীয়া"}
 ]
 
 class TranslationRequest(BaseModel):

@@ -419,11 +419,11 @@ export function MostWantedPage() {
           <select
             value={filterLevel}
             onChange={(e) => setFilterLevel(e.target.value)}
-            className="h-8 px-2.5 rounded-lg border border-border bg-background text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary font-medium"
+            className="h-8 px-2.5 rounded-lg border border-border bg-background text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary font-medium [&>option]:bg-slate-900 [&>option]:text-slate-100"
           >
-            <option value="ALL">All Threat Tiers</option>
-            <option value="EXTREME">Extreme Risk (90%+)</option>
-            <option value="HIGH">High Risk (70-89%)</option>
+            <option value="ALL" className="bg-slate-900 text-slate-100">All Threat Tiers</option>
+            <option value="EXTREME" className="bg-slate-900 text-slate-100">Extreme Risk (90%+)</option>
+            <option value="HIGH" className="bg-slate-900 text-slate-100">High Risk (70-89%)</option>
           </select>
         </div>
       </div>

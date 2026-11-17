@@ -176,13 +176,13 @@ export const ForensicDBPage: React.FC = () => {
           <select
             value={selectedModality}
             onChange={(e) => setSelectedModality(e.target.value)}
-            className="bg-background border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 whitespace-nowrap shrink-0"
+            className="bg-background border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 whitespace-nowrap shrink-0 [&>option]:bg-slate-900 [&>option]:text-slate-100"
           >
-            <option value="ALL">All Modalities</option>
-            <option value="DNA">DNA (CODIS STR)</option>
-            <option value="FINGERPRINT">Fingerprint Minutiae</option>
-            <option value="FOOTWEAR">Footwear Tread (SICAR)</option>
-            <option value="BALLISTICS">Ballistics (IBIS)</option>
+            <option value="ALL" className="bg-slate-900 text-slate-100">All Modalities</option>
+            <option value="DNA" className="bg-slate-900 text-slate-100">DNA (CODIS STR)</option>
+            <option value="FINGERPRINT" className="bg-slate-900 text-slate-100">Fingerprint Minutiae</option>
+            <option value="FOOTWEAR" className="bg-slate-900 text-slate-100">Footwear Tread (SICAR)</option>
+            <option value="BALLISTICS" className="bg-slate-900 text-slate-100">Ballistics (IBIS)</option>
           </select>
 
           <input

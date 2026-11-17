@@ -295,20 +295,23 @@ export function FIRArchivePage() {
               <select
                 value={selectedLang}
                 onChange={(e) => setSelectedLang(e.target.value)}
-                className="w-full h-9 px-2 text-xs rounded border border-border bg-background text-foreground font-semibold"
+                className="w-full h-9 px-2 text-xs rounded border border-border bg-background text-foreground font-semibold [&>option]:bg-slate-900 [&>option]:text-slate-100"
                 aria-label="Filter FIR by Language"
               >
-                <option value="ALL">All Languages (11)</option>
-                <option value="en">English (30)</option>
-                <option value="hi">Hindi (40)</option>
-                <option value="mr">Marathi (25)</option>
-                <option value="kn">Kannada (20)</option>
-                <option value="te">Telugu (15)</option>
-                <option value="ta">Tamil (15)</option>
-                <option value="bn">Bengali (20)</option>
-                <option value="gu">Gujarati (15)</option>
-                <option value="pa">Punjabi (10)</option>
-                <option value="ur">Urdu (10)</option>
+                <option value="ALL" className="bg-slate-900 text-slate-100">All Languages (13)</option>
+                <option value="en" className="bg-slate-900 text-slate-100">English (30)</option>
+                <option value="hi" className="bg-slate-900 text-slate-100">Hindi / हिन्दी (40)</option>
+                <option value="mr" className="bg-slate-900 text-slate-100">Marathi / मराठी (25)</option>
+                <option value="kn" className="bg-slate-900 text-slate-100">Kannada / ಕನ್ನಡ (20)</option>
+                <option value="te" className="bg-slate-900 text-slate-100">Telugu / తెలుగు (15)</option>
+                <option value="ta" className="bg-slate-900 text-slate-100">Tamil / தமிழ் (15)</option>
+                <option value="bn" className="bg-slate-900 text-slate-100">Bengali / বাংলা (20)</option>
+                <option value="gu" className="bg-slate-900 text-slate-100">Gujarati / ગુજરાતી (15)</option>
+                <option value="pa" className="bg-slate-900 text-slate-100">Punjabi / ਪੰਜਾਬੀ (10)</option>
+                <option value="ml" className="bg-slate-900 text-slate-100">Malayalam / മലയാളം (10)</option>
+                <option value="or" className="bg-slate-900 text-slate-100">Odia / ଓଡ଼ିଆ (10)</option>
+                <option value="ur" className="bg-slate-900 text-slate-100">Urdu / اردو (10)</option>
+                <option value="as" className="bg-slate-900 text-slate-100">Assamese / অসমীয়া (10)</option>
               </select>
             </div>
 
@@ -318,12 +321,12 @@ export function FIRArchivePage() {
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(e.target.value)}
-                className="w-full h-9 px-2 text-xs rounded border border-border bg-background text-foreground font-semibold"
+                className="w-full h-9 px-2 text-xs rounded border border-border bg-background text-foreground font-semibold [&>option]:bg-slate-900 [&>option]:text-slate-100"
                 aria-label="Filter FIR by Year"
               >
-                <option value="ALL">All Years (2015–2025)</option>
+                <option value="ALL" className="bg-slate-900 text-slate-100">All Years (2015–2025)</option>
                 {Array.from({ length: 11 }, (_, i) => 2025 - i).map((yr) => (
-                  <option key={yr} value={yr}>
+                  <option key={yr} value={yr} className="bg-slate-900 text-slate-100">
                     Year {yr}
                   </option>
                 ))}
@@ -336,13 +339,13 @@ export function FIRArchivePage() {
               <select
                 value={selectedOutcome}
                 onChange={(e) => setSelectedOutcome(e.target.value)}
-                className="w-full h-9 px-2 text-xs rounded border border-border bg-background text-foreground font-semibold"
+                className="w-full h-9 px-2 text-xs rounded border border-border bg-background text-foreground font-semibold [&>option]:bg-slate-900 [&>option]:text-slate-100"
                 aria-label="Filter FIR by Court Outcome"
               >
-                <option value="ALL">All Court Outcomes</option>
-                <option value="CONVICTED">Convicted</option>
-                <option value="ACQUITTED">Acquitted</option>
-                <option value="PENDING">Pending / Undertrial</option>
+                <option value="ALL" className="bg-slate-900 text-slate-100">All Court Outcomes</option>
+                <option value="CONVICTED" className="bg-slate-900 text-slate-100">Convicted</option>
+                <option value="ACQUITTED" className="bg-slate-900 text-slate-100">Acquitted</option>
+                <option value="PENDING" className="bg-slate-900 text-slate-100">Pending / Undertrial</option>
                 <option value="CLOSED">Closed</option>
               </select>
             </div>

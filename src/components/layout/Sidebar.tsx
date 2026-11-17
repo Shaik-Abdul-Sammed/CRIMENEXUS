@@ -349,11 +349,11 @@ export function Sidebar() {
               value={activeCaseId}
               onChange={(e) => handleCaseChange(e.target.value)}
               title={cases?.find((c) => c.id === activeCaseId)?.title || t('sidebar.allCases')}
-              className="w-full h-8 px-2 text-xs rounded border border-border bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-primary truncate font-sans font-medium"
+              className="w-full h-8 px-2 text-xs rounded border border-border bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-primary truncate font-sans font-medium [&>option]:bg-slate-900 [&>option]:text-slate-100"
             >
-              <option value="ALL">{t('sidebar.allCases')}</option>
+              <option value="ALL" className="bg-slate-900 text-slate-100">{t('sidebar.allCases')}</option>
               {cases?.map((c) => (
-                <option key={c.id} value={c.id} title={`${c.caseNumber} - ${c.title}`}>
+                <option key={c.id} value={c.id} title={`${c.caseNumber} - ${c.title}`} className="bg-slate-900 text-slate-100">
                   {c.caseNumber} • {c.title}
                 </option>
               ))}

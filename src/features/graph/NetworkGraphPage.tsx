@@ -1797,20 +1797,20 @@ export function NetworkGraphPage() {
                 <select
                   value={selectedEntityTypeFilter}
                   onChange={(e) => setSelectedEntityTypeFilter(e.target.value)}
-                  className="bg-background border border-border rounded px-2 py-1 text-xs text-foreground focus:outline-none"
+                  className="bg-background border border-border rounded px-2 py-1 text-xs text-foreground focus:outline-none [&>option]:bg-slate-900 [&>option]:text-slate-100"
                 >
-                  <option value="ALL">{t('graph.allEntities')}</option>
-                  <option value="PERSON">PERSON</option>
-                  <option value="PHONE">PHONE</option>
-                  <option value="VEHICLE">VEHICLE</option>
-                  <option value="BANK_ACCOUNT">BANK ACCOUNT</option>
-                  <option value="ORGANIZATION">ORGANIZATION</option>
-                  <option value="CRYPTO_WALLET">CRYPTO WALLET</option>
-                  <option value="LOCATION">LOCATION</option>
-                  <option value="DEVICE">DEVICE (IMEI)</option>
-                  <option value="UPI">UPI / VPA</option>
-                  <option value="TRANSIT">TRANSIT / CAB</option>
-                  <option value="UTILITY">UTILITY / GRID</option>
+                  <option value="ALL" className="bg-slate-900 text-slate-100">{t('graph.allEntities')}</option>
+                  <option value="PERSON" className="bg-slate-900 text-slate-100">PERSON</option>
+                  <option value="PHONE" className="bg-slate-900 text-slate-100">PHONE</option>
+                  <option value="VEHICLE" className="bg-slate-900 text-slate-100">VEHICLE</option>
+                  <option value="BANK_ACCOUNT" className="bg-slate-900 text-slate-100">BANK ACCOUNT</option>
+                  <option value="ORGANIZATION" className="bg-slate-900 text-slate-100">ORGANIZATION</option>
+                  <option value="CRYPTO_WALLET" className="bg-slate-900 text-slate-100">CRYPTO WALLET</option>
+                  <option value="LOCATION" className="bg-slate-900 text-slate-100">LOCATION</option>
+                  <option value="DEVICE" className="bg-slate-900 text-slate-100">DEVICE (IMEI)</option>
+                  <option value="UPI" className="bg-slate-900 text-slate-100">UPI / VPA</option>
+                  <option value="TRANSIT" className="bg-slate-900 text-slate-100">TRANSIT / CAB</option>
+                  <option value="UTILITY" className="bg-slate-900 text-slate-100">UTILITY / GRID</option>
                 </select>
               </div>
 
@@ -1820,14 +1820,14 @@ export function NetworkGraphPage() {
                 <select
                   value={selectedLayout}
                   onChange={(e) => handleLayoutChange(e.target.value)}
-                  className="bg-background border border-border rounded px-2 py-1 text-xs text-foreground focus:outline-none"
+                  className="bg-background border border-border rounded px-2 py-1 text-xs text-foreground focus:outline-none [&>option]:bg-slate-900 [&>option]:text-slate-100"
                 >
-                  <option value="cose">Force CoSE</option>
-                  <option value="fcose">fCoSE Layout</option>
-                  <option value="dagre">Dagre Hierarchical</option>
-                  <option value="circle">Circular</option>
-                  <option value="concentric">Concentric</option>
-                  <option value="grid">Grid Layout</option>
+                  <option value="cose" className="bg-slate-900 text-slate-100">Force CoSE</option>
+                  <option value="fcose" className="bg-slate-900 text-slate-100">fCoSE Layout</option>
+                  <option value="dagre" className="bg-slate-900 text-slate-100">Dagre Hierarchical</option>
+                  <option value="circle" className="bg-slate-900 text-slate-100">Circular</option>
+                  <option value="concentric" className="bg-slate-900 text-slate-100">Concentric</option>
+                  <option value="grid" className="bg-slate-900 text-slate-100">Grid Layout</option>
                 </select>
               </div>
 
