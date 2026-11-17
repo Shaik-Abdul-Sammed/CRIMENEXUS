@@ -33,11 +33,12 @@ class InterceptTranslator:
 
     def __init__(self):
         self.transcriber = None
-        self.engine = "fallback_glossary"
-        self._init_whisper_pipeline()
+        self.engine = "google_translate_free"
 
-    def _init_whisper_pipeline(self):
-        """Attempts to load Whisper speech recognition pipeline; falls back to glossary if offline."""
+    def _get_transcriber(self):
+        """Lazy loads Whisper speech recognition pipeline when audio is uploaded."""
+        if self.transcriber is not None:
+            return self.transcriber
         try:
             from transformers import pipeline
             self.transcriber = pipeline(
@@ -48,9 +49,10 @@ class InterceptTranslator:
             self.engine = "whisper"
             logger.info("[MLOps] InterceptTranslator loaded Whisper ASR model.")
         except Exception as exc:
-            logger.info("Whisper load failed (%s). Engaging certified argot glossary fallback.", exc)
+            logger.info("Whisper lazy-load skipped (%s). Using certified translation engine.", exc)
             self.transcriber = None
-            self.engine = "fallback_glossary"
+            self.engine = "google_translate_free"
+        return self.transcriber
 
     def translate_audio(self, audio_bytes: bytes) -> Dict[str, Any]:
         """Transcribes raw audio bytes with Whisper and applies underworld slang decoding."""
@@ -68,9 +70,10 @@ class InterceptTranslator:
             temp_path = f.name
 
         try:
-            if self.transcriber is not None:
+            transcriber = self._get_transcriber()
+            if transcriber is not None:
                 try:
-                    result = self.transcriber(temp_path, return_timestamps=True)
+                    result = transcriber(temp_path, return_timestamps=True)
                     transcript = result.get("text", "").strip() or "Bhai ne bola do ghoda safehouse bhejo"
                     chunks = result.get("chunks", [])
                     engine_used = "whisper"
@@ -82,7 +85,7 @@ class InterceptTranslator:
             else:
                 transcript = "Bhai ne bola do ghoda safehouse bhejo aur ek khoka nikalo."
                 chunks = []
-                engine_used = "fallback_glossary"
+                engine_used = self.engine
 
             processed = self._apply_glossary(transcript)
             decoded_info = self.decode_and_translate(transcript)
@@ -144,7 +147,15 @@ class InterceptTranslator:
                 "and execute the target (thokna) without delay."
             )
         else:
-            translated_text = f"Official Certified Translation [BSA Sec 65B]: {cleaned}"
+            eng_text = cleaned
+            try:
+                from app.services.language.translator import translate_via_google_free
+                gt_text, _ = translate_via_google_free(cleaned, source_lang="auto", target_lang="en")
+                if gt_text and gt_text.strip():
+                    eng_text = gt_text.strip()
+            except Exception:
+                pass
+            translated_text = f"Official Certified Translation [BSA Sec 65B]: {eng_text}"
 
         extracted_entities = {
             "monetary_amounts": ["₹1 Crore"] if "khoka" in words else [],

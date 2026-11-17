@@ -347,3 +347,7 @@ htmlcov/
 .vscode/
 *.swp
 
+# Runtime and generated test evidence data
+data/
+backend/data/
+

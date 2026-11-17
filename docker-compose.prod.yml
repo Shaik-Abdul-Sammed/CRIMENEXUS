@@ -61,7 +61,7 @@ services:
       dockerfile: Dockerfile
     container_name: crimenexus_backend_prod
     restart: always
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2
     # ZERO-TRUST: Internal network only, all traffic routed exclusively through reverse proxy
     expose:
       - "8000"
@@ -78,6 +78,9 @@ services:
       - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-15}
       - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
       - ENVIRONMENT=production
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     depends_on:
       postgres:
         condition: service_healthy

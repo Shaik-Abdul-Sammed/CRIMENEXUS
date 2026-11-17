@@ -69,18 +69,17 @@ def set_cached_translation(text: str, target_lang: str, translated: str):
 
 
 def get_offline_huggingface_translator():
-    """Lazy loads Helsinki-NLP/opus-mt-hi-en offline translation model."""
+    """Lazy loads Helsinki-NLP/opus-mt-hi-en offline translation model without network stalls."""
     global _OFFLINE_TRANSLATOR
     if _OFFLINE_TRANSLATOR is not None:
         return _OFFLINE_TRANSLATOR
 
     try:
         from transformers import pipeline
-        logger.info("[TRANSLATOR] Loading offline model Helsinki-NLP/opus-mt-hi-en...")
-        _OFFLINE_TRANSLATOR = pipeline("translation", model="Helsinki-NLP/opus-mt-hi-en")
+        _OFFLINE_TRANSLATOR = pipeline("translation", model="Helsinki-NLP/opus-mt-hi-en", local_files_only=True)
         return _OFFLINE_TRANSLATOR
     except Exception as exc:
-        logger.debug("Helsinki-NLP offline model not initialized: %s", exc)
+        logger.debug("Helsinki-NLP offline local model not available: %s", exc)
         return None
 
 
@@ -253,11 +252,113 @@ def detect_language(text: str) -> str:
     return "en"
 
 
+import urllib.request
+import urllib.parse
+import json
+
+def translate_via_google_free(text: str, source_lang: str = "auto", target_lang: str = "en") -> Tuple[str, str]:
+    """
+    Translates text using high-reliability Google Translate open/free endpoints:
+    Primary: https://clients5.google.com/translate_a/t?client=dict-chrome-ex&sl={sl}&tl={tl}&q={text}
+    Fallback: https://translate.googleapis.com/translate_a/single?client=dict-chrome-ex&sl={sl}&tl={tl}&dt=t&q={text}
+    Returns: (translated_text, detected_language)
+    """
+    if not text or not text.strip():
+        return ("", source_lang if source_lang != "auto" else target_lang)
+
+    clean_text = text.strip()
+    sl = source_lang or "auto"
+    tl = target_lang or "en"
+
+    # Check cache first
+    cached = get_cached_translation(clean_text, tl)
+    if cached:
+        return (cached, sl)
+
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Accept": "*/*"
+    }
+
+    # 1. Primary Endpoint: clients5.google.com dict-chrome-ex
+    try:
+        encoded_query = urllib.parse.quote(clean_text)
+        url = f"https://clients5.google.com/translate_a/t?client=dict-chrome-ex&sl={sl}&tl={tl}&q={encoded_query}"
+        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            if resp.status == 200:
+                body = resp.read().decode("utf-8")
+                data = json.loads(body)
+                if isinstance(data, list) and len(data) > 0:
+                    first = data[0]
+                    if isinstance(first, list) and len(first) > 0:
+                        trans = str(first[0])
+                        detected = str(first[1]) if len(first) > 1 and isinstance(first[1], str) else sl
+                        if trans and trans.strip():
+                            set_cached_translation(clean_text, tl, trans)
+                            return (trans, detected)
+                    elif isinstance(first, str) and first.strip():
+                        set_cached_translation(clean_text, tl, first)
+                        return (first, sl)
+    except Exception as exc:
+        logger.debug("[GOOGLE_FREE_PRIMARY] Primary translation error: %s", exc)
+
+    # 2. Fallback Endpoint: translate.googleapis.com
+    try:
+        encoded_query = urllib.parse.quote(clean_text)
+        url = f"https://translate.googleapis.com/translate_a/single?client=dict-chrome-ex&sl={sl}&tl={tl}&dt=t&q={encoded_query}"
+        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            if resp.status == 200:
+                body = resp.read().decode("utf-8")
+                data = json.loads(body)
+                if isinstance(data, list) and len(data) > 0:
+                    first = data[0]
+                    if isinstance(first, list) and len(first) > 0:
+                        parts = [chunk[0] for chunk in first if isinstance(chunk, list) and len(chunk) > 0 and chunk[0]]
+                        trans = "".join(parts)
+                        detected = data[2] if len(data) > 2 and isinstance(data[2], str) else sl
+                        if trans and trans.strip():
+                            set_cached_translation(clean_text, tl, trans)
+                            return (trans, detected)
+    except Exception as exc:
+        logger.debug("[GOOGLE_FREE_FALLBACK] Fallback translation error: %s", exc)
+
+    return ("", sl)
+
+
+def translate_text(text: str, target_lang: str = "en", source_lang: str = "auto") -> Tuple[str, str]:
+    """
+    Translates text between arbitrary language pairs (e.g. English -> Hindi, Marathi -> English).
+    Returns (translated_text, detected_language).
+    """
+    if not text or not text.strip():
+        return ("", source_lang)
+
+    if source_lang != "auto" and source_lang == target_lang:
+        return (text, source_lang)
+
+    # 1. Google Translate Free API
+    trans, detected = translate_via_google_free(text, source_lang=source_lang, target_lang=target_lang)
+    if trans and trans.strip():
+        return (trans, detected)
+
+    # 2. If target is English, fall back to sovereign Indic pipeline
+    if target_lang == "en":
+        return translate_to_english(text, source_lang=source_lang if source_lang != "auto" else None)
+
+    return (text, source_lang)
+
+
 def translate_to_english(text: str, source_lang: Optional[str] = None) -> Tuple[str, str]:
     """
     Translates an Indian regional vernacular police narrative into English.
     Returns (translated_text, detected_language).
-    Uses Deep-Translator, Redis Caching, and Helsinki-NLP Offline Fallback.
+    Pipeline:
+    1. Check Cache
+    2. Google Translate Free API (Primary)
+    3. Deep-Translator (GoogleTranslator)
+    4. Offline Helsinki-NLP / Bhashini / Sovereign Police Lexicon
     """
     if not text or not text.strip():
         return ("", "en")
@@ -271,7 +372,13 @@ def translate_to_english(text: str, source_lang: Optional[str] = None) -> Tuple[
     if cached:
         return (cached, lang)
 
-    # 2. Try deep-translator (GoogleTranslator)
+    # 2. Google Translate Free API (Primary)
+    google_trans, detected = translate_via_google_free(text, source_lang=lang or "auto", target_lang="en")
+    if google_trans and google_trans.strip():
+        set_cached_translation(text, "en", google_trans)
+        return (google_trans, detected if detected != "auto" else lang)
+
+    # 3. Try deep-translator (GoogleTranslator)
     try:
         from deep_translator import GoogleTranslator
         translator = GoogleTranslator(source="auto", target="en")
@@ -282,7 +389,7 @@ def translate_to_english(text: str, source_lang: Optional[str] = None) -> Tuple[
     except Exception as exc:
         logger.debug("[DEEP_TRANSLATOR] Online translation failed: %s. Attempting offline fallback.", exc)
 
-    # 3. Offline Fallback: HuggingFace transformers (Helsinki-NLP/opus-mt-hi-en)
+    # 4. Offline Fallback: HuggingFace transformers (Helsinki-NLP/opus-mt-hi-en)
     if lang in ["hi", "mr"]:
         try:
             hf_trans = get_offline_huggingface_translator()
@@ -295,14 +402,14 @@ def translate_to_english(text: str, source_lang: Optional[str] = None) -> Tuple[
         except Exception as exc:
             logger.debug("[HUGGINGFACE_TRANSLATE] Offline translation failed: %s", exc)
 
-    # 4. Check Government Bhashini API
+    # 5. Check Government Bhashini API
     bhashini = get_bhashini_client()
     bhashini_result = bhashini.translate(text, source_lang=lang, target_lang="en")
     if bhashini_result:
         set_cached_translation(text, "en", bhashini_result)
         return (bhashini_result, lang)
 
-    # 5. Sovereign Lexicon Translation Fallback
+    # 6. Sovereign Lexicon Translation Fallback
     norm_text = normalize_indic_digits(text)
     for vernacular_name, english_name in NAME_TRANSLITERATION_MAP.items():
         norm_text = re.sub(re.escape(vernacular_name), english_name, norm_text)

@@ -81,6 +81,7 @@ ROUTER_CONFIGS = [
     ("blockchain_evidence", "app.api.blockchain_evidence", "/api/v1"),
     ("case_triage", "app.api.case_triage", "/api/v1"),
     ("officers_legal", "app.api.officers_legal", "/api/v1"),
+    ("language", "app.api.language_router", "/api/v1"),
 ]
 from app.services.streaming.redis_streams import get_streaming_stats
 from app.services.streaming.stream_processor import run_stream_consumer_worker
