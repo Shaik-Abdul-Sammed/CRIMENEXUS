@@ -88,6 +88,12 @@ services:
         condition: service_started
       redis:
         condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+      start_period: 25s
     deploy:
       resources:
         limits:
@@ -109,7 +115,8 @@ services:
       - "80:80"
     # Assets are baked into container via multi-stage build; no host volume mount needed
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     networks:
       - crimenexus_prod_net
 
