@@ -363,13 +363,29 @@ class RAGDraftEngine:
     def _init_cross_encoder(self):
         """Attempts to load CrossEncoder model; falls back to exact semantic scoring if offline."""
         if CrossEncoder is not None and not self._cross_encoder_loaded:
+            model_name = "cross-encoder/ms-marco-MiniLM-L-6-v2"
             try:
-                model_name = "cross-encoder/ms-marco-MiniLM-L-6-v2"
-                self._cross_encoder = CrossEncoder(model_name, max_length=512)
+                # 1. First attempt local cache only (guarantees instantaneous non-blocking load)
+                self._cross_encoder = CrossEncoder(model_name, max_length=512, local_files_only=True)
                 self._cross_encoder_loaded = True
-                logger.info("Cross-Encoder re-ranker loaded: %s", model_name)
+                logger.info("Cross-Encoder re-ranker loaded from local cache: %s", model_name)
+                return
+            except Exception:
+                pass
+
+            try:
+                # 2. Try online with short socket timeout to prevent stalling startup
+                import socket
+                old_timeout = socket.getdefaulttimeout()
+                socket.setdefaulttimeout(3.0)
+                try:
+                    self._cross_encoder = CrossEncoder(model_name, max_length=512)
+                    self._cross_encoder_loaded = True
+                    logger.info("Cross-Encoder re-ranker loaded: %s", model_name)
+                finally:
+                    socket.setdefaulttimeout(old_timeout)
             except Exception as exc:
-                logger.info("Cross-Encoder offline or loading in background: %s. Using internal cross-scorer.", exc)
+                logger.info("Cross-Encoder offline: %s. Using sovereign legal semantic cross-scorer.", exc)
                 self._cross_encoder = None
                 self._cross_encoder_loaded = False
 
