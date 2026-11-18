@@ -358,3 +358,23 @@ dialog {
   text-shadow: none !important;
 }
 
+/* Universal Dark Mode for Select and Options across all OS & Browsers */
+select {
+  color-scheme: dark !important;
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+select option,
+select optgroup {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+select option:checked,
+select option:hover {
+  background-color: #1e293b !important;
+  color: #38bdf8 !important;
+}
+
+

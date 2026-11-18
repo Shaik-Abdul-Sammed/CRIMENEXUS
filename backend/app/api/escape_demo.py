@@ -16,6 +16,11 @@ from app.services.streaming.omni_footprint_simulator import get_omni_footprint_s
 from app.services.streaming.digital_exhaust_simulator import get_digital_exhaust_simulator
 from app.services.streaming.escape_simulator import get_escape_simulator
 from app.services.streaming.redis_streams import get_streaming_stats
+from app.services.analytics.critical_cases_engine import (
+    get_all_critical_cases,
+    get_critical_case_by_id,
+    solve_critical_case,
+)
 from app.security.authentication import get_current_user, get_optional_current_user
 from app.models.user import User
 from app.database.postgres import SessionLocal, get_db
@@ -388,3 +393,40 @@ def get_smart_meter_anomalies(db: Session = Depends(get_db)):
         logger.warning("Smart meter query error: %s. Using proxy fallback.", exc)
 
     return _vehicle_sighting_proxy(db)
+
+
+@router.get("/critical-cases", summary="List 30 Critical Real-World Cases with 100+ Historical Cases Research")
+def get_critical_cases_endpoint(
+    category: Optional[str] = Query(None, description="Filter by category (e.g. SYNDICATE_EVASION, CHILD_ABDUCTION, ARMED_HEIST)"),
+    severity: Optional[str] = Query(None, description="Filter by severity (e.g. CRITICAL_FLASH_RED, HIGH)")
+):
+    """
+    Returns 30 Critical Real-World Cases modeled on 100+ historical evasion and search operations.
+    Each scenario details failure points, future vulnerabilities, and multi-sensor solutions.
+    """
+    return get_all_critical_cases(category=category, severity=severity)
+
+
+@router.get("/critical-cases/{case_id}", summary="Get In-Depth Analysis and Modus Operandi for a Specific Critical Case")
+def get_single_critical_case_endpoint(
+    case_id: str = Path(..., description="Target Case ID (e.g. CRIT-CASE-01)")
+):
+    """Retrieves deep failure point analysis and mathematical encapsulation vectors for one case."""
+    case = get_critical_case_by_id(case_id)
+    if not case:
+        return get_critical_case_by_id("CRIT-CASE-01")
+    return case
+
+
+@router.post("/critical-cases/{case_id}/solve", summary="Execute Real-Time Multi-Sensor & Voronoi Encapsulation Solver")
+def solve_critical_case_endpoint(
+    case_id: str = Path(..., description="Target Case ID (e.g. CRIT-CASE-01)")
+):
+    """
+    Executes algorithmic solving for the target critical case:
+    1. Multi-Sensor Satellite & RF Triangulation
+    2. Dynamic Voronoi Perimeter Cordon & Drop-Gate Actuation
+    3. Golden Hour Transit Lockdown & Section 65B BNSS Admissibility Certificate
+    """
+    return solve_critical_case(case_id)
+

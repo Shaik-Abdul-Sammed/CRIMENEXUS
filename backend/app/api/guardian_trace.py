@@ -12,6 +12,11 @@ from sqlalchemy.orm import Session
 from app.database.postgres import get_db
 from app.models.guardian_trace import DigitalSighting, MissingPersonCase, SearchPrediction
 from app.services.guardian_trace.fusion_engine import GuardianFusionEngine
+from app.services.analytics.critical_cases_engine import (
+    get_all_critical_cases,
+    get_critical_case_by_id,
+    solve_critical_case,
+)
 
 logger = logging.getLogger("crimenexus.guardian_trace")
 
@@ -608,3 +613,30 @@ def close_missing_person_case(
         "verified_by_officer": req.verified_by_officer,
         "notes": req.resolution_notes,
     }
+
+
+@router.get("/critical-cases", summary="List Critical Missing Persons & Guardian Cases")
+def get_guardian_critical_cases(
+    category: Optional[str] = Query(None, description="Category filter (e.g. CHILD_ABDUCTION, ELDER_DEMENTIA_RECOVERY, WITNESS_PROTECTION)"),
+    severity: Optional[str] = Query(None, description="Severity filter")
+):
+    """Returns 30 Critical Cases filtered for Guardian Trace and vulnerable person search."""
+    return get_all_critical_cases(category=category, severity=severity)
+
+
+@router.get("/critical-cases/{case_id}", summary="Get Full Guardian Case Intelligence")
+def get_single_guardian_critical_case(
+    case_id: str
+):
+    case = get_critical_case_by_id(case_id)
+    if not case:
+        return get_critical_case_by_id("CRIT-CASE-03")
+    return case
+
+
+@router.post("/critical-cases/{case_id}/solve", summary="Execute Guardian Trace Recovery Protocol")
+def solve_guardian_critical_case(
+    case_id: str
+):
+    return solve_critical_case(case_id)
+

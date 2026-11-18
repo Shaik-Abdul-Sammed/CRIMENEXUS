@@ -29,13 +29,21 @@ import {
   Navigation,
   Eye,
   FileCheck2,
-  X
+  X,
+  Radar,
+  Compass,
+  BookOpen,
+  AlertOctagon,
+  Target
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Modal } from '../../components/ui/Modal';
 import { DocumentPreviewModal } from '../../components/common/DocumentPreviewModal';
+import { OmniTraceSatelliteModal } from '../../components/common/OmniTraceSatelliteModal';
+import { CRITICAL_CASES, CriticalCase, getCriticalCaseById } from '../../data/criticalRealWorldCases';
+import { api } from '../../services/api';
 import { sound } from '../../utils/soundEffects';
 import { useToast } from '../../components/ui/Toast';
 import { Link } from 'react-router-dom';
@@ -176,6 +184,16 @@ export function EscapeSimulationPage() {
   const [step2Data, setStep2Data] = useState<Step2Data | null>(null);
   const [step3Data, setStep3Data] = useState<Step3Data | null>(null);
 
+  // 30 Critical Real-World Cases & In-Depth Analytical Engine State
+  const [selectedCaseId, setSelectedCaseId] = useState<string>('CRIT-CASE-01');
+  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
+  const [activeTab, setActiveTab] = useState<'SIMULATION' | 'RESEARCH_100_CASES'>('SIMULATION');
+  const [isSolvingCase, setIsSolvingCase] = useState<boolean>(false);
+  const [solvedCaseData, setSolvedCaseData] = useState<any | null>(null);
+  const [omniModalOpen, setOmniModalOpen] = useState<boolean>(false);
+
+  const activeCase: CriticalCase = getCriticalCaseById(selectedCaseId);
+
   // Plate Swap Animation State
   const [plateFlipped, setPlateFlipped] = useState<boolean>(false);
 
@@ -195,9 +213,11 @@ export function EscapeSimulationPage() {
   }, [simulationCompleted]);
 
   // Render Initial Active Tactical Corridor on Map Load or Reset
-  const renderInitialTacticalOverview = useCallback((mapInstance?: maplibregl.Map | null) => {
+  const renderInitialTacticalOverview = useCallback((targetCaseParam?: CriticalCase, mapInstance?: maplibregl.Map | null) => {
     const targetMap = mapInstance || mapRef.current;
     if (!targetMap || !targetMap.isStyleLoaded()) return;
+
+    const currentCase = targetCaseParam || activeCase;
 
     // Clear existing markers
     markersRef.current.forEach((m) => m.remove());
@@ -209,7 +229,7 @@ export function EscapeSimulationPage() {
       corridorSrc.setData({
         type: 'Feature',
         properties: {},
-        geometry: { type: 'LineString', coordinates: ESCAPE_CORRIDOR_COORDS },
+        geometry: { type: 'LineString', coordinates: currentCase.route_corridor },
       });
     }
 
@@ -223,88 +243,147 @@ export function EscapeSimulationPage() {
       });
     }
 
-    // 2. Drop Rajan Getaway Vehicle Marker at Origin (Connaught Place -> Sector 18)
-    const rajanEl = document.createElement('div');
-    rajanEl.className = 'cursor-pointer';
-    rajanEl.innerHTML = `
+    // Reset Voronoi Cordon Polygon
+    const cordonSrc = targetMap.getSource('cordon-polygon-source') as maplibregl.GeoJSONSource | undefined;
+    if (cordonSrc) {
+      cordonSrc.setData({
+        type: 'Feature',
+        properties: {},
+        geometry: { type: 'Polygon', coordinates: [] },
+      });
+    }
+
+    // 2. Drop Target Marker at Origin
+    const targetEl = document.createElement('div');
+    targetEl.className = 'cursor-pointer';
+    targetEl.innerHTML = `
       <div style="display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 0 14px rgba(239,68,68,0.9));">
-        <div style="background: #dc2626; color: white; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 4px; border: 1.5px solid white; white-space: nowrap; margin-bottom: 2px;">
-          🎯 TARGET: TS 09 AB 1234 (Rajan)
+        <div style="background: #dc2626; color: white; font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 4px; border: 1.5px solid white; white-space: nowrap; margin-bottom: 2px;">
+          🎯 ${currentCase.suspect_or_victim.slice(0, 24)}
         </div>
         <div style="width: 32px; height: 32px; border-radius: 9999px; background: #b91c1c; border: 2.5px solid white; display: flex; align-items: center; justify-content: center; font-size: 15px; animation: pulse 1.5s infinite;">
           🚗
         </div>
       </div>
     `;
-    const rajanMarker = new maplibregl.Marker({ element: rajanEl })
-      .setLngLat([77.2197, 28.6328])
-      .setPopup(new maplibregl.Popup({ offset: 15 }).setHTML('<b>Rajan Verma (Target)</b><br/>Scorpio TS 09 AB 1234<br/>Speed: 118 km/h'))
+    const targetMarker = new maplibregl.Marker({ element: targetEl })
+      .setLngLat(currentCase.origin_coords)
+      .setPopup(new maplibregl.Popup({ offset: 15 }).setHTML(`<b>${currentCase.title}</b><br/>Locus: ${currentCase.origin_location}`))
       .addTo(targetMap);
-    markersRef.current.push(rajanMarker);
+    markersRef.current.push(targetMarker);
 
-    // 3. Drop FASTag ANPR Toll Camera Checkpoint (Yamuna Toll KM 48)
+    // 3. Drop Intercept Checkpoint Marker
     const tollEl = document.createElement('div');
     tollEl.className = 'cursor-pointer';
     tollEl.innerHTML = `
       <div style="display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 0 12px rgba(245,158,11,0.9));">
         <div style="background: #d97706; color: white; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; border: 1px solid white; white-space: nowrap; margin-bottom: 2px;">
-          📡 FASTag RFID: Yamuna Toll KM 48
+          🛑 CHOKEPOINT: ${currentCase.intercept_point.name.slice(0, 24)}
         </div>
         <div style="width: 26px; height: 26px; border-radius: 9999px; background: #b45309; border: 2px solid white; display: flex; align-items: center; justify-content: center; font-size: 12px;">
-          📷
+          🚧
         </div>
       </div>
     `;
     const tollMarker = new maplibregl.Marker({ element: tollEl })
-      .setLngLat([77.5510, 28.1402])
-      .setPopup(new maplibregl.Popup({ offset: 15 }).setHTML('<b>Yamuna Expressway Toll KM 48</b><br/>ANPR Camera Cam-04 & FASTag Antenna'))
+      .setLngLat(currentCase.intercept_point.coords)
+      .setPopup(new maplibregl.Popup({ offset: 15 }).setHTML(`<b>${currentCase.intercept_point.name}</b><br/>ETA: ${currentCase.intercept_point.eta_minutes} mins<br/>Unit: ${currentCase.intercept_point.recommended_unit}`))
       .addTo(targetMap);
     markersRef.current.push(tollMarker);
 
-    // 4. Drop Sector 62 Safehouse Beacon
-    const safehouseEl = document.createElement('div');
-    safehouseEl.className = 'cursor-pointer';
-    safehouseEl.innerHTML = `
+    // 4. Drop Destination Target Marker
+    const destEl = document.createElement('div');
+    destEl.className = 'cursor-pointer';
+    destEl.innerHTML = `
       <div style="display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 0 14px rgba(168,85,247,0.9));">
         <div style="background: #9333ea; color: white; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; border: 1px solid white; white-space: nowrap; margin-bottom: 2px;">
-          🏚️ Unmapped Safehouse (Sector 62)
+          📍 Destination: ${currentCase.destination_target.slice(0, 22)}
         </div>
         <div style="width: 26px; height: 26px; border-radius: 9999px; background: #7e22ce; border: 2px solid white; display: flex; align-items: center; justify-content: center; font-size: 12px;">
-          📍
+          🏁
         </div>
       </div>
     `;
-    const safehouseMarker = new maplibregl.Marker({ element: safehouseEl })
-      .setLngLat([77.3649, 28.6280])
-      .setPopup(new maplibregl.Popup({ offset: 15 }).setHTML('<b>Predicted Safehouse</b><br/>Sector 62, Noida<br/>Smart Meter Draw: +420%'))
+    const destMarker = new maplibregl.Marker({ element: destEl })
+      .setLngLat(currentCase.destination_coords)
+      .setPopup(new maplibregl.Popup({ offset: 15 }).setHTML(`<b>Predicted Destination</b><br/>${currentCase.destination_target}`))
       .addTo(targetMap);
-    markersRef.current.push(safehouseMarker);
-
-    // 5. Drop PCR Patrol Unit Alpha-04 (Sector 58 Noida)
-    const pcrEl = document.createElement('div');
-    pcrEl.className = 'cursor-pointer';
-    pcrEl.innerHTML = `
-      <div style="display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 0 14px rgba(37,99,235,0.9));">
-        <div style="background: #2563eb; color: white; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; border: 1px solid white; white-space: nowrap; margin-bottom: 2px;">
-          👮 PCR PATROL ALPHA-04
-        </div>
-        <div style="width: 28px; height: 28px; border-radius: 9999px; background: #1d4ed8; border: 2px solid white; display: flex; align-items: center; justify-content: center; font-size: 13px;">
-          🚔
-        </div>
-      </div>
-    `;
-    const pcrMarker = new maplibregl.Marker({ element: pcrEl })
-      .setLngLat([77.3550, 28.6050])
-      .setPopup(new maplibregl.Popup({ offset: 15 }).setHTML('<b>PCR Patrol Unit Alpha-04</b><br/>Ch-04 VHF Tactical Standby'))
-      .addTo(targetMap);
-    markersRef.current.push(pcrMarker);
+    markersRef.current.push(destMarker);
 
     // Auto-fit camera to frame entire tactical corridor
     const bounds = new maplibregl.LngLatBounds();
-    ESCAPE_CORRIDOR_COORDS.forEach((c) => bounds.extend(c));
-    bounds.extend([77.3550, 28.6050]);
-    targetMap.fitBounds(bounds, { padding: 70, duration: 900, maxZoom: 13 });
-  }, []);
+    currentCase.route_corridor.forEach((c) => bounds.extend(c));
+    bounds.extend(currentCase.intercept_point.coords);
+    targetMap.fitBounds(bounds, { padding: 60, duration: 900, maxZoom: 13 });
+  }, [selectedCaseId]);
+
+  const handleSelectCase = (caseId: string) => {
+    sound.playClickSound();
+    setSelectedCaseId(caseId);
+    setActiveStep(0);
+    setSolvedCaseData(null);
+    setSimulationCompleted(false);
+    const targetCase = getCriticalCaseById(caseId);
+    renderInitialTacticalOverview(targetCase);
+    toast.info(`Loaded Critical Case ${targetCase.case_id}: ${targetCase.title}`, 'Case Switch');
+  };
+
+  const handleSolveCase = async () => {
+    setIsSolvingCase(true);
+    sound.playClickSound();
+    try {
+      const solution = await api.solveCriticalCase(activeCase.case_id);
+      setSolvedCaseData(solution);
+
+      // Render Voronoi Cordon Polygon around intercept point on map
+      if (mapRef.current && mapRef.current.isStyleLoaded()) {
+        const center = activeCase.intercept_point.coords;
+        const radius = 0.07;
+        const numPoints = 8;
+        const polygonCoords: number[][] = [];
+        for (let i = 0; i <= numPoints; i++) {
+          const angle = (i * 2 * Math.PI) / numPoints;
+          polygonCoords.push([
+            center[0] + radius * Math.cos(angle) * 1.25,
+            center[1] + radius * Math.sin(angle) * 0.95,
+          ]);
+        }
+
+        const cordonSrc = mapRef.current.getSource('cordon-polygon-source') as maplibregl.GeoJSONSource | undefined;
+        if (cordonSrc) {
+          cordonSrc.setData({
+            type: 'Feature',
+            properties: {},
+            geometry: { type: 'Polygon', coordinates: [polygonCoords] },
+          });
+        }
+
+        // Draw Intercept route from closest patrol unit to chokepoint
+        const interceptSrc = mapRef.current.getSource('intercept-line-source') as maplibregl.GeoJSONSource | undefined;
+        if (interceptSrc) {
+          const unitStart: [number, number] = [center[0] - 0.035, center[1] - 0.025];
+          interceptSrc.setData({
+            type: 'Feature',
+            properties: {},
+            geometry: { type: 'LineString', coordinates: [unitStart, center] },
+          });
+        }
+
+        mapRef.current.flyTo({ center, zoom: 12.5, duration: 900 });
+      }
+
+      setSimulationCompleted(true);
+      toast.success(
+        `ENCAPSULATION COMPLETE: ${activeCase.intercept_point.name} locked down. ETA: ${activeCase.intercept_point.eta_minutes} mins via ${activeCase.intercept_point.recommended_unit}.`,
+        'Interdiction Sealed'
+      );
+    } catch (err) {
+      console.warn('Solve failed:', err);
+      toast.error('Failed to execute encapsulation protocol.', 'Interdiction Alert');
+    } finally {
+      setIsSolvingCase(false);
+    }
+  };
 
   // Step 1 Visual Map Renderer (Vehicle Swap & FASTag Fusion)
   const renderStep1Map = useCallback(() => {
@@ -520,8 +599,39 @@ export function EscapeSimulationPage() {
         },
       });
 
+      // 3. Voronoi Cordon Polygon Source & Layers
+      map.addSource('cordon-polygon-source', {
+        type: 'geojson',
+        data: {
+          type: 'Feature',
+          properties: {},
+          geometry: { type: 'Polygon', coordinates: [] },
+        },
+      });
+
+      map.addLayer({
+        id: 'cordon-polygon-fill',
+        type: 'fill',
+        source: 'cordon-polygon-source',
+        paint: {
+          'fill-color': '#ef4444',
+          'fill-opacity': 0.18,
+        },
+      });
+
+      map.addLayer({
+        id: 'cordon-polygon-stroke',
+        type: 'line',
+        source: 'cordon-polygon-source',
+        paint: {
+          'line-color': '#f87171',
+          'line-width': 2.5,
+          'line-dasharray': [4, 2],
+        },
+      });
+
       // Render Initial Active Corridor & Markers immediately on load!
-      renderInitialTacticalOverview(map);
+      renderInitialTacticalOverview(activeCase, map);
     });
 
     mapRef.current = map;
@@ -822,6 +932,245 @@ export function EscapeSimulationPage() {
           </Link>
         </div>
       </div>
+
+      {/* 30 Critical Real-World Cases Playbook Toolbar */}
+      <div className="p-4 rounded-xl border border-sky-500/40 bg-gradient-to-r from-slate-950 via-slate-900 to-sky-950/40 shadow-xl space-y-3">
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <span className="p-1.5 rounded-lg bg-sky-500/20 text-sky-400 border border-sky-500/40">
+              <Compass className="h-5 w-5" />
+            </span>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-black uppercase tracking-wider text-sky-300 font-mono">
+                  30 Critical Real-World Cases Playbook (100+ Cases Research)
+                </span>
+                <Badge
+                  variant="destructive"
+                  className="bg-red-600/30 text-red-300 border border-red-500/40 text-[10px] font-mono font-bold"
+                >
+                  {activeCase.severity.replace(/_/g, ' ')}
+                </Badge>
+                <span className="text-[10px] font-mono text-muted-foreground">
+                  {activeCase.case_id}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-300 mt-0.5">
+                Investigative simulation solving future failure points across syndicate evasions, cross-border infiltration, cyber-extortion, and missing persons.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap shrink-0">
+            {/* Category Filter */}
+            <select
+              value={selectedCategory}
+              onChange={(e) => {
+                sound.playClickSound();
+                setSelectedCategory(e.target.value);
+              }}
+              style={{ colorScheme: 'dark', backgroundColor: '#0f172a', color: '#f8fafc' }}
+              className="h-8 px-2.5 rounded-lg border border-border bg-slate-900 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-sky-500 font-medium [&>option]:bg-slate-900 [&>option]:text-slate-100"
+              title="Filter by Case Category"
+            >
+              <option value="ALL">All Categories (30 Cases)</option>
+              <option value="SYNDICATE_EVASION">Syndicate Evasion</option>
+              <option value="CROSS_BORDER_INFILTRATION">Cross-Border Infiltration</option>
+              <option value="CHILD_ABDUCTION">Child Abduction / Amber Alert</option>
+              <option value="CYBER_KIDNAPPING">Cyber-Kidnapping & Extortion</option>
+              <option value="WITNESS_PROTECTION">Witness Protection & Ambush</option>
+              <option value="ARMED_HEIST">Armed Heist & Breakout</option>
+              <option value="HIGHWAY_HIJACKING">Highway Freight Hijacking</option>
+              <option value="COASTAL_SMUGGLING">Coastal Sea-Route Smuggling</option>
+              <option value="ELDER_DEMENTIA_RECOVERY">Elder Dementia Rail Wandering</option>
+              <option value="DECOY_VEHICLE_SWAP">Decoy Vehicle & Plate Swap</option>
+            </select>
+
+            {/* Case Selector Dropdown */}
+            <select
+              value={selectedCaseId}
+              onChange={(e) => handleSelectCase(e.target.value)}
+              style={{ colorScheme: 'dark', backgroundColor: '#0f172a', color: '#f8fafc' }}
+              className="h-8 px-2.5 rounded-lg border border-sky-500/50 bg-slate-900 text-xs text-sky-200 font-bold focus:outline-none focus:ring-1 focus:ring-sky-400 max-w-[280px] truncate [&>option]:bg-slate-900 [&>option]:text-slate-100"
+              title="Select one of 30 Critical Cases"
+            >
+              {CRITICAL_CASES.filter((c) => selectedCategory === 'ALL' || c.category === selectedCategory).map((c) => (
+                <option key={c.case_id} value={c.case_id}>
+                  {c.case_id}: {c.title}
+                </option>
+              ))}
+            </select>
+
+            {/* Omni Trace Satellite Radar Modal Launch */}
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                sound.playClickSound();
+                setOmniModalOpen(true);
+              }}
+              className="h-8 border-cyan-500/60 bg-cyan-950/40 text-cyan-300 hover:bg-cyan-900/40 text-xs font-bold flex items-center gap-1.5 shadow-sm"
+              title="Open Omni Trace Earth Observation & Multi-Sensor Radar for this case"
+            >
+              <Radar className="h-3.5 w-3.5 text-cyan-400" />
+              <span>Omni Trace Radar</span>
+            </Button>
+
+            {/* Solve & Encapsulate Button */}
+            <Button
+              size="sm"
+              onClick={handleSolveCase}
+              disabled={isSolvingCase}
+              className="h-8 bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white font-extrabold text-xs flex items-center gap-1.5 shadow-md shadow-red-950/50"
+              title="Execute Real-Time Multi-Sensor Voronoi Encapsulation Solver"
+            >
+              {isSolvingCase ? (
+                <RotateCcw className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Target className="h-3.5 w-3.5" />
+              )}
+              <span>{isSolvingCase ? 'Encapsulating...' : 'Solve & Encapsulate'}</span>
+            </Button>
+          </div>
+        </div>
+
+        {/* Selected Case Quick Stats Bar */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 pt-2 border-t border-white/10 text-xs font-mono">
+          <div className="p-2 rounded-lg bg-black/40 border border-white/5 space-y-0.5">
+            <span className="text-[9px] uppercase text-muted-foreground block">Target / Particulars</span>
+            <span className="text-white font-bold truncate block">{activeCase.suspect_or_victim}</span>
+          </div>
+
+          <div className="p-2 rounded-lg bg-black/40 border border-white/5 space-y-0.5">
+            <span className="text-[9px] uppercase text-muted-foreground block">Corridor Vector</span>
+            <span className="text-sky-300 font-bold truncate block">
+              {activeCase.origin_location.slice(0, 20)} ➔ {activeCase.destination_target.slice(0, 20)}
+            </span>
+          </div>
+
+          <div className="p-2 rounded-lg bg-black/40 border border-white/5 space-y-0.5">
+            <span className="text-[9px] uppercase text-muted-foreground block">Predicted Intercept Locus</span>
+            <span className="text-amber-400 font-bold truncate block">
+              {activeCase.intercept_point.name} (ETA: {activeCase.intercept_point.eta_minutes}m)
+            </span>
+          </div>
+
+          <div className="p-2 rounded-lg bg-black/40 border border-white/5 space-y-0.5">
+            <span className="text-[9px] uppercase text-muted-foreground block">Assigned Unit</span>
+            <span className="text-emerald-400 font-bold truncate block">{activeCase.intercept_point.recommended_unit}</span>
+          </div>
+        </div>
+
+        {/* View Mode Tabs */}
+        <div className="flex items-center gap-2 pt-1">
+          <button
+            onClick={() => {
+              sound.playClickSound();
+              setActiveTab('SIMULATION');
+            }}
+            className={`px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+              activeTab === 'SIMULATION'
+                ? 'bg-sky-600 text-white shadow-md'
+                : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            <Play className="h-3 w-3" />
+            <span>Tactical Map & Live Simulation</span>
+          </button>
+
+          <button
+            onClick={() => {
+              sound.playClickSound();
+              setActiveTab('RESEARCH_100_CASES');
+            }}
+            className={`px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+              activeTab === 'RESEARCH_100_CASES'
+                ? 'bg-indigo-600 text-white shadow-md'
+                : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            <BookOpen className="h-3 w-3" />
+            <span>100+ Cases Research & Failure Points Analysis</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Conditionally rendered 100+ Cases Research Tab */}
+      {activeTab === 'RESEARCH_100_CASES' && (
+        <div className="space-y-4 animate-in fade-in duration-300">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Card 1: Modus Operandi & Perpetrator Tradecraft */}
+            <Card className="border-amber-500/40 bg-gradient-to-b from-amber-950/20 via-slate-900 to-slate-950 shadow-xl">
+              <CardHeader className="pb-2 border-b border-amber-500/20 bg-amber-950/30">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-amber-400" />
+                  <CardTitle className="text-xs font-bold text-amber-300 uppercase tracking-wide">
+                    1. Perpetrator Modus Operandi (100+ Case Evasion Tradecraft)
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-3 text-xs text-slate-200 leading-relaxed">
+                <p>{activeCase.failure_analysis_100_cases.modus_operandi}</p>
+              </CardContent>
+            </Card>
+
+            {/* Card 2: Conventional Policing Failure Points */}
+            <Card className="border-red-500/40 bg-gradient-to-b from-red-950/20 via-slate-900 to-slate-950 shadow-xl">
+              <CardHeader className="pb-2 border-b border-red-500/20 bg-red-950/30">
+                <div className="flex items-center gap-2">
+                  <AlertOctagon className="h-4 w-4 text-red-400" />
+                  <CardTitle className="text-xs font-bold text-red-300 uppercase tracking-wide">
+                    2. Why Conventional Police Interdiction Fails
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-3 text-xs text-slate-200 leading-relaxed">
+                <p>{activeCase.failure_analysis_100_cases.conventional_policing_failures}</p>
+              </CardContent>
+            </Card>
+
+            {/* Card 3: Future Anticipated Vulnerabilities */}
+            <Card className="border-purple-500/40 bg-gradient-to-b from-purple-950/20 via-slate-900 to-slate-950 shadow-xl">
+              <CardHeader className="pb-2 border-b border-purple-500/20 bg-purple-950/30">
+                <div className="flex items-center gap-2">
+                  <Cpu className="h-4 w-4 text-purple-400" />
+                  <CardTitle className="text-xs font-bold text-purple-300 uppercase tracking-wide">
+                    3. Anticipated Future Vulnerabilities (What it will suffer in future)
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-3 text-xs text-slate-200 leading-relaxed">
+                <p>{activeCase.failure_analysis_100_cases.future_vulnerabilities}</p>
+              </CardContent>
+            </Card>
+
+            {/* Card 4: CRIMENEXUS Real-World Encapsulation Solution */}
+            <Card className="border-emerald-500/40 bg-gradient-to-b from-emerald-950/20 via-slate-900 to-slate-950 shadow-xl">
+              <CardHeader className="pb-2 border-b border-emerald-500/20 bg-emerald-950/30">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                  <CardTitle className="text-xs font-bold text-emerald-300 uppercase tracking-wide">
+                    4. CRIMENEXUS Real-World Multi-Sensor & Voronoi Solution
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-3 text-xs text-slate-200 space-y-2">
+                <div>
+                  <span className="font-bold text-emerald-300 block">Automated Roadblock Trigger:</span>
+                  <p>{activeCase.escape_encapsulation_solution.automated_roadblock_trigger}</p>
+                </div>
+                <div>
+                  <span className="font-bold text-cyan-300 block">Multi-Sensor Radar Fusion:</span>
+                  <p>{activeCase.omni_trace_solution.sensor_fusion_layers.join(' • ')}</p>
+                </div>
+                <div className="pt-1 flex items-center gap-2 font-mono text-[11px] text-muted-foreground">
+                  <span>Mandate: {activeCase.escape_encapsulation_solution.admissibility_mandate}</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
 
       {/* 3 Step Interactive Progress Pills */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
@@ -1260,6 +1609,21 @@ export function EscapeSimulationPage() {
           crimeType: 'Armed Getaway, FASTag Toll Evasion & Organized Extortion',
           hash: '8f4a1c9d2e3b5a7c0f1e2d4b6a8c0e2f4a6b8c0d2e4f6a8b0c2d4e6f8a0b2c4',
         }}
+      />
+
+      <OmniTraceSatelliteModal
+        isOpen={omniModalOpen}
+        onClose={() => setOmniModalOpen(false)}
+        latitude={activeCase.intercept_point.coords[1]}
+        longitude={activeCase.intercept_point.coords[0]}
+        locationName={activeCase.intercept_point.name}
+        reportNumber={activeCase.case_id}
+        caseTitle={activeCase.title}
+        caseCategory={activeCase.category}
+        sensorFusionLayers={activeCase.omni_trace_solution.sensor_fusion_layers}
+        radarRcsDb={activeCase.omni_trace_solution.radar_cross_section_db}
+        rfSnrDb={activeCase.omni_trace_solution.rf_snr_db}
+        confidenceScore={activeCase.omni_trace_solution.confidence_score}
       />
     </div>
   );

@@ -50,7 +50,12 @@ import {
   EyeOff,
   Globe,
   Crosshair,
+  BookOpen,
+  Compass,
+  Radar,
+  Target,
 } from 'lucide-react';
+import { CRITICAL_CASES, CriticalCase } from '../../data/criticalRealWorldCases';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
@@ -269,6 +274,32 @@ export function GuardianTracePage() {
 
   const [selectedVictimId, setSelectedVictimId] = useState<string>('aanya');
   const [isVictimsRegistryCollapsed, setIsVictimsRegistryCollapsed] = useState<boolean>(false);
+  const [activePlaybookTab, setActivePlaybookTab] = useState<'CASES' | 'RESEARCH_100_CASES'>('CASES');
+  const [selectedCriticalCaseId, setSelectedCriticalCaseId] = useState<string>('CRIT-CASE-03');
+  const activeCriticalCase = CRITICAL_CASES.find((c) => c.case_id === selectedCriticalCaseId) || CRITICAL_CASES[2];
+
+  const handleSelectCriticalCase = (caseId: string) => {
+    sound.playClickSound();
+    setSelectedCriticalCaseId(caseId);
+    const crit = CRITICAL_CASES.find((c) => c.case_id === caseId) || CRITICAL_CASES[2];
+    setCaseData((prev: any) => ({
+      ...prev,
+      case_number: crit.case_id,
+      person_name: crit.suspect_or_victim,
+      description: crit.title,
+      last_seen_lat: crit.origin_coords[1],
+      last_seen_lon: crit.origin_coords[0],
+      last_seen_location: crit.origin_location,
+      priority: crit.severity === 'CRITICAL_FLASH_RED' ? 'CRITICAL' : 'HIGH ALERT',
+      station_id: crit.jurisdiction,
+      assigned_officer: crit.intercept_point.recommended_unit,
+    }));
+
+    if (mapRef.current) {
+      mapRef.current.flyTo({ center: crit.origin_coords, zoom: 13.5, duration: 900 });
+    }
+    toast.info(`Loaded Critical Search Playbook: ${crit.case_id} (${crit.title})`, 'Case Switched');
+  };
 
   // Case Data State
   const [caseData, setCaseData] = useState<any>({
@@ -1023,9 +1054,9 @@ export function GuardianTracePage() {
         </div>
       )}
 
-      {/* Protected Victims & Missing Persons Registry (Interactive Multi-Subject Dossier) */}
+      {/* Protected Victims & Missing Persons Registry & 30 Critical Cases Playbook */}
       <Card className="border border-sky-500/40 bg-slate-900/90 shadow-xl overflow-hidden">
-        <div className="p-3 bg-slate-950 border-b border-border/60 flex items-center justify-between">
+        <div className="p-3 bg-slate-950 border-b border-border/60 flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-sky-500/20 text-sky-400 border border-sky-500/30">
               <Users className="h-4 w-4" />
@@ -1033,10 +1064,10 @@ export function GuardianTracePage() {
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-xs font-black uppercase tracking-wider text-white">
-                  Protected Victims & Missing Persons Registry
+                  Guardian Trace & Critical Real-World Operations
                 </h2>
                 <Badge variant="outline" className="border-sky-500/50 text-sky-300 text-[9px] font-mono">
-                  4 ACTIVE SEARCH DOSSIERS
+                  30 CRITICAL CASES • 100+ CASES RESEARCH
                 </Badge>
               </div>
               <p className="text-[10px] text-muted-foreground mt-0.5">
@@ -1044,7 +1075,41 @@ export function GuardianTracePage() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* View Mode Toggle */}
+            <div className="flex items-center p-0.5 rounded-lg bg-slate-900 border border-slate-700/60 text-xs font-mono">
+              <button
+                type="button"
+                onClick={() => {
+                  sound.playClickSound();
+                  setActivePlaybookTab('CASES');
+                }}
+                className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all flex items-center gap-1.5 ${
+                  activePlaybookTab === 'CASES'
+                    ? 'bg-sky-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Users className="h-3 w-3" />
+                <span>Search Dossiers (4)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  sound.playClickSound();
+                  setActivePlaybookTab('RESEARCH_100_CASES');
+                }}
+                className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all flex items-center gap-1.5 ${
+                  activePlaybookTab === 'RESEARCH_100_CASES'
+                    ? 'bg-amber-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <BookOpen className="h-3 w-3" />
+                <span>30 Critical Cases & 100+ Playbook</span>
+              </button>
+            </div>
+
             <button
               onClick={() => setIsVictimsRegistryCollapsed(!isVictimsRegistryCollapsed)}
               className="text-xs text-muted-foreground hover:text-white px-2 py-1 rounded hover:bg-slate-800 transition-colors flex items-center gap-1 font-mono"
@@ -1055,7 +1120,7 @@ export function GuardianTracePage() {
           </div>
         </div>
 
-        {!isVictimsRegistryCollapsed && (
+        {!isVictimsRegistryCollapsed && activePlaybookTab === 'CASES' && (
           <CardContent className="p-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
               {VICTIM_REGISTRY.map((v) => {
@@ -1137,6 +1202,139 @@ export function GuardianTracePage() {
                   </div>
                 );
               })}
+            </div>
+          </CardContent>
+        )}
+
+        {!isVictimsRegistryCollapsed && activePlaybookTab === 'RESEARCH_100_CASES' && (
+          <CardContent className="p-4 space-y-4 bg-slate-950/80">
+            {/* Case Selector Toolbar */}
+            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 p-3 rounded-xl bg-slate-900 border border-border/70">
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <Compass className="h-4 w-4 text-amber-400 shrink-0" />
+                <span className="text-xs font-bold text-white shrink-0">Select Critical Case:</span>
+                <select
+                  value={selectedCriticalCaseId}
+                  onChange={(e) => handleSelectCriticalCase(e.target.value)}
+                  className="flex-1 min-w-0 bg-slate-950 text-white text-xs font-mono rounded-lg px-3 py-1.5 border border-border focus:border-amber-500 focus:outline-none"
+                  style={{ colorScheme: 'dark', backgroundColor: '#020617', color: '#f8fafc' }}
+                >
+                  {CRITICAL_CASES.map((c) => (
+                    <option key={c.case_id} value={c.case_id} style={{ backgroundColor: '#020617', color: '#f8fafc' }}>
+                      [{c.case_id}] {c.title} — {c.suspect_or_victim} ({c.category})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <Button
+                  size="sm"
+                  onClick={() => setSatelliteModalOpen(true)}
+                  className="bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-mono flex items-center gap-1.5 h-8 px-3"
+                >
+                  <Radar className="h-3.5 w-3.5" />
+                  <span>Omni Trace Satellite Radar</span>
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => handleSelectCriticalCase(selectedCriticalCaseId)}
+                  className="bg-amber-600 hover:bg-amber-500 text-black font-black text-xs font-mono flex items-center gap-1.5 h-8 px-3"
+                >
+                  <Target className="h-3.5 w-3.5" />
+                  <span>Deploy to Tactical Map</span>
+                </Button>
+              </div>
+            </div>
+
+            {/* 4 Analytical Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Card 1: Modus Operandi & Geography */}
+              <div className="p-3.5 rounded-xl border border-sky-500/30 bg-slate-900/90 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-sky-400 flex items-center gap-1.5">
+                    <Compass className="h-3.5 w-3.5" />
+                    1. Modus Operandi & Corridor Geography
+                  </span>
+                  <Badge variant="outline" className="border-sky-500 text-sky-300 text-[10px] font-mono">
+                    {activeCriticalCase.category}
+                  </Badge>
+                </div>
+                <div className="space-y-1 text-xs text-slate-300 leading-relaxed">
+                  <div className="text-white font-bold">{activeCriticalCase.title}</div>
+                  <div className="text-[11px] text-slate-400 font-mono">
+                    Subject: <span className="text-sky-300">{activeCriticalCase.suspect_or_victim}</span> | Severity: <span className="text-amber-300">{activeCriticalCase.severity}</span>
+                  </div>
+                  <p className="text-[11px] text-slate-300 mt-1">
+                    {activeCriticalCase.failure_analysis_100_cases.modus_operandi}
+                  </p>
+                  <div className="p-2 rounded bg-slate-950/70 border border-slate-800 text-[10px] font-mono text-slate-400 flex justify-between">
+                    <span>Origin: <strong className="text-red-400">{activeCriticalCase.origin_location}</strong></span>
+                    <span>Dest: <strong className="text-emerald-400">{activeCriticalCase.destination_target}</strong></span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 2: Conventional Failure Analysis (100+ Cases) */}
+              <div className="p-3.5 rounded-xl border border-red-500/30 bg-slate-900/90 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-red-400 flex items-center gap-1.5">
+                    <AlertTriangle className="h-3.5 w-3.5" />
+                    2. Why Conventional Police Nakas Fail (100+ Cases Research)
+                  </span>
+                  <Badge variant="outline" className="border-red-500 text-red-300 text-[10px] font-mono">
+                    HISTORICAL WEAKNESS
+                  </Badge>
+                </div>
+                <p className="text-[11px] text-slate-300 leading-relaxed">
+                  {activeCriticalCase.failure_analysis_100_cases.conventional_policing_failures}
+                </p>
+              </div>
+
+              {/* Card 3: Future Adversary Vulnerabilities */}
+              <div className="p-3.5 rounded-xl border border-amber-500/30 bg-slate-900/90 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-amber-400 flex items-center gap-1.5">
+                    <ShieldAlert className="h-3.5 w-3.5" />
+                    3. Future Adversary Vulnerabilities & Evasion Vector
+                  </span>
+                  <Badge variant="outline" className="border-amber-500 text-amber-300 text-[10px] font-mono">
+                    EVASION VECTOR
+                  </Badge>
+                </div>
+                <div className="space-y-1.5 text-xs text-slate-300">
+                  <p className="text-[11px] text-slate-300 leading-relaxed">
+                    {activeCriticalCase.failure_analysis_100_cases.future_vulnerabilities}
+                  </p>
+                </div>
+              </div>
+
+              {/* Card 4: Multi-Sensor Guardian & Omni Trace Solution */}
+              <div className="p-3.5 rounded-xl border border-emerald-500/30 bg-slate-900/90 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-emerald-400 flex items-center gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    4. Algorithmic Multi-Sensor Sovereign Solution
+                  </span>
+                  <Badge variant="outline" className="border-emerald-500 text-emerald-300 text-[10px] font-mono">
+                    CONFIDENCE: {activeCriticalCase.omni_trace_solution.confidence_score}%
+                  </Badge>
+                </div>
+                <div className="space-y-2 text-xs">
+                  <div className="p-2 rounded bg-slate-950 border border-slate-800 text-[11px] text-slate-200">
+                    <span className="text-emerald-400 font-bold">Earth Observation Radar: </span>
+                    {activeCriticalCase.omni_trace_solution.satellite_sensor} (RCS {activeCriticalCase.omni_trace_solution.radar_cross_section_db} dB) + Timing Advance RF (SNR {activeCriticalCase.omni_trace_solution.rf_snr_db} dB).
+                  </div>
+                  <div className="p-2 rounded bg-emerald-950/20 border border-emerald-900/40 text-[11px] text-emerald-200">
+                    <span className="font-bold">Dynamic Voronoi Drop-Gate Cordon: </span>
+                    Seals corridor at {activeCriticalCase.intercept_point.name} in {activeCriticalCase.intercept_point.eta_minutes} mins via {activeCriticalCase.escape_encapsulation_solution.automated_roadblock_trigger}.
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] font-mono text-cyan-300 px-1">
+                    <span>Golden Hour Urgency: <strong>{activeCriticalCase.guardian_trace_solution.golden_hour_urgency}/100</strong></span>
+                    <span>Transit Lock: <strong>{activeCriticalCase.guardian_trace_solution.transit_lockdown_status}</strong></span>
+                  </div>
+                </div>
+              </div>
             </div>
           </CardContent>
         )}
@@ -1943,6 +2141,12 @@ export function GuardianTracePage() {
         longitude={caseData.last_seen_lon}
         locationName={caseData.last_seen_location}
         reportNumber={caseData.case_number}
+        caseTitle={activeCriticalCase ? activeCriticalCase.title : undefined}
+        caseCategory={activeCriticalCase ? activeCriticalCase.category : undefined}
+        sensorFusionLayers={activeCriticalCase ? activeCriticalCase.omni_trace_solution.sensor_fusion_layers : undefined}
+        radarRcsDb={activeCriticalCase ? activeCriticalCase.omni_trace_solution.radar_cross_section_db : undefined}
+        rfSnrDb={activeCriticalCase ? activeCriticalCase.omni_trace_solution.rf_snr_db : undefined}
+        confidenceScore={activeCriticalCase ? activeCriticalCase.omni_trace_solution.confidence_score : undefined}
       />
     </div>
   );

@@ -33,6 +33,12 @@ export interface OmniTraceSatelliteModalProps {
   locationName?: string;
   reportNumber?: string;
   timestamp?: string;
+  caseTitle?: string;
+  caseCategory?: string;
+  sensorFusionLayers?: string[];
+  radarRcsDb?: number;
+  rfSnrDb?: number;
+  confidenceScore?: number;
 }
 
 export function OmniTraceSatelliteModal({
@@ -43,6 +49,12 @@ export function OmniTraceSatelliteModal({
   locationName = 'Connaught Place Block B / Metro Corridor',
   reportNumber = 'PUB-2026-DEMO',
   timestamp = new Date().toISOString(),
+  caseTitle,
+  caseCategory,
+  sensorFusionLayers,
+  radarRcsDb,
+  rfSnrDb,
+  confidenceScore,
 }: OmniTraceSatelliteModalProps) {
   const toast = useToast();
   const [activeBand, setActiveBand] = useState<'OPTICAL' | 'NDVI' | 'VIIRS' | 'RADAR_DEM' | 'SAR'>('OPTICAL');
@@ -252,22 +264,39 @@ CRIMENEXUS Geospatial AI & Forensic Earth Observation Division
           {/* 4 Satellite Orbit Telemetry Metric Pills */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono text-center">
             <div className="p-2 rounded-xl bg-black/50 border border-white/10">
-              <span className="text-[9px] uppercase text-slate-400 block">EXIF Spatial Delta</span>
-              <span className="text-xs font-bold text-emerald-400">14.2 m (Passed)</span>
+              <span className="text-[9px] uppercase text-slate-400 block">Radar Cross-Section</span>
+              <span className="text-xs font-bold text-emerald-400">{radarRcsDb ? `${radarRcsDb} dB` : '14.2 m (Passed)'}</span>
             </div>
             <div className="p-2 rounded-xl bg-black/50 border border-white/10">
-              <span className="text-[9px] uppercase text-slate-400 block">Cloud Cover</span>
-              <span className="text-xs font-bold text-cyan-400">3.2% (Clear)</span>
+              <span className="text-[9px] uppercase text-slate-400 block">RF SNR Telemetry</span>
+              <span className="text-xs font-bold text-cyan-400">{rfSnrDb ? `${rfSnrDb} dB SNR` : '3.2% (Clear)'}</span>
             </div>
             <div className="p-2 rounded-xl bg-black/50 border border-white/10">
-              <span className="text-[9px] uppercase text-slate-400 block">Solar Zenith</span>
+              <span className="text-[9px] uppercase text-slate-400 block">Solar / Thermal Zenith</span>
               <span className="text-xs font-bold text-amber-400">48.2° Sun Angle</span>
             </div>
             <div className="p-2 rounded-xl bg-black/50 border border-white/10">
               <span className="text-[9px] uppercase text-slate-400 block">Anti-Spoofing</span>
-              <span className="text-xs font-bold text-emerald-400">100% Genuine</span>
+              <span className="text-xs font-bold text-emerald-400">{confidenceScore ? `${confidenceScore}% Genuine` : '100% Genuine'}</span>
             </div>
           </div>
+
+          {sensorFusionLayers && sensorFusionLayers.length > 0 && (
+            <div className="p-3 rounded-xl border border-sky-500/40 bg-slate-950/80 space-y-1.5">
+              <div className="flex items-center gap-2 text-xs font-bold text-sky-300 font-mono">
+                <Radar className="h-4 w-4 text-sky-400 shrink-0" />
+                <span>Omni Trace Multi-Sensor Ground Fusion ({caseCategory || 'Critical Case'})</span>
+              </div>
+              <ul className="space-y-1 text-[11px] text-slate-300">
+                {sensorFusionLayers.map((layer, lIdx) => (
+                  <li key={lIdx} className="flex items-start gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-sky-400 mt-1.5 shrink-0" />
+                    <span>{layer}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Interactive Visual Satellite Imagery Canvas Preview */}
           <div className="relative h-60 sm:h-72 rounded-xl overflow-hidden border border-white/20 bg-slate-950 shadow-2xl group">
