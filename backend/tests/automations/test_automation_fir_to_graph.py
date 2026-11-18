@@ -49,7 +49,7 @@ def test_fir_text_upload_entity_extraction():
 
     assert any("Rajan" in s for s in entities["suspects_identified"]), f"Rajan not in {entities['suspects_identified']}"
     assert any("99999 88888" in p or "9999988888" in p for p in entities["phones_identified"]), f"Phone not in {entities['phones_identified']}"
-    assert any("TS 09 AB 1234" in v or "TS09AB1234" in v.replace(" ", "") for v in entities["vehicles_identified"]), f"Vehicle not in {entities['vehicles_identified']}"
+    assert any("TS 09 AB 1234" in v or "TS09AB1234" in v.replace(" ", "").replace("-", "") for v in entities["vehicles_identified"]), f"Vehicle not in {entities['vehicles_identified']}"
     assert any("420" in sec or "120B" in sec for sec in entities["legal_sections"]), f"Sections not in {entities['legal_sections']}"
 
 

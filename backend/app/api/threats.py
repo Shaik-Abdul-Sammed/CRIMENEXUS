@@ -473,7 +473,7 @@ def get_most_wanted_watchlist(station: Optional[str] = None) -> List[Dict[str, A
     redis_client = get_redis_client()
     if redis_client:
         try:
-            cached_val = redis_client.get(cache_key)
+            cached_val = redis_client.get(cache_key) or (redis_client.get("cache:threats:most_wanted") if not station or station == "ALL" else None)
             if cached_val:
                 return json.loads(cached_val)
         except Exception:
@@ -594,7 +594,10 @@ def get_most_wanted_watchlist(station: Optional[str] = None) -> List[Dict[str, A
 
     if redis_client:
         try:
-            redis_client.setex(cache_key, 300, json.dumps(watchlist))
+            payload = json.dumps(watchlist)
+            redis_client.setex(cache_key, 300, payload)
+            if not station or station == "ALL":
+                redis_client.setex("cache:threats:most_wanted", 300, payload)
         except Exception:
             pass
 

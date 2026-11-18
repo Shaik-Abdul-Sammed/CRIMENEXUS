@@ -6,6 +6,7 @@ from typing import Dict, Any, Optional
 import threading
 from pydantic import BaseModel, Field, field_validator, ValidationError
 
+from sqlalchemy.exc import IntegrityError
 from app.database.postgres import SessionLocal
 from app.database.neo4j import execute_cypher
 from app.models.transaction import BankTransaction
@@ -122,38 +123,49 @@ def process_single_event(topic: str, data: Dict[str, Any]) -> bool:
 
         if topic == "bank.transactions":
             # Zero-Trust Schema Validation
+            if not all(k in data for k in ("sender_account", "receiver_account", "amount")):
+                logger.warning("[Security] Stream payload missing required fields: %s", data)
+                return False
+
             try:
                 tx_valid = StreamBankTxSchema(
                     transaction_id=data.get("transaction_id", f"TX-STREAM-{int(time.time()*1000)}"),
                     sender_name=data.get("sender_name", "Unknown Sender"),
-                    sender_account=data.get("sender_account", "ACC-MULE-DEFAULT"),
+                    sender_account=data["sender_account"],
                     receiver_name=data.get("receiver_name", "Unknown Receiver"),
-                    receiver_account=data.get("receiver_account", "ACC-BENEFICIARY-01"),
-                    amount=float(data.get("amount", 10000.0)),
+                    receiver_account=data["receiver_account"],
+                    amount=float(data["amount"]),
                     transaction_type=data.get("transaction_type", "NEFT_STREAM"),
                     timestamp=data.get("timestamp") or datetime.utcnow()
                 )
-            except ValidationError as val_err:
+            except (ValidationError, ValueError, TypeError) as val_err:
                 logger.warning("[Security] Adversarial or invalid stream transaction rejected: %s", val_err)
                 return False
 
-            tx = BankTransaction(
-                transaction_id=tx_valid.transaction_id,
-                sender_account=tx_valid.sender_account,
-                receiver_account=tx_valid.receiver_account,
-                amount=tx_valid.amount,
-                transaction_type=tx_valid.transaction_type,
-                timestamp=tx_valid.timestamp,
-                status="COMPLETED"
-            )
-            db.add(tx)
-            db.commit()
+            existing = db.query(BankTransaction).filter(BankTransaction.transaction_id == tx_valid.transaction_id).first()
+            if not existing:
+                try:
+                    tx = BankTransaction(
+                        transaction_id=tx_valid.transaction_id,
+                        sender_name=tx_valid.sender_name,
+                        sender_account=tx_valid.sender_account,
+                        receiver_name=tx_valid.receiver_name,
+                        receiver_account=tx_valid.receiver_account,
+                        amount=tx_valid.amount,
+                        transaction_type=tx_valid.transaction_type,
+                        timestamp=tx_valid.timestamp,
+                    )
+                    db.add(tx)
+                    db.commit()
+                except IntegrityError:
+                    db.rollback()
 
             # Dual-write into Neo4j
             cypher = """
             MERGE (a:BankAccount {account_number: $src})
             MERGE (b:BankAccount {account_number: $dst})
-            CREATE (a)-[:TRANSFERRED_TO {amount: $amt, timestamp: datetime(), tx_id: $tx_id}]->(b)
+            CREATE (a)-[:TRANSFERRED_MONEY_TO {amount: $amt, timestamp: datetime(), transaction_id: $tx_id, tx_id: $tx_id}]->(b)
+            CREATE (a)-[:TRANSFERRED_TO {amount: $amt, timestamp: datetime(), tx_id: $tx_id, transaction_id: $tx_id}]->(b)
             """
             execute_cypher(cypher, {
                 "src": tx_valid.sender_account,
@@ -170,17 +182,22 @@ def process_single_event(topic: str, data: Dict[str, Any]) -> bool:
             dur = int(data.get("duration_seconds") or data.get("duration", 60))
             tower = data.get("tower_id", "TOWER-DEL-01")
 
-            record = CallRecord(
-                record_id=rec_id,
-                caller_number=caller,
-                receiver_number=receiver,
-                call_type="VOICE",
-                duration_seconds=dur,
-                timestamp=datetime.utcnow(),
-                tower_id=tower
-            )
-            db.add(record)
-            db.commit()
+            existing = db.query(CallRecord).filter(CallRecord.record_id == rec_id).first()
+            if not existing:
+                try:
+                    record = CallRecord(
+                        record_id=rec_id,
+                        caller_number=caller,
+                        receiver_number=receiver,
+                        call_type="VOICE",
+                        duration_seconds=dur,
+                        timestamp=datetime.utcnow(),
+                        tower_id=tower
+                    )
+                    db.add(record)
+                    db.commit()
+                except IntegrityError:
+                    db.rollback()
 
             cypher = """
             MERGE (p1:Phone {phone_number: $p1})
@@ -215,6 +232,10 @@ def process_single_event(topic: str, data: Dict[str, Any]) -> bool:
             execute_cypher(cypher, {"plate": plate, "loc": loc, "cam": cam})
             return True
 
+        return True
+    except IntegrityError as integ_err:
+        db.rollback()
+        logger.info("Stream event [%s] already ingested concurrently: %s", topic, integ_err)
         return True
     except Exception as exc:
         logger.error("Error processing stream event [%s]: %s", topic, exc)
