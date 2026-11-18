@@ -178,9 +178,9 @@ export function useGenerateReportMutation() {
   });
 }
 
-export function useMostWanted() {
+export function useMostWanted(station?: string) {
   return useQuery({
-    queryKey: ['most-wanted'],
-    queryFn: () => api.getMostWanted(),
+    queryKey: ['most-wanted', station || 'ALL'],
+    queryFn: () => api.getMostWanted(station),
   });
 }

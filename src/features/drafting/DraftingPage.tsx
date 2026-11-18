@@ -545,27 +545,28 @@ CASE/ACCUSED: ${activeTab === 'BANK_NOTICE' ? bankAccount : locSuspect}
                       </label>
                       <div className="flex items-center gap-1.5">
                         {/* Dictation Language Selector */}
-                        <div className="flex items-center gap-1 h-6 px-1.5 rounded border border-border bg-background text-[10px]">
-                          <Languages className="h-2.5 w-2.5 text-primary" />
+                        <div className="flex items-center gap-1 h-6 px-1.5 rounded border border-border bg-slate-900 text-[10px]">
+                          <Languages className="h-2.5 w-2.5 text-primary shrink-0" />
                           <select
                             value={dictationLang}
                             onChange={(e) => setDictationLang(e.target.value)}
-                            className="bg-transparent text-foreground font-semibold text-[10px] focus:outline-none cursor-pointer [&>option]:bg-slate-900 [&>option]:text-slate-100"
+                            style={{ colorScheme: 'dark', backgroundColor: '#0f172a', color: '#f8fafc' }}
+                            className="bg-slate-900 text-slate-100 font-semibold text-[10px] focus:outline-none cursor-pointer border-0 [&>option]:bg-slate-900 [&>option]:text-slate-100"
                             title="Voice Dictation Language"
                           >
-                            <option value="hi-IN" className="bg-slate-900 text-slate-100">हिन्दी (hi-IN)</option>
-                            <option value="en-IN" className="bg-slate-900 text-slate-100">English (en-IN)</option>
-                            <option value="mr-IN" className="bg-slate-900 text-slate-100">मराठी (mr-IN)</option>
-                            <option value="te-IN" className="bg-slate-900 text-slate-100">తెలుగు (te-IN)</option>
-                            <option value="kn-IN" className="bg-slate-900 text-slate-100">ಕನ್ನಡ (kn-IN)</option>
-                            <option value="bn-IN" className="bg-slate-900 text-slate-100">বাংলা (bn-IN)</option>
-                            <option value="ta-IN" className="bg-slate-900 text-slate-100">தமிழ் (ta-IN)</option>
-                            <option value="gu-IN" className="bg-slate-900 text-slate-100">ગુજરાતી (gu-IN)</option>
-                            <option value="pa-IN" className="bg-slate-900 text-slate-100">ਪੰਜਾਬੀ (pa-IN)</option>
-                            <option value="ml-IN" className="bg-slate-900 text-slate-100">മലയാളം (ml-IN)</option>
-                            <option value="or-IN" className="bg-slate-900 text-slate-100">ଓଡ଼ିଆ (or-IN)</option>
-                            <option value="ur-IN" className="bg-slate-900 text-slate-100">اردو (ur-IN)</option>
-                            <option value="as-IN" className="bg-slate-900 text-slate-100">অসমীয়া (as-IN)</option>
+                            <option value="hi-IN" style={{ backgroundColor: '#0f172a', color: '#f8fafc' }}>हिन्दी (hi-IN)</option>
+                            <option value="en-IN" style={{ backgroundColor: '#0f172a', color: '#f8fafc' }}>English (en-IN)</option>
+                            <option value="mr-IN" style={{ backgroundColor: '#0f172a', color: '#f8fafc' }}>मराठी (mr-IN)</option>
+                            <option value="te-IN" style={{ backgroundColor: '#0f172a', color: '#f8fafc' }}>తెలుగు (te-IN)</option>
+                            <option value="kn-IN" style={{ backgroundColor: '#0f172a', color: '#f8fafc' }}>ಕನ್ನಡ (kn-IN)</option>
+                            <option value="bn-IN" style={{ backgroundColor: '#0f172a', color: '#f8fafc' }}>বাংলা (bn-IN)</option>
+                            <option value="ta-IN" style={{ backgroundColor: '#0f172a', color: '#f8fafc' }}>தமிழ் (ta-IN)</option>
+                            <option value="gu-IN" style={{ backgroundColor: '#0f172a', color: '#f8fafc' }}>ગુજરાતી (gu-IN)</option>
+                            <option value="pa-IN" style={{ backgroundColor: '#0f172a', color: '#f8fafc' }}>ਪੰਜਾਬੀ (pa-IN)</option>
+                            <option value="ml-IN" style={{ backgroundColor: '#0f172a', color: '#f8fafc' }}>മലയാളം (ml-IN)</option>
+                            <option value="or-IN" style={{ backgroundColor: '#0f172a', color: '#f8fafc' }}>ଓଡ଼ିଆ (or-IN)</option>
+                            <option value="ur-IN" style={{ backgroundColor: '#0f172a', color: '#f8fafc' }}>اردو (ur-IN)</option>
+                            <option value="as-IN" style={{ backgroundColor: '#0f172a', color: '#f8fafc' }}>অসমীয়া (as-IN)</option>
                           </select>
                         </div>
 

@@ -2,6 +2,36 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Universal Dark Form Controls & Dropdown Lists (Prevents OS/Browser Light Dropdown Effect) */
+select {
+  color-scheme: dark !important;
+  background-color: #0b1120 !important;
+  color: #f8fafc !important;
+}
+
+select option,
+select optgroup,
+option,
+optgroup {
+  color-scheme: dark !important;
+  background-color: #0b1120 !important;
+  color: #f8fafc !important;
+}
+
+option:hover,
+option:focus,
+option:checked {
+  background-color: #1e293b !important;
+  color: #38bdf8 !important;
+}
+
+input,
+textarea,
+datalist,
+dialog {
+  color-scheme: dark !important;
+}
+
 @layer base {
   :root,
   html,

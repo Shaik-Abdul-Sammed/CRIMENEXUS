@@ -10,6 +10,10 @@ import {
   getCachedTranslation,
   setCachedTranslation
 } from '../services/translationService';
+import {
+  translateEntirePage,
+  restoreOriginalDOM
+} from '../services/fullPageTranslator';
 
 export type SupportedLanguage =
   | 'en'
@@ -76,6 +80,13 @@ export const useTranslation = create<TranslationStore>((set, get) => ({
       document.documentElement.lang = lang;
     }
     set({ language: lang });
+    if (lang === 'en') {
+      restoreOriginalDOM();
+    } else {
+      translateEntirePage(lang).catch((err) =>
+        console.warn('Full page translation triggered error:', err)
+      );
+    }
   },
 
   toggleLanguage: () => {
@@ -101,6 +112,13 @@ export const useTranslation = create<TranslationStore>((set, get) => ({
       document.documentElement.lang = nextLang;
     }
     set({ language: nextLang });
+    if (nextLang === 'en') {
+      restoreOriginalDOM();
+    } else {
+      translateEntirePage(nextLang).catch((err) =>
+        console.warn('Full page translation triggered error:', err)
+      );
+    }
   },
 
   translateAsync: async (text: string, targetLang?: SupportedLanguage): Promise<string> => {
@@ -189,3 +207,14 @@ export const useTranslation = create<TranslationStore>((set, get) => ({
     return typeof fallbackVal === 'string' ? fallbackVal : path;
   },
 }));
+
+// Auto-initialize full page translation on boot if a non-English language is active
+if (typeof window !== 'undefined') {
+  const initialLang = localStorage.getItem('crimenexus_lang') as SupportedLanguage | null;
+  if (initialLang && initialLang !== 'en') {
+    setTimeout(() => {
+      translateEntirePage(initialLang).catch(() => {});
+    }, 600);
+  }
+}
+
