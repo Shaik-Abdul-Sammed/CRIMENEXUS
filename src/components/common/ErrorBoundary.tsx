@@ -26,6 +26,25 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('CRIMENEXUS ErrorBoundary caught an unhandled rendering error:', error, errorInfo);
+
+    // Auto-heal dynamic import chunk errors on new production deployments
+    const msg = (error?.message || '').toLowerCase();
+    const isChunkError =
+      msg.includes('failed to fetch dynamically imported module') ||
+      msg.includes('importing a module script failed') ||
+      msg.includes('error loading dynamically imported module') ||
+      msg.includes('failed to load module script') ||
+      error?.name === 'ChunkLoadError';
+
+    if (isChunkError) {
+      const lastReload = sessionStorage.getItem('crimenexus_eb_chunk_reload');
+      const now = Date.now();
+      if (!lastReload || now - parseInt(lastReload, 10) > 10000) {
+        sessionStorage.setItem('crimenexus_eb_chunk_reload', now.toString());
+        console.warn('[CRIMENEXUS Self-Heal] Auto-reloading page to sync new deployment chunks...');
+        window.location.reload();
+      }
+    }
   }
 
   private handleReset = () => {
@@ -36,6 +55,20 @@ export class ErrorBoundary extends Component<Props, State> {
     } catch {
       // ignore
     }
+
+    const msg = (this.state.error?.message || '').toLowerCase();
+    const isChunkError =
+      msg.includes('failed to fetch dynamically imported module') ||
+      msg.includes('importing a module script failed') ||
+      msg.includes('error loading dynamically imported module') ||
+      msg.includes('failed to load module script') ||
+      this.state.error?.name === 'ChunkLoadError';
+
+    if (isChunkError) {
+      window.location.reload();
+      return;
+    }
+
     this.setState({ hasError: false, error: null });
     if (this.props.onReset) {
       this.props.onReset();
@@ -56,6 +89,14 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public render() {
     if (this.state.hasError) {
+      const msg = (this.state.error?.message || '').toLowerCase();
+      const isChunkError =
+        msg.includes('failed to fetch dynamically imported module') ||
+        msg.includes('importing a module script failed') ||
+        msg.includes('error loading dynamically imported module') ||
+        msg.includes('failed to load module script') ||
+        this.state.error?.name === 'ChunkLoadError';
+
       return (
         <div
           role="alert"
@@ -67,11 +108,13 @@ export class ErrorBoundary extends Component<Props, State> {
           </div>
           <div className="space-y-1.5 max-w-md">
             <h3 className="text-base sm:text-lg font-black text-foreground tracking-tight">
-              {this.props.fallbackTitle || 'Component Rendering Error'}
+              {isChunkError ? 'System Release Update Required' : this.props.fallbackTitle || 'Component Rendering Error'}
             </h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              {this.props.fallbackMessage ||
-                'A rendering error occurred in this interactive view (e.g. WebGL or canvas context loss). Station operations remain safe.'}
+              {isChunkError
+                ? 'A new production version of CRIMENEXUS has been deployed. The previous session bundle must be refreshed to sync with updated module binaries.'
+                : this.props.fallbackMessage ||
+                  'A rendering error occurred in this interactive view (e.g. WebGL or canvas context loss). Station operations remain safe.'}
             </p>
             {this.state.error?.message && (
               <div className="mt-2 p-2 rounded-lg bg-black/40 border border-border text-[11px] font-mono text-destructive/90 break-words text-left">
@@ -88,7 +131,7 @@ export class ErrorBoundary extends Component<Props, State> {
               aria-label="Retry rendering the failed component"
             >
               <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
-              <span>Reload View</span>
+              <span>{isChunkError ? 'Reload & Update View' : 'Reload View'}</span>
             </button>
             <button
               type="button"
