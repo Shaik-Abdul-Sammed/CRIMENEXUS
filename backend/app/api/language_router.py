@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field
 from app.services.language.translator import (
     translate_via_google_free,
     translate_text,
+    translate_batch_texts,
     translate_to_english,
     detect_language,
     get_cached_translation,
@@ -79,15 +80,9 @@ def translate(req: TranslationRequest):
     tl = (req.target_lang or "en").lower().strip()
     sl = (req.source_lang or "auto").lower().strip()
 
-    # Batch Translation
+    # High-Performance Concurrent Batch Translation
     if req.texts is not None and isinstance(req.texts, list):
-        results = []
-        for item in req.texts:
-            if not item or not str(item).strip():
-                results.append("")
-                continue
-            translated, _ = translate_text(str(item), target_lang=tl, source_lang=sl)
-            results.append(translated)
+        results = translate_batch_texts(req.texts, target_lang=tl, source_lang=sl)
         return TranslationResponse(
             translations=results,
             source_lang=sl,

@@ -154,6 +154,20 @@ async function processBatchTranslation(
   const uniqueArray = Array.from(uniqueOriginalsSet);
   if (uniqueArray.length === 0) return;
 
+  // 1. Instantly apply existing cached translations to DOM text nodes for zero-latency UI update
+  for (const { node, originalText } of textsToTranslate) {
+    const cached = getCachedTranslation(originalText, targetLang);
+    if (cached && node.nodeValue !== cached) {
+      node.nodeValue = cached;
+    }
+  }
+  for (const { el, originalPlaceholder } of placeholdersToTranslate) {
+    const cached = getCachedTranslation(originalPlaceholder, targetLang);
+    if (cached && el.placeholder !== cached) {
+      el.placeholder = cached;
+    }
+  }
+
   // Separate cached vs uncached
   const uncached: string[] = [];
   uniqueArray.forEach((txt) => {
@@ -162,8 +176,8 @@ async function processBatchTranslation(
     }
   });
 
-  // Translate uncached in chunks of 35
-  const CHUNK_SIZE = 35;
+  // Translate uncached in chunks of 25 using high-performance parallel backend
+  const CHUNK_SIZE = 25;
   for (let i = 0; i < uncached.length; i += CHUNK_SIZE) {
     const chunk = uncached.slice(i, i + CHUNK_SIZE);
     try {
@@ -178,7 +192,7 @@ async function processBatchTranslation(
     }
   }
 
-  // Apply translations to DOM text nodes
+  // 2. Apply newly translated values to DOM text nodes
   for (const { node, originalText } of textsToTranslate) {
     const translated = getCachedTranslation(originalText, targetLang);
     if (translated && node.nodeValue !== translated) {
@@ -195,6 +209,8 @@ async function processBatchTranslation(
   }
 }
 
+let isApplyingMutation = false;
+
 /**
  * Observes DOM mutations and applies translation to dynamically added content.
  */
@@ -210,11 +226,21 @@ function setupMutationObserver(targetLang: SupportedLanguage) {
   if (!rootElement) return;
 
   observer = new MutationObserver((mutations) => {
+    if (isApplyingMutation) return;
+
     let hasRelevantChanges = false;
     for (const m of mutations) {
       if (m.type === 'childList' && m.addedNodes.length > 0) {
         hasRelevantChanges = true;
         break;
+      }
+      if (m.type === 'characterData') {
+        const target = m.target;
+        const orig = originalTextMap.get(target);
+        if (orig && target.nodeValue !== getCachedTranslation(orig, currentLang)) {
+          hasRelevantChanges = true;
+          break;
+        }
       }
     }
 
@@ -223,15 +249,23 @@ function setupMutationObserver(targetLang: SupportedLanguage) {
       debounceTimer = setTimeout(() => {
         if (currentLang !== 'en') {
           const { nodes, inputs } = collectTranslatableElements(rootElement);
-          processBatchTranslation(nodes, inputs, currentLang).catch(() => {});
+          isApplyingMutation = true;
+          processBatchTranslation(nodes, inputs, currentLang)
+            .catch(() => {})
+            .finally(() => {
+              setTimeout(() => {
+                isApplyingMutation = false;
+              }, 50);
+            });
         }
-      }, 150);
+      }, 100);
     }
   });
 
   observer.observe(rootElement, {
     childList: true,
-    subtree: true
+    subtree: true,
+    characterData: true
   });
 }
 

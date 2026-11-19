@@ -277,9 +277,15 @@ export function PublicReportsQueue() {
   const fetchReports = async () => {
     setLoading(true);
     const baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+    const shiftToken = typeof localStorage !== 'undefined' ? localStorage.getItem('crimenexus_shift_token') : null;
+    const headers: Record<string, string> = {};
+    if (shiftToken) {
+      headers['Authorization'] = `Bearer ${shiftToken}`;
+    }
 
     try {
       const res = await axios.get(`${baseURL}/police/reports/pending`, {
+        headers,
         params: {
           status_filter: statusFilter === 'ALL' ? undefined : statusFilter,
           crime_type: crimeTypeFilter === 'ALL' ? undefined : crimeTypeFilter

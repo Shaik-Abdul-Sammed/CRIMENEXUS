@@ -11,10 +11,22 @@ import { PageTransition } from '../components/common/PageTransition';
 import { BackToTopButton } from '../components/common/BackToTopButton';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { useAppStore } from '../stores/appStore';
+import { translateEntirePage } from '../services/fullPageTranslator';
 
 export function AppLayout() {
   const location = useLocation();
   const { featuresHubModalOpen, setFeaturesHubModalOpen, algoHubModalOpen, setAlgoHubModalOpen } = useAppStore();
+
+  // Seamlessly re-translate on route transitions if vernacular language is active
+  React.useEffect(() => {
+    const currentLang = (typeof localStorage !== 'undefined' ? localStorage.getItem('crimenexus_lang') : 'en') || 'en';
+    if (currentLang && currentLang !== 'en') {
+      const timer = setTimeout(() => {
+        translateEntirePage(currentLang as any).catch(() => {});
+      }, 120);
+      return () => clearTimeout(timer);
+    }
+  }, [location.pathname]);
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground">

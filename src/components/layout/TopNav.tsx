@@ -271,71 +271,13 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
           aria-label="Search cases, entities, and evidence"
         >
           <Search className="h-3.5 w-3.5 text-primary shrink-0" />
-          <span className="hidden 2xl:inline text-[11px] truncate">{t('actions.search')}</span>
-          <kbd className="hidden 2xl:inline-flex h-4 select-none items-center gap-0.5 rounded border border-border bg-muted px-1 font-mono text-[9px] font-medium text-muted-foreground">
+          <span className="hidden sm:inline text-[11px] truncate">{t('actions.search')}</span>
+          <kbd className="hidden sm:inline-flex h-4 select-none items-center gap-0.5 rounded border border-border bg-muted px-1 font-mono text-[9px] font-medium text-muted-foreground">
             /
           </kbd>
         </button>
 
-        {/* 2. All 30 Pages Directory (Compact) */}
-        <button
-          onClick={() => {
-            sound.playClickSound();
-            setPageDirectoryOpen(true);
-          }}
-          className="flex items-center gap-1.5 h-8 px-2 sm:px-2.5 rounded-lg border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold transition-all shadow-sm shrink-0"
-          title="Open complete 30 Pages System Directory (Press ⌘P / Ctrl+P)"
-          aria-label="All Pages Directory"
-        >
-          <Grid className="h-3.5 w-3.5 text-primary shrink-0" />
-          <span className="hidden xl:inline text-[11px]">Pages</span>
-          <span className="px-1 py-0.2 rounded-full bg-primary/20 text-primary text-[9px] font-mono font-black">30</span>
-        </button>
-
-        {/* 3. 100 Technical Specifications & Roadmap (Compact) */}
-        <Link
-          to="/roadmap"
-          className="hidden lg:flex items-center gap-1.5 h-8 px-2 sm:px-2.5 rounded-lg border border-amber-500/50 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 text-xs font-bold transition-all shadow-sm shrink-0"
-          title="100 AI/ML Improvements Audit & Sovereign Engineering Roadmap"
-          aria-label="100 Specs Roadmap"
-        >
-          <Compass className="h-3.5 w-3.5 text-amber-400 shrink-0" />
-          <span className="hidden xl:inline text-[11px] font-black">Roadmap</span>
-          <span className="px-1.5 py-0.2 rounded-full bg-amber-400/25 text-amber-300 text-[9px] font-mono font-black border border-amber-400/40">100</span>
-        </Link>
-
-        {/* 4. 15 Core Pro Features Hub Modal Trigger */}
-        <button
-          onClick={() => {
-            sound.playClickSound();
-            setFeaturesHubModalOpen(true);
-          }}
-          className="flex items-center gap-1.5 h-8 px-2 sm:px-2.5 rounded-lg border border-cyan-500/50 bg-cyan-950/50 hover:bg-cyan-900/50 text-cyan-300 text-xs font-bold transition-all shadow-sm shrink-0"
-          title="CRIMENEXUS 15 Core Pro Features & Capabilities Hub"
-          aria-label="Features Showcase"
-        >
-          <Sparkles className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
-          <span className="hidden 2xl:inline text-[11px]">Features</span>
-          <span className="px-1 py-0.2 rounded-full bg-cyan-400/20 text-cyan-300 text-[9px] font-mono font-extrabold">15</span>
-        </button>
-
-        {/* 4b. 20 Deep AI Models & Forensic Algorithms Hub */}
-        <button
-          onClick={() => {
-            sound.playClickSound();
-            setAlgoHubModalOpen(true);
-          }}
-          className="flex items-center gap-1.5 h-8 px-2 sm:px-2.5 rounded-lg border border-purple-500/50 bg-purple-950/50 hover:bg-purple-900/50 text-purple-200 text-xs font-bold transition-all shadow-sm shrink-0"
-          title="20 Deep Mathematical & Forensic AI Algorithms Hub (LaTeX Formulas & Live Real-Time Calculators)"
-          aria-label="20 Deep AI Models"
-        >
-          <Brain className="h-3.5 w-3.5 text-purple-400 shrink-0" />
-          <span className="hidden 2xl:inline text-[11px] font-black">20 AI Models</span>
-          <span className="hidden xl:inline 2xl:hidden text-[11px] font-black">20 AI</span>
-          <span className="px-1.5 py-0.2 rounded-full bg-purple-500/30 text-purple-200 text-[9px] font-mono font-black border border-purple-400/40">20</span>
-        </button>
-
-        {/* 5. 1-Click Vernacular Full Page Language Switcher (All 13 Indian Languages) */}
+        {/* 2. 1-Click Vernacular Full Page Language Switcher (All 13 Indian Languages) */}
         <div className="flex items-center gap-1.5 h-8 px-2 rounded-lg border border-sky-500/40 bg-slate-900 text-xs shrink-0 shadow-sm">
           <Languages className={`h-3.5 w-3.5 text-sky-400 shrink-0 ${isTranslating ? 'animate-spin' : ''}`} />
           {isTranslating && (
@@ -404,6 +346,41 @@ const FIGMA_THEME_OPTIONS: { id: FigmaTheme; name: string; icon: string; dotColo
                   <X className="h-3.5 w-3.5" />
                 </button>
               </div>
+
+              {/* 20 Deep AI Models & Forensic Algorithms Hub */}
+              <button
+                onClick={() => {
+                  sound.playClickSound();
+                  setTacticalMenuOpen(false);
+                  setAlgoHubModalOpen(true);
+                }}
+                className="w-full flex items-center justify-between p-2 rounded-xl bg-purple-950/40 border border-purple-500/30 hover:bg-purple-900/50 text-xs text-purple-200 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <Brain className="h-4 w-4 text-purple-400" />
+                  <div className="text-left">
+                    <div className="font-bold">20 Deep AI Algorithms Hub</div>
+                    <div className="text-[10px] text-purple-300/70 font-mono">LaTeX Math & Interactive Solvers</div>
+                  </div>
+                </div>
+                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300">20 AI</span>
+              </button>
+
+              {/* 100 System Specs & Sovereign Roadmap */}
+              <Link
+                to="/roadmap"
+                onClick={() => setTacticalMenuOpen(false)}
+                className="w-full flex items-center justify-between p-2 rounded-xl bg-amber-950/40 border border-amber-500/30 hover:bg-amber-900/50 text-xs text-amber-200 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <Compass className="h-4 w-4 text-amber-400" />
+                  <div className="text-left">
+                    <div className="font-bold">100 System Specs & Roadmap</div>
+                    <div className="text-[10px] text-amber-300/70 font-mono">100 Improvements & Sovereign Next 96</div>
+                  </div>
+                </div>
+                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300">100</span>
+              </Link>
 
               {/* Railway TC Aadhaar Face Verification Terminal */}
               <Link

@@ -303,28 +303,97 @@ def translate_via_google_free(text: str, source_lang: str = "auto", target_lang:
     except Exception as exc:
         logger.debug("[GOOGLE_FREE_PRIMARY] Primary translation error: %s", exc)
 
-    # 2. Fallback Endpoint: translate.googleapis.com
-    try:
-        encoded_query = urllib.parse.quote(clean_text)
-        url = f"https://translate.googleapis.com/translate_a/single?client=dict-chrome-ex&sl={sl}&tl={tl}&dt=t&q={encoded_query}"
-        req = urllib.request.Request(url, headers=headers)
-        with urllib.request.urlopen(req, timeout=5) as resp:
-            if resp.status == 200:
-                body = resp.read().decode("utf-8")
-                data = json.loads(body)
-                if isinstance(data, list) and len(data) > 0:
-                    first = data[0]
-                    if isinstance(first, list) and len(first) > 0:
-                        parts = [chunk[0] for chunk in first if isinstance(chunk, list) and len(chunk) > 0 and chunk[0]]
-                        trans = "".join(parts)
-                        detected = data[2] if len(data) > 2 and isinstance(data[2], str) else sl
-                        if trans and trans.strip():
-                            set_cached_translation(clean_text, tl, trans)
-                            return (trans, detected)
-    except Exception as exc:
-        logger.debug("[GOOGLE_FREE_FALLBACK] Fallback translation error: %s", exc)
+    # 2. Fallback Endpoint: translate.googleapis.com (gtx & dict-chrome-ex)
+    for client_param in ["gtx", "dict-chrome-ex"]:
+        try:
+            encoded_query = urllib.parse.quote(clean_text)
+            url = f"https://translate.googleapis.com/translate_a/single?client={client_param}&sl={sl}&tl={tl}&dt=t&q={encoded_query}"
+            req = urllib.request.Request(url, headers=headers)
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                if resp.status == 200:
+                    body = resp.read().decode("utf-8")
+                    data = json.loads(body)
+                    if isinstance(data, list) and len(data) > 0:
+                        first = data[0]
+                        if isinstance(first, list) and len(first) > 0:
+                            parts = [chunk[0] for chunk in first if isinstance(chunk, list) and len(chunk) > 0 and chunk[0]]
+                            trans = "".join(parts)
+                            detected = data[2] if len(data) > 2 and isinstance(data[2], str) else sl
+                            if trans and trans.strip():
+                                set_cached_translation(clean_text, tl, trans)
+                                return (trans, detected)
+        except Exception as exc:
+            logger.debug("[GOOGLE_FREE_FALLBACK] Fallback (%s) error: %s", client_param, exc)
 
     return ("", sl)
+
+
+def translate_batch_texts(texts: list, target_lang: str = "en", source_lang: str = "auto") -> list:
+    """
+    Translates a list of strings concurrently with caching and line-grouping for sub-second latency.
+    """
+    from concurrent.futures import ThreadPoolExecutor
+
+    if not texts:
+        return []
+
+    tl = (target_lang or "en").lower().strip()
+    sl = (source_lang or "auto").lower().strip()
+
+    results = ["" for _ in texts]
+    uncached_indices = []
+    uncached_texts = []
+
+    for idx, item in enumerate(texts):
+        s = str(item).strip() if item else ""
+        if not s:
+            results[idx] = ""
+            continue
+        cached = get_cached_translation(s, tl)
+        if cached:
+            results[idx] = cached
+        else:
+            uncached_indices.append(idx)
+            uncached_texts.append(s)
+
+    if not uncached_texts:
+        return results
+
+    # Chunk into groups of 20 and attempt fast newline-delimited batch query
+    CHUNK_SIZE = 20
+    for c_start in range(0, len(uncached_texts), CHUNK_SIZE):
+        c_chunk = uncached_texts[c_start : c_start + CHUNK_SIZE]
+        c_indices = uncached_indices[c_start : c_start + CHUNK_SIZE]
+
+        # Join with double-newline delimiter
+        joined_input = "\n".join(c_chunk)
+        trans_joined, _ = translate_via_google_free(joined_input, source_lang=sl, target_lang=tl)
+
+        split_lines = trans_joined.split("\n") if trans_joined else []
+        if len(split_lines) == len(c_chunk):
+            for i, line in enumerate(split_lines):
+                translated_line = line.strip() or c_chunk[i]
+                orig_idx = c_indices[i]
+                results[orig_idx] = translated_line
+                set_cached_translation(c_chunk[i], tl, translated_line)
+        else:
+            # Fall back to multi-threaded parallel translation
+            with ThreadPoolExecutor(max_workers=min(10, len(c_chunk))) as executor:
+                futures = [
+                    executor.submit(translate_text, text, target_lang=tl, source_lang=sl)
+                    for text in c_chunk
+                ]
+                for i, future in enumerate(futures):
+                    orig_idx = c_indices[i]
+                    try:
+                        translated_single, _ = future.result(timeout=5)
+                        out = translated_single or c_chunk[i]
+                    except Exception:
+                        out = c_chunk[i]
+                    results[orig_idx] = out
+                    set_cached_translation(c_chunk[i], tl, out)
+
+    return results
 
 
 def translate_text(text: str, target_lang: str = "en", source_lang: str = "auto") -> Tuple[str, str]:
