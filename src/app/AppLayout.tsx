@@ -23,7 +23,7 @@ export function AppLayout() {
     if (currentLang && currentLang !== 'en') {
       const timer = setTimeout(() => {
         translateEntirePage(currentLang as any).catch(() => {});
-      }, 120);
+      }, 300);
       return () => clearTimeout(timer);
     }
   }, [location.pathname]);

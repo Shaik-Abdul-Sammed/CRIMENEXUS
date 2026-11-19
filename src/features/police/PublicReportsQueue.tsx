@@ -14,6 +14,7 @@ import {
   Camera,
   ExternalLink,
   ChevronRight,
+  ChevronLeft,
   RefreshCw,
   Eye,
   FileCheck2,
@@ -97,6 +98,10 @@ export function PublicReportsQueue() {
 
   // Bulk Selection State
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+
+  // Pagination State (Prevents massive 60+ row DOM thrashing)
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const pageSize = 15;
 
   // Lightbox Preview Image State
   const [previewImage, setPreviewImage] = useState<{
@@ -528,6 +533,10 @@ export function PublicReportsQueue() {
     return matchesSearch;
   });
 
+  const totalPages = Math.max(1, Math.ceil(filteredReports.length / pageSize));
+  const validCurrentPage = Math.min(currentPage, totalPages);
+  const paginatedReports = filteredReports.slice((validCurrentPage - 1) * pageSize, validCurrentPage * pageSize);
+
   return (
     <div className="space-y-6">
       {/* Top Banner */}
@@ -664,7 +673,7 @@ export function PublicReportsQueue() {
                   </td>
                 </tr>
               ) : (
-                filteredReports.map((r, idx) => {
+                paginatedReports.map((r, idx) => {
                   const confPct = Math.round(r.satellite_confidence * 100);
                   const confColor =
                     confPct >= 70
@@ -680,7 +689,7 @@ export function PublicReportsQueue() {
                       className="hover:bg-muted/30 transition-colors cursor-pointer group"
                     >
                       <td className="p-3 text-center font-mono text-muted-foreground">
-                        {idx + 1}
+                        {(validCurrentPage - 1) * pageSize + idx + 1}
                       </td>
                       <td className="p-3">
                         <div className="font-mono font-bold text-foreground group-hover:text-primary transition-colors">
@@ -751,6 +760,51 @@ export function PublicReportsQueue() {
             </tbody>
           </table>
         </div>
+
+        {/* Clean Pagination Bar */}
+        {filteredReports.length > pageSize && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-border/60 bg-slate-950/60 text-xs">
+            <span className="text-muted-foreground font-mono">
+              Showing <span className="text-foreground font-bold">{(validCurrentPage - 1) * pageSize + 1}</span> to{' '}
+              <span className="text-foreground font-bold">{Math.min(validCurrentPage * pageSize, filteredReports.length)}</span> of{' '}
+              <span className="text-primary font-bold">{filteredReports.length}</span> reports
+            </span>
+
+            <div className="flex items-center gap-1.5">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={validCurrentPage <= 1}
+                onClick={() => {
+                  sound.playClickSound();
+                  setCurrentPage((p) => Math.max(1, p - 1));
+                }}
+                className="h-7 px-2.5 text-xs font-bold border-border disabled:opacity-40"
+              >
+                <ChevronLeft className="h-3.5 w-3.5 mr-0.5" />
+                <span>Prev</span>
+              </Button>
+
+              <span className="px-2.5 py-1 text-xs font-mono font-bold text-foreground bg-muted/30 rounded border border-border">
+                {validCurrentPage} / {totalPages}
+              </span>
+
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={validCurrentPage >= totalPages}
+                onClick={() => {
+                  sound.playClickSound();
+                  setCurrentPage((p) => Math.min(totalPages, p + 1));
+                }}
+                className="h-7 px-2.5 text-xs font-bold border-border disabled:opacity-40"
+              >
+                <span>Next</span>
+                <ChevronRight className="h-3.5 w-3.5 ml-0.5" />
+              </Button>
+            </div>
+          </div>
+        )}
       </Card>
 
       {/* Inspect & Review Modal */}

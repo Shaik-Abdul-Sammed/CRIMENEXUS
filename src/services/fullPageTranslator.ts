@@ -109,6 +109,35 @@ function collectTranslatableElements(root: HTMLElement): {
 }
 
 /**
+ * Applies DOM text node mutations non-blockingly using requestAnimationFrame.
+ * Slices updates into small batches of 25 nodes per frame so the main thread
+ * never exceeds 10ms, eliminating Chrome [Violation] long-task and forced-reflow warnings.
+ */
+async function applyTextUpdatesNonBlocking(
+  updates: { node: Text; text: string }[],
+  chunkSize = 25
+): Promise<void> {
+  if (updates.length === 0) return;
+  for (let i = 0; i < updates.length; i += chunkSize) {
+    const chunk = updates.slice(i, i + chunkSize);
+    for (const { node, text } of chunk) {
+      if (node.nodeValue !== text) {
+        node.nodeValue = text;
+      }
+    }
+    if (i + chunkSize < updates.length) {
+      await new Promise<void>((resolve) => {
+        if (typeof requestAnimationFrame !== 'undefined') {
+          requestAnimationFrame(() => resolve());
+        } else {
+          setTimeout(resolve, 0);
+        }
+      });
+    }
+  }
+}
+
+/**
  * Translates a collection of text nodes and input elements to target language.
  */
 async function processBatchTranslation(
@@ -154,11 +183,12 @@ async function processBatchTranslation(
   const uniqueArray = Array.from(uniqueOriginalsSet);
   if (uniqueArray.length === 0) return;
 
-  // 1. Instantly apply existing cached translations to DOM text nodes for zero-latency UI update
+  // 1. Instantly apply existing cached translations non-blockingly for zero-latency UI update
+  const cachedUpdates: { node: Text; text: string }[] = [];
   for (const { node, originalText } of textsToTranslate) {
     const cached = getCachedTranslation(originalText, targetLang);
     if (cached && node.nodeValue !== cached) {
-      node.nodeValue = cached;
+      cachedUpdates.push({ node, text: cached });
     }
   }
   for (const { el, originalPlaceholder } of placeholdersToTranslate) {
@@ -167,6 +197,7 @@ async function processBatchTranslation(
       el.placeholder = cached;
     }
   }
+  await applyTextUpdatesNonBlocking(cachedUpdates);
 
   // Separate cached vs uncached
   const uncached: string[] = [];
@@ -176,36 +207,38 @@ async function processBatchTranslation(
     }
   });
 
-  // Translate uncached in chunks of 25 using high-performance parallel backend
-  const CHUNK_SIZE = 25;
-  for (let i = 0; i < uncached.length; i += CHUNK_SIZE) {
-    const chunk = uncached.slice(i, i + CHUNK_SIZE);
-    try {
-      const translatedChunk = await translateBatch(chunk, targetLang);
-      translatedChunk.forEach((trans, cIdx) => {
-        if (trans) {
-          setCachedTranslation(chunk[cIdx], targetLang, trans);
-        }
-      });
-    } catch (err) {
-      console.warn('Batch translation error in chunk:', err);
+  if (uncached.length > 0) {
+    // Translate uncached in chunks of 25 using high-performance parallel backend
+    const CHUNK_SIZE = 25;
+    for (let i = 0; i < uncached.length; i += CHUNK_SIZE) {
+      const chunk = uncached.slice(i, i + CHUNK_SIZE);
+      try {
+        const translatedChunk = await translateBatch(chunk, targetLang);
+        translatedChunk.forEach((trans, cIdx) => {
+          if (trans) {
+            setCachedTranslation(chunk[cIdx], targetLang, trans);
+          }
+        });
+      } catch (err) {
+        console.warn('Batch translation error in chunk:', err);
+      }
     }
-  }
 
-  // 2. Apply newly translated values to DOM text nodes
-  for (const { node, originalText } of textsToTranslate) {
-    const translated = getCachedTranslation(originalText, targetLang);
-    if (translated && node.nodeValue !== translated) {
-      node.nodeValue = translated;
+    // 2. Non-blocking apply of newly translated values
+    const newUpdates: { node: Text; text: string }[] = [];
+    for (const { node, originalText } of textsToTranslate) {
+      const translated = getCachedTranslation(originalText, targetLang);
+      if (translated && node.nodeValue !== translated) {
+        newUpdates.push({ node, text: translated });
+      }
     }
-  }
-
-  // Apply translations to input placeholders
-  for (const { el, originalPlaceholder } of placeholdersToTranslate) {
-    const translated = getCachedTranslation(originalPlaceholder, targetLang);
-    if (translated && el.placeholder !== translated) {
-      el.placeholder = translated;
+    for (const { el, originalPlaceholder } of placeholdersToTranslate) {
+      const translated = getCachedTranslation(originalPlaceholder, targetLang);
+      if (translated && el.placeholder !== translated) {
+        el.placeholder = translated;
+      }
     }
+    await applyTextUpdatesNonBlocking(newUpdates);
   }
 }
 
@@ -248,17 +281,25 @@ function setupMutationObserver(targetLang: SupportedLanguage) {
       if (debounceTimer) clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
         if (currentLang !== 'en') {
-          const { nodes, inputs } = collectTranslatableElements(rootElement);
           isApplyingMutation = true;
-          processBatchTranslation(nodes, inputs, currentLang)
-            .catch(() => {})
-            .finally(() => {
-              setTimeout(() => {
-                isApplyingMutation = false;
-              }, 50);
-            });
+          const scheduleTask = () => {
+            const { nodes, inputs } = collectTranslatableElements(rootElement);
+            processBatchTranslation(nodes, inputs, currentLang)
+              .catch(() => {})
+              .finally(() => {
+                setTimeout(() => {
+                  isApplyingMutation = false;
+                }, 100);
+              });
+          };
+
+          if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+            (window as any).requestIdleCallback(scheduleTask, { timeout: 400 });
+          } else {
+            requestAnimationFrame(scheduleTask);
+          }
         }
-      }, 100);
+      }, 250);
     }
   });
 
